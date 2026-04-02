@@ -1,18 +1,26 @@
 import "./App.css";
-import "bootstrap/dist/css/bootstrap.min.css";
 
+import { Box, Flex, Spacer, Text } from "@chakra-ui/react";
 import LoginPage from "./components/LoginPage";
-import { Stack } from "react-bootstrap";
 import Footer from "./components/Footer";
 
 function App() {
   return (
-    <>
-      <Stack>
+    <Flex
+      direction="column"
+      align="center"
+      justify="center"
+      className="login-form"
+      height="100vh"
+    >
+      <Box>
         <LoginPage />
+      </Box>
+
+      <Box pos="absolute" bottom="25px">
         <Footer />
-      </Stack>
-    </>
+      </Box>
+    </Flex>
   );
 }
 

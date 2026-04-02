@@ -1,7 +1,11 @@
-import { Card } from "react-bootstrap";
+import { Text } from "@chakra-ui/react";
 
 const Footer = () => {
-  return <h1>Hello</h1>;
+  return (
+    <Text fontSize="50px">
+      Inshato <span style={{ fontSize: "20px" }}>by Afritan </span>
+    </Text>
+  );
 };
 
 export default Footer;
