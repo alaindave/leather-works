@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { Box, Flex, Spacer, Text } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import LoginPage from "./components/LoginPage";
 import Footer from "./components/Footer";
 
