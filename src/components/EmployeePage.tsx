@@ -1,9 +1,20 @@
-import React from "react";
+import { Box, Flex } from "@chakra-ui/react";
+import EmployeeNavBar from "./EmployeeNavBar";
+import EmployeeDashboard from "./EmployeeDashboard";
+import "../css/EmployeePage.css";
 
 const EmployeePage = () => {
   return (
     <>
-      <h1>Employee page</h1>
+      <Flex direction="column" align="center">
+        <Box>
+          <EmployeeNavBar />
+        </Box>
+
+        <Box className="_container">
+          <EmployeeDashboard />
+        </Box>
+      </Flex>
     </>
   );
 };

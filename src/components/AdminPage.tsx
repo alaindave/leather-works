@@ -7,7 +7,7 @@ const AdminPage = () => {
   return (
     <Flex direction="column" height="100vh" align="center" justify="center">
       <Box marginBottom="60px">
-        <Link to="/personnel">
+        <Link to="/employees">
           <Button fontSize="50px" width="300px" padding="10px" height="80px">
             Personnel
           </Button>
