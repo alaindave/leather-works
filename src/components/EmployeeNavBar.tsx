@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Divider, Flex } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
 const EmployeeNavBar = () => {
@@ -6,22 +6,34 @@ const EmployeeNavBar = () => {
     <Flex>
       <nav className="navbar ">
         <div className="container-fluid">
-          <Link to="/employees">Tableau de bord</Link>
+          <Link to="/employees_admin">Tableau de bord</Link>
         </div>
       </nav>
+      <Divider orientation="vertical" h="30px" borderColor="white" />
       <nav className="navbar ">
         <div className="container-fluid">
-          <Link to="/employees/employees_list">Employes</Link>
+          <Link to="/employees_admin/employees_list">Employes</Link>
         </div>
       </nav>
+      <Divider orientation="vertical" h="30px" borderColor="white" />
+
       <nav className="navbar ">
         <div className="container-fluid">
-          <Link to="/employees/leave">Conges</Link>
+          <Link to="/employees_admin/leave">Conges</Link>
         </div>
       </nav>
+      <Divider orientation="vertical" h="30px" borderColor="white" />
+
       <nav className="navbar ">
         <div className="container-fluid">
-          <Link to="/employees/payslips">Fiches de paye</Link>
+          <Link to="/employees_admin/leave">Presence</Link>
+        </div>
+      </nav>
+      <Divider orientation="vertical" h="30px" borderColor="white" />
+
+      <nav className="navbar ">
+        <div className="container-fluid">
+          <Link to="/employees_admin/payslips">Fiches de paye</Link>
         </div>
       </nav>
     </Flex>

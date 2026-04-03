@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
-import LoginPage from "./components/LoginPage";
 import AdminPage from "./components/AdminPage";
 import App from "./App";
-import EmployeePage from "./components/EmployeePage";
-import EmployeeDashboard from "./components/EmployeeDashboard";
+import EmployeeAdminPage from "./components/EmployeeAdminPage";
+import EmployeeList from "./components/EmployeeList";
+import EmployeeDetails from "./components/EmployeeDetails";
 
 const router = createBrowserRouter([
   {
@@ -17,13 +17,17 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "/employees",
-    element: <EmployeePage />,
+    path: "/employees_admin",
+    element: <EmployeeAdminPage />,
   },
 
   {
-    path: "/employees/dashboard",
-    element: <EmployeeDashboard />,
+    path: "/employees_admin/employees_list",
+    element: <EmployeeList />,
+  },
+  {
+    path: "/employees_admin/employees_list/:id",
+    element: <EmployeeDetails />,
   },
 ]);
 
