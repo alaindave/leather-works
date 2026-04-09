@@ -1,11 +1,10 @@
 import { Box, Flex, SimpleGrid } from "@chakra-ui/react";
 import employees from "../employees";
-import EmployeeCard from "./EmployeeCard";
-import EmployeeNavBar from "./EmployeeNavBar";
+import EmployeeCard from "../components/EmployeeCard";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
+import Footer from "../components/Footer";
 
-const EmployeeList = () => {
+const EmployeeListPage = () => {
   return (
     <Flex
       height="100vh"
@@ -13,9 +12,6 @@ const EmployeeList = () => {
       align="center"
       justify="space-between"
     >
-      <Box>
-        <EmployeeNavBar />
-      </Box>
       <Box>
         <SimpleGrid columns={2} spacing={6} margin={20}>
           {employees.map((employee) => (
@@ -36,4 +32,4 @@ const EmployeeList = () => {
   );
 };
 
-export default EmployeeList;
+export default EmployeeListPage;

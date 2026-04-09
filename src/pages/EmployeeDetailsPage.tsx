@@ -1,10 +1,9 @@
 import { useParams } from "react-router-dom";
 import employees from "../employees";
 import { Box, Flex } from "@chakra-ui/react";
-import EmployeeNavBar from "./EmployeeNavBar";
-import Footer from "./Footer";
+import Footer from "../components/Footer";
 
-const EmployeeDetails = () => {
+const EmployeeDetailsPage = () => {
   let { id } = useParams();
 
   let matricule: number;
@@ -17,14 +16,11 @@ const EmployeeDetails = () => {
 
   return (
     <Flex
-      height="100vh"
+      height="90vh"
       direction="column"
       align="center"
       justify="space-between"
     >
-      <Box>
-        <EmployeeNavBar />
-      </Box>
       <Box
         borderColor="yellow"
         borderRadius="30px"
@@ -32,6 +28,7 @@ const EmployeeDetails = () => {
         borderStyle="solid"
         padding="20px"
         width="500px"
+        marginTop="110px"
       >
         <ul>
           <li>Noms:{employee[0].lastName}</li>
@@ -51,4 +48,4 @@ const EmployeeDetails = () => {
   );
 };
 
-export default EmployeeDetails;
+export default EmployeeDetailsPage;

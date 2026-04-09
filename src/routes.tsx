@@ -1,14 +1,17 @@
 import { createBrowserRouter } from "react-router-dom";
-import AdminPage from "./components/AdminPage";
+import AdminPage from "./pages/AdminPage";
 import App from "./App";
-import EmployeeAdminPage from "./components/EmployeeAdminPage";
-import EmployeeList from "./components/EmployeeList";
-import EmployeeDetails from "./components/EmployeeDetails";
+import EmployeeAdminPage from "./pages/EmployeeAdminPage";
+import EmployeeList from "./pages/EmployeeListPage";
+import EmployeeDetails from "./pages/EmployeeDetailsPage";
+import EmployeeAdminLayout from "./components/EmployeeAdminLayout";
+import ErrorPage from "./pages/ErrorPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage />,
   },
 
   {
@@ -18,16 +21,22 @@ const router = createBrowserRouter([
 
   {
     path: "/employees_admin",
-    element: <EmployeeAdminPage />,
-  },
+    element: <EmployeeAdminLayout />,
+    children: [
+      {
+        path: "",
+        element: <EmployeeAdminPage />,
+      },
 
-  {
-    path: "/employees_admin/employees_list",
-    element: <EmployeeList />,
-  },
-  {
-    path: "/employees_admin/employees_list/:id",
-    element: <EmployeeDetails />,
+      {
+        path: "employees_list",
+        element: <EmployeeList />,
+      },
+      {
+        path: "employees_list/:id",
+        element: <EmployeeDetails />,
+      },
+    ],
   },
 ]);
 

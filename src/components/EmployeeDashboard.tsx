@@ -5,17 +5,17 @@ const EmployeeDashboard = () => {
     <HStack>
       <Box marginRight="30px" padding="20px">
         <Text>Nombres d'employes</Text>
-        <Text>50</Text>
+        <Text marginLeft="100px">50</Text>
       </Box>
       <Divider orientation="vertical" h="150px" borderColor="white" />
       <Box marginRight="30px" padding="20px">
         <Text>Employes presents</Text>
-        <Text>30</Text>
+        <Text marginLeft="90px">30</Text>
       </Box>
       <Divider orientation="vertical" h="150px" borderColor="white" />
       <Box marginRight="20px" padding="20px">
         <Text>Conges</Text>
-        <Text>5</Text>
+        <Text marginLeft="30px">5</Text>
       </Box>
     </HStack>
   );

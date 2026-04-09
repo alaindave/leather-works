@@ -1,23 +1,21 @@
 import { Box, Flex, Spacer } from "@chakra-ui/react";
-import EmployeeNavBar from "./EmployeeNavBar";
-import EmployeeDashboard from "./EmployeeDashboard";
-import Footer from "./Footer";
+import EmployeeDashboard from "../components/EmployeeDashboard";
+import Footer from "../components/Footer";
 
 const EmployeeAdminPage = () => {
   return (
     <Flex
-      height="100vh"
+      height="90vh"
       direction="column"
       align="center"
       justify="space-between"
     >
-      <Box>
-        <EmployeeNavBar />
-      </Box>
       <Box
         borderColor="white"
+        borderRadius="30px"
         borderStyle="solid"
         borderWidth="3px"
+        marginTop="150px"
         padding="20px"
       >
         <EmployeeDashboard />

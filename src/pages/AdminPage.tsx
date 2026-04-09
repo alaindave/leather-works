@@ -1,8 +1,7 @@
 import { Box, Flex, VStack } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react/button";
-import React from "react";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
+import Footer from "../components/Footer";
 
 const AdminPage = () => {
   return (
