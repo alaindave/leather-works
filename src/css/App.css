@@ -1,0 +1,18 @@
+/* Login page styling */
+
+.login_box{
+    border-color:rgb(231, 198, 9);
+    border-width: 3px;
+    border-radius:30px;
+    margin-bottom: 10px;
+    margin-left: 30px;
+    padding-left: 100px;
+    padding-top: 60px;
+    width:500px;
+    height:550px
+}
+
+.login_footer{
+    position: relative;
+    top:80px
+}
