@@ -11,7 +11,7 @@ const EmployeeAdminPage = () => {
       justify="space-between"
     >
       <Box
-        borderColor="white"
+        borderColor="rgb(231, 198, 9)"
         borderRadius="30px"
         borderStyle="solid"
         borderWidth="3px"

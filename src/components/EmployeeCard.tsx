@@ -22,16 +22,10 @@ interface Props {
 
 const EmployeeCard = ({ employee }: Props) => {
   return (
-    <Card
-      bg="#e63900
-    "
-      width="500px"
-      padding="30px"
-      borderRadius="30px"
-    >
+    <Card bg=" rgb(31, 15, 0)" width="500px" padding="30px" borderRadius="30px">
       <CardBody>
         <VStack>
-          <Image src={source} borderRadius={30} width={200} />
+          <Image src={source} borderRadius={30} width={140} />
           <ul>
             <li>
               <Text>Nom:{employee.lastName}</Text>
