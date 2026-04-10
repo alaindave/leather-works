@@ -10,10 +10,6 @@ function App() {
       <Box>
         <LoginPage />
       </Box>
-
-      <Box className="login_footer">
-        <Footer />
-      </Box>
     </Flex>
   );
 }

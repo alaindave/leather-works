@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 import employees from "../employees";
-import { Box, Flex } from "@chakra-ui/react";
-import Footer from "../components/Footer";
+import { Box, Flex, Text } from "@chakra-ui/react";
 
 const EmployeeDetailsPage = () => {
   let { id } = useParams();
@@ -22,27 +21,55 @@ const EmployeeDetailsPage = () => {
       justify="space-between"
     >
       <Box
-        borderColor="yellow"
+        bg=" #c39409"
+        fontWeight="700"
         borderRadius="30px"
-        borderWidth="10px"
-        borderStyle="solid"
-        padding="20px"
+        padding="30px"
         width="500px"
         marginTop="110px"
       >
         <ul>
-          <li>Noms:{employee[0].lastName}</li>
-          <li>Prenom:{employee[0].firstName}</li>
-          <li>Matricule:{employee[0].matricule}</li>
-          <li>Date de naissance:{employee[0].dateBirth}</li>
-          <li>Addresse:{employee[0].address}</li>
-          <li>Telephone:{employee[0].telephone}</li>
-          <li>Salaire:{employee[0].salaire}</li>
-          <li>Date d'embauche:{employee[0].date_embauche}</li>
+          <li>
+            <Text color=" #262626" fontWeight="700">
+              Nom:<span>{employee[0].lastName}</span>
+            </Text>
+          </li>
+          <li>
+            <Text color=" #262626" fontWeight="700">
+              Prenom:<span>{employee[0].firstName}</span>
+            </Text>
+          </li>
+          <li>
+            <Text color=" #262626" fontWeight="700">
+              Matricule:<span>{employee[0].matricule}</span>
+            </Text>
+          </li>
+          <li>
+            <Text color=" #262626" fontWeight="700">
+              Date de naissance:<span>{employee[0].dateBirth}</span>
+            </Text>
+          </li>
+          <li>
+            <Text color=" #262626" fontWeight="700">
+              Addresse:<span>{employee[0].address}</span>
+            </Text>
+          </li>
+          <li>
+            <Text color=" #262626" fontWeight="700">
+              Telephone:<span>{employee[0].telephone}</span>
+            </Text>
+          </li>
+          <li>
+            <Text color=" #262626" fontWeight="700">
+              Salaire:<span>{employee[0].salaire}</span>
+            </Text>
+          </li>
+          <li>
+            <Text color=" #262626" fontWeight="700">
+              Date d'engagement:<span>{employee[0].date_embauche}</span>
+            </Text>
+          </li>
         </ul>
-      </Box>
-      <Box>
-        <Footer />
       </Box>
     </Flex>
   );

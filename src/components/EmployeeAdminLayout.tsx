@@ -1,13 +1,14 @@
+import { Box } from "@chakra-ui/react";
 import EmployeeNavBar from "./EmployeeNavBar";
 import { Outlet } from "react-router-dom";
 
 const EmployeeAdminLayout = () => {
   return (
     <>
-      <EmployeeNavBar />
-      <div id="main">
-        <Outlet />
-      </div>
+      <Box marginTop="10px">
+        <EmployeeNavBar />
+      </Box>
+      <Outlet />
     </>
   );
 };

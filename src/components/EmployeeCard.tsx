@@ -2,6 +2,7 @@ import { Card, Image, VStack } from "@chakra-ui/react";
 import { CardBody } from "react-bootstrap";
 import { Text } from "@chakra-ui/react";
 import source from "../assets/photos/Jeanne.jpeg";
+import "../css/App.css";
 
 interface Employee {
   id: number;
@@ -22,19 +23,25 @@ interface Props {
 
 const EmployeeCard = ({ employee }: Props) => {
   return (
-    <Card bg=" rgb(31, 15, 0)" width="500px" padding="30px" borderRadius="30px">
+    <Card bg=" #c39409" width="500px" padding="30px" borderRadius="30px">
       <CardBody>
         <VStack>
           <Image src={source} borderRadius={30} width={140} />
           <ul>
             <li>
-              <Text>Nom:{employee.lastName}</Text>
+              <Text color=" #262626" fontWeight="700">
+                Nom:<span>{employee.lastName}</span>
+              </Text>
             </li>
             <li>
-              <Text>Prenom:{employee.firstName}</Text>
+              <Text color=" #262626" fontWeight="700">
+                Prenom:<span>{employee.firstName}</span>
+              </Text>
             </li>
             <li>
-              <Text>Matricule:{employee.matricule}</Text>
+              <Text color=" #262626" fontWeight="700">
+                Matricule:<span>{employee.matricule}</span>
+              </Text>
             </li>
           </ul>
         </VStack>

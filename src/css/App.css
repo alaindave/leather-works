@@ -1,7 +1,8 @@
 /* Login page styling */
 
 .login_box{
-    border-color:rgb(231, 198, 9);
+    border-color:#012732;
+    background:   #c9990a;
     border-width: 3px;
     border-radius:30px;
     margin-bottom: 10px;
@@ -15,5 +16,25 @@
 .login_footer{
     position: relative;
     top:80px
+}
+
+::placeholder {
+    color: #ff0000; /* Set your desired color */
+    opacity: 1;    /* Required for Firefox to display the full color */
+  }
+
+.nav-button{
+    color:#c9990a;
+    font-weight:600
+}
+
+span{
+    color: #220e0e;
+    font-weight: 400;
+
+}
+
+ul{
+   list-style-type:none; 
 }
 
