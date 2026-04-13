@@ -1,38 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const Employee = require("../models/employeeModel");
-const mongoose = require("mongoose");
+const { getEmployees, addEmployee } = require("../db");
 
-mongoose
-  .connect("mongodb://localhost:27017")
-  .then(() => console.log("Connected to the database"))
-  .catch((e) => console.log("Unable to connected to the database", e.message));
-
-// interface EmployeeType {
-//   firstName: String;
-//   lastName: String;
-//   employeeID: Number;
-//   dateBirth: String;
-//   role: String;
-//   department: String;
-//   dateHired: String;
-//   salary: Number;
-//   telephone: Number;
-//   address: String;
-//   photo: String;
-// }
-
-//get all employees
-router.get("/", async (req, res, next) => {
+//Get all employees
+router.get("/employees", async (req, res) => {
   try {
-    const employees = await Employee.find();
+    const employees = await getEmployees();
     if (!employees) return res.status(404).send("no employees found");
-    console.log("list of employees:", employees);
+    console.log("List of employees:", employees);
     res.status(200).send(employees);
   } catch (e) {
-    res.status(500).send("Unable to retrieve employees.");
-    console.log("Unable to retrieve employees", e);
+    console.log("Unable to retrieve employees.Error:", e.message);
   }
+});
+
+//Add an employee
+
+router.post("/employees", async (req, res) => {
+  console.log("Data received from client", req.body);
+  const result = await addEmployee(req.body);
+  console.log("result:", result);
+  res.send(result);
 });
 
 module.exports = router;

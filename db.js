@@ -1,37 +1,36 @@
 const mongoose = require("mongoose");
 const Employee = require("./models/employeeModel");
+
+//Connect to the database
 mongoose
-  .connect("mongodb://localhost:27017")
-  .then(() => console.log("Connected to the database"))
+  .connect("mongodb://localhost:27017/Afritan_database")
+  .then(() => console.log("Connected to Afritan database"))
   .catch((e) => console.log("Unable to connected to the database", e.message));
 
-// interface EmployeeType {
-//   firstName: String;
-//   lastName: String;
-//   employeeID: Number;
-//   dateBirth: String;
-//   role: String;
-//   department: String;
-//   dateHired: String;
-//   salary: Number;
-//   telephone: Number;
-//   address: String;
-//   photo: String;
-// }
-
-const addEmployee = async () => {
+//Add an employee
+const addEmployee = async ({
+  firstName,
+  lastName,
+  employeeID,
+  dateBirth,
+  role,
+  department,
+  salary,
+  dateHired,
+  telephone,
+  address,
+}) => {
   const employee = new Employee({
-    firstName: "Chards",
-    lastName: "Bedet",
-    employeeID: "1784/267.982",
-    dateBirth: "23 Mai 1998",
-    role: "Superviseur",
-    department: "Usine",
-    salary: 30000,
-    dateHired: "28 Octobre 1983",
-    telephone: 785749244,
-    address: "Q.Industriel",
-    photo: "../assets/photos/Jeanne.jpeg",
+    firstName,
+    lastName,
+    employeeID,
+    dateBirth,
+    role,
+    department,
+    salary,
+    dateHired,
+    telephone,
+    address,
   });
 
   try {
@@ -44,4 +43,13 @@ const addEmployee = async () => {
   }
 };
 
-addEmployee();
+//Retrieve all employees
+const getEmployees = async () => {
+  try {
+    return await Employee.find();
+  } catch (e) {
+    return e.message;
+  }
+};
+
+module.exports = { addEmployee, getEmployees };

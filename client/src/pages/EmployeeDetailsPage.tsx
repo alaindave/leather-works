@@ -70,12 +70,12 @@ const EmployeeDetailsPage = () => {
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Salaire:<span>{employee.salaire}</span>
+              Salaire:<span>{employee.salary}</span>
             </Text>
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Date d'engagement:<span>{employee.date_embauche}</span>
+              Date d'engagement:<span>{employee.dateHired}</span>
             </Text>
           </li>
         </ul>

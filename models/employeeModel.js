@@ -11,7 +11,6 @@ const employeeSchema = new mongoose.Schema({
   telephone: { type: Number, required: true },
   address: { type: String, required: true },
   salary: { type: Number, required: true },
-  photo: { type: String },
 });
 
 const Employee = mongoose.model("Employees", employeeSchema);
