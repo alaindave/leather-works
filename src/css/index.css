@@ -1,5 +1,6 @@
 .app-background{
-    background:linear-gradient(to bottom right, #280901, #b22b05);
+    background:linear-gradient(to bottom right, #280901, #b22b05); 
     min-height: 100vh;
     margin: 0;
 }
+

@@ -1,77 +1,85 @@
-import { useParams } from "react-router-dom";
-import employees from "../employees";
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { useParams, useLocation } from "react-router-dom";
+import { Box, Flex, Text, VStack } from "@chakra-ui/react";
+import Footer from "../components/Footer";
+
+interface Employee {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  employeeID: string;
+  dateBirth: string;
+  role: string;
+  department: string;
+  dateHired: string;
+  telephone: number;
+  address: string;
+  salary: string;
+  photo: string;
+}
 
 const EmployeeDetailsPage = () => {
-  let { id } = useParams();
+  const location = useLocation();
+  const employees = location.state;
+  const { _id } = useParams();
 
-  let matricule: number;
-
-  if (id) {
-    matricule = parseInt(id);
-  }
-
-  const employee = employees.filter((employee) => employee.id === matricule);
+  const employee = employees.find((employee: Employee) => employee._id === _id);
 
   return (
-    <Flex
-      height="90vh"
-      direction="column"
-      align="center"
-      justify="space-between"
-    >
+    <VStack spacing="75px">
       <Box
         bg=" #c39409"
         fontWeight="700"
         borderRadius="30px"
-        padding="30px"
+        padding="20px"
         width="500px"
-        marginTop="110px"
+        top="60px"
+        position="relative"
+        right="60px"
       >
         <ul>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Nom:<span>{employee[0].lastName}</span>
+              Nom:<span>{employee.lastName}</span>
             </Text>
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Prenom:<span>{employee[0].firstName}</span>
+              Prenom:<span>{employee.firstName}</span>
             </Text>
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Matricule:<span>{employee[0].matricule}</span>
+              Matricule:<span>{employee.employeeID}</span>
             </Text>
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Date de naissance:<span>{employee[0].dateBirth}</span>
+              Date de naissance:<span>{employee.dateBirth}</span>
             </Text>
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Addresse:<span>{employee[0].address}</span>
+              Addresse:<span>{employee.address}</span>
             </Text>
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Telephone:<span>{employee[0].telephone}</span>
+              Telephone:<span>{employee.telephone}</span>
             </Text>
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Salaire:<span>{employee[0].salaire}</span>
+              Salaire:<span>{employee.salaire}</span>
             </Text>
           </li>
           <li>
             <Text color=" #262626" fontWeight="700">
-              Date d'engagement:<span>{employee[0].date_embauche}</span>
+              Date d'engagement:<span>{employee.date_embauche}</span>
             </Text>
           </li>
         </ul>
       </Box>
-    </Flex>
+    </VStack>
   );
 };
 

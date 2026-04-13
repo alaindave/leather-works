@@ -24,17 +24,22 @@
   }
 
 .nav-button{
-    color:#c9990a;
+    color:#d6b65c;
     font-weight:600
 }
 
 span{
     color: #220e0e;
     font-weight: 400;
+    margin-right: 7px;
 
 }
 
 ul{
    list-style-type:none; 
+}
+
+li{
+    margin-top: 10px;
 }
 

@@ -1,50 +1,77 @@
-import { Card, Image, VStack } from "@chakra-ui/react";
+import { Card, Image, Flex, VStack, Box } from "@chakra-ui/react";
 import { CardBody } from "react-bootstrap";
 import { Text } from "@chakra-ui/react";
 import source from "../assets/photos/Jeanne.jpeg";
 import "../css/App.css";
 
 interface Employee {
-  id: number;
-  lastName: string;
   firstName: string;
-  matricule: string;
+  lastName: string;
+  employeeID: string;
   dateBirth: string;
-  address: string;
+  role: string;
+  department: string;
+  dateHired: string;
   telephone: number;
+  address: string;
+  salary: string;
   photo: string;
-  date_embauche: string;
-  salaire: string;
 }
-
 interface Props {
   employee: Employee;
 }
 
 const EmployeeCard = ({ employee }: Props) => {
+  const _lastName = employee.lastName.slice(0, 1);
+  console.log("first letter", _lastName);
   return (
-    <Card bg=" #c39409" width="500px" padding="30px" borderRadius="30px">
+    <Card
+      bg="#cca333	"
+      height="80px"
+      width="300px"
+      padding="10px"
+      borderRadius="30px"
+    >
       <CardBody>
-        <VStack>
-          <Image src={source} borderRadius={30} width={140} />
-          <ul>
-            <li>
-              <Text color=" #262626" fontWeight="700">
-                Nom:<span>{employee.lastName}</span>
-              </Text>
-            </li>
-            <li>
-              <Text color=" #262626" fontWeight="700">
-                Prenom:<span>{employee.firstName}</span>
-              </Text>
-            </li>
-            <li>
-              <Text color=" #262626" fontWeight="700">
-                Matricule:<span>{employee.matricule}</span>
-              </Text>
-            </li>
-          </ul>
-        </VStack>
+        <Flex>
+          <Image
+            src={source}
+            borderRadius={30}
+            width={10}
+            position="absolute"
+            left="20px"
+          />
+          <Box>
+            <ul>
+              <li>
+                <Text
+                  color=" #262626"
+                  fontWeight="700"
+                  fontSize="23px"
+                  fontFamily="serif"
+                  position="relative"
+                  left="30px"
+                >
+                  <span>{employee.firstName}</span>
+                  <span>{_lastName}</span>
+                </Text>
+              </li>
+              <li>
+                <Text
+                  color=" #262626"
+                  fontWeight="700"
+                  fontSize="23px"
+                  fontFamily="ui-monospace"
+                  position="relative"
+                  left="30px"
+                  bottom="30px"
+                >
+                  <span>{employee.employeeID}</span>
+                </Text>
+              </li>
+            </ul>
+          </Box>
+        </Flex>
       </CardBody>
     </Card>
   );
