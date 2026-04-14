@@ -1,4 +1,4 @@
-import "./css/App.css";
+import "./styles/App.css";
 import { Box, Flex } from "@chakra-ui/react";
 import LoginPage from "./pages/LoginPage";
 import React from "react";

@@ -1,7 +1,6 @@
 import {
   Button,
   FormControl,
-  FormLabel,
   Input,
   Modal,
   ModalBody,
@@ -14,26 +13,11 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
-import React from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-
-interface Employee {
-  _id: number;
-  firstName: string;
-  lastName: string;
-  employeeID: string;
-  dateBirth: string;
-  role: string;
-  department: string;
-  dateHired: string;
-  telephone: number;
-  address: string;
-  salary: string;
-}
+import { useForm, type FieldValues } from "react-hook-form";
+import type Employee from "../Employee";
 
 interface Props {
-  onAddEmployee: (employee) => void;
+  onAddEmployee: (employee: Employee) => void;
 }
 
 const AddEmployee = ({ onAddEmployee }: Props) => {
@@ -44,7 +28,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
     formState: { errors },
   } = useForm<Employee>();
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: FieldValues) => {
     console.log("Form submitted:", data);
     await axios
       .post("//localhost:5000/employees", data)
@@ -65,60 +49,70 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
             <ModalHeader>Nouveau employe</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Stack>
-                <FormControl>
+              <FormControl>
+                <Stack spacing="10px">
                   <Input
+                    type="text"
                     placeholder="Nom"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("lastName")}
                   />
                   <Input
+                    type="text"
                     placeholder="Prenom"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("firstName")}
                   />
                   <Input
+                    type="text"
                     placeholder="Matricule"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("employeeID")}
                   />
                   <Input
+                    type="date"
                     placeholder="Date de naissance"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("dateBirth")}
                   />
                   <Input
+                    type="text"
                     placeholder="Poste"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("role")}
                   />
                   <Input
+                    type="text"
                     placeholder="Departement"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("department")}
                   />
                   <Input
+                    type="date"
                     placeholder="Date d'engagement"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("dateHired")}
                   />
                   <Input
+                    type="number"
                     placeholder="Salaire"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("salary")}
                   />
                   <Input
+                    type="number"
                     placeholder="Telephone"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("telephone")}
                   />
                   <Input
+                    type="text"
                     placeholder="Addresse"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("address")}
                   />
-                </FormControl>
-              </Stack>
+                </Stack>
+              </FormControl>
             </ModalBody>
 
             <ModalFooter>

@@ -1,24 +1,12 @@
-import { Box, Flex, HStack, Image } from "@chakra-ui/react";
-import EmployeeNavBar from "./EmployeeNavBar";
+import { Box, Flex, Image } from "@chakra-ui/react";
 import { Link, Outlet } from "react-router-dom";
+import EmployeeNavBar from "./EmployeeNavBar";
 // @ts-ignore
-import logo from "../assets/AfritanLogo.png";
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import type Employee from "../Employee";
+import logo from "../assets/AfritanLogo.png";
 
-interface Employee {
-  _id: number;
-  firstName: string;
-  lastName: string;
-  employeeID: string;
-  dateBirth: string;
-  role: string;
-  department: string;
-  dateHired: string;
-  telephone: number;
-  address: string;
-  salary: string;
-}
 const EmployeeAdminLayout = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
 

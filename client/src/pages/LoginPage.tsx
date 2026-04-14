@@ -1,15 +1,8 @@
-import React from "react";
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Image,
-} from "@chakra-ui/react";
-import logo from "../assets/AfritanLogo.png";
+import { Box, Button, FormControl, Image, Input } from "@chakra-ui/react";
+// @ts-ignore
 import { Link } from "react-router-dom";
-import "../css/App.css";
+import logo from "../assets/AfritanLogo.png";
+import "../styles/App.css";
 
 const LoginPage = () => {
   return (

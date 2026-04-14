@@ -2,20 +2,7 @@ import { Box, Flex } from "@chakra-ui/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import EmployeeDashboard from "../components/EmployeeDashboard";
-
-interface Employee {
-  _id: number;
-  firstName: string;
-  lastName: string;
-  employeeID: string;
-  dateBirth: string;
-  role: string;
-  department: string;
-  dateHired: string;
-  telephone: number;
-  address: string;
-  salary: string;
-}
+import type Employee from "../Employee";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);

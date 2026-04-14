@@ -1,22 +1,6 @@
-import { useParams, useLocation } from "react-router-dom";
-import { Box, Flex, Text, VStack } from "@chakra-ui/react";
-import Footer from "../components/Footer";
-import React from "react";
-
-interface Employee {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  employeeID: string;
-  dateBirth: string;
-  role: string;
-  department: string;
-  dateHired: string;
-  telephone: number;
-  address: string;
-  salary: string;
-  photo: string;
-}
+import { Box, Text, VStack } from "@chakra-ui/react";
+import { useLocation, useParams } from "react-router-dom";
+import type Employee from "../Employee";
 
 const EmployeeDetailsPage = () => {
   const { state: employees } = useLocation();

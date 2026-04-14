@@ -1,22 +1,7 @@
 import { Divider } from "@chakra-ui/react";
-import React from "react";
 import { NavLink } from "react-router-dom";
-import "../css/App.css";
-import employees from "../employees";
-
-interface Employee {
-  _id: number;
-  firstName: string;
-  lastName: string;
-  employeeID: string;
-  dateBirth: string;
-  role: string;
-  department: string;
-  dateHired: string;
-  telephone: number;
-  address: string;
-  salary: string;
-}
+import "../styles/App.css";
+import type Employee from "../Employee";
 
 interface Props {
   employees: Employee[];

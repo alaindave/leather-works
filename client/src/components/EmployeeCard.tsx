@@ -1,24 +1,10 @@
-import { Card, Image, Flex, VStack, Box } from "@chakra-ui/react";
+import { Box, Card, Flex, Image, Text } from "@chakra-ui/react";
 import { CardBody } from "react-bootstrap";
-import { Text } from "@chakra-ui/react";
 // @ts-ignore
+import type Employee from "../Employee";
 import source from "../assets/Employeephotos/Jeanne.jpeg";
-import "../css/App.css";
-import React from "react";
+import "../styles/App.css";
 
-interface Employee {
-  firstName: string;
-  lastName: string;
-  employeeID: string;
-  dateBirth: string;
-  role: string;
-  department: string;
-  dateHired: string;
-  telephone: number;
-  address: string;
-  salary: string;
-  photo: string;
-}
 interface Props {
   employee: Employee;
 }

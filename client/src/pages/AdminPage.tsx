@@ -1,8 +1,8 @@
-import { Box, Flex, VStack, Image, Button } from "@chakra-ui/react";
+import { Button, Flex, Image, VStack } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import logo from "../assets/AfritanLogo.png";
-import Footer from "../components/Footer";
 import React from "react";
+// @ts-ignore
+import logo from "../assets/AfritanLogo.png";
 
 const AdminPage = () => {
   return (
