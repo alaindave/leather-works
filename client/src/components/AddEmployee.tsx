@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 interface Employee {
   _id: number;
@@ -31,7 +32,11 @@ interface Employee {
   salary: string;
 }
 
-const AddEmployee = () => {
+interface Props {
+  onAddEmployee: (employee) => void;
+}
+
+const AddEmployee = ({ onAddEmployee }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     register,
@@ -43,9 +48,10 @@ const AddEmployee = () => {
     console.log("Form submitted:", data);
     await axios
       .post("//localhost:5000/employees", data)
-      .then((response) =>
-        console.log("Employee successfully saved", response.data)
-      )
+      .then((response) => {
+        console.log("Employee successfully saved", response.data);
+        onAddEmployee(response.data);
+      })
       .catch((error) => console.log(error));
   };
 

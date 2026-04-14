@@ -1,6 +1,12 @@
-import { Box, Divider, Flex, HStack, Text } from "@chakra-ui/react";
+import { Box, Divider, HStack, Text } from "@chakra-ui/react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
-const EmployeeDashboard = () => {
+interface Props {
+  employeeCount: number;
+}
+
+const EmployeeDashboard = ({ employeeCount }: Props) => {
   return (
     <HStack bg=" #c39409" borderRadius="20px">
       <Box marginRight="30px" padding="20px">
@@ -8,7 +14,7 @@ const EmployeeDashboard = () => {
           Employes
         </Text>
         <Text color="#220e0e" marginLeft="60px">
-          50
+          {employeeCount}
         </Text>
       </Box>
       <Divider orientation="vertical" h="150px" borderColor="white" />

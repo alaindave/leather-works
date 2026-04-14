@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import AdminPage from "./pages/AdminPage";
 import App from "./App";
 import EmployeeAdminPage from "./pages/EmployeeAdminPage";
-import EmployeeList from "./pages/EmployeeListPage";
+import EmployeeListPage from "./pages/EmployeeListPage";
 import EmployeeDetails from "./pages/EmployeeDetailsPage";
 import EmployeeAdminLayout from "./components/EmployeeAdminLayout";
 import ErrorPage from "./pages/ErrorPage";
@@ -31,7 +31,7 @@ const router = createBrowserRouter([
 
       {
         path: "employees_list",
-        element: <EmployeeList />,
+        element: <EmployeeListPage />,
       },
       {
         path: "employees_list/:_id",

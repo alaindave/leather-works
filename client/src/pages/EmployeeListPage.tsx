@@ -1,6 +1,6 @@
 import { Box, Flex, SimpleGrid } from "@chakra-ui/react";
 import EmployeeCard from "../components/EmployeeCard";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Footer from "../components/Footer";
 import "../css/App.css";
 import axios from "axios";
@@ -26,6 +26,13 @@ interface Employee {
 const EmployeeListPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
 
+  const handleAddEmployee = (employee) => {
+    console.log("Employee just saved to backend", employee);
+    console.log("Before updating  employees", employees);
+    setEmployees([...employees, employee]);
+    console.log("After updating  employees", employees);
+  };
+
   useEffect(() => {
     axios
       .get<Employee[]>("http://localhost:5000/employees")
@@ -40,7 +47,7 @@ const EmployeeListPage = () => {
 
   return (
     <Flex direction="column">
-      <AddEmployee />
+      <AddEmployee onAddEmployee={handleAddEmployee} />
       <Box position="relative" top="80px" right="60px">
         <ul>
           {employees.map((employee) => (

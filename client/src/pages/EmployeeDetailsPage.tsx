@@ -19,8 +19,7 @@ interface Employee {
 }
 
 const EmployeeDetailsPage = () => {
-  const location = useLocation();
-  const employees = location.state;
+  const { state: employees } = useLocation();
   const { _id } = useParams();
 
   const employee = employees.find((employee: Employee) => employee._id === _id);

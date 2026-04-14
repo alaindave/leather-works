@@ -1,6 +1,7 @@
 import { Card, Image, Flex, VStack, Box } from "@chakra-ui/react";
 import { CardBody } from "react-bootstrap";
 import { Text } from "@chakra-ui/react";
+// @ts-ignore
 import source from "../assets/Employeephotos/Jeanne.jpeg";
 import "../css/App.css";
 import React from "react";
