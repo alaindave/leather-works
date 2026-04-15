@@ -1,4 +1,3 @@
-const { Schema } = require("mongoose");
 const mongoose = require("mongoose");
 
 const employeeSchema = new mongoose.Schema({
@@ -11,7 +10,7 @@ const employeeSchema = new mongoose.Schema({
   department: { type: String, required: true },
   telephone: { type: Number, required: true },
   address: { type: String, required: true },
-  salary: { type: Number, required: true },
+  salary: { type: String, required: true },
   conge: { type: Object },
 });
 

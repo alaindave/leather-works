@@ -34,11 +34,8 @@ const addEmployee = async ({
   });
 
   try {
-    const result = await employee.save();
-    console.log("Saved employee", result);
-    return result;
+    return await employee.save();
   } catch (e) {
-    console.log("unable to save employee", e.message);
     return e.message;
   }
 };
@@ -52,10 +49,23 @@ const getEmployees = async () => {
   }
 };
 
-//Delete an employee
-const deleteEmployee = async (id) => {
-  const deletedEmployee = await Employee.findByIdAndDelete(id);
-  console.log("Deleted employee:", deletedEmployee);
+//Retrieve an employee
+const findEmployee = async (id) => {
+  try {
+    return await Employee.findById(id);
+  } catch (e) {
+    return e.message;
+  }
 };
 
-module.exports = { addEmployee, getEmployees, deleteEmployee };
+//Delete an employee
+const deleteEmployee = async (id) => {
+  return await Employee.findByIdAndDelete(id);
+};
+
+module.exports = {
+  addEmployee,
+  getEmployees,
+  findEmployee,
+  deleteEmployee,
+};

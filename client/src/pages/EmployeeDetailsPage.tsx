@@ -2,19 +2,28 @@ import { Box, HStack, Text, Button } from "@chakra-ui/react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import type Employee from "../Employee";
 import axios from "axios";
+import UpdateEmployee from "../components/UpdateEmployee";
+import { useState } from "react";
 
 const EmployeeDetailsPage = () => {
   const { state: employees } = useLocation();
   const navigate = useNavigate();
   const { _id } = useParams();
-
   const employee = employees.find((employee: Employee) => employee._id === _id);
+  const [onClickUpdate, setOnClickUpdate] = useState(false);
 
-  console.log("employee:", employee);
+  console.log("employee salary", employee.salary);
+
+  const handleUpdate = async () => {
+    await axios
+      .put<Employee>(`//localhost:5000/employees/${_id}`)
+      .then((response) => console.log("Employee found:", response.data))
+      .catch((e) => console.log("An error occured", e));
+  };
 
   const handleDelete = async () => {
     await axios
-      .delete(`//localhost:5000/employees/${_id}`)
+      .delete<Employee>(`//localhost:5000/employees/${_id}`)
       .then((response) => {
         console.log("Employee successfully deleted", response.data);
         navigate("/employees_admin/employees_list");
@@ -67,6 +76,7 @@ const EmployeeDetailsPage = () => {
         <li>
           <Text color=" #262626" fontWeight="700">
             Salaire:<span>{employee.salary}</span>
+            <em>FBU</em>
           </Text>
         </li>
         <li>
@@ -76,7 +86,7 @@ const EmployeeDetailsPage = () => {
         </li>
       </ul>
       <HStack ml="50px">
-        <Button size="sm" bg="#280901">
+        <Button size="sm" bg="#280901" onClick={handleUpdate}>
           Modifier
         </Button>
         <Button size="sm" bg="#280901" onClick={handleDelete}>
@@ -86,5 +96,4 @@ const EmployeeDetailsPage = () => {
     </Box>
   );
 };
-
 export default EmployeeDetailsPage;

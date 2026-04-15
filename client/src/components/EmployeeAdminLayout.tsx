@@ -5,7 +5,7 @@ import EmployeeNavBar from "./EmployeeNavBar";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import type Employee from "../Employee";
-import logo from "../assets/AfritanLogo.png";
+import logo from "../assets/afritan_logo.png";
 
 const EmployeeAdminLayout = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);

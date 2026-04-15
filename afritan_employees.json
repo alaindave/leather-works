@@ -1,0 +1,121 @@
+[
+  {
+    "lastName": "Bedetse",
+    "firstName": "Bede",
+    "employeeID": "4324/567.980",
+    "role": "ADG",
+    "department": "Administration",
+    "dateBirth": "27/03/1958",
+    "address": "Kiriri",
+    "telephone": "76660060",
+    "salary": "0",
+    "dateHired": "03/06/1982"
+  },
+
+  {
+    "lastName": "Muheberisoni",
+    "firstName": "Jeanne",
+    "employeeID": "7324/897.280",
+    "role": "Directrice commerciale",
+    "department": "Administration",
+    "dateBirth": "28/05/1965",
+    "address": "Kiriri",
+    "telephone": "76490859",
+    "salary": "0",
+    "dateHired": "09/03/1989"
+  },
+
+  {
+    
+    "lastName": "Nduwimana",
+    "firstName": "Alexandre",
+    "employeeID": "1564/067.982",
+    "role": "Superviseur",
+    "department": "Usine",
+    "dateBirth": "23/12/1985",
+    "address": "Q.Industriel",
+    "telephone": "61720346",
+    "salary": "250,000",
+    "dateHired": "01/02/2017"
+  },
+
+  {
+    "lastName": "Bedetse",
+    "firstName": "Chadia",
+    "employeeID": "4328/539.580",
+    "role": "Agente",
+    "department": "Administration",
+    "dateBirth": "01/11/1996",
+    "address": "Kiriri",
+    "telephone": "68330612",
+    "salary": "250,000",
+    "dateHired": "18/07/2024"
+  },
+  {
+    "lastName": "Bedetse",
+    "firstName": "Fred",
+    "employeeID": "1628/567.380",
+    "role": "Agent",
+    "department": "Administration",
+    "dateBirth": "11/11/2000",
+    "address": "Kiriri",
+    "telephone": "76153011",
+    "salary": "250,000",
+    "dateHired": "18/02/2025"
+  },
+
+  {
+    "lastName": "Mutoni",
+    "firstName": "Sandrine",
+    "employeeID": "5028/549.280",
+    "role": "Vendeuse",
+    "department": "Magasin",
+    "dateBirth": "05/09/1985",
+    "address": "Q Industriel",
+    "telephone": "76153011",
+    "salary": "850,000",
+    "dateHired": "08/11/2022"
+  },
+
+  {
+    "lastName": "Maina",
+    "firstName": "Moses",
+    "employeeID": "9028/040.584",
+    "role": "Electricien",
+    "department": "Usine",
+    "dateBirth": "20/05/1990",
+    "address": "Q Industriel",
+    "telephone": "76153011",
+    "salary": "850,000",
+    "dateHired": "18/02/2025"
+  },
+
+  {
+    "lastName": "Samuel",
+    "firstName": "Nyandwi",
+    "employeeID": "2058/949.270",
+    "role": "Gardien",
+    "department": "Usine",
+    "dateBirth": "04/10/1950",
+    "address": "Gihanga",
+    "telephone": "76153011",
+    "salary": "250,000",
+    "dateHired": "05/07/2021"
+  },
+
+  {
+    "lastName": "Kanyange",
+    "firstName": "Nadine",
+    "employeeID": "3928/752.880",
+    "role": "Vendeuse",
+    "department": "Magasin",
+    "dateBirth": "05/09/1985",
+    "address": "Q Industriel",
+    "telephone": "76153011",
+    "salary": "850,000",
+    "dateHired": "08/11/2022"
+  }
+]
+
+
+

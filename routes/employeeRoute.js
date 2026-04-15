@@ -1,6 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { getEmployees, addEmployee, deleteEmployee } = require("../db");
+const {
+  getEmployees,
+  addEmployee,
+  deleteEmployee,
+  updateEmployee,
+  findEmployee,
+} = require("../db");
+const { findByIdAndUpdate } = require("../models/employeeModel");
 
 //Get all employees
 router.get("/", async (req, res) => {
@@ -22,8 +29,18 @@ router.post("/", async (req, res) => {
   res.send(result);
 });
 
+//Update an employee
+router.put("/:_id", async (req, res) => {
+  const employee = await findEmployee(req.params._id);
+  if (!employee) res.status(404).send("No employee found with the given ID.");
+  console.log("Employee found", employee);
+  res.status(200).send(employee);
+});
+
 //Delete an employee
 router.delete("/:_id", async (req, res) => {
+  const employee = await findEmployee(req.params._id);
+  if (!employee) res.status(404).send("No employee found with the given ID.");
   const result = await deleteEmployee(req.params._id);
   res.status(204).send(result);
 });

@@ -1,8 +1,8 @@
 import { Box, Card, Flex, Image, Text } from "@chakra-ui/react";
 import { CardBody } from "react-bootstrap";
-// @ts-ignore
 import type Employee from "../Employee";
-import source from "../assets/Employeephotos/Jeanne.jpeg";
+// @ts-ignore
+import source from "../assets/employee_photos/Jeanne.jpeg";
 import "../styles/App.css";
 
 interface Props {

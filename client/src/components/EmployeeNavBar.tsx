@@ -41,7 +41,7 @@ const EmployeeNavBar = ({ employees }: Props) => {
       <li>
         <NavLink
           className="nav-button"
-          to="/employees_admin/leave"
+          to="/employees_admin/presence"
           state={employees}
         >
           Presence

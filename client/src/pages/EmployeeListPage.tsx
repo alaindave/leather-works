@@ -18,7 +18,7 @@ const EmployeeListPage = () => {
       .get<Employee[]>("http://localhost:5000/employees")
       .then((res) => {
         setEmployees(res.data);
-        console.log("Response received", res.data);
+        console.log("Employees received", res.data);
       })
       .catch((err) => {
         console.log("This is the error", err.message);
@@ -37,7 +37,13 @@ const EmployeeListPage = () => {
         </Box>
       )}
 
-      <Box position="relative" top="50px" right="40px">
+      <Box
+        maxH="500px"
+        overflowY="auto"
+        position="relative"
+        top="50px"
+        right="40px"
+      >
         <ul>
           {employees.map((employee) => (
             <li key={employee._id}>

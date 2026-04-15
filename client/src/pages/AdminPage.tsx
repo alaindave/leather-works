@@ -2,7 +2,7 @@ import { Button, Flex, Image, VStack } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import React from "react";
 // @ts-ignore
-import logo from "../assets/AfritanLogo.png";
+import logo from "../assets/afritan_logo.png";
 
 const AdminPage = () => {
   return (

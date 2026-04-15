@@ -12,6 +12,7 @@ import {
   Stack,
   useDisclosure,
 } from "@chakra-ui/react";
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useState } from "react";
@@ -20,11 +21,10 @@ import { z } from "zod";
 import type Employee from "../Employee";
 
 interface Props {
-  onAddEmployee: (employee: Employee) => void;
+  _id: string | undefined;
 }
 
 const errorMessage = "Ce champ est obligatoire";
-
 const schema = z.object({
   firstName: z.string().min(1, { message: errorMessage }),
   lastName: z.string().min(1, { message: errorMessage }),
@@ -46,10 +46,22 @@ const schema = z.object({
 
 type EmployeeData = z.infer<typeof schema>;
 
-const AddEmployee = ({ onAddEmployee }: Props) => {
+const UpdateEmployee = ({ _id }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [dateBirthType, setDateBirthType] = useState("text");
   const [dateHiredType, setDateHiredType] = useState("text");
+
+  const onSubmit = async () => {
+    console.log("form submitted for employee ID", _id);
+    // await axios
+    //   .put<Employee>(`//localhost:5000/employees/${_id}`)
+    //   .then((response) => console.log("Employee found:", response.data))
+    //   .catch((e) => console.log("An error occured", e));
+  };
+
+  const handleOnClick = () => {
+    console.log("Button clicked");
+  };
 
   const {
     register,
@@ -57,35 +69,8 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
     formState: { errors },
   } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = async (data: FieldValues) => {
-    console.log("Form submitted:", data);
-    await axios
-      .post("//localhost:5000/employees", data)
-      .then((response) => {
-        console.log("Employee successfully saved", response.data);
-        onAddEmployee(response.data);
-        onClose();
-      })
-      .catch((error) => console.log(error));
-  };
-
-  const handleOnClick = () => {
-    console.log("Errors object", errors);
-  };
-
   return (
     <>
-      <Button
-        borderColor="black"
-        bg="brown"
-        borderRadius="15px"
-        borderWidth="5px"
-        color="#d6b65c"
-        size="lg"
-        onClick={onOpen}
-      >
-        Ajouter un employe
-      </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -210,7 +195,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                 type="submit"
                 onClick={handleOnClick}
               >
-                Ajouter
+                Modifier
               </Button>
               <Button
                 borderColor="black"
@@ -231,4 +216,4 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
   );
 };
 
-export default AddEmployee;
+export default UpdateEmployee;
