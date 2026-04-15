@@ -32,7 +32,7 @@ const schema = z.object({
   dateBirth: z.union([z.date({ message: errorMessage }), z.string()]),
   role: z.string().min(1, { message: errorMessage }),
   department: z.string().min(1, { message: errorMessage }),
-  dateHired: z.date({ message: errorMessage }),
+  dateHired: z.union([z.date({ message: errorMessage }), z.string()]),
   telephone: z.string().min(1, { message: errorMessage }),
   address: z.string().min(1, { message: errorMessage }),
   salary: z.string().min(1, { message: errorMessage }),
@@ -58,6 +58,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
       .then((response) => {
         console.log("Employee successfully saved", response.data);
         onAddEmployee(response.data);
+        onClose();
       })
       .catch((error) => console.log(error));
   };
@@ -68,7 +69,17 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
 
   return (
     <>
-      <Button onClick={onOpen}>Ajouter un employe</Button>
+      <Button
+        borderColor="black"
+        bg="brown"
+        borderRadius="15px"
+        borderWidth="5px"
+        color="#d6b65c"
+        size="lg"
+        onClick={onOpen}
+      >
+        Ajouter un employe
+      </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>

@@ -27,8 +27,17 @@ const EmployeeListPage = () => {
 
   return (
     <Flex direction="column">
-      <AddEmployee onAddEmployee={handleAddEmployee} />
-      <Box position="relative" top="80px" right="60px">
+      {employees.length === 0 ? (
+        <Box position="relative" top="300px" right="40px">
+          <AddEmployee onAddEmployee={handleAddEmployee} />
+        </Box>
+      ) : (
+        <Box position="relative" marginTop="10px">
+          <AddEmployee onAddEmployee={handleAddEmployee} />
+        </Box>
+      )}
+
+      <Box position="relative" top="50px" right="40px">
         <ul>
           {employees.map((employee) => (
             <li key={employee._id}>
