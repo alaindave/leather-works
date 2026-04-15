@@ -31,7 +31,7 @@ const EmployeeListPage = () => {
       <Box position="relative" top="80px" right="60px">
         <ul>
           {employees.map((employee) => (
-            <li>
+            <li key={employee._id}>
               <Link
                 to={{
                   pathname: `/employees_admin/employees_list/${employee._id}`,

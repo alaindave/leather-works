@@ -12,21 +12,44 @@ import {
   Stack,
   useDisclosure,
 } from "@chakra-ui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
+import { useState } from "react";
 import { useForm, type FieldValues } from "react-hook-form";
+import { z } from "zod";
 import type Employee from "../Employee";
 
 interface Props {
   onAddEmployee: (employee: Employee) => void;
 }
 
+const errorMessage = "Ce champ est obligatoire";
+
+const schema = z.object({
+  firstName: z.string().min(1, { message: errorMessage }),
+  lastName: z.string().min(1, { message: errorMessage }),
+  employeeID: z.string().min(1, { message: errorMessage }),
+  dateBirth: z.union([z.date({ message: errorMessage }), z.string()]),
+  role: z.string().min(1, { message: errorMessage }),
+  department: z.string().min(1, { message: errorMessage }),
+  dateHired: z.date({ message: errorMessage }),
+  telephone: z.string().min(1, { message: errorMessage }),
+  address: z.string().min(1, { message: errorMessage }),
+  salary: z.string().min(1, { message: errorMessage }),
+});
+
+type EmployeeData = z.infer<typeof schema>;
+
 const AddEmployee = ({ onAddEmployee }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [dateBirthType, setDateBirthType] = useState("text");
+  const [dateHiredType, setDateHiredType] = useState("text");
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Employee>();
+  } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FieldValues) => {
     console.log("Form submitted:", data);
@@ -39,6 +62,10 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
       .catch((error) => console.log(error));
   };
 
+  const handleOnClick = () => {
+    console.log("Errors object", errors);
+  };
+
   return (
     <>
       <Button onClick={onOpen}>Ajouter un employe</Button>
@@ -46,9 +73,9 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
         <ModalOverlay />
         <ModalContent>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <ModalHeader>Nouveau employe</ModalHeader>
+            <ModalHeader bg=" #952104">Nouveau employe</ModalHeader>
             <ModalCloseButton />
-            <ModalBody>
+            <ModalBody bg="#c9990a">
               <FormControl>
                 <Stack spacing="10px">
                   <Input
@@ -57,69 +84,126 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("lastName")}
                   />
+                  {errors.lastName && (
+                    <p className="text-danger">{errors.lastName.message}</p>
+                  )}
                   <Input
                     type="text"
                     placeholder="Prenom"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("firstName")}
                   />
+                  {errors.firstName && (
+                    <p className="text-danger">{errors.firstName.message}</p>
+                  )}
                   <Input
                     type="text"
                     placeholder="Matricule"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("employeeID")}
                   />
+                  {errors.employeeID && (
+                    <p className="text-danger">{errors.employeeID.message}</p>
+                  )}
                   <Input
-                    type="date"
+                    type={dateBirthType}
                     placeholder="Date de naissance"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("dateBirth")}
+                    onFocus={() => setDateBirthType("date")}
+                    onBlur={() => setDateBirthType("text")}
                   />
+                  {errors.dateBirth && (
+                    <p className="text-danger">{errors.dateBirth.message}</p>
+                  )}
+
                   <Input
                     type="text"
                     placeholder="Poste"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("role")}
                   />
+                  {errors.role && (
+                    <p className="text-danger">{errors.role.message}</p>
+                  )}
+
                   <Input
                     type="text"
                     placeholder="Departement"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("department")}
                   />
+                  {errors.department && (
+                    <p className="text-danger">{errors.department.message}</p>
+                  )}
+
                   <Input
-                    type="date"
+                    type={dateHiredType}
                     placeholder="Date d'engagement"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("dateHired")}
+                    onFocus={() => setDateHiredType("date")}
+                    onBlur={() => setDateHiredType("text")}
                   />
+                  {errors.dateHired && (
+                    <p className="text-danger">{errors.dateHired.message}</p>
+                  )}
+
                   <Input
                     type="number"
                     placeholder="Salaire"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("salary")}
                   />
+                  {errors.salary && (
+                    <p className="text-danger">{errors.salary.message}</p>
+                  )}
+
                   <Input
                     type="number"
                     placeholder="Telephone"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("telephone")}
                   />
+                  {errors.telephone && (
+                    <p className="text-danger">{errors.telephone.message}</p>
+                  )}
+
                   <Input
                     type="text"
                     placeholder="Addresse"
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("address")}
                   />
+                  {errors.address && (
+                    <p className="text-danger">{errors.address.message}</p>
+                  )}
                 </Stack>
               </FormControl>
             </ModalBody>
 
-            <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={onClose} type="submit">
+            <ModalFooter bg=" #952104">
+              <Button
+                borderColor="black"
+                bg="brown"
+                borderWidth="3px"
+                colorScheme=" #320b01"
+                color="#1a000d"
+                mr={3}
+                type="submit"
+                onClick={handleOnClick}
+              >
                 Ajouter
               </Button>
-              <Button colorScheme="blue" mr={3} onClick={onClose}>
+              <Button
+                borderColor="black"
+                bg="brown"
+                borderWidth="3px"
+                colorScheme=" #320b01"
+                color="#1a000d"
+                mr={3}
+                onClick={onClose}
+              >
                 Fermer
               </Button>
             </ModalFooter>

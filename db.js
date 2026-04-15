@@ -52,4 +52,10 @@ const getEmployees = async () => {
   }
 };
 
-module.exports = { addEmployee, getEmployees };
+//Delete an employee
+const deleteEmployee = async (id) => {
+  const deletedEmployee = await Employee.findByIdAndDelete(id);
+  console.log("Deleted employee:", deletedEmployee);
+};
+
+module.exports = { addEmployee, getEmployees, deleteEmployee };
