@@ -22,6 +22,7 @@ import type Employee from "../Employee";
 
 interface Props {
   _id: string | undefined;
+  employee: Employee;
 }
 
 const errorMessage = "Ce champ est obligatoire";
@@ -46,21 +47,21 @@ const schema = z.object({
 
 type EmployeeData = z.infer<typeof schema>;
 
-const UpdateEmployee = ({ _id }: Props) => {
+const handleUpdate = () => {
+  console.log("Modifier button clicked");
+};
+
+const UpdateEmployee = ({ _id, employee }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [dateBirthType, setDateBirthType] = useState("text");
   const [dateHiredType, setDateHiredType] = useState("text");
 
   const onSubmit = async () => {
     console.log("form submitted for employee ID", _id);
-    // await axios
-    //   .put<Employee>(`//localhost:5000/employees/${_id}`)
-    //   .then((response) => console.log("Employee found:", response.data))
-    //   .catch((e) => console.log("An error occured", e));
-  };
-
-  const handleOnClick = () => {
-    console.log("Button clicked");
+    await axios
+      .put<Employee>(`//localhost:5000/employees/${_id}`)
+      .then((response) => console.log("Employee found:", response.data))
+      .catch((e) => console.log("An error occured", e));
   };
 
   const {
@@ -69,20 +70,49 @@ const UpdateEmployee = ({ _id }: Props) => {
     formState: { errors },
   } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
 
+  console.log("employee received:", employee);
+  const {
+    firstName,
+    lastName,
+    employeeID,
+    dateBirth,
+    role,
+    department,
+    dateHired,
+    salary,
+    address,
+    telephone,
+  } = employee;
+
+  //convert dates into strings
+  const _dateBirth = dateBirth.toString();
+  const _dateHired = dateHired.toString();
+
   return (
     <>
+      <Button
+        borderColor="black"
+        bg="brown"
+        borderRadius="15px"
+        borderWidth="4px"
+        color="#d6b65c"
+        size="lg"
+        onClick={onOpen}
+      >
+        Modifier
+      </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
+        <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
         <ModalContent>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <ModalHeader bg=" #952104">Nouveau employe</ModalHeader>
+            <ModalHeader bg=" #952104">Modification d'information</ModalHeader>
             <ModalCloseButton />
             <ModalBody bg="#c9990a">
               <FormControl>
                 <Stack spacing="10px">
                   <Input
                     type="text"
-                    placeholder="Nom"
+                    placeholder={lastName}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("lastName")}
                   />
@@ -91,7 +121,7 @@ const UpdateEmployee = ({ _id }: Props) => {
                   )}
                   <Input
                     type="text"
-                    placeholder="Prenom"
+                    placeholder={firstName}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("firstName")}
                   />
@@ -100,7 +130,7 @@ const UpdateEmployee = ({ _id }: Props) => {
                   )}
                   <Input
                     type="text"
-                    placeholder="Matricule"
+                    placeholder={employeeID}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("employeeID")}
                   />
@@ -109,7 +139,7 @@ const UpdateEmployee = ({ _id }: Props) => {
                   )}
                   <Input
                     type={dateBirthType}
-                    placeholder="Date de naissance"
+                    placeholder={_dateBirth}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("dateBirth")}
                     onFocus={() => setDateBirthType("date")}
@@ -121,7 +151,7 @@ const UpdateEmployee = ({ _id }: Props) => {
 
                   <Input
                     type="text"
-                    placeholder="Poste"
+                    placeholder={role}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("role")}
                   />
@@ -131,7 +161,7 @@ const UpdateEmployee = ({ _id }: Props) => {
 
                   <Input
                     type="text"
-                    placeholder="Departement"
+                    placeholder={department}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("department")}
                   />
@@ -141,7 +171,7 @@ const UpdateEmployee = ({ _id }: Props) => {
 
                   <Input
                     type={dateHiredType}
-                    placeholder="Date d'engagement"
+                    placeholder={_dateHired}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("dateHired")}
                     onFocus={() => setDateHiredType("date")}
@@ -153,7 +183,7 @@ const UpdateEmployee = ({ _id }: Props) => {
 
                   <Input
                     type="number"
-                    placeholder="Salaire"
+                    placeholder={salary}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("salary")}
                   />
@@ -163,7 +193,7 @@ const UpdateEmployee = ({ _id }: Props) => {
 
                   <Input
                     type="number"
-                    placeholder="Telephone"
+                    placeholder={telephone}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("telephone")}
                   />
@@ -173,7 +203,7 @@ const UpdateEmployee = ({ _id }: Props) => {
 
                   <Input
                     type="text"
-                    placeholder="Addresse"
+                    placeholder={address}
                     _placeholder={{ opacity: 1, color: "#320c01" }}
                     {...register("address")}
                   />
@@ -193,7 +223,6 @@ const UpdateEmployee = ({ _id }: Props) => {
                 color="#1a000d"
                 mr={3}
                 type="submit"
-                onClick={handleOnClick}
               >
                 Modifier
               </Button>

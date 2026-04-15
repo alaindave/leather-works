@@ -7,7 +7,7 @@ export default interface Employee {
   role: string;
   department: string;
   dateHired: Date;
-  telephone: number;
+  telephone: string;
   address: string;
   salary: string;
 }

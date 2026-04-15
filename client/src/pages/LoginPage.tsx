@@ -12,6 +12,8 @@ const LoginPage = () => {
         {/* <FormLabel>Addresse courriel</FormLabel> */}
         <Input
           marginBottom="20px"
+          borderColor="brown"
+          borderWidth="2px"
           position="relative"
           right="50px"
           top="30px"
@@ -22,6 +24,8 @@ const LoginPage = () => {
         {/* <FormLabel>Mot de passe</FormLabel> */}
         <Input
           marginBottom="20px"
+          borderColor="brown"
+          borderWidth="2px"
           position="relative"
           right="50px"
           top="50px"
@@ -32,7 +36,17 @@ const LoginPage = () => {
         />
       </FormControl>
 
-      <Button pos="relative" bottom="30px" width="300px" color="#320c01">
+      <Button
+        pos="relative"
+        left="50px"
+        bottom="30px"
+        borderColor="black"
+        bg="brown"
+        borderRadius="15px"
+        borderWidth="5px"
+        color="#331a00"
+        size="md"
+      >
         <Link to="/admin">Se connecter</Link>
       </Button>
     </Box>

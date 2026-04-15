@@ -69,10 +69,6 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
       .catch((error) => console.log(error));
   };
 
-  const handleOnClick = () => {
-    console.log("Errors object", errors);
-  };
-
   return (
     <>
       <Button
@@ -87,7 +83,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
         Ajouter un employe
       </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
+        <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
         <ModalContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <ModalHeader bg=" #952104">Nouveau employe</ModalHeader>
@@ -208,7 +204,6 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                 color="#1a000d"
                 mr={3}
                 type="submit"
-                onClick={handleOnClick}
               >
                 Ajouter
               </Button>
