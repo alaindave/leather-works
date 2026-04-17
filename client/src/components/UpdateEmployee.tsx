@@ -12,17 +12,18 @@ import {
   Stack,
   useDisclosure,
 } from "@chakra-ui/react";
-import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useState } from "react";
 import { useForm, type FieldValues } from "react-hook-form";
 import { z } from "zod";
 import type Employee from "../Employee";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   _id: string | undefined;
   employee: Employee;
+  // onUpdate: (employee: Employee) => void;
 }
 
 const errorMessage = "Ce champ est obligatoire";
@@ -47,30 +48,12 @@ const schema = z.object({
 
 type EmployeeData = z.infer<typeof schema>;
 
-const handleUpdate = () => {
-  console.log("Modifier button clicked");
-};
-
 const UpdateEmployee = ({ _id, employee }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [dateBirthType, setDateBirthType] = useState("text");
   const [dateHiredType, setDateHiredType] = useState("text");
+  const navigate = useNavigate();
 
-  const onSubmit = async () => {
-    console.log("form submitted for employee ID", _id);
-    await axios
-      .put<Employee>(`//localhost:5000/employees/${_id}`)
-      .then((response) => console.log("Employee found:", response.data))
-      .catch((e) => console.log("An error occured", e));
-  };
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
-
-  console.log("employee received:", employee);
   const {
     firstName,
     lastName,
@@ -83,6 +66,48 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
     address,
     telephone,
   } = employee;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, dirtyFields, isDirty },
+  } = useForm<EmployeeData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      firstName,
+      lastName,
+      employeeID,
+      dateBirth,
+      role,
+      department,
+      dateHired,
+      salary,
+      address,
+      telephone,
+    },
+  });
+
+  const onSubmit = async (data: FieldValues) => {
+    const updatedEmployee: Employee | any = {};
+
+    if (dirtyFields.firstName) updatedEmployee.firstName = data.firstName;
+    if (dirtyFields.lastName) updatedEmployee.lastName = data.lastName;
+    if (dirtyFields.employeeID) updatedEmployee.employeeID = data.employeeID;
+    if (dirtyFields.dateBirth) updatedEmployee.dateBirth = data.dateBirth;
+    if (dirtyFields.role) updatedEmployee.role = data.role;
+    if (dirtyFields.department) updatedEmployee.department = data.department;
+    if (dirtyFields.dateHired) updatedEmployee.dateHired = data.dateHired;
+    if (dirtyFields.salary) updatedEmployee.salary = data.salary;
+    if (dirtyFields.address) updatedEmployee.address = data.address;
+    if (dirtyFields.telephone) updatedEmployee.telephone = data.telephone;
+    await axios
+      .put<Employee>(`//localhost:5000/employees/${_id}`, updatedEmployee)
+      .then((response) => {
+        console.log("Updated employee:", response.data);
+        navigate("/employees_admin/employees_list/");
+      })
+      .catch((e) => console.log("An error occured", e));
+  };
 
   //convert dates into strings
   const _dateBirth = dateBirth.toString();
@@ -101,7 +126,7 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
       >
         Modifier
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose} returnFocusOnClose={false}>
         <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
         <ModalContent>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -223,6 +248,7 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                 color="#1a000d"
                 mr={3}
                 type="submit"
+                disabled={!isDirty}
               >
                 Modifier
               </Button>

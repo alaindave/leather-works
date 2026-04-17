@@ -1,16 +1,14 @@
-import { Box, HStack, Text, Button } from "@chakra-ui/react";
+import { Box, Button, HStack, Text } from "@chakra-ui/react";
+import axios from "axios";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import type Employee from "../Employee";
-import axios from "axios";
 import UpdateEmployee from "../components/UpdateEmployee";
 
 const EmployeeDetailsPage = () => {
   const { state: employees } = useLocation();
-  const navigate = useNavigate();
   const { _id } = useParams();
   const employee = employees.find((employee: Employee) => employee._id === _id);
-
-  console.log("employee found:", employee);
+  const navigate = useNavigate();
 
   const handleDelete = async () => {
     await axios

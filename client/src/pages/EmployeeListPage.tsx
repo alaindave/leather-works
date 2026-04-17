@@ -1,11 +1,11 @@
 import { Box, Flex } from "@chakra-ui/react";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import type Employee from "../Employee";
 import AddEmployee from "../components/AddEmployee";
 import EmployeeCard from "../components/EmployeeCard";
 import "../styles/App.css";
-import type Employee from "../Employee";
 
 const EmployeeListPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);

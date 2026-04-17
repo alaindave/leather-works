@@ -5,7 +5,7 @@ const Employee = require("./models/employeeModel");
 mongoose
   .connect("mongodb://localhost:27017/Afritan_database")
   .then(() => console.log("Connected to Afritan database"))
-  .catch((e) => console.log("Unable to connected to the database", e.message));
+  .catch((e) => console.log("Unable to connect to the database", e.message));
 
 //Add an employee
 const addEmployee = async ({
@@ -50,9 +50,18 @@ const getEmployees = async () => {
 };
 
 //Retrieve an employee
-const findEmployee = async (id) => {
+const getEmployee = async (id) => {
   try {
     return await Employee.findById(id);
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Update an employee
+const updateEmployee = async (id, data) => {
+  try {
+    return Employee.findByIdAndUpdate(id, data, { new: true });
   } catch (e) {
     return e.message;
   }
@@ -66,6 +75,7 @@ const deleteEmployee = async (id) => {
 module.exports = {
   addEmployee,
   getEmployees,
-  findEmployee,
+  getEmployee,
   deleteEmployee,
+  updateEmployee,
 };

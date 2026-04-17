@@ -2,12 +2,11 @@ const express = require("express");
 const router = express.Router();
 const {
   getEmployees,
+  getEmployee,
   addEmployee,
-  deleteEmployee,
   updateEmployee,
-  findEmployee,
+  deleteEmployee,
 } = require("../db");
-const { findByIdAndUpdate } = require("../models/employeeModel");
 
 //Get all employees
 router.get("/", async (req, res) => {
@@ -31,15 +30,24 @@ router.post("/", async (req, res) => {
 
 //Update an employee
 router.put("/:_id", async (req, res) => {
-  const employee = await findEmployee(req.params._id);
-  if (!employee) res.status(404).send("No employee found with the given ID.");
-  console.log("Employee found", employee);
-  res.status(200).send(employee);
+  try {
+    const employee = await getEmployee(req.params._id);
+    if (!employee) res.status(404).send("No employee found with the given ID.");
+    console.log("employee to update", employee);
+    console.log("info to modify", req.body);
+
+    const updatedEmployee = await updateEmployee(req.params._id, req.body);
+    res.status(200).send(updatedEmployee);
+    console.log("results", updatedEmployee);
+  } catch (e) {
+    console.log("This is the error", e.message);
+    res.status(500).send("Unable to update user", e.message);
+  }
 });
 
 //Delete an employee
 router.delete("/:_id", async (req, res) => {
-  const employee = await findEmployee(req.params._id);
+  const employee = await getEmployee(req.params._id);
   if (!employee) res.status(404).send("No employee found with the given ID.");
   const result = await deleteEmployee(req.params._id);
   res.status(204).send(result);
