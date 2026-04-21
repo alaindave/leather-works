@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Employee = require("./models/employeeModel");
+const Attendance = require("./models/attendanceModel");
 
 //Connect to the database
 mongoose
@@ -72,10 +73,39 @@ const deleteEmployee = async (id) => {
   return await Employee.findByIdAndDelete(id);
 };
 
+//Add attendance
+const addAttendance = async (employeeId, date, clockIn) => {
+  const attendance = new Attendance({
+    employee: employeeId,
+    date,
+    clockIn,
+  });
+
+  try {
+    return await attendance.save();
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Get all attendance
+const getAttendance = async () => {
+  try {
+    return await Attendance.find().populate(
+      "employee",
+      "firstName lastName employeeID"
+    );
+  } catch (e) {
+    return e.message;
+  }
+};
+
 module.exports = {
   addEmployee,
   getEmployees,
   getEmployee,
   deleteEmployee,
   updateEmployee,
+  addAttendance,
+  getAttendance,
 };

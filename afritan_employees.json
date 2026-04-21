@@ -9,7 +9,8 @@
     "address": "Kiriri",
     "telephone": "76660060",
     "salary": "0",
-    "dateHired": "03/06/1982"
+    "dateHired": "03/06/1982",
+    "present":"false"
   },
 
   {
@@ -22,7 +23,8 @@
     "address": "Kiriri",
     "telephone": "76490859",
     "salary": "0",
-    "dateHired": "09/03/1989"
+    "dateHired": "09/03/1989",
+    "present":"false"
   },
 
   {
@@ -36,7 +38,8 @@
     "address": "Q.Industriel",
     "telephone": "61720346",
     "salary": "250,000",
-    "dateHired": "01/02/2017"
+    "dateHired": "01/02/2017",
+    "present":"false"
   },
 
   {
@@ -49,7 +52,8 @@
     "address": "Kiriri",
     "telephone": "68330612",
     "salary": "250,000",
-    "dateHired": "18/07/2024"
+    "dateHired": "18/07/2024",
+    "present":"false"
   },
   {
     "lastName": "Bedetse",
@@ -61,7 +65,8 @@
     "address": "Kiriri",
     "telephone": "76153011",
     "salary": "250,000",
-    "dateHired": "18/02/2025"
+    "dateHired": "18/02/2025",
+    "present":"false"
   },
 
   {
@@ -74,7 +79,8 @@
     "address": "Q Industriel",
     "telephone": "76153011",
     "salary": "850,000",
-    "dateHired": "08/11/2022"
+    "dateHired": "08/11/2022",
+    "present":"false"
   },
 
   {
@@ -87,7 +93,8 @@
     "address": "Q Industriel",
     "telephone": "76153011",
     "salary": "850,000",
-    "dateHired": "18/02/2025"
+    "dateHired": "18/02/2025",
+    "present":"false"
   },
 
   {
@@ -100,7 +107,8 @@
     "address": "Gihanga",
     "telephone": "76153011",
     "salary": "250,000",
-    "dateHired": "05/07/2021"
+    "dateHired": "05/07/2021",
+    "present":"false"
   },
 
   {
@@ -113,7 +121,8 @@
     "address": "Q Industriel",
     "telephone": "76153011",
     "salary": "850,000",
-    "dateHired": "08/11/2022"
+    "dateHired": "08/11/2022",
+    "present":"false"
   }
 ]
 

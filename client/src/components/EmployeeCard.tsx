@@ -1,34 +1,63 @@
-import { Box, Card, Flex, Image, Text } from "@chakra-ui/react";
+import { Box, Button, Card, Flex, Image, Text } from "@chakra-ui/react";
 import { CardBody } from "react-bootstrap";
+import type Attendance from "../Attendance";
 import type Employee from "../Employee";
 // @ts-ignore
+import axios from "axios";
+import { Link } from "react-router-dom";
 import source from "../assets/employee_photos/Jeanne.jpeg";
 import "../styles/App.css";
+import { useState } from "react";
 
 interface Props {
   employee: Employee;
+  employees: Employee[];
 }
 
-const EmployeeCard = ({ employee }: Props) => {
+const EmployeeCard = ({ employees, employee }: Props) => {
   const _lastName = employee.lastName.slice(0, 1);
-  console.log("first letter", _lastName);
+
+  const handleClockIn = async () => {
+    await axios
+      .put<Employee>(`//localhost:5000/employees/${employee._id}`, {
+        present: true,
+      })
+      .then(() => {
+        return axios.post<Attendance>(
+          `//localhost:5000/employees/attendance/${employee._id}`
+        );
+      })
+      .then((response) => {
+        console.log("Attendance success", response.data);
+        window.location.reload();
+      })
+      .catch((error) => console.log(error));
+  };
+
   return (
     <Card
       bg="#cca333	"
       height="80px"
-      width="300px"
+      width="320px"
       padding="10px"
       borderRadius="30px"
     >
       <CardBody>
         <Flex>
-          <Image
-            src={source}
-            borderRadius={30}
-            width={10}
-            position="absolute"
-            left="20px"
-          />
+          <Link
+            to={{
+              pathname: `/employees_admin/employees_list/${employee._id}`,
+            }}
+            state={employees}
+          >
+            <Image
+              src={source}
+              borderRadius={30}
+              width={10}
+              position="absolute"
+              left="20px"
+            />
+          </Link>
           <Box>
             <ul>
               <li>
@@ -59,6 +88,17 @@ const EmployeeCard = ({ employee }: Props) => {
               </li>
             </ul>
           </Box>
+          <Button
+            position="relative"
+            left="15px"
+            color="black"
+            backgroundColor="transparent"
+            fontSize="18px"
+            _hover={{ bg: "transparent" }}
+            onClick={handleClockIn}
+          >
+            {employee.present ? null : "Pointage"}
+          </Button>
         </Flex>
       </CardBody>
     </Card>

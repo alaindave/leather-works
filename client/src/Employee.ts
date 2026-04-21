@@ -10,4 +10,5 @@ export default interface Employee {
   telephone: string;
   address: string;
   salary: string;
+  present: Boolean;
 }

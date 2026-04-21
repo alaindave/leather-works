@@ -104,7 +104,7 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
       .put<Employee>(`//localhost:5000/employees/${_id}`, updatedEmployee)
       .then((response) => {
         console.log("Updated employee:", response.data);
-        navigate("/employees_admin/employees_list/");
+        navigate("/employees_admin/employees_list");
       })
       .catch((e) => console.log("An error occured", e));
   };

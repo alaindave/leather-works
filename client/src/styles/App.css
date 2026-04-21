@@ -43,5 +43,10 @@ li{
     margin-top: 10px;
 }
 
+.button:hover {
+    background-color: #4CAF50; /* Green */
+    color: white;
+  }
+
 
 

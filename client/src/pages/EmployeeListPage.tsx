@@ -1,7 +1,6 @@
 import { Box, Flex } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import type Employee from "../Employee";
 import AddEmployee from "../components/AddEmployee";
 import EmployeeCard from "../components/EmployeeCard";
@@ -47,14 +46,11 @@ const EmployeeListPage = () => {
         <ul>
           {employees.map((employee) => (
             <li key={employee._id}>
-              <Link
-                to={{
-                  pathname: `/employees_admin/employees_list/${employee._id}`,
-                }}
-                state={employees}
-              >
-                <EmployeeCard key={employee.employeeID} employee={employee} />
-              </Link>
+              <EmployeeCard
+                key={employee.employeeID}
+                employee={employee}
+                employees={employees}
+              />
             </li>
           ))}
         </ul>
