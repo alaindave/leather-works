@@ -10,7 +10,8 @@
     "telephone": "76660060",
     "salary": "0",
     "dateHired": "03/06/1982",
-    "present":"false"
+    "present":"false",
+    "leave":"false"
   },
 
   {
@@ -24,7 +25,8 @@
     "telephone": "76490859",
     "salary": "0",
     "dateHired": "09/03/1989",
-    "present":"false"
+    "present":"false",
+    "leave":"false"
   },
 
   {
@@ -39,7 +41,8 @@
     "telephone": "61720346",
     "salary": "250,000",
     "dateHired": "01/02/2017",
-    "present":"false"
+    "present":"false",
+    "leave":"false"
   },
 
   {
@@ -53,7 +56,8 @@
     "telephone": "68330612",
     "salary": "250,000",
     "dateHired": "18/07/2024",
-    "present":"false"
+    "present":"false",
+    "leave":"false"
   },
   {
     "lastName": "Bedetse",
@@ -66,7 +70,8 @@
     "telephone": "76153011",
     "salary": "250,000",
     "dateHired": "18/02/2025",
-    "present":"false"
+    "present":"false",
+    "leave":"false"
   },
 
   {
@@ -80,7 +85,8 @@
     "telephone": "76153011",
     "salary": "850,000",
     "dateHired": "08/11/2022",
-    "present":"false"
+    "present":"false",
+    "leave":"false"
   },
 
   {
@@ -94,7 +100,8 @@
     "telephone": "76153011",
     "salary": "850,000",
     "dateHired": "18/02/2025",
-    "present":"false"
+    "present":"false",
+    "leave":"false"
   },
 
   {
@@ -108,21 +115,68 @@
     "telephone": "76153011",
     "salary": "250,000",
     "dateHired": "05/07/2021",
-    "present":"false"
+    "present":"false",
+    "leave":"false"
   },
 
   {
-    "lastName": "Kanyange",
+    "lastName": "Ingabire",
     "firstName": "Nadine",
     "employeeID": "3928/752.880",
     "role": "Vendeuse",
     "department": "Magasin",
     "dateBirth": "05/09/1985",
-    "address": "Q Industriel",
+    "address": " Ngagara",
+    "telephone": "79153011",
+    "salary": "550,000",
+    "dateHired": "12/11/2021",
+    "present":"false",
+    "leave":"false"
+  },
+
+  {
+    "lastName": "Inamahoro",
+    "firstName": "Christelle",
+    "employeeID": "8728/711.480",
+    "role": "Vendeuse",
+    "department": "Magasin",
+    "dateBirth": "05/09/1983",
+    "address": "Carama",
+    "telephone": "78933011",
+    "salary": "450,000",
+    "dateHired": "02/11/2024",
+    "present":"false",
+    "leave":"false"
+  },
+
+  {
+    "lastName": "Ndayisaba",
+    "firstName": "Damas",
+    "employeeID": "1248/792.321",
+    "role": "Gestionnaire de production",
+    "department": "Usine",
+    "dateBirth": "05/09/1985",
+    "address": "Rohero",
     "telephone": "76153011",
-    "salary": "850,000",
-    "dateHired": "08/11/2022",
-    "present":"false"
+    "salary": "950,000",
+    "dateHired": "06/07/2020",
+    "present":"false",
+    "leave":"false"
+  },
+
+  {
+    "lastName": "Niyonzima",
+    "firstName": "Evariste",
+    "employeeID": "5238/052.280",
+    "role": "Chauffeur",
+    "department": "Administration",
+    "dateBirth": "03/04/1983",
+    "address": "Q Industriel",
+    "telephone": "78153011",
+    "salary": "400,000",
+    "dateHired": "04/11/2017",
+    "present":"false",
+    "leave":"false"
   }
 ]
 

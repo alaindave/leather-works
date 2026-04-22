@@ -7,6 +7,8 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import source from "../assets/employee_photos/Jeanne.jpeg";
 import "../styles/App.css";
+import { MdOutlinePunchClock } from "react-icons/md";
+
 import { useState } from "react";
 
 interface Props {
@@ -90,14 +92,13 @@ const EmployeeCard = ({ employees, employee }: Props) => {
           </Box>
           <Button
             position="relative"
-            left="15px"
-            color="black"
+            left="40px"
+            color="brown"
             backgroundColor="transparent"
-            fontSize="18px"
             _hover={{ bg: "transparent" }}
             onClick={handleClockIn}
           >
-            {employee.present ? null : "Pointage"}
+            {employee.present ? null : <MdOutlinePunchClock size="30px" />}
           </Button>
         </Flex>
       </CardBody>

@@ -8,6 +8,7 @@ import EmployeeAdminLayout from "./components/EmployeeAdminLayout";
 import ErrorPage from "./pages/ErrorPage";
 import React from "react";
 import EmployeeAttendance from "./pages/EmployeeAttendance";
+import EmployeeLeave from "./pages/EmployeeLeave";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,11 @@ const router = createBrowserRouter([
       {
         path: "attendance",
         element: <EmployeeAttendance />,
+      },
+
+      {
+        path: "leave",
+        element: <EmployeeLeave />,
       },
     ],
   },

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Employee = require("./models/employeeModel");
 const Attendance = require("./models/attendanceModel");
+const Leave = require("./models/leaveModel");
 
 //Connect to the database
 mongoose
@@ -126,6 +127,60 @@ const deleteAttendance = async (id) => {
   }
 };
 
+//Add leave
+const addLeave = async (employeeId, startDate, endDate, notes) => {
+  const leave = new Leave({
+    employee: employeeId,
+    startDate,
+    endDate,
+    notes,
+  });
+
+  try {
+    return await leave.save();
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Get all leaves
+const getAllLeave = async () => {
+  try {
+    return await Leave.find()
+      .sort({ startDate: 1 })
+      .populate("employee", "firstName lastName employeeID");
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Retrieve one aleave
+const getLeave = async (leaveId) => {
+  try {
+    return await Leave.findById(leaveId);
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Edit attendance
+const editLeave = async (leaveId, data) => {
+  try {
+    return Leave.findByIdAndUpdate(leaveId, data, { new: true });
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Delete an attendance
+const deleteLeave = async (id) => {
+  try {
+    return await Leave.findByIdAndDelete(id);
+  } catch (e) {
+    return e.message;
+  }
+};
+
 module.exports = {
   addEmployee,
   getEmployees,
@@ -137,4 +192,9 @@ module.exports = {
   editAttendance,
   getAllAttendance,
   deleteAttendance,
+  addLeave,
+  getLeave,
+  editLeave,
+  getAllLeave,
+  deleteLeave,
 };

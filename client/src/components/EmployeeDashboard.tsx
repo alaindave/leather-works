@@ -3,9 +3,14 @@ import { Box, Divider, HStack, Text } from "@chakra-ui/react";
 interface Props {
   employeeCount: number;
   attendanceCount: number;
+  leaveCount: number;
 }
 
-const EmployeeDashboard = ({ employeeCount, attendanceCount }: Props) => {
+const EmployeeDashboard = ({
+  employeeCount,
+  attendanceCount,
+  leaveCount,
+}: Props) => {
   return (
     <HStack bg=" #c39409" borderRadius="20px">
       <Box marginRight="30px" padding="20px">
@@ -31,7 +36,7 @@ const EmployeeDashboard = ({ employeeCount, attendanceCount }: Props) => {
           Conges
         </Text>
         <Text color="#220e0e" marginLeft="45px">
-          5
+          {leaveCount}
         </Text>
       </Box>
     </HStack>

@@ -26,7 +26,7 @@ import { FaWindowClose } from "react-icons/fa";
 
 const EmployeeAttendance = () => {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
-  const [attendanceId, setAttendanceId] = useState("");
+  const [attendance, setAttendance] = useState<Attendance>({} as Attendance);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -60,9 +60,16 @@ const EmployeeAttendance = () => {
   };
 
   const handleDelete = async () => {
-    console.log("Attendance to delete", attendanceId);
+    console.log("Attendance to delete", attendance);
     await axios
-      .delete(`//localhost:5000/employees/attendance/${attendanceId}`)
+      .put(`//localhost:5000/employees/${attendance.employee._id}`, {
+        present: false,
+      })
+      .then(() => {
+        return axios.delete(
+          `//localhost:5000/employees/attendance/${attendance._id}`
+        );
+      })
       .then((res) => {
         console.log("Deleted attendance", res.data);
         window.location.reload();
@@ -72,9 +79,9 @@ const EmployeeAttendance = () => {
       );
   };
 
-  const handleClick = (attendanceId: string) => {
+  const handleClick = (attendance: Attendance) => {
     onOpen();
-    setAttendanceId(attendanceId);
+    setAttendance(attendance);
   };
 
   if (attendances.length > 0)
@@ -121,13 +128,15 @@ const EmployeeAttendance = () => {
               {attendances.map((attendance: Attendance) => (
                 <Tr key={attendance._id}>
                   <Td>
-                    {attendance.employee.firstName}{" "}
-                    {attendance.employee.lastName}
+                    {attendance.employee && attendance.employee.firstName}{" "}
+                    {attendance.employee && attendance.employee.lastName}
                   </Td>
-                  <Td>{attendance.employee.employeeID}</Td>
+                  <Td>
+                    {attendance.employee && attendance.employee.employeeID}
+                  </Td>
                   <Td>
                     <Editable
-                      defaultValue={attendance.clockIn}
+                      defaultValue={attendance && attendance.clockIn}
                       submitOnBlur
                       onSubmit={(newTime) =>
                         handleSubmit(newTime, attendance._id)
@@ -137,7 +146,7 @@ const EmployeeAttendance = () => {
                       <EditableInput />
                     </Editable>
                   </Td>
-                  <FaWindowClose onClick={() => handleClick(attendance._id)} />
+                  <FaWindowClose onClick={() => handleClick(attendance)} />
                 </Tr>
               ))}
             </Tbody>
@@ -145,7 +154,12 @@ const EmployeeAttendance = () => {
         </TableContainer>
       </>
     );
-  else return <h1>Pas de presence aujurd'hui</h1>;
+  else
+    return (
+      <p style={{ fontSize: "40px", color: "#d6b65c" }}>
+        Pas de presence aujurd'hui
+      </p>
+    );
 };
 
 export default EmployeeAttendance;

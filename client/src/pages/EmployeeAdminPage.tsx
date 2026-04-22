@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import type Attendance from "../Attendance";
 import type Employee from "../Employee";
 import EmployeeDashboard from "../components/EmployeeDashboard";
+import type Leave from "../Leave";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [leaves, setLeaves] = useState<Leave[]>([]);
 
   useEffect(() => {
     axios
@@ -19,8 +21,10 @@ const EmployeeAdminPage = () => {
         );
       })
       .then((res) => {
-        setAttendance(res.data);
+        setAttendances(res.data);
+        return axios.get<Leave[]>("http://localhost:5000/employees/leave");
       })
+      .then((res) => setLeaves(res.data))
       .catch((err) => {
         console.log("This is the error", err.message);
       });
@@ -31,7 +35,8 @@ const EmployeeAdminPage = () => {
       <Box position="relative" top="150px" right="50px" padding="20px">
         <EmployeeDashboard
           employeeCount={employees.length}
-          attendanceCount={attendance.length}
+          attendanceCount={attendances.length}
+          leaveCount={leaves.length}
         />
       </Box>
     </Flex>

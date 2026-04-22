@@ -12,6 +12,7 @@ const employeeSchema = new mongoose.Schema({
   address: { type: String, required: true },
   salary: { type: String, required: true },
   present: { type: Boolean, default: false, required: true },
+  leave: { type: Boolean, default: false, required: true },
 });
 
 const Employee = mongoose.model("Employees", employeeSchema);
