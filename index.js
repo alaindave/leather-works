@@ -8,4 +8,4 @@ app.use(express.json());
 app.use(cors());
 app.use("/employees", employeeRouter);
 app.use("/employees/attendance", attendanceRouter);
-app.listen(5000, () => console.log("listening on port 5000..."));
+app.listen(5000, () => console.log("Listening on port 5000..."));

@@ -89,12 +89,38 @@ const addAttendance = async (employeeId, date, clockIn) => {
 };
 
 //Get all attendance
-const getAttendance = async () => {
+const getAllAttendance = async () => {
   try {
-    return await Attendance.find().populate(
-      "employee",
-      "firstName lastName employeeID"
-    );
+    return await Attendance.find()
+      .sort({ clockIn: 1 })
+      .populate("employee", "firstName lastName employeeID");
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Retrieve one attendance
+const getAttendance = async (attendanceId) => {
+  try {
+    return await Attendance.findById(attendanceId);
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Edit attendance
+const editAttendance = async (attendanceId, newTime) => {
+  try {
+    return Attendance.findByIdAndUpdate(attendanceId, newTime, { new: true });
+  } catch (e) {
+    return e.message;
+  }
+};
+
+//Delete an attendance
+const deleteAttendance = async (id) => {
+  try {
+    return await Attendance.findByIdAndDelete(id);
   } catch (e) {
     return e.message;
   }
@@ -108,4 +134,7 @@ module.exports = {
   updateEmployee,
   addAttendance,
   getAttendance,
+  editAttendance,
+  getAllAttendance,
+  deleteAttendance,
 };
