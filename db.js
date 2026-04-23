@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Fawn = require("fawn");
 const Employee = require("./models/employeeModel");
 const Attendance = require("./models/attendanceModel");
 const Leave = require("./models/leaveModel");
@@ -6,8 +7,13 @@ const Leave = require("./models/leaveModel");
 //Connect to the database
 mongoose
   .connect("mongodb://localhost:27017/Afritan_database")
-  .then(() => console.log("Connected to Afritan database"))
+  .then(() => {
+    console.log("Connected to Afritan database");
+  })
   .catch((e) => console.log("Unable to connect to the database", e.message));
+
+Fawn.init(mongoose);
+const task = Fawn.Task();
 
 //Add an employee
 const addEmployee = async ({
@@ -71,7 +77,16 @@ const updateEmployee = async (id, data) => {
 
 //Delete an employee
 const deleteEmployee = async (id) => {
-  return await Employee.findByIdAndDelete(id);
+  try {
+    const objectId = new mongoose.Types.ObjectId(id);
+    return await task
+      .remove("employees", { _id: objectId })
+      .remove("attendances", { employee: objectId })
+      .remove("leaves", { employee: objectId })
+      .run();
+  } catch (e) {
+    return e;
+  }
 };
 
 //Add attendance
@@ -96,7 +111,7 @@ const getAllAttendance = async () => {
       .sort({ clockIn: 1 })
       .populate("employee", "firstName lastName employeeID");
   } catch (e) {
-    return e.message;
+    return e;
   }
 };
 
@@ -163,7 +178,7 @@ const getLeave = async (leaveId) => {
   }
 };
 
-//Edit attendance
+//Edit leave
 const editLeave = async (leaveId, data) => {
   try {
     return Leave.findByIdAndUpdate(leaveId, data, { new: true });
@@ -172,7 +187,7 @@ const editLeave = async (leaveId, data) => {
   }
 };
 
-//Delete an attendance
+//Delete leave entry
 const deleteLeave = async (id) => {
   try {
     return await Leave.findByIdAndDelete(id);

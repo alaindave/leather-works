@@ -15,6 +15,7 @@
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "fawn": "^2.1.5",
     "joi": "^18.1.2",
     "mongoose": "^7.0.0"
   },

@@ -90,16 +90,18 @@ const EmployeeCard = ({ employees, employee }: Props) => {
               </li>
             </ul>
           </Box>
-          <Button
-            position="relative"
-            left="40px"
-            color="brown"
-            backgroundColor="transparent"
-            _hover={{ bg: "transparent" }}
-            onClick={handleClockIn}
-          >
-            {employee.present ? null : <MdOutlinePunchClock size="30px" />}
-          </Button>
+          {employee.present ? null : (
+            <Button
+              position="relative"
+              left="40px"
+              color="brown"
+              backgroundColor="transparent"
+              _hover={{ bg: "transparent" }}
+              onClick={handleClockIn}
+            >
+              <MdOutlinePunchClock className="fa-3x" />
+            </Button>
+          )}
         </Flex>
       </CardBody>
     </Card>

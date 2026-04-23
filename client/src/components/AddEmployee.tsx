@@ -80,13 +80,13 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
         size="lg"
         onClick={onOpen}
       >
-        Ajouter un employe
+        Ajouter un employé
       </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
         <ModalContent>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <ModalHeader bg=" #952104">Nouveau employe</ModalHeader>
+            <ModalHeader bg=" #952104">Nouveau employé</ModalHeader>
             <ModalCloseButton />
             <ModalBody bg="#c9990a">
               <FormControl>

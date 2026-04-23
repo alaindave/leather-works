@@ -26,7 +26,7 @@ import { FaWindowClose } from "react-icons/fa";
 
 const EmployeeAttendance = () => {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
-  const [attendance, setAttendance] = useState<Attendance>({} as Attendance);
+  const [attendance, setAttendance] = useState<Attendance | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -42,6 +42,7 @@ const EmployeeAttendance = () => {
       });
   }, []);
 
+  //Edit clock-in time
   const handleSubmit = (newTime: string, attendanceId: string) => {
     axios
       .put<Attendance[]>(
@@ -59,15 +60,16 @@ const EmployeeAttendance = () => {
       );
   };
 
+  //Delete attendance entry
   const handleDelete = async () => {
     console.log("Attendance to delete", attendance);
     await axios
-      .put(`//localhost:5000/employees/${attendance.employee._id}`, {
+      .put(`//localhost:5000/employees/${attendance?.employee._id}`, {
         present: false,
       })
       .then(() => {
         return axios.delete(
-          `//localhost:5000/employees/attendance/${attendance._id}`
+          `//localhost:5000/employees/attendance/${attendance?._id}`
         );
       })
       .then((res) => {
@@ -79,7 +81,8 @@ const EmployeeAttendance = () => {
       );
   };
 
-  const handleClick = (attendance: Attendance) => {
+  //Handle x delete button
+  const handleDeleteClick = (attendance: Attendance) => {
     onOpen();
     setAttendance(attendance);
   };
@@ -95,12 +98,12 @@ const EmployeeAttendance = () => {
           <AlertDialogOverlay>
             <AlertDialogContent>
               <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                Supprimer de la liste de presence
+                Supprimer de la liste de présence
               </AlertDialogHeader>
 
               <AlertDialogBody>
-                Etes de vous sur de vouloir supprimer l'employe de la liste de
-                presence?
+                Etes de vous sur de vouloir supprimer l'employé de la liste de
+                présence?
               </AlertDialogBody>
 
               <AlertDialogFooter>
@@ -116,7 +119,7 @@ const EmployeeAttendance = () => {
         </AlertDialog>
         <TableContainer>
           <Table variant="simple">
-            <TableCaption>Employes presents aujurd'hui</TableCaption>
+            <TableCaption>Employés presents aujurd'hui</TableCaption>
             <Thead>
               <Tr>
                 <Th color="#d6b65c">Nom et prenom</Th>
@@ -128,15 +131,13 @@ const EmployeeAttendance = () => {
               {attendances.map((attendance: Attendance) => (
                 <Tr key={attendance._id}>
                   <Td>
-                    {attendance.employee && attendance.employee.firstName}{" "}
-                    {attendance.employee && attendance.employee.lastName}
+                    {attendance.employee?.firstName}{" "}
+                    {attendance.employee?.lastName}
                   </Td>
-                  <Td>
-                    {attendance.employee && attendance.employee.employeeID}
-                  </Td>
+                  <Td>{attendance.employee?.employeeID}</Td>
                   <Td>
                     <Editable
-                      defaultValue={attendance && attendance.clockIn}
+                      defaultValue={attendance.clockIn}
                       submitOnBlur
                       onSubmit={(newTime) =>
                         handleSubmit(newTime, attendance._id)
@@ -146,7 +147,9 @@ const EmployeeAttendance = () => {
                       <EditableInput />
                     </Editable>
                   </Td>
-                  <FaWindowClose onClick={() => handleClick(attendance)} />
+                  <FaWindowClose
+                    onClick={() => handleDeleteClick(attendance)}
+                  />
                 </Tr>
               ))}
             </Tbody>
@@ -156,8 +159,15 @@ const EmployeeAttendance = () => {
     );
   else
     return (
-      <p style={{ fontSize: "40px", color: "#d6b65c" }}>
-        Pas de presence aujurd'hui
+      <p
+        style={{
+          fontSize: "40px",
+          color: "#d6b65c",
+          position: "relative",
+          right: "30px",
+        }}
+      >
+        Pas de présence aujurd'hui
       </p>
     );
 };

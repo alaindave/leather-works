@@ -23,6 +23,17 @@
     opacity: 1;    /* Required for Firefox to display the full color */
   }
 
+
+
+.nav-bar{
+     margin-left: 25px;
+}
+
+.nav-list{
+    position: relative;
+    right:23px;
+}
+
 .nav-button{
     color:#d6b65c;
     font-weight:600
@@ -47,6 +58,7 @@ li{
     background-color: #4CAF50; /* Green */
     color: white;
   }
+
 
 
 

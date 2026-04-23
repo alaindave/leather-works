@@ -7,7 +7,7 @@ import logo from "../assets/afritan_logo.png";
 const EmployeeAdminLayout = () => {
   return (
     <Flex justify="space-between">
-      <Box position="relative" right="30px" top="20px">
+      <Box position="relative" right="35px" top="60px">
         <EmployeeNavBar />
       </Box>
       <Outlet />
