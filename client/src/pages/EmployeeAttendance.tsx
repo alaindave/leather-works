@@ -117,9 +117,11 @@ const EmployeeAttendance = () => {
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>
-        <TableContainer>
+        <TableContainer position="relative" top="10px" right="50px">
           <Table variant="simple">
-            <TableCaption>Employés presents aujurd'hui</TableCaption>
+            <TableCaption fontSize="30px" color="#000000" fontWeight="500">
+              Employés presents aujurd'hui
+            </TableCaption>
             <Thead>
               <Tr>
                 <Th color="#d6b65c">Nom et prenom</Th>

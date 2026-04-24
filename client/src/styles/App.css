@@ -1,10 +1,10 @@
 /* Login page styling */
 
 .login_box{
-    border-color:#012732;
-    background:   #c9990a;
-    border-width: 3px;
-    border-radius:30px;
+    border-color:#244b9e;
+    background:  rgba(3, 8, 21, 0.95);
+    border-width: 1px;
+    border-radius:20px;
     margin-bottom: 10px;
     margin-left: 30px;
     padding-left: 100px;
@@ -19,24 +19,40 @@
 }
 
 ::placeholder {
-    color: #ff0000; /* Set your desired color */
+    color: #1f1818; /* Set your desired color */
     opacity: 1;    /* Required for Firefox to display the full color */
   }
 
 
-
-.nav-bar{
-     margin-left: 25px;
-}
-
+/* Nav bar and logo styling */
 .nav-list{
     position: relative;
-    right:23px;
+    right:30px;
+    
 }
 
+.logo{
+    padding:10px;
+    position: relative;
+    right:13px
+}
+
+
+ul{
+    list-style-type:none; 
+ }
+ 
+ li{
+     margin-bottom: 40px;
+ }
+
+
 .nav-button{
-    color:#d6b65c;
-    font-weight:600
+    color:#A9B4C2;
+    font-weight:600;
+    font-size: 23px;
+    margin-right: 50px;
+
 }
 
 span{
@@ -46,17 +62,8 @@ span{
 
 }
 
-ul{
-   list-style-type:none; 
-}
-
-li{
-    margin-top: 10px;
-}
-
-.button:hover {
-    background-color: #4CAF50; /* Green */
-    color: white;
+.nav-button:hover {
+    color:#F2B705;
   }
 
 

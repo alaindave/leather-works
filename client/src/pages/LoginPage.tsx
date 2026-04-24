@@ -9,43 +9,47 @@ const LoginPage = () => {
     <Box className="login_box">
       <FormControl mb="160px">
         <Image src={logo} position="relative" right="75px" bottom="30px" />
-        {/* <FormLabel>Addresse courriel</FormLabel> */}
         <Input
           marginBottom="20px"
-          borderColor="brown"
+          borderColor="#244b9e"
           borderWidth="2px"
           position="relative"
           right="50px"
           top="30px"
+          height="50px"
           width="400px"
-          placeholder="Addresse courriel"
-          _placeholder={{ opacity: 1, color: "#320c01" }}
+          placeholder="Email"
+          _placeholder={{ opacity: 1, color: "#93a4d1" }}
+          textColor="#93a4d1"
         />
-        {/* <FormLabel>Mot de passe</FormLabel> */}
         <Input
           marginBottom="20px"
-          borderColor="brown"
+          borderColor="#244b9e"
           borderWidth="2px"
           position="relative"
           right="50px"
           top="50px"
+          height="50px"
           width="400px"
           placeholder="Mot de passe"
-          _placeholder={{ opacity: 1, color: "#320c01" }}
-          textColor="#320c01"
+          _placeholder={{ opacity: 1, color: "#93a4d1" }}
+          textColor="#93a4d1"
         />
       </FormControl>
 
       <Button
-        pos="relative"
-        left="50px"
-        bottom="30px"
-        borderColor="black"
-        bg="brown"
-        borderRadius="15px"
-        borderWidth="5px"
-        color="#331a00"
-        size="md"
+        position="relative"
+        right="50px"
+        bgGradient="linear(to-r, #3b82f6, #1d4ed8)"
+        borderRadius="18px"
+        border="none"
+        color=" #fff"
+        font-size="1.15rem"
+        font-weight=" 700"
+        size="lg"
+        width="100%"
+        height="64px"
+        _hover={{ bg: "#2563eb" }}
       >
         <Link to="/admin">Se connecter</Link>
       </Button>

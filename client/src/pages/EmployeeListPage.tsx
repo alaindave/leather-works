@@ -31,7 +31,7 @@ const EmployeeListPage = () => {
           <AddEmployee onAddEmployee={handleAddEmployee} />
         </Box>
       ) : (
-        <Box position="relative" marginTop="10px">
+        <Box position="relative" marginTop="10px" right="40px">
           <AddEmployee onAddEmployee={handleAddEmployee} />
         </Box>
       )}
@@ -41,7 +41,7 @@ const EmployeeListPage = () => {
         overflowY="auto"
         position="relative"
         top="50px"
-        right="40px"
+        right="80px"
       >
         <ul>
           {employees.map((employee) => (

@@ -1,4 +1,4 @@
-import { Box, Divider, HStack, Text } from "@chakra-ui/react";
+import { Box, Card, Divider, HStack, Text } from "@chakra-ui/react";
 
 interface Props {
   employeeCount: number;
@@ -12,33 +12,50 @@ const EmployeeDashboard = ({
   leaveCount,
 }: Props) => {
   return (
-    <HStack bg=" #c39409" borderRadius="20px">
-      <Box marginRight="30px" padding="20px">
-        <Text color="#262626" fontWeight="700" marginLeft="25px">
-          Employes
+    <HStack>
+      <Card
+        background="#0B1E3A"
+        marginRight="30px"
+        padding="30px"
+        borderRadius="20px"
+      >
+        <Text color="#A9B4C2" fontWeight="700" marginLeft="25px">
+          Total des employés
         </Text>
-        <Text color="#220e0e" marginLeft="60px">
+        <Text color="#F5F7FA" position="relative" left="100px">
           {employeeCount}
         </Text>
-      </Box>
-      <Divider orientation="vertical" h="150px" borderColor="white" />
-      <Box marginRight="30px" padding="20px">
-        <Text color="#262626" fontWeight="700" marginLeft="25px">
-          Presents
+      </Card>
+      <Card
+        background="#0B1E3A"
+        marginRight="30px"
+        padding="30px"
+        borderRadius="20px"
+        position="relative"
+        right="38px"
+      >
+        <Text color="#A9B4C2" fontWeight="700" marginLeft="25px">
+          Présents aujourd'hui
         </Text>
-        <Text color="#220e0e" marginLeft="60px">
+        <Text color="#F5F7FA" position="relative" left="100px">
           {attendanceCount}
         </Text>
-      </Box>
-      <Divider orientation="vertical" h="150px" borderColor="white" />
-      <Box marginRight="20px" padding="20px">
-        <Text color="#262626" fontWeight="700" marginLeft="10px">
-          Conges
+      </Card>
+      <Card
+        background="#0B1E3A"
+        marginRight="20px"
+        padding="30px"
+        borderRadius="20px"
+        position="relative"
+        right="73px"
+      >
+        <Text color="#A9B4C2" fontWeight="700">
+          En Congés
         </Text>
-        <Text color="#220e0e" marginLeft="45px">
+        <Text color="#F5F7FA" position="relative" left="60px">
           {leaveCount}
         </Text>
-      </Box>
+      </Card>
     </HStack>
   );
 };

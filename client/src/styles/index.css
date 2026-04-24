@@ -1,6 +1,9 @@
 .app-background{
-    background:linear-gradient(to bottom right, #280901, #b22b05); 
+    /* background:linear-gradient(to bottom right,#041248,#0A2E8A); */
+    background:radial-gradient(circle,#47370b, #061962);
     min-height: 100vh;
     margin: 0;
 }
+
+
 

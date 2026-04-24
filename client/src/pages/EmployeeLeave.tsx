@@ -403,7 +403,9 @@ const EmployeeLeave = () => {
         ) : (
           <TableContainer position="relative" right="60px" top="8px">
             <Table variant="simple">
-              <TableCaption>Employés en congé</TableCaption>
+              <TableCaption fontSize="30px" color="#000000" fontWeight="500">
+                Employés en congé
+              </TableCaption>
 
               <Thead>
                 <Tr>
