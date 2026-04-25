@@ -4,8 +4,8 @@ import EmployeeNavBar from "./EmployeeNavBar";
 
 const EmployeeAdminLayout = () => {
   return (
-    <Flex justify="space-between">
-      <Box position="relative">
+    <Flex>
+      <Box position="relative" top="20px">
         <EmployeeNavBar />
       </Box>
       <Outlet />

@@ -32,7 +32,7 @@ const EmployeeAdminPage = () => {
 
   return (
     <Flex>
-      <Box position="relative" top="200px" right="60px" padding="20px">
+      <Box position="relative" top="200px" left="120px" padding="20px">
         <EmployeeDashboard
           employeeCount={employees.length}
           attendanceCount={attendances.length}

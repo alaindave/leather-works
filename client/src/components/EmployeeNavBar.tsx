@@ -6,7 +6,11 @@ import {
   VStack,
   Text,
   Card,
+  HStack,
 } from "@chakra-ui/react";
+import { FaHome } from "react-icons/fa";
+import { IoPeopleSharp } from "react-icons/io5";
+
 import { Link, NavLink } from "react-router-dom";
 // @ts-ignore
 import logo from "../assets/afritan_logo.png";
@@ -17,10 +21,10 @@ const EmployeeNavBar = () => {
   return (
     <VStack
       borderWidth="1px"
-      marginTop="40px"
+      marginTop="10px"
       marginLeft="10px"
       borderRadius="15px"
-      padding="10px"
+      padding="8px"
       background="#0B1E3A"
     >
       <Box className="logo">
@@ -29,17 +33,23 @@ const EmployeeNavBar = () => {
       <Box className="nav-list">
         <ul>
           <li>
-            <NavLink className="nav-button" to="/employees_admin">
-              Tableau de bord
-            </NavLink>
+            <HStack position="relative" right="30px">
+              <FaHome />
+              <NavLink className="nav-button" to="/employees_admin">
+                Tableau de bord
+              </NavLink>
+            </HStack>
           </li>
           <li>
-            <NavLink
-              className="nav-button"
-              to="/employees_admin/employees_list"
-            >
-              Employés
-            </NavLink>
+            <HStack position="relative" right="30px">
+              <IoPeopleSharp />
+              <NavLink
+                className="nav-button"
+                to="/employees_admin/employees_list"
+              >
+                Employés
+              </NavLink>
+            </HStack>
           </li>
           <li>
             <NavLink className="nav-button" to="/employees_admin/attendance">

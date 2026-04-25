@@ -1,5 +1,6 @@
 import { Box, Button, Card, Flex, Image, Text } from "@chakra-ui/react";
 import { CardBody } from "react-bootstrap";
+import { BsFillClockFill } from "react-icons/bs";
 import type Attendance from "../Attendance";
 import type Employee from "../Employee";
 // @ts-ignore
@@ -17,8 +18,6 @@ interface Props {
 }
 
 const EmployeeCard = ({ employees, employee }: Props) => {
-  const _lastName = employee.lastName.slice(0, 1);
-
   const handleClockIn = async () => {
     await axios
       .put<Employee>(`//localhost:5000/employees/${employee._id}`, {
@@ -37,74 +36,74 @@ const EmployeeCard = ({ employees, employee }: Props) => {
   };
 
   return (
-    <Card
-      bg="#cca333	"
+    <Box
+      bg=" #0a2142"
       height="80px"
-      width="320px"
+      width="700px"
       padding="10px"
       borderRadius="30px"
     >
-      <CardBody>
-        <Flex>
-          <Link
-            to={{
-              pathname: `/employees_admin/employees_list/${employee._id}`,
-            }}
-            state={employees}
+      <Flex>
+        <Link
+          to={{
+            pathname: `/employees_admin/employees_list/${employee._id}`,
+          }}
+          state={employees}
+        >
+          <Image
+            src={source}
+            borderRadius={30}
+            width={10}
+            position="absolute"
+          />
+        </Link>
+        <Box>
+          <ul>
+            <li>
+              <Text
+                color="#F2B705"
+                fontWeight="700"
+                fontSize="23px"
+                fontFamily="serif"
+                position="relative"
+                left="30px"
+              >
+                <span style={{ color: "#F2B705", marginRight: "8px" }}>
+                  {employee.firstName}
+                </span>
+                <span style={{ color: "#F2B705" }}>{employee.lastName}</span>
+              </Text>
+            </li>
+            <li>
+              <Text
+                fontWeight="700"
+                fontSize="23px"
+                fontFamily="ui-monospace"
+                position="relative"
+                left="30px"
+                bottom="30px"
+              >
+                <span style={{ color: "#93A4D1", fontWeight: "500" }}>
+                  {employee.employeeID}
+                </span>
+              </Text>
+            </li>
+          </ul>
+        </Box>
+        {employee.present ? null : (
+          <Button
+            position="relative"
+            left="140px"
+            color="brown"
+            backgroundColor="transparent"
+            _hover={{ bg: "transparent" }}
+            onClick={handleClockIn}
           >
-            <Image
-              src={source}
-              borderRadius={30}
-              width={10}
-              position="absolute"
-              left="20px"
-            />
-          </Link>
-          <Box>
-            <ul>
-              <li>
-                <Text
-                  color=" #262626"
-                  fontWeight="700"
-                  fontSize="23px"
-                  fontFamily="serif"
-                  position="relative"
-                  left="30px"
-                >
-                  <span>{employee.firstName}</span>
-                  <span>{_lastName}</span>
-                </Text>
-              </li>
-              <li>
-                <Text
-                  color=" #262626"
-                  fontWeight="700"
-                  fontSize="23px"
-                  fontFamily="ui-monospace"
-                  position="relative"
-                  left="30px"
-                  bottom="30px"
-                >
-                  <span>{employee.employeeID}</span>
-                </Text>
-              </li>
-            </ul>
-          </Box>
-          {employee.present ? null : (
-            <Button
-              position="relative"
-              left="40px"
-              color="brown"
-              backgroundColor="transparent"
-              _hover={{ bg: "transparent" }}
-              onClick={handleClockIn}
-            >
-              <MdOutlinePunchClock className="fa-3x" />
-            </Button>
-          )}
-        </Flex>
-      </CardBody>
-    </Card>
+            <BsFillClockFill className="fa-3x" />
+          </Button>
+        )}
+      </Flex>
+    </Box>
   );
 };
 

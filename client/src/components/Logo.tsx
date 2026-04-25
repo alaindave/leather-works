@@ -13,13 +13,13 @@ const Logo = () => {
         </Link>
       </Box>
       <Box marginLeft="8px">
-        <Text color="#F2B705" fontSize="24px" fontWeight="700">
+        <Text color="#F2B705" fontSize="25px" fontWeight="700">
           AFRITAN
         </Text>
         <Text
           position="relative"
           bottom="25px"
-          fontSize="15px"
+          fontSize="16px"
           fontWeight="500"
         >
           Gestion du personnel

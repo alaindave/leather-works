@@ -95,7 +95,11 @@ const EmployeeAttendance = () => {
           leastDestructiveRef={cancelRef}
           onClose={onClose}
         >
-          <AlertDialogOverlay>
+          <AlertDialogOverlay
+            backdropFilter="auto"
+            backdropBlur="30px"
+            bgGradient="radial(circle,#47370b, #061962)"
+          >
             <AlertDialogContent>
               <AlertDialogHeader fontSize="lg" fontWeight="bold">
                 Supprimer de la liste de présence
@@ -110,14 +114,14 @@ const EmployeeAttendance = () => {
                 <Button ref={cancelRef} onClick={onClose}>
                   Annuler
                 </Button>
-                <Button colorScheme="red" onClick={handleDelete} ml={3}>
+                <Button colorScheme="blue" onClick={handleDelete} ml={3}>
                   Supprimer
                 </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>
-        <TableContainer position="relative" top="10px" right="50px">
+        <TableContainer position="relative" top="10px" left="100px">
           <Table variant="simple">
             <TableCaption fontSize="30px" color="#000000" fontWeight="500">
               Employés presents aujurd'hui
@@ -166,7 +170,7 @@ const EmployeeAttendance = () => {
           fontSize: "40px",
           color: "#d6b65c",
           position: "relative",
-          right: "30px",
+          left: "260px",
         }}
       >
         Pas de présence aujurd'hui

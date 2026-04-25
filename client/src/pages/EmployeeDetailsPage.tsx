@@ -40,9 +40,9 @@ const EmployeeDetailsPage = () => {
       borderRadius="30px"
       padding="20px"
       width="500px"
-      top="60px"
+      top="80px"
       position="relative"
-      right="60px"
+      left="300px"
     >
       <Tabs variant="line" colorScheme="gray">
         <TabList>

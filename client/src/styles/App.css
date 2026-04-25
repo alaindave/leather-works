@@ -27,8 +27,7 @@
 /* Nav bar and logo styling */
 .nav-list{
     position: relative;
-    right:30px;
-    
+
 }
 
 .logo{
@@ -43,6 +42,10 @@ ul{
  }
  
  li{
+    margin-bottom: 10px;
+
+ }
+ .nav-list li{
      margin-bottom: 40px;
  }
 
@@ -50,21 +53,19 @@ ul{
 .nav-button{
     color:#A9B4C2;
     font-weight:600;
-    font-size: 23px;
-    margin-right: 50px;
-
-}
-
-span{
-    color: #220e0e;
-    font-weight: 400;
-    margin-right: 7px;
+    font-size: 25px;
 
 }
 
 .nav-button:hover {
     color:#F2B705;
   }
+
+
+
+
+
+
 
 
 

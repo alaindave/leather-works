@@ -191,21 +191,38 @@ const EmployeeLeave = () => {
       </AlertDialog>
 
       <Flex>
-        <Box position="relative" right="25px">
-          <Button
-            borderColor="black"
-            bg="brown"
-            borderRadius="15px"
-            borderWidth="5px"
-            color="#d6b65c"
-            size="md"
-            onClick={onOpen}
-            position="relative"
-            right="45px"
-            top="8px"
-          >
-            <FaCirclePlus />
-          </Button>
+        <Box>
+          {leaves.length === 0 ? (
+            <Button
+              borderColor="black"
+              bg="brown"
+              borderRadius="15px"
+              borderWidth="5px"
+              color="#d6b65c"
+              size="md"
+              onClick={onOpen}
+              position="relative"
+              top="250px"
+              left="250px"
+            >
+              <FaCirclePlus />
+            </Button>
+          ) : (
+            <Button
+              borderColor="black"
+              bg="brown"
+              borderRadius="15px"
+              borderWidth="5px"
+              color="#d6b65c"
+              size="md"
+              onClick={onOpen}
+              position="relative"
+              left="90px"
+              top="10px"
+            >
+              <FaCirclePlus />
+            </Button>
+          )}
 
           <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
@@ -394,14 +411,14 @@ const EmployeeLeave = () => {
               fontSize: "40px",
               color: "#d6b65c",
               position: "relative",
-              top: "5px",
-              right: "30px",
+              top: "250px",
+              left: "280px",
             }}
           >
             Pas d'employés en congé
           </p>
         ) : (
-          <TableContainer position="relative" right="60px" top="8px">
+          <TableContainer position="relative" left="100px" top="8px">
             <Table variant="simple">
               <TableCaption fontSize="30px" color="#000000" fontWeight="500">
                 Employés en congé
