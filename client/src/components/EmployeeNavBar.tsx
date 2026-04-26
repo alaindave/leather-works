@@ -10,6 +10,9 @@ import {
 } from "@chakra-ui/react";
 import { FaHome } from "react-icons/fa";
 import { IoPeopleSharp } from "react-icons/io5";
+import { FaRegClock } from "react-icons/fa6";
+import { FaRegCalendarAlt } from "react-icons/fa";
+import { FaFileSignature } from "react-icons/fa6";
 
 import { Link, NavLink } from "react-router-dom";
 // @ts-ignore
@@ -52,20 +55,29 @@ const EmployeeNavBar = () => {
             </HStack>
           </li>
           <li>
-            <NavLink className="nav-button" to="/employees_admin/attendance">
-              Présence
-            </NavLink>
+            <HStack position="relative" right="30px">
+              <FaRegClock />
+              <NavLink className="nav-button" to="/employees_admin/attendance">
+                Présence
+              </NavLink>
+            </HStack>
           </li>
           <li>
-            <NavLink className="nav-button" to="/employees_admin/leave">
-              Congés
-            </NavLink>
+            <HStack position="relative" right="30px">
+              <FaRegCalendarAlt />
+              <NavLink className="nav-button" to="/employees_admin/leave">
+                Congés
+              </NavLink>
+            </HStack>
           </li>
 
           <li>
-            <NavLink className="nav-button" to="/employees_admin/payslips">
-              Fiches de paye
-            </NavLink>
+            <HStack position="relative" right="30px">
+              <FaFileSignature />
+              <NavLink className="nav-button" to="/employees_admin/payslips">
+                Fiches de paye
+              </NavLink>
+            </HStack>
           </li>
         </ul>
       </Box>

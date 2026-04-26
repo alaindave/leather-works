@@ -31,12 +31,12 @@ const EmployeeListPage = () => {
           <AddEmployee onAddEmployee={handleAddEmployee} />
         </Box>
       ) : (
-        <Box position="relative" marginTop="10px" left="250px">
+        <Box position="absolute" marginTop="10px" top="0px" right="100px">
           <AddEmployee onAddEmployee={handleAddEmployee} />
         </Box>
       )}
 
-      <Box maxH="500px" overflowY="auto" position="relative" top="50px">
+      <Box maxH="500px" overflowY="auto" position="relative" top="150px">
         <ul>
           {employees.map((employee) => (
             <li key={employee._id}>

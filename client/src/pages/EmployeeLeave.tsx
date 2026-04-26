@@ -192,7 +192,7 @@ const EmployeeLeave = () => {
 
       <Flex>
         <Box>
-          {leaves.length === 0 ? (
+          {leaves?.length === 0 || leave?.employee === null ? (
             <Button
               borderColor="black"
               bg="brown"
@@ -405,7 +405,7 @@ const EmployeeLeave = () => {
             </ModalContent>
           </Modal>
         </Box>
-        {leaves.length === 0 ? (
+        {leaves.length === 0 || leave?.employee === null ? (
           <p
             style={{
               fontSize: "40px",
@@ -436,7 +436,7 @@ const EmployeeLeave = () => {
                 {leaves.map((leave) => (
                   <Tr key={leave._id}>
                     <Td>
-                      {leave.employee.firstName} {leave.employee.lastName}
+                      {leave.employee?.firstName} {leave.employee?.lastName}
                     </Td>
                     <Td>{leave.startDate}</Td>
                     <Td>{leave.endDate}</Td>

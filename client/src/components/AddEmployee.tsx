@@ -10,8 +10,10 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
+  Text,
   useDisclosure,
 } from "@chakra-ui/react";
+import { IoPersonAdd } from "react-icons/io5";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useState } from "react";
@@ -74,13 +76,21 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
       <Button
         borderColor="black"
         bg="brown"
-        borderRadius="15px"
-        borderWidth="5px"
-        color="#d6b65c"
+        borderRadius="18px"
+        borderWidth="1px"
+        color=" #e6e6e6"
         size="lg"
         onClick={onOpen}
+        _hover={{
+          bg: "#0a2142",
+          color: "#F2B705",
+          transform: "scale(1.05)",
+        }}
+        position="relative"
+        left="300px"
       >
-        Ajouter un employé
+        <IoPersonAdd />{" "}
+        <span style={{ marginLeft: "12px" }}>Ajouter un employé</span>
       </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
