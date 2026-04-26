@@ -78,16 +78,14 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
         bg="brown"
         borderRadius="18px"
         borderWidth="1px"
-        color=" #e6e6e6"
-        size="lg"
+        color="#e6e6e6"
+        size="sm"
         onClick={onOpen}
         _hover={{
           bg: "#0a2142",
           color: "#F2B705",
           transform: "scale(1.05)",
         }}
-        position="relative"
-        left="300px"
       >
         <IoPersonAdd />{" "}
         <span style={{ marginLeft: "12px" }}>Ajouter un employé</span>

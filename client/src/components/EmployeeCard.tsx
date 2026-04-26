@@ -1,5 +1,4 @@
-import { Box, Button, Card, Flex, Image, Text } from "@chakra-ui/react";
-import { CardBody } from "react-bootstrap";
+import { Box, Button, Flex, Image, Text } from "@chakra-ui/react";
 import { BsFillClockFill } from "react-icons/bs";
 import type Attendance from "../Attendance";
 import type Employee from "../Employee";
@@ -8,9 +7,6 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import source from "../assets/employee_photos/Jeanne.jpeg";
 import "../styles/App.css";
-import { MdOutlinePunchClock } from "react-icons/md";
-
-import { useState } from "react";
 
 interface Props {
   employee: Employee;
@@ -83,18 +79,33 @@ const EmployeeCard = ({ employees, employee }: Props) => {
                 left="30px"
                 bottom="30px"
               >
-                <span style={{ color: "#93A4D1", fontWeight: "500" }}>
-                  {employee.employeeID}
+                <span
+                  style={{
+                    color: "#93A4D1",
+                    fontWeight: "400",
+                  }}
+                >
+                  {employee.role}{" "}
                 </span>
               </Text>
             </li>
           </ul>
         </Box>
-        {employee.present ? null : (
+
+        {employee.present ? (
+          <Text
+            position="absolute"
+            right="20px"
+            fontSize="20px"
+            color="green.400"
+          >
+            Present
+          </Text>
+        ) : (
           <Button
-            position="relative"
-            left="140px"
-            color="brown"
+            position="absolute"
+            right="10px"
+            color="#F2B705"
             backgroundColor="transparent"
             _hover={{ bg: "transparent" }}
             onClick={handleClockIn}

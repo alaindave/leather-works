@@ -1,28 +1,17 @@
-import {
-  Box,
-  Divider,
-  Flex,
-  Image,
-  VStack,
-  Text,
-  Card,
-  HStack,
-} from "@chakra-ui/react";
-import { FaHome } from "react-icons/fa";
+import { Box, Flex, HStack, VStack } from "@chakra-ui/react";
+import { FaHome, FaRegCalendarAlt } from "react-icons/fa";
+import { FaFileSignature, FaRegClock } from "react-icons/fa6";
 import { IoPeopleSharp } from "react-icons/io5";
-import { FaRegClock } from "react-icons/fa6";
-import { FaRegCalendarAlt } from "react-icons/fa";
-import { FaFileSignature } from "react-icons/fa6";
 
-import { Link, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 // @ts-ignore
-import logo from "../assets/afritan_logo.png";
 import "../styles/App.css";
 import Logo from "./Logo";
 
 const EmployeeNavBar = () => {
   return (
-    <VStack
+    <Flex
+      direction="column"
       borderWidth="1px"
       marginTop="10px"
       marginLeft="10px"
@@ -38,7 +27,7 @@ const EmployeeNavBar = () => {
           <li>
             <HStack position="relative" right="30px">
               <FaHome />
-              <NavLink className="nav-button" to="/employees_admin">
+              <NavLink end to="/employees_admin">
                 Tableau de bord
               </NavLink>
             </HStack>
@@ -57,31 +46,25 @@ const EmployeeNavBar = () => {
           <li>
             <HStack position="relative" right="30px">
               <FaRegClock />
-              <NavLink className="nav-button" to="/employees_admin/attendance">
-                Présence
-              </NavLink>
+              <NavLink to="/employees_admin/attendance">Présence</NavLink>
             </HStack>
           </li>
           <li>
             <HStack position="relative" right="30px">
               <FaRegCalendarAlt />
-              <NavLink className="nav-button" to="/employees_admin/leave">
-                Congés
-              </NavLink>
+              <NavLink to="/employees_admin/leave">Congés</NavLink>
             </HStack>
           </li>
 
           <li>
             <HStack position="relative" right="30px">
               <FaFileSignature />
-              <NavLink className="nav-button" to="/employees_admin/payslips">
-                Fiches de paye
-              </NavLink>
+              <NavLink to="/employees_admin/payslips">Fiches de paye</NavLink>
             </HStack>
           </li>
         </ul>
       </Box>
-    </VStack>
+    </Flex>
   );
 };
 

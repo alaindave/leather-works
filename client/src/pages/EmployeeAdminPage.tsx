@@ -31,15 +31,13 @@ const EmployeeAdminPage = () => {
   }, []);
 
   return (
-    <Flex>
-      <Box position="relative" top="200px" left="120px" padding="20px">
-        <EmployeeDashboard
-          employeeCount={employees.length}
-          attendanceCount={attendances.length}
-          leaveCount={leaves.length}
-        />
-      </Box>
-    </Flex>
+    <Box position="relative" top="35px" left="60px">
+      <EmployeeDashboard
+        employeeCount={employees.length}
+        attendanceCount={attendances.length}
+        leaveCount={leaves.length}
+      />
+    </Box>
   );
 };
 

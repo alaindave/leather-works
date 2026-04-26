@@ -58,13 +58,19 @@ ul{
 }
 
 .nav-button:hover {
-    color:#F2B705;
+    /* color:#F2B705; */
+    /* background-color: #DC2626; */
+    /* width:"30px" */
   }
 
 
 
 
+  .active { 
+    background-color: "brown";
+    color: #F2B705; font-weight: bold;
 
+}
 
 
 
