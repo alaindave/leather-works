@@ -52,13 +52,15 @@ router.post("/:employeeId", async (req, res) => {
     console.log("Employee leave success:", leave);
     // Send email notification
     try {
-      sendLeaveRequestEmail({
+      const emailResults = await sendLeaveRequestEmail({
         employeeName: `${employee.firstName} ${employee.lastName}`,
         startDate,
         endDate,
         subject,
         notes,
       });
+
+      console.log("Leave email result: ", emailResults);
     } catch (emailError) {
       console.error("Error sending leave email:", emailError);
     }
