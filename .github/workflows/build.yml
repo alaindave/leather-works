@@ -28,6 +28,7 @@ jobs:
         
       - name: Build Electron main process
         run: npm run build:electron
+        working-directory: ./client
 
       - name: Build React
         run: npm run build
@@ -58,9 +59,11 @@ jobs:
       - name: Find EXE files
         shell: pwsh
         run: Get-ChildItem -Path . -Recurse -Filter "*.exe"
+        working-directory: ./client
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: LeatherWorks-Windows
           path: client/dist/**
+        working-directory: ./client
