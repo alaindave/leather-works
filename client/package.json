@@ -1,0 +1,94 @@
+{
+  "build": {
+    "appId": "com.leatherworks.app",
+    "productName": "LeatherWorks",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist-electron/**/*",
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "name": "leather-works",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist-electron/electron/main.cjs",
+  "scripts": {
+    "start": "vite",
+    "dev": "npm-run-all --parallel dev:react dev:electron",
+    "dev:react": "vite",
+    "dev:electron": "wait-on http://localhost:5173 && npm run transpile:electron && cross-env NODE_ENV=development electron .",
+    "devtools": "react-devtools",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "transpile:electron": "tsc --project src/electron/tsconfig.json",
+    "dist:mac": "npm run transpile:electron && npm run build && electron-builder --mac dmg",
+    "dist:win": "npm run transpile:electron && npm run build && electron-builder --win --x64",
+    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "2.10",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@tanstack/react-query": "4.28",
+    "@tanstack/react-query-devtools": "4.28",
+    "axios": "^1.15.0",
+    "bootstrap": "^5.3.8",
+    "concurrently": "^9.2.1",
+    "date-fns": "^4.3.0",
+    "dotenv": "^17.4.2",
+    "framer-motion": "^10.16.4",
+    "keytar": "^7.9.0",
+    "os-utils": "^0.0.14",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.10.10",
+    "react-datepicker": "^9.1.0",
+    "react-dev-tools": "^0.0.1",
+    "react-devtools-core": "^7.0.1",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.72.1",
+    "react-icons": "^4.7.1",
+    "react-router-dom": "^6.10.0",
+    "simple-zustand-devtools": "^1.1.0",
+    "socket.io-client": "^4.8.3",
+    "sqlite3": "^6.0.1",
+    "wait-on": "^9.0.10",
+    "zod": "^3.23.8",
+    "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@types/electron-devtools-installer": "^2.2.5",
+    "@types/node": "^25.9.1",
+    "@types/os-utils": "^0.0.4",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@vitejs/plugin-react": "^6.0.2",
+    "cross-env": "^10.1.0",
+    "electron": "^32.3.3",
+    "electron-builder": "^26.8.1",
+    "electron-devtools-installer": "^4.0.0",
+    "electron-rebuild": "^3.2.9",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.5.4",
+    "vite": "^8.0.14"
+  }
+}

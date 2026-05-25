@@ -1,0 +1,23 @@
+{
+  "appId":"com.a-bedetse.leather-works",
+  "files":["dist-electron","dist-react"],
+  "icon":"./leather-works-icon.jpeg",
+  "mac":{
+    "target":"dmg"
+  },
+  "linux":{
+    "target":"AppImage",
+    "category":"utility"
+  },
+  "win":{
+    "target":["portable","msi"]
+  },
+  "build": {
+    "files": [
+      "dist-electron/**/*",
+      "dist/**/*",
+      "package.json"
+    ]
+  }
+
+}
