@@ -9,6 +9,10 @@ jobs:
   build-windows:
     runs-on: windows-latest
 
+    defaults:
+      run:
+        working-directory: ./client
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,46 +24,12 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: ./client
 
-      - name: Transpile Electron
-        run: npm run transpile:electron
-        working-directory: ./client
-        
-      - name: Build Electron main process
-        run: npm run build:electron
-        working-directory: ./client
-
-      - name: Build React
+      - name: Build App
         run: npm run build
-        working-directory: ./client
-
-      - name: Clean build folders
-        run: rm -rf dist dist-electron
-        working-directory: ./client
-        shell: bash
 
       - name: Build Electron Windows App
         run: npx electron-builder --win --x64 --publish never
-        working-directory: ./client
-
-      - name: Build Electron app (debug mode)
-        run: npx electron-builder --win --x64 --publish never --debug
-        working-directory: ./client
-
-      - name: Show build output
-        run: Get-ChildItem -Recurse
-        shell: pwsh
-        working-directory: ./client
-
-      - name: Debug output
-        run: dir
-        working-directory: ./client
-
-      - name: Find EXE files
-        shell: pwsh
-        run: Get-ChildItem -Path . -Recurse -Filter "*.exe"
-        working-directory: ./client
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
