@@ -11,7 +11,7 @@ import { isDev } from "./util.cjs";
 console.log("MAIN STARTED");
 const API_URL = process.env.VITE_API_URL || "http://localhost:5000";
 
-//create main and splash windows
+//Create main and splash windows
 let mainWindow: BrowserWindow;
 let splash: BrowserWindow;
 let splashStartTime = 0;
@@ -80,8 +80,13 @@ const createMainWindow = async () => {
   if (isDev()) {
     await mainWindow.loadURL("http://localhost:5173");
   } else {
-    mainWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
+    mainWindow.loadFile(
+      path.join(process.resourcesPath, "/dist-react/index.html")
+    );
   }
+
+  console.log("APP PATH:", app.getAppPath());
+  console.log("RESOURCES:", process.resourcesPath);
 };
 
 app
