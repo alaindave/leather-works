@@ -16,7 +16,7 @@ import { memo, useMemo, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
 
-import type Attendance from "../../types/Attendance";
+import type Attendance from "../../../types/Attendance";
 
 interface Props {
   attendance: Attendance;

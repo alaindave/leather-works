@@ -15,8 +15,8 @@ import { MdOutlineDeleteForever } from "react-icons/md";
 import { PiDotsThreeOutlineVerticalDuotone } from "react-icons/pi";
 import { TiDeleteOutline } from "react-icons/ti";
 
-import Employee from "../../../types/Employee";
-import Leave from "../../../types/Leave";
+import Employee from "../../../../types/Employee";
+import Leave from "../../../../types/Leave";
 import LeaveNotesPopover from "../LeaveNotesPopover";
 
 interface Props {

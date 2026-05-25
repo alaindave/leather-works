@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from "react";
 import { HiOutlineDownload } from "react-icons/hi";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
-import type Attendance from "../../types/Attendance";
+import type Attendance from "../../../types/Attendance";
 import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";

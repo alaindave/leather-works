@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import type Employee from "../../types/Employee";
+import type Employee from "../../../types/Employee";
 import AddEmployee from "../components/AddEmployee";
 import EmployeeCard from "../components/EmployeeCard";
 import SearchBar from "../components/SearchBar";

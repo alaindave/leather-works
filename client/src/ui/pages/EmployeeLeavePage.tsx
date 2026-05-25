@@ -37,8 +37,8 @@ import { FaSave } from "react-icons/fa";
 import { FaCirclePlus } from "react-icons/fa6";
 import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
-import type Employee from "../../types/Employee";
-import type Leave from "../../types/Leave";
+import type Employee from "../../../types/Employee";
+import type Leave from "../../../types/Leave";
 import EmployeeLeaveCard from "../components/ui/EmployeeLeaveCard";
 
 const shimmerKeyframes = `
