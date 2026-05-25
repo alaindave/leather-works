@@ -16,7 +16,7 @@ import { IoPerson } from "react-icons/io5";
 import { MdAttachMoney, MdWork } from "react-icons/md";
 import { GiRelationshipBounds } from "react-icons/gi";
 
-import type Employee from "../../../types/Employee";
+import type Employee from "../../shared/types/Employee";
 import "../styles/App.css";
 import EmployeeDetailsCard from "./EmployeeDetailsCard";
 

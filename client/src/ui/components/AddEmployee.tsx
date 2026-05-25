@@ -47,7 +47,7 @@ import axios from "axios";
 import { useState } from "react";
 import { useForm, type FieldValues } from "react-hook-form";
 import { z } from "zod";
-import type Employee from "../../../types/Employee";
+import type Employee from "../../shared/types/Employee";
 import "../styles/App.css";
 
 interface Props {

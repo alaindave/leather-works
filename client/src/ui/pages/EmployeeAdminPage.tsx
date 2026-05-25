@@ -15,10 +15,10 @@ import { FaSave } from "react-icons/fa";
 import { FaRegNoteSticky } from "react-icons/fa6";
 import { TfiAnnouncement } from "react-icons/tfi";
 import useAdminUser from "../../store/authStore";
-import { Announcement } from "../../../types/Announcement";
-import type Attendance from "../../../types/Attendance";
-import type Employee from "../../../types/Employee";
-import type Leave from "../../../types/Leave";
+import { Announcement } from "../../shared/types/Announcement";
+import type Attendance from "../../shared/types/Attendance";
+import type Employee from "../../shared/types/Employee";
+import type Leave from "../../shared/types/Leave";
 import AdminUser from "../AdminUser";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 

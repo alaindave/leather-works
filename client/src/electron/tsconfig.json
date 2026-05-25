@@ -1,21 +1,15 @@
 {
   "compilerOptions": {
-    "strict": true,
+    "rootDir": "../../src",
+    "outDir": "../../dist-electron",
 
     "target": "ES2022",
     "module": "CommonJS",
 
-    "outDir": "../../dist-electron",
-    "rootDir": "./",
-
     "moduleResolution": "node",
-
     "skipLibCheck": true,
 
-    "types": ["node", "electron"],
-
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "types": ["node", "electron"]
   },
-  "include": ["./**/*"]
+  "include": ["../../src/**/*"]
 }

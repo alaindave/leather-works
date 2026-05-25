@@ -1,5 +1,5 @@
 const db = require("../db.js");
-import Employee from "../../types/Employee.js";
+import Employee from "../../shared/types/Employee";
 
 const addEmployee = (employee: Employee) => {
   return new Promise((resolve, reject) => {

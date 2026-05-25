@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import type Employee from "../../../types/Employee";
+import type Employee from "../../shared/types/Employee";
 import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { GoDotFill } from "react-icons/go";

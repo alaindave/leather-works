@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type Employee from "../../../types/Employee";
+import type Employee from "../../shared/types/Employee";
 
 import {
   Box,

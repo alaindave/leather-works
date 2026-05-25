@@ -15,8 +15,8 @@ import { CiClock2 } from "react-icons/ci";
 import { GiClockwork } from "react-icons/gi";
 import { GoDotFill } from "react-icons/go";
 import { Link } from "react-router-dom";
-import type Attendance from "../../../types/Attendance";
-import type Employee from "../../../types/Employee";
+import type Attendance from "../../shared/types/Attendance";
+import type Employee from "../../shared/types/Employee";
 // @ts-ignore
 import { useEffect, useState } from "react";
 import "../styles/App.css";
