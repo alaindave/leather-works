@@ -66,4 +66,3 @@ jobs:
         with:
           name: LeatherWorks-Windows
           path: client/dist/**
-        working-directory: ./client
