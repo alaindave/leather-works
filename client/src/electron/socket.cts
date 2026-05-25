@@ -1,7 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import { saveToken, getToken, clearToken } from "./auth.cjs";
 import { BrowserWindow } from "electron";
-import { Announcement } from "../types/Announcement.js";
+import { Announcement } from "../shared/types/Announcement";
 
 let socket: Socket | null = null;
 
