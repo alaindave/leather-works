@@ -1,18 +1,21 @@
 {
-    "compilerOptions": {
-      // require strict types (null-save)
-      "strict": true,
-      // tell TypeScript to generate ESM Syntax
-      "target": "ESNext",
-      // tell TypeScript to require ESM Syntax as input (including .js file imports)
-      "module": "commonjs",
-      // define where to put generated JS
-      "outDir": "../../dist-electron",
-      // ignore errors from dependencies
-      "skipLibCheck": true,
-      // add global types
-      "types": ["../../types"],
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-    }
-  }
+  "compilerOptions": {
+    "strict": true,
+
+    "target": "ES2022",
+    "module": "CommonJS",
+
+    "outDir": "../../dist-electron",
+    "rootDir": "./",
+
+    "moduleResolution": "node",
+
+    "skipLibCheck": true,
+
+    "types": ["node", "electron"],
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["./**/*"]
+}

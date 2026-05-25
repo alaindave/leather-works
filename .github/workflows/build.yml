@@ -25,6 +25,9 @@ jobs:
       - name: Transpile Electron
         run: npm run transpile:electron
         working-directory: ./client
+        
+      - name: Build Electron main process
+        run: npm run build:electron
 
       - name: Build React
         run: npm run build
