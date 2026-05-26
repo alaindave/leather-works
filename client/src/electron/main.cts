@@ -29,15 +29,20 @@ const createSplashWindow = () => {
     alwaysOnTop: true,
     backgroundColor: "#020817",
   });
-  splash.loadFile(
-    path.join(process.resourcesPath, "dist-electron", "splash.html")
-  );
+
+  const splashPath = isDev()
+    ? path.join(process.cwd(), "src/electron/splash.html")
+    : path.join(process.resourcesPath, "dist-electron", "splash.html");
+
+  splash.loadFile(splashPath);
+
   splash.once("ready-to-show", () => {
     splash.show();
   });
 
   splashStartTime = Date.now();
 };
+
 const createMainWindow = async () => {
   mainWindow = new BrowserWindow({
     width: 1200,
