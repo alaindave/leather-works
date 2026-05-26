@@ -23,7 +23,7 @@ const createSplashWindow = () => {
     width: 780,
     height: 580,
     center: true,
-    show: false,
+    show: true,
     frame: false,
     resizable: false,
     alwaysOnTop: true,
@@ -32,7 +32,7 @@ const createSplashWindow = () => {
 
   const splashPath = isDev()
     ? path.join(process.cwd(), "src/electron/splash.html")
-    : path.join(process.resourcesPath, "dist-electron", "splash.html");
+    : path.join(process.resourcesPath, "dist-react", "splash.html");
 
   splash.loadFile(splashPath);
 
@@ -61,7 +61,7 @@ const createMainWindow = async () => {
     if (splash && !splash.isDestroyed()) {
       // minimum splash display time
       const elapsed = Date.now() - splashStartTime;
-      const minimumSplashTime = 4000;
+      const minimumSplashTime = 8000;
 
       if (elapsed < minimumSplashTime) {
         await delay(minimumSplashTime - elapsed);
@@ -87,7 +87,7 @@ const createMainWindow = async () => {
     await mainWindow.loadURL("http://localhost:5173");
   } else {
     mainWindow.loadFile(
-      path.join(process.resourcesPath, "/dist-react/index.html")
+      path.join(process.resourcesPath, "dist-react", "index.html")
     );
   }
 

@@ -8,7 +8,7 @@
 
     "files": [
       "dist-electron/**/*",
-      "dist/**/*",
+      "dist-react/**/*",
       "package.json"
     ],
 
