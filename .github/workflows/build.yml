@@ -1,45 +1,4 @@
-# Windows build
-# name: Build Electron App
-
-# on:
-#   push:
-#     branches:
-#       - electron
-
-# jobs:
-#   build-windows:
-#     runs-on: windows-latest
-
-#     defaults:
-#       run:
-#         working-directory: ./client
-
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
-
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: 20
-
-#       - name: Install dependencies
-#         run: npm install
-
-#       - name: Build App
-#         run: npm run build
-
-#       - name: Build Electron Windows App
-#         run: npx electron-builder --win --x64 --publish never
-
-#       - name: Upload artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: LeatherWorks-Windows
-#           path: client/dist/**
-
-# MacOs builld
-
+MacOs build
 name: Build Electron App
 
 on:
@@ -49,27 +8,29 @@ on:
 
 jobs:
   build-mac:
-  runs-on: macos-latest
+    runs-on: macos-latest
 
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    defaults:
+      run:
+        working-directory: ./client
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: npm install
-      working-directory: ./client
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-    - name: Build Electron
-      run: npm run dist:mac
-      working-directory: ./client
+      - name: Install dependencies
+        run: npm install
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: LeatherWorks-Mac
-        path: client/dist/**
+      - name: Build Electron
+        run: npm run dist:mac
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LeatherWorks-MacOs
+          path: client/dist/**
