@@ -38,7 +38,7 @@
   "scripts": {
     "start": "vite",
     "dev": "npm-run-all --parallel dev:react dev:electron",
-    "dev:react": "vite",
+    "dev:react": "vite --host",
     "dev:electron": "wait-on http://localhost:5173 && npm run build:electron && cross-env NODE_ENV=development electron .",
     "build:renderer": "vite build",
     "build:electron": "tsc -p src/electron/tsconfig.json",
