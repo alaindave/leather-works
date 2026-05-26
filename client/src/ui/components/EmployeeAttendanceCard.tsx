@@ -7,7 +7,6 @@ import {
   Grid,
   HStack,
   Text,
-  Tooltip,
 } from "@chakra-ui/react";
 
 import axios from "axios";
@@ -66,7 +65,6 @@ const EmployeeAttendanceCard = ({
   // =========================
   // Edit Clock In
   // =========================
-
   const handleEditClockIn = async (newTime: string) => {
     try {
       const response = await axios.put<Attendance>(
@@ -75,7 +73,6 @@ const EmployeeAttendanceCard = ({
           clockIn: newTime,
         }
       );
-
       setLocalAttendance(response.data);
     } catch (error) {
       console.error("Error editing clock in:", error);
@@ -217,9 +214,7 @@ const EmployeeAttendanceCard = ({
             onSubmit={async (newTime) => {
               try {
                 const [hours, minutes] = newTime.split(":").map(Number);
-
                 const updatedClockOut = new Date(localAttendance.clockOut!);
-
                 updatedClockOut.setHours(hours, minutes, 0, 0);
 
                 // Optimistic UI update
