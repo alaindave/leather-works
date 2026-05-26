@@ -68,7 +68,7 @@ const EmployeeDetailsPage = () => {
       >
         <AlertDialogOverlay
           backdropFilter="auto"
-          backdropBlur="30px"
+          backdropBlur="8px"
           bgGradient="radial(circle,#47370b, #061962)"
         >
           <AlertDialogContent
