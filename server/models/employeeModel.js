@@ -9,7 +9,7 @@ const employeeSchema = new mongoose.Schema({
   dateHired: { type: String, required: true },
   department: {
     type: String,
-    enum: ["administration", "atelier", "usine", "magasin", "sentinelle"],
+    enum: ["Administration", "Atelier", "Usine", "Magasin", "Sentinelle"],
     required: true,
   },
   telephone: { type: String, required: true },
