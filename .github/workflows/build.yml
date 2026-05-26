@@ -1,3 +1,4 @@
+# Windows build
 # name: Build Electron App
 
 # on:
@@ -37,7 +38,17 @@
 #           name: LeatherWorks-Windows
 #           path: client/dist/**
 
-build-mac:
+# MacOs builld
+
+name: Build Electron App
+
+on:
+  push:
+    branches:
+      - electron
+
+jobs:
+  build-mac:
   runs-on: macos-latest
 
   steps:
