@@ -5,11 +5,23 @@
 
   "build": {
     "appId": "com.a-bedetse.leather-works",
+    "productName": "Leather Works",
+
+    "directories": {
+      "output": "dist"
+    },
 
     "files": [
       "dist-electron/**/*",
       "dist-react/**/*",
       "package.json"
+    ],
+
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "release"
+      }
     ],
 
     "mac": {
@@ -25,8 +37,10 @@
 
     "win": {
       "target": [
-        "portable",
-        "msi"
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
       ],
       "icon": "build/icon.ico"
     }

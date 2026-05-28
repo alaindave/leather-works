@@ -1,56 +1,12 @@
-# name: Build Mac Electron App
-
-# on:
-#   push:
-#     branches:
-#       - electron
-
-# jobs:
-#   build-mac:
-#     runs-on: macos-latest
-
-#     defaults:
-#       run:
-#         working-directory: ./client
-
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
-
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: 23
-#           cache: npm
-#           cache-dependency-path: client/package-lock.json
-
-#       - name: Install dependencies
-#         run: npm install
-
-#       - name: Clean previous builds
-#         run: rm -rf dist dist-electron
-
-#       - name: Build React app
-#         run: npm run build
-
-#       - name: Build macOS DMG
-#         run: npx electron-builder --mac dmg --publish never
-
-#       - name: Show build output
-#         run: ls -R dist
-
-#       - name: Upload macOS artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: LeatherWorks-Mac
-#           path: client/dist/**
-
-name: Build Windows Electron App
+name: Build & Release Windows Electron App
 
 on:
   push:
-    branches:
-      - electron
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:
@@ -83,15 +39,11 @@ jobs:
       - name: Build React app
         run: npm run build
 
-      - name: Build Electron Windows App
-        run: npx electron-builder --win --x64 --publish never
+      - name: Build & Publish to GitHub Releases
+        run: npx electron-builder --win --x64 --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show build output
         shell: pwsh
         run: Get-ChildItem -Recurse dist
-
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: LeatherWorks-Windows
-          path: client/dist/**
