@@ -5,6 +5,11 @@
   "type": "module",
   "main": "dist-electron/electron/main.cjs",
 
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alaindave/leather-works.git"
+  },
+
   "build": {
     "appId": "com.leatherworks.app",
     "productName": "LeatherWorks",
