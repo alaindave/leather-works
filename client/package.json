@@ -1,7 +1,7 @@
 {
   "name": "leather-works",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "main": "dist-electron/electron/main.cjs",
 
@@ -15,7 +15,7 @@
     "productName": "LeatherWorks",
 
     "directories": {
-      "output": "dist"
+      "output": "dist-app"
     },
 
     "files": [
@@ -26,8 +26,7 @@
 
     "publish": [
       {
-        "provider": "github",
-        "releaseType": "release"
+        "provider": "github"
       }
     ],
 

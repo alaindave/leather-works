@@ -1,14 +1,19 @@
 {
   "name": "leather-works",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "dist-electron/electron/main.cjs",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alaindave/leather-works.git"
+  },
 
   "build": {
     "appId": "com.a-bedetse.leather-works",
     "productName": "Leather Works",
 
     "directories": {
-      "output": "dist"
+      "output": "dist-app"
     },
 
     "files": [
@@ -19,8 +24,7 @@
 
     "publish": [
       {
-        "provider": "github",
-        "releaseType": "release"
+        "provider": "github"
       }
     ],
 
