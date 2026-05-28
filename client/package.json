@@ -2,12 +2,14 @@
   "build": {
     "appId": "com.leatherworks.app",
     "productName": "LeatherWorks",
+  
     "directories": {
       "output": "dist"
     },
+  
     "files": [
       "dist-electron/**/*",
-      "dist/**/*",
+      "dist-react/**/*",
       "package.json"
     ],
     "win": {
@@ -36,7 +38,7 @@
   },
   "name": "leather-works",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "main": "dist-electron/electron/main.cjs",
   "scripts": {

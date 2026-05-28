@@ -1,10 +1,11 @@
-const nodemailer = require("nodemailer");
 const dns = require("dns");
 
 dns.setDefaultResultOrder("ipv4first");
 
+const nodemailer = require("nodemailer");
+
 const transporter = nodemailer.createTransport({
-  host: "74.125.69.108",
+  host: "smtp.gmail.com",
   port: 587,
   secure: false,
   requireTLS: true,
@@ -13,6 +14,8 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+
+  family: 4,
 
   connectionTimeout: 10000,
   greetingTimeout: 10000,
@@ -23,7 +26,7 @@ transporter.verify((error, success) => {
   if (error) {
     console.error("SMTP verify error:", error);
   } else {
-    console.log("SMTP server ready", success);
+    console.log("SMTP server ready:", success);
   }
 });
 
