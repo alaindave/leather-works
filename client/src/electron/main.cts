@@ -78,7 +78,7 @@ const createMainWindow = async () => {
     }
 
     mainWindow.show();
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
   });
 
   console.log("Is it development?: ", isDev());

@@ -316,7 +316,7 @@ const EmployeeAttendancePage = () => {
                   marginLeft="15px"
                   marginTop="10px"
                 >
-                  Présence
+                  Présences
                 </Text>
                 <Text
                   color="#ffffff"
@@ -494,17 +494,81 @@ const EmployeeAttendancePage = () => {
   // no attendance to show
   else
     return (
-      <Text
-        fontSize="35px"
-        fontStyle="revert"
-        fontWeight="600"
-        color="gray.200"
-        position="relative"
-        top="350px"
-        left="200px"
+      <Flex
+        direction="column"
+        justify="space-between"
+        marginLeft="5px"
+        width="80vw"
       >
-        Pas de présence enregistrée aujourd'hui.
-      </Text>
+        {/* HEADER */}
+        <Box
+          position="relative"
+          top="50px"
+          bg="#03143B"
+          height="150px"
+          borderRadius="20px"
+        >
+          <Text
+            color="#ffffff"
+            fontSize="27px"
+            fontWeight="700"
+            marginLeft="15px"
+            marginTop="10px"
+          >
+            Présence
+          </Text>
+          <Text
+            color="#ffffff"
+            fontSize="15px"
+            fontWeight="500"
+            position="relative"
+            bottom="20px"
+            marginLeft="15px"
+          >
+            Gérez la liste de présence
+          </Text>
+        </Box>
+        <Text
+          position="relative"
+          left="300px"
+          color="#ffffff"
+          fontSize="30px"
+          fontWeight="500"
+        >
+          Pas de présence enregistrée
+        </Text>
+        <Flex
+          bg="#08162b"
+          mb="3px"
+          height="120px"
+          borderRadius="16px"
+          justify="space-between"
+        >
+          <Text
+            color="#F2B705"
+            fontSize="1.5rem"
+            fontFamily="monospace"
+            fontWeight="600"
+            position="relative"
+            top="22px"
+            marginLeft="12px"
+          >
+            Présence du {new Date().toLocaleDateString("fr-FR")}
+          </Text>
+          <Box
+            color="#F2B705"
+            fontSize="24px"
+            fontWeight="600"
+            position="relative"
+            top="25px"
+            marginRight="12px"
+          >
+            {String(time.getHours()).padStart(2, "0")}:
+            {String(time.getMinutes()).padStart(2, "0")}:
+            {String(time.getSeconds()).padStart(2, "0")}
+          </Box>
+        </Flex>
+      </Flex>
     );
 };
 

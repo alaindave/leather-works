@@ -19,7 +19,7 @@ import { Announcement } from "../../shared/types/Announcement";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
 import type Leave from "../../shared/types/Leave";
-import AdminUser from "../AdminUser";
+import AdminUser from "../../shared/types/AdminUser";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 
 const EmployeeAdminPage = () => {

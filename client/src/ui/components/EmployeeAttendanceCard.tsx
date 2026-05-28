@@ -66,13 +66,26 @@ const EmployeeAttendanceCard = ({
   // Edit Clock In
   // =========================
   const handleEditClockIn = async (newTime: string) => {
+    // console.log("Time edited:", newTime);
+    // try {
+    //   const response = await axios.put<Attendance>(
+    //     `${API_URL}/attendances/${_id}`,
+    //     {
+    //       clockIn: newTime,
+    //     }
+    //   );
+    //   setLocalAttendance(response.data);
+    // } catch (error) {
+    //   console.error("Error editing clock in:", error);
+    // }
+
+    const [hours, minutes] = newTime.split(":").map(Number);
+    const clockInDate = new Date(localAttendance.clockIn);
+    clockInDate.setHours(hours, minutes, 0, 0);
     try {
-      const response = await axios.put<Attendance>(
-        `${API_URL}/attendances/${_id}`,
-        {
-          clockIn: newTime,
-        }
-      );
+      const response = await axios.put(`${API_URL}/attendances/${_id}`, {
+        clockIn: clockInDate.toISOString(),
+      });
       setLocalAttendance(response.data);
     } catch (error) {
       console.error("Error editing clock in:", error);
@@ -125,7 +138,6 @@ const EmployeeAttendanceCard = ({
       );
 
       setLocalAttendance(response.data);
-
       setClockOutMode("completed");
     } catch (error) {
       console.error("Error clocking out:", error);
@@ -161,7 +173,7 @@ const EmployeeAttendanceCard = ({
       </Text>
 
       {/* Department */}
-      <Text color="gray.200" fontSize="18px">
+      <Text position="relative" right="8px" color="gray.200" fontSize="18px">
         {department}
       </Text>
 

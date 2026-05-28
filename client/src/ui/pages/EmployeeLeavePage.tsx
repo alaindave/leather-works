@@ -39,7 +39,7 @@ import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
 import type Employee from "../../shared/types/Employee";
 import type Leave from "../../shared/types/Leave";
-import EmployeeLeaveCard from "../components/ui/EmployeeLeaveCard";
+import EmployeeLeaveCard from "../components/EmployeeLeaveCard";
 
 const shimmerKeyframes = `
 @keyframes shimmer {

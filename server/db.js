@@ -162,35 +162,36 @@ const getAttendance = async (attendanceId) => {
 
 //Edit attendance
 const editAttendance = async (attendanceId, newTime) => {
-  console.log("New time db..", newTime);
+  console.log("New time db: ", newTime.clockIn);
+  console.log("Type of New time db: ", typeof newTime.clockIn);
 
   const { clockIn, ...rest } = newTime;
   let updatedData = { ...rest };
 
   if (clockIn) {
-    const [hours, minutes] = clockIn.split(":");
+    // const [hours, minutes] = clockIn.split(":");
 
-    const clockInDate = new Date();
+    // const clockInDate = new Date();
 
-    clockInDate.setHours(Number(hours));
-    clockInDate.setMinutes(Number(minutes));
-    clockInDate.setSeconds(0);
-    clockInDate.setMilliseconds(0);
+    // clockInDate.setHours(Number(hours));
+    // clockInDate.setMinutes(Number(minutes));
+    // clockInDate.setSeconds(0);
+    // clockInDate.setMilliseconds(0);
 
     // Expected clock in time
-    const expectedHour = 15;
-    const expectedMinute = 50;
+    const expectedHour = 8;
+    const expectedMinute = 0;
     const expectedClockIn = new Date();
 
     expectedClockIn.setHours(expectedHour, expectedMinute, 0, 0);
 
-    const diffMs = clockInDate.getTime() - expectedClockIn.getTime();
+    const diffMs = new Date(clockIn).getTime() - expectedClockIn.getTime();
 
     const lateMinutes = Math.max(0, Math.floor(diffMs / 60000));
 
     const status = lateMinutes > 0 ? "retard" : "ponctuel";
 
-    updatedData.clockIn = clockInDate;
+    updatedData.clockIn = new Date(clockIn);
     updatedData.status = status;
   }
 
