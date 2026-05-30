@@ -32,7 +32,7 @@ const createSplashWindow = () => {
 
   const splashPath = isDev()
     ? path.join(process.cwd(), "src/electron/splash.html")
-    : path.join(__dirname, "../dist-react/splash.html");
+    : path.join(__dirname, "../../dist/splash.html");
 
   console.log("SPLASH PATH:", splashPath);
   console.log("EXISTS:", fs.existsSync(splashPath));
@@ -92,7 +92,7 @@ const createMainWindow = async () => {
   if (isDev()) {
     await mainWindow.loadURL("http://localhost:5173");
   } else {
-    mainWindow.loadFile(path.join(__dirname, "../dist-react/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
 
   console.log("APP PATH:", app.getAppPath());

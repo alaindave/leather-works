@@ -15,7 +15,7 @@
 
     "skipLibCheck": true,
 
-    "types": ["node", "electron"],
+    "types": ["node"],
 
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

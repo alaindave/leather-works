@@ -7,12 +7,24 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+.vite/
+.cache/
+
 /node_modules
 /dist
 /dist-ssr
 /dist-react
+/dis-app
 /dist-electron
+/release
 *.local
+
+*.exe
+*.dmg
+*.AppImage
+*.zip
+
+.env
 
 # Editor directories and files
 .vscode/*

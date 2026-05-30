@@ -4,42 +4,37 @@
   "version": "2.0.1",
   "type": "module",
   "main": "dist-electron/electron/main.cjs",
-
   "repository": {
     "type": "git",
     "url": "https://github.com/alaindave/leather-works.git"
   },
-
   "build": {
     "appId": "com.leatherworks.app",
     "productName": "LeatherWorks",
-
     "directories": {
       "output": "dist-app"
     },
-
     "files": [
       "dist-electron/**/*",
       "dist-react/**/*",
       "package.json"
     ],
-
     "publish": [
       {
         "provider": "github"
       }
     ],
-
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.ico"
     },
-
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -47,7 +42,6 @@
       "createStartMenuShortcut": true
     }
   },
-
   "scripts": {
     "clean": "rimraf dist-react dist-electron",
     "start": "vite",
@@ -62,7 +56,6 @@
     "dist:linux": "npm run build && electron-builder --linux --x64",
     "release": "npm run build && electron-builder --publish always"
   },
-
   "dependencies": {
     "@chakra-ui/react": "2.10",
     "@emotion/react": "^11.14.0",
@@ -91,7 +84,6 @@
     "zod": "^3.23.8",
     "zustand": "^5.0.13"
   },
-
   "devDependencies": {
     "@types/node": "^25.9.1",
     "@types/react": "^18.0.27",
@@ -99,7 +91,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
-    "electron": "^32.0.0",
+    "electron": "^32.3.3",
     "electron-builder": "^26.8.1",
     "npm-run-all": "^4.1.5",
     "rimraf": "^6.1.3",
