@@ -1,23 +1,11 @@
-import {
-  Box,
-  HStack,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Text,
-} from "@chakra-ui/react";
-import { BsFillPersonVcardFill } from "react-icons/bs";
+import { Box, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import { FaBuilding, FaCalendarAlt, FaHashtag } from "react-icons/fa";
 import { FaHouseChimneyWindow } from "react-icons/fa6";
-import { GiRotaryPhone } from "react-icons/gi";
+import { GiRelationshipBounds, GiRotaryPhone } from "react-icons/gi";
 import { IoPerson } from "react-icons/io5";
 import { MdAttachMoney, MdWork } from "react-icons/md";
-import { GiRelationshipBounds } from "react-icons/gi";
 
 import type Employee from "../../shared/types/Employee";
-import "../styles/App.css";
 import EmployeeDetailsCard from "./EmployeeDetailsCard";
 
 interface Props {
@@ -26,13 +14,26 @@ interface Props {
 
 const EmployeeDetailsTab = ({ employee }: Props) => {
   return (
-    <Box marginTop="10px">
-      <Tabs variant="enclosed">
-        <TabList borderBottomColor="rgba(255,255,255,0.08)">
+    <Box h="100%" w="100%">
+      <Tabs variant="enclosed" h="100%" display="flex" flexDirection="column">
+        <TabList
+          borderBottomColor="rgba(255,255,255,0.08)"
+          overflowX="auto"
+          overflowY="hidden"
+          whiteSpace="nowrap"
+          flexShrink={0}
+          sx={{
+            "&::-webkit-scrollbar": {
+              height: "4px",
+            },
+          }}
+        >
           <Tab
+            flexShrink={0}
             color="gray.200"
-            fontSize="20px"
+            fontSize={{ base: "sm", md: "md", lg: "lg" }}
             fontWeight="600"
+            px={{ base: 3, md: 5 }}
             _selected={{
               color: "#F2B705",
               borderColor: "#F2B705",
@@ -46,9 +47,11 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
           </Tab>
 
           <Tab
+            flexShrink={0}
             color="gray.200"
-            fontSize="20px"
+            fontSize={{ base: "sm", md: "md", lg: "lg" }}
             fontWeight="600"
+            px={{ base: 3, md: 5 }}
             _selected={{
               color: "#F2B705",
               borderColor: "#F2B705",
@@ -62,9 +65,11 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
           </Tab>
 
           <Tab
+            flexShrink={0}
             color="gray.200"
-            fontSize="20px"
+            fontSize={{ base: "sm", md: "md", lg: "lg" }}
             fontWeight="600"
+            px={{ base: 3, md: 5 }}
             _selected={{
               color: "#F2B705",
               borderColor: "#F2B705",
@@ -77,23 +82,27 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             Contact
           </Tab>
         </TabList>
-        <TabPanels>
-          <TabPanel>
+
+        <TabPanels flex="1" overflowY="auto" px={{ base: 2, md: 4 }} py={4}>
+          <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Nom"
               value={employee?.lastName ?? "N.D."}
               icon={IoPerson}
             />
+
             <EmployeeDetailsCard
-              property="Prenom"
+              property="Prénom"
               value={employee?.firstName ?? "N.D."}
               icon={IoPerson}
             />
+
             <EmployeeDetailsCard
               property="Matricule"
               value={employee?.employeeID ?? "N.D."}
               icon={FaHashtag}
             />
+
             <EmployeeDetailsCard
               property="Date de naissance"
               value={
@@ -104,17 +113,20 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               icon={FaCalendarAlt}
             />
           </TabPanel>
-          <TabPanel>
+
+          <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Poste"
               value={employee?.role || "N.D."}
               icon={MdWork}
             />
+
             <EmployeeDetailsCard
-              property="Departement"
+              property="Département"
               value={employee?.department || "N.D."}
               icon={FaBuilding}
             />
+
             <EmployeeDetailsCard
               property="Salaire"
               value={employee?.salary || "N.D."}
@@ -131,14 +143,16 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               icon={FaCalendarAlt}
             />
           </TabPanel>
-          <TabPanel>
+
+          <TabPanel p={0}>
             <EmployeeDetailsCard
-              property="Addresse"
+              property="Adresse"
               value={employee?.address}
               icon={FaHouseChimneyWindow}
             />
+
             <EmployeeDetailsCard
-              property="Telephone"
+              property="Téléphone"
               value={employee?.telephone}
               icon={GiRotaryPhone}
             />
@@ -154,8 +168,9 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               value={employee?.relationship}
               icon={GiRelationshipBounds}
             />
+
             <EmployeeDetailsCard
-              property="Telephone du contact d'urgence"
+              property="Téléphone du contact d'urgence"
               value={employee?.contactPhone}
               icon={GiRotaryPhone}
             />

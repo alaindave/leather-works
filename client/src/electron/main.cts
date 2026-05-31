@@ -33,9 +33,6 @@ const createSplashWindow = () => {
   const splashPath = isDev()
     ? path.join(process.cwd(), "src/electron/splash.html")
     : path.join(__dirname, "../../dist/splash.html");
-
-  console.log("SPLASH PATH:", splashPath);
-  console.log("EXISTS:", fs.existsSync(splashPath));
   splash.loadFile(splashPath);
 
   splash.once("ready-to-show", () => {
@@ -78,26 +75,16 @@ const createMainWindow = async () => {
       await delay(500);
       splash.close();
     }
-
     mainWindow.show();
-    // mainWindow.webContents.openDevTools();
   });
 
   console.log("Is it development?: ", isDev());
-
-  const mainPath = path.join(__dirname, "../dist-react/index.html");
-  console.log("MAIN PATH:", mainPath);
-  console.log("EXISTS:", fs.existsSync(mainPath));
 
   if (isDev()) {
     await mainWindow.loadURL("http://localhost:5173");
   } else {
     mainWindow.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
-
-  console.log("APP PATH:", app.getAppPath());
-  console.log("RESOURCES:", process.resourcesPath);
-  console.log("__dirname:", __dirname);
 };
 
 app

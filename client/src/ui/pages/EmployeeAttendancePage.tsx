@@ -10,6 +10,7 @@ import {
   Flex,
   Grid,
   HStack,
+  Spacer,
   Text,
   VStack,
   useDisclosure,
@@ -131,9 +132,9 @@ const EmployeeAttendancePage = () => {
           {/* HEADER */}
           <Box
             position="relative"
-            top="50px"
+            top="0.4rem"
             bg="#03143B"
-            height="200px"
+            height="10rem"
             borderRadius="20px"
             p={4}
           >
@@ -159,7 +160,8 @@ const EmployeeAttendancePage = () => {
           <Grid
             templateColumns={gridTemplate}
             bg="#08162b"
-            mt="52px"
+            mt="0.5rem"
+            mb="0.3rem"
             height="70px"
             ml="5px"
             alignItems="center"
@@ -200,11 +202,13 @@ const EmployeeAttendancePage = () => {
           {/* FOOTER */}
           <Flex
             bg="#08162b"
-            height="120px"
+            height="5rem"
             borderRadius="16px"
             justify="space-between"
             align="center"
             px={4}
+            mb="1rem"
+            mr="0.2rem"
           >
             <Shimmer width="260px" height="20px" />
             <Shimmer width="120px" height="20px" />
@@ -298,17 +302,17 @@ const EmployeeAttendancePage = () => {
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>
-        <VStack spacing={0} align="stretch" ml="3px">
+        <Flex direction="column" ml="0.2rem" mr="0.5rem">
           {/* HEADER */}
-          <Box
-            position="relative"
-            top="50px"
+          <Flex
+            direction="column"
+            mt="0.5rem"
             bg="#03143B"
-            height="200px"
+            height="8rem"
             borderRadius="20px"
           >
-            <HStack>
-              <Box marginBottom="20px">
+            <Flex>
+              <Box>
                 <Text
                   color="#ffffff"
                   fontSize="27px"
@@ -329,27 +333,28 @@ const EmployeeAttendancePage = () => {
                   Gérez la liste de présence
                 </Text>
               </Box>
-
+              <Spacer />
               <Button
                 bg="#F2B705"
                 onClick={handleAttendanceExport}
-                position="absolute"
-                top="10px"
                 right="10px"
+                mt="0.5rem"
+                mr="0.4rem"
               >
                 <HiOutlineDownload />
                 Exporter
               </Button>
-            </HStack>
-
-            <Box position="absolute" left="1px" bottom="1px">
-              <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
-            </Box>
-
-            <Box position="absolute" right="1px" bottom="1px">
-              <SearchBar onSearch={handleOnSearch} />
-            </Box>
-          </Box>
+            </Flex>
+            <Flex position="relative" bottom="1rem">
+              <Box>
+                <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
+              </Box>
+              <Spacer />
+              <Box position="relative" bottom="0.2rem">
+                <SearchBar onSearch={handleOnSearch} />
+              </Box>
+            </Flex>
+          </Flex>
 
           {/* TABLE HEADER */}
           <Grid
@@ -359,7 +364,8 @@ const EmployeeAttendancePage = () => {
             fontWeight="600"
             background="#08162b"
             overflowX="auto"
-            mt="52px"
+            mt="0.3rem"
+            mb="0.3rem"
             height="70px"
             marginLeft="5px"
           >
@@ -426,14 +432,7 @@ const EmployeeAttendancePage = () => {
           </Grid>
 
           {/* ROWS */}
-          <Box
-            mt={0.5}
-            mb={0.8}
-            height="90vh"
-            width="80vw"
-            overflowX="auto"
-            overflowY="auto"
-          >
+          <Box height="90vh" width="80vw" overflowX="auto" overflowY="auto">
             {attendances
               .filter(
                 (attendance) =>
@@ -459,8 +458,8 @@ const EmployeeAttendancePage = () => {
           {/* FOOTER */}
           <Flex
             bg="#08162b"
-            mb="3px"
-            height="120px"
+            mb="1.2rem"
+            height="6rem"
             borderRadius="16px"
             justify="space-between"
           >
@@ -469,8 +468,8 @@ const EmployeeAttendancePage = () => {
               fontSize="1.5rem"
               fontFamily="monospace"
               fontWeight="600"
-              position="relative"
-              top="22px"
+              mt="1rem"
+              ml="1rem"
               marginLeft="12px"
             >
               Présence du {new Date().toLocaleDateString("fr-FR")}
@@ -479,8 +478,8 @@ const EmployeeAttendancePage = () => {
               color="#F2B705"
               fontSize="24px"
               fontWeight="600"
-              position="relative"
-              top="25px"
+              mt="1rem"
+              mr="1rem"
               marginRight="12px"
             >
               {String(time.getHours()).padStart(2, "0")}:
@@ -488,7 +487,7 @@ const EmployeeAttendancePage = () => {
               {String(time.getSeconds()).padStart(2, "0")}
             </Box>
           </Flex>
-        </VStack>
+        </Flex>
       </>
     );
   // no attendance to show
@@ -503,7 +502,8 @@ const EmployeeAttendancePage = () => {
         {/* HEADER */}
         <Box
           position="relative"
-          top="50px"
+          mt="0.5rem"
+          mr="0.2rem"
           bg="#03143B"
           height="150px"
           borderRadius="20px"
@@ -539,8 +539,9 @@ const EmployeeAttendancePage = () => {
         </Text>
         <Flex
           bg="#08162b"
-          mb="3px"
-          height="120px"
+          mb="1rem"
+          mr="0.2rem"
+          height="5rem"
           borderRadius="16px"
           justify="space-between"
         >

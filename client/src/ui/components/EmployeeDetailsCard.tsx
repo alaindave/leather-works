@@ -1,5 +1,5 @@
-import { VStack, Text, Box, HStack, Icon } from "@chakra-ui/react";
-import { IconType } from "react-icons/lib";
+import { Box, Flex, Icon as ChakraIcon, Text } from "@chakra-ui/react";
+import { IconType } from "react-icons";
 
 interface Props {
   property: string;
@@ -7,36 +7,44 @@ interface Props {
   icon: IconType;
 }
 
-const EmployeeDetailsCard = ({ property, value, icon: Icon }: Props) => {
+const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
   return (
-    <HStack
-      marginBottom="5px"
-      borderRadius="6px"
+    <Flex
+      align="center"
+      gap={4}
+      mb={3}
+      p={4}
+      w="100%"
+      minH="50px"
+      maxH="100px"
       bg="#0E1E47"
-      width="47vw"
-      height="90px"
-      borderWidth="0.5px"
+      borderRadius="12px"
+      borderWidth="1px"
       borderColor="gray.600"
     >
-      <Box
-        borderWidth="0.5px"
-        borderRadius="20px"
-        padding="8px"
-        marginBottom="8px"
-      >
-        <Icon color="#F2B705" size="1.2rem" />
+      <Box p={3} borderRadius="full" bg="rgba(242,183,5,0.08)" flexShrink={0}>
+        <ChakraIcon as={icon} color="#F2B705" boxSize={{ base: 5, md: 6 }} />
       </Box>
 
-      <HStack marginLeft="4px">
-        <Text color="#C7D2FE" fontWeight="700" fontSize="1.3rem">
-          {property}:
+      <Box flex="1" minW={0}>
+        <Text
+          color="#C7D2FE"
+          fontWeight="700"
+          fontSize={{ base: "md", md: "lg", lg: "lg" }}
+        >
+          {property}
         </Text>
-        <Text color="gray.300" fontSize="1.2rem">
-          {value} {""}
-          {property === "Salaire" ? "FBU" : ""}
+
+        <Text
+          color="gray.300"
+          fontSize={{ base: "md", md: "lg" }}
+          wordBreak="break-word"
+        >
+          {value || "N.D."}
+          {property === "Salaire" ? " FBU" : ""}
         </Text>
-      </HStack>
-    </HStack>
+      </Box>
+    </Flex>
   );
 };
 

@@ -7,6 +7,7 @@ import {
   AlertDialogOverlay,
   Box,
   Button,
+  Flex,
   FormControl,
   FormLabel,
   Grid,
@@ -23,6 +24,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spacer,
   Text,
   Textarea,
   VStack,
@@ -198,7 +200,7 @@ const EmployeeLeavePage = () => {
           {/* HEADER */}
           <Box
             position="relative"
-            top="50px"
+            top="0.5rem"
             ml="3px"
             bg="#03143B"
             height="200px"
@@ -220,9 +222,9 @@ const EmployeeLeavePage = () => {
           <Grid
             templateColumns={gridTemplate}
             bg="#08162b"
-            mt="44px"
-            ml="4px"
-            mr="4px"
+            mt="0.5rem"
+            ml="0.3rem"
+            mr="0.3rem"
             height="66px"
             width="80vw"
             borderRadius="12px"
@@ -261,24 +263,24 @@ const EmployeeLeavePage = () => {
           </Box>
 
           {/* FOOTER */}
-          <Box bg="#08162b" height="80px" width="80vw" mb="2px" />
+          <Box bg="#08162b" height="80px" width="80vw" mb="1rem" />
         </VStack>
       </>
     );
 
   return (
     <>
-      <VStack>
+      <Flex direction="column">
         <Box
-          position="relative"
-          top="50px"
-          ml="3px"
+          mt="0.5rem"
+          ml="0.3rem"
+          mr="1.2rem"
           bg="#03143B"
-          height="200px"
+          height="10rem"
           width="80vw"
           borderRadius="20px"
         >
-          <HStack>
+          <Flex>
             <Box>
               <Text
                 color="#ffffff"
@@ -300,6 +302,7 @@ const EmployeeLeavePage = () => {
                 Gérez les demandes de congés
               </Text>
             </Box>
+            <Spacer />
             <Button
               borderColor="black"
               backgroundColor="#F2B705"
@@ -308,41 +311,52 @@ const EmployeeLeavePage = () => {
               color="black"
               size="md"
               onClick={onOpen}
-              position="absolute"
-              right="8px"
-              top="8px"
               zIndex="1"
+              mt="0.4rem"
+              mr="0.4rem"
             >
               <FaCirclePlus />{" "}
               <Text position="relative" top="8px" fontSize="18px" left="8px">
                 Soumettre une demande
               </Text>
             </Button>
-          </HStack>
+          </Flex>
         </Box>
         <>
           {leaves.length === 0 ? (
-            <Box>
-              <Text
-                fontSize="35px"
-                fontStyle="revert"
-                fontWeight="600"
-                color="gray.200"
+            <Flex
+              direction="column"
+              position="relative"
+              top="15rem"
+              left="15rem"
+            >
+              <Box>
+                <Text
+                  fontSize="35px"
+                  fontStyle="revert"
+                  fontWeight="600"
+                  color="gray.200"
+                >
+                  Aucune demande de congé retrouvée
+                </Text>
+              </Box>
+              <Spacer />
+              <Box
+                background="#08162b"
+                height="4rem"
+                width="78vw"
                 position="relative"
-                top="300px"
-              >
-                Aucune demande de congé retrouvé
-              </Text>
-            </Box>
+                top="21rem"
+                right="14rem"
+              ></Box>
+            </Flex>
           ) : (
             <>
               <Grid
                 templateColumns={gridTemplate}
                 fontWeight="600"
                 background="#08162b"
-                mt="44px"
-                ml="4px"
-                mr="4px"
+                margin="0.3rem"
                 height="66px"
                 width="80vw"
                 borderRadius="12px"
@@ -402,14 +416,7 @@ const EmployeeLeavePage = () => {
                   Actions
                 </Text>
               </Grid>
-              <Box
-                height="90vh"
-                width="80vw"
-                overflowX="hidden"
-                overflowY="hidden"
-                position="relative"
-                bottom="6px"
-              >
+              <Box height="90vh" width="80vw" overflowX="auto" overflowY="auto">
                 {leaves.map((leave) => (
                   <EmployeeLeaveCard
                     key={leave._id}
@@ -423,12 +430,14 @@ const EmployeeLeavePage = () => {
                 background="#08162b"
                 height="80px"
                 width="80vw"
-                mb="2px"
+                mb="1rem"
+                ml="0.3rem"
+                mr="0.6rem"
               ></Box>
             </>
           )}
         </>
-      </VStack>
+      </Flex>
 
       {/* Leave deletion confirmation dialog */}
       <AlertDialog

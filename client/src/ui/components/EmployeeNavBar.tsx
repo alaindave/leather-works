@@ -57,7 +57,7 @@ const EmployeeNavBar = () => {
       borderRadius="20px"
       padding="8px"
       background="#03143B"
-      height="94vh"
+      height="97vh"
       width="280px"
     >
       <Box padding="10px" position="relative" right="13px">
@@ -117,9 +117,9 @@ const EmployeeNavBar = () => {
         borderColor="gray"
         borderRadius="15px"
         position="relative"
+        top="12rem"
         height="60px"
         width="277px"
-        top="278px"
         right="7px"
         justify="space-evenly"
       >

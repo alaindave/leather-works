@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Flex,
+  Grid,
   HStack,
   Icon,
   StackDivider,
@@ -131,72 +132,83 @@ const EmployeeAdminPage = () => {
 
   return (
     <Flex
-      position="relative"
       direction="column"
-      justify="space-between"
-      background="#03143B"
+      ml="0.3rem"
+      mt="0.5rem"
+      mr="0.3rem"
+      w="100%"
+      h="98vh"
+      bg="#03143B"
       border="1px solid rgba(255,255,255,0.12)"
-      boxShadow="
-      0 8px 32px rgba(0,0,0,0.35),
-      inset 0 1px 1px rgba(255,255,255,0.08)
-    "
-      borderRadius="24px"
-      height="94.3vh"
-      width="90vw"
-      marginTop="50px"
-      marginLeft="4px"
+      boxShadow="0 8px 32px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.08)"
+      borderRadius={{ base: "0", md: "24px" }}
+      overflow="hidden"
+      p={{ base: 3, md: 6 }}
     >
-      <HStack>
+      {/* HEADER */}
+      <Flex
+        justify="space-between"
+        align={{ base: "flex-start", md: "center" }}
+        flexDir={{ base: "column", md: "row" }}
+        gap={3}
+      >
         <Box>
           <Text
-            color="#ffffff"
-            fontSize="27px"
+            fontSize={{ base: "20px", md: "27px" }}
             fontWeight="700"
-            marginLeft="15px"
-            marginTop="10px"
+            color="white"
           >
             Tableau de bord
           </Text>
           <Text
-            color="#ffffff"
-            fontSize="15px"
-            fontWeight="500"
+            fontSize={{ base: "13px", md: "15px" }}
+            color="whiteAlpha.800"
             position="relative"
-            bottom="20px"
-            marginLeft="15px"
+            bottom="1rem"
           >
             Vue d'ensemble de votre gestion de personnel
           </Text>
         </Box>
 
-        <HStack
-          position="absolute"
-          top="5px"
-          right="5px"
-          height="50px"
-          borderWidth="0.3px"
-          borderColor="gray.100"
-          borderRadius="5px"
-          divider={<StackDivider borderColor="gray.200" />}
+        {/* DATE / TIME */}
+        <Flex
+          border="1px solid rgba(255,255,255,0.12)"
+          borderRadius="10px"
+          overflow="hidden"
+          align="center"
+          flexWrap="wrap"
+          position="relative"
+          bottom="1rem"
         >
-          <HStack width="130px">
-            <Box marginLeft="6px">
-              <CiCalendarDate color="#F2B705" size="25px" />
-            </Box>
-            <Box color="#ffffff">{new Date().toLocaleDateString("fr-FR")}</Box>
-          </HStack>
-          <HStack width="120px">
-            <Box>
-              <CiClock2 color="#F2B705" size="25px" />
-            </Box>
-            <Box color="#ffffff" marginLeft="18px">
-              {String(time?.getHours()).padStart(2, "0")}:
-              {String(time?.getMinutes()).padStart(2, "0")}
-            </Box>
-          </HStack>
-        </HStack>
-      </HStack>
-      <Box marginLeft="5px" position="relative" bottom="40px">
+          <Flex px={3} py={2} align="center" gap={2}>
+            <CiCalendarDate color="#F2B705" size={22} />
+            <Text
+              color="gray.200"
+              fontSize="md"
+              position="relative"
+              top="0.5rem"
+            >
+              {new Date().toLocaleDateString("fr-FR")}
+            </Text>
+          </Flex>
+
+          <Flex px={3} py={2} align="center" gap={2}>
+            <CiClock2 color="#F2B705" size={22} />
+            <Text
+              color="gray.200"
+              fontSize="md"
+              position="relative"
+              top="0.5rem"
+            >
+              {String(time.getHours()).padStart(2, "0")}:
+              {String(time.getMinutes()).padStart(2, "0")}
+            </Text>
+          </Flex>
+        </Flex>
+      </Flex>
+
+      {/* DASHBOARD */}
+      <Box mt={4}>
         <EmployeeDashboard
           employeeCount={employees.length}
           attendanceCount={attendances.length}
@@ -204,203 +216,125 @@ const EmployeeAdminPage = () => {
           lateCount={lateCount.length}
         />
       </Box>
-      {/* Personal notes text area */}
-      <HStack>
+
+      {/* MAIN GRID */}
+      <Grid
+        templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
+        gap={6}
+        mt={6}
+        flex="1"
+        overflow="auto"
+      >
+        {/* NOTES */}
         <Box
-          position="relative"
-          left="5px"
-          bottom="80px"
-          width="36vw"
-          p={6}
-          borderRadius="24px"
           bg="#091735"
-          backdropFilter="blur(18px)"
           border="1px solid rgba(255,255,255,0.08)"
+          borderRadius="20px"
+          p={5}
+          display="flex"
+          flexDir="column"
         >
-          <HStack mb={4} spacing={3}>
-            <Icon as={FaRegNoteSticky} color="yellow.400" boxSize={6} />
+          <Flex align="center" gap={2} mb={3}>
+            <Icon as={FaRegNoteSticky} color="yellow.400" fontSize="lg" />
             <Text
               color="white"
-              fontSize="xl"
+              fontSize="lg"
               fontWeight="600"
               position="relative"
-              top="8px"
+              top="0.4rem"
             >
               Notes personnelles
             </Text>
-          </HStack>
+          </Flex>
+
           <Textarea
+            flex="1"
             placeholder="Écrivez vos notes ici..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            height="280px"
-            width="32vw"
             resize="none"
             bg="#091735"
-            border="1px solid"
-            borderColor="whiteAlpha.100"
+            border="1px solid rgba(255,255,255,0.1)"
             color="gray.200"
-            fontWeight="400"
-            fontSize="1.2rem"
-            fontFamily="monospace"
-            _placeholder={{
-              color: "gray.500",
-            }}
-            _hover={{
-              borderColor: "yellow.400",
-            }}
+            fontSize="lg"
             _focus={{
               borderColor: "yellow.400",
               boxShadow: "0 0 0 1px #F4C20D",
-              bg: "rgba(255,255,255,0.05)",
             }}
+            _hover={{ borderColor: "yellow.300" }}
           />
-          {/* Show text area if admin is a manager */}
         </Box>
+
+        {/* ANNOUNCEMENTS */}
         {adminUser?.role === "manager" ? (
           <Box
-            height="403px"
-            width="38vw"
-            position="relative"
-            left="50px"
-            bottom="77px"
-            borderWidth="0.5px"
-            borderRadius="24px"
             bg="#091735"
-            backdropFilter="blur(18px)"
             border="1px solid rgba(255,255,255,0.08)"
+            borderRadius="20px"
+            p={5}
+            display="flex"
+            flexDir="column"
           >
-            <HStack
-              mb={4}
-              spacing={3}
-              position="relative"
-              left="20px"
-              top="12px"
-            >
-              <Icon
-                ml="8px"
-                as={TfiAnnouncement}
-                color="yellow.300"
-                boxSize={6}
-              />
+            <Flex align="center" gap={2} mb={3}>
+              <Icon as={TfiAnnouncement} color="yellow.300" />
               <Text
-                position="relative"
-                left="8px"
-                top="3px"
-                mt="12px"
-                color="white"
-                fontSize="xl"
+                color="gray.200"
+                fontSize="lg"
                 fontWeight="600"
+                position="relative"
+                top="0.4rem"
               >
                 Envoyer une annonce
               </Text>
-            </HStack>
-            <Box
-              position="relative"
-              left="25px"
+            </Flex>
+
+            <Textarea
+              flex="1"
+              placeholder="Faites vos annonces ici..."
+              value={announcement}
+              onChange={(e) => setAnnouncement(e.target.value)}
+              resize="none"
               bg="#091735"
-              height="280px"
-              width="35vw"
-              border="1px solid rgba(255,255,255,0.08)"
-            >
-              <Textarea
-                placeholder="Faites vos annonces ici..."
-                value={announcement}
-                onChange={(e) => setAnnouncement(e.target.value)}
-                height="280px"
-                width="35vw"
-                resize="none"
-                bg="#091735"
-                border="1px solid"
-                borderColor="whiteAlpha.100"
-                color="gray.200"
-                fontWeight="400"
-                fontSize="1.2rem"
-                fontFamily="monospace"
-                _placeholder={{
-                  color: "gray.500",
-                }}
-                _hover={{
-                  borderColor: "yellow.400",
-                }}
-                _focus={{
-                  borderColor: "yellow.400",
-                  boxShadow: "0 0 0 1px #F4C20D",
-                  bg: "rgba(255,255,255,0.05)",
-                }}
-              />
-            </Box>
+              border="1px solid rgba(255,255,255,0.1)"
+              color="gray.200"
+              _hover={{ borderColor: "yellow.300" }}
+              _focus={{
+                borderColor: "yellow.400",
+                boxShadow: "0 0 0 1px #F4C20D",
+              }}
+            />
+
             <Button
-              position="absolute"
-              right="0.5px"
-              bottom="0.5px"
-              borderRadius="10px"
-              borderColor="black"
+              mt={4}
+              alignSelf="flex-end"
               bg="#F2B705"
-              borderWidth="0.5px"
-              colorScheme=" #320b01"
               color="black"
-              mr={3}
               onClick={handleAnnouncementSend}
             >
-              <HStack>
-                <Box>
-                  <FaSave />
-                </Box>
-                <Text position="relative" top="8px" fontSize="1rem">
-                  {" "}
-                  Envoyer
-                </Text>
-              </HStack>
+              <FaSave style={{ marginRight: 8 }} />
+              Envoyer
             </Button>
           </Box>
         ) : (
           <Box
-            height="400px"
-            width="38vw"
-            position="relative"
-            left="50px"
-            bottom="77px"
-            borderWidth="0.5px"
-            borderRadius="24px"
             bg="#091735"
-            backdropFilter="blur(18px)"
             border="1px solid rgba(255,255,255,0.08)"
+            borderRadius="20px"
+            p={5}
           >
-            <HStack mb={4} spacing={3}>
-              <Icon
-                ml="8px"
-                as={TfiAnnouncement}
-                color="yellow.300"
-                boxSize={8}
-              />
-              <Text
-                position="relative"
-                left="25px"
-                top="8px"
-                mt="12px"
-                color="white"
-                fontSize="xl"
-                fontWeight="600"
-              >
+            <Flex align="center" gap={2} mb={3}>
+              <Icon as={TfiAnnouncement} color="yellow.300" fontSize="lg" />
+              <Text color="white" fontSize="lg" fontWeight="600">
                 Messages de la direction
               </Text>
-            </HStack>
-            <Box
-              position="relative"
-              left="25px"
-              bg="#091735"
-              height="280px"
-              width="35vw"
-              border="1px solid rgba(255,255,255,0.08)"
-            >
-              <Text color="gray.200" fontSize="1.2rem" fontWeight="500">
-                {liveAnnouncement?.message || oldAnnouncements[0]?.message}
-              </Text>
-            </Box>
+            </Flex>
+
+            <Text color="gray.200" fontSize="md">
+              {liveAnnouncement?.message || oldAnnouncements[0]?.message}
+            </Text>
           </Box>
         )}
-      </HStack>
+      </Grid>
     </Flex>
   );
 };

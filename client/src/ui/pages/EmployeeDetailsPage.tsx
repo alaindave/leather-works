@@ -13,15 +13,15 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
   useDisclosure,
+  Stack,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import type Employee from "../../shared/types/Employee";
 import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { GoDotFill } from "react-icons/go";
-import { MdDeleteForever } from "react-icons/md";
-import { MdAutoDelete } from "react-icons/md";
+import { MdDeleteForever, MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import source from "../assets/employee_photos/Jeanne.jpeg";
 import UpdateEmployee from "../components/UpdateEmployee";
@@ -39,250 +39,194 @@ const EmployeeDetailsPage = () => {
   useEffect(() => {
     axios
       .get<Employee>(`${API_URL}/employees/${_id}`)
-
-      .then((res) => {
-        setEmployee(res.data);
-        console.log("Employee fetched: ", res.data);
-      })
-      .catch((error) => {
-        console.error("Error while fetching employee: ", error);
-      });
+      .then((res) => setEmployee(res.data))
+      .catch((error) => console.error("Error while fetching employee:", error));
   }, []);
 
   const handleDelete = async () => {
-    await axios
-      .delete<Employee>(`${API_URL}/employees/${_id}`)
-      .then((response) => {
-        console.log("Employee successfully deleted: ", response.data);
-        navigate("/employees_admin/employees_list");
-      })
-      .catch((error) => console.error("Unable to delete employee:", error));
+    try {
+      await axios.delete(`${API_URL}/employees/${_id}`);
+      navigate("/employees_admin/employees_list");
+    } catch (error) {
+      console.error("Unable to delete employee:", error);
+    }
   };
 
   return (
     <>
+      {/* DELETE MODAL */}
       <AlertDialog
         isOpen={isOpen}
         leastDestructiveRef={cancelRef}
         onClose={onClose}
       >
-        <AlertDialogOverlay
-          backdropFilter="auto"
-          backdropBlur="8px"
-          bgGradient="radial(circle,#47370b, #061962)"
-        >
-          <AlertDialogContent
-            bg="#08162b"
-            color="#ffffff"
-            position="relative"
-            top="180px"
-          >
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Supprimer l'employé
-            </AlertDialogHeader>
+        <AlertDialogOverlay backdropFilter="blur(8px)">
+          <AlertDialogContent bg="#08162b" color="white" mx={4}>
+            <AlertDialogHeader>Supprimer l'employé</AlertDialogHeader>
 
             <AlertDialogBody>
-              Etes vous sur de vouloir supprimer{" "}
-              <span style={{ color: "#F2B705", fontWeight: "bold" }}>
-                {" "}
-                {employee?.firstName}{" "}
-              </span>
-              <span style={{ color: "#F2B705", fontWeight: "bold" }}>
-                {" "}
-                {employee?.lastName}{" "}
-              </span>
-              de la liste des employés?
+              Êtes-vous sûr de vouloir supprimer{" "}
+              <b style={{ color: "#F2B705" }}>
+                {employee?.firstName} {employee?.lastName}
+              </b>{" "}
+              ?
             </AlertDialogBody>
 
             <AlertDialogFooter>
-              <HStack position="relative" right="2rem">
+              <HStack>
                 <Button
-                  borderRadius="10px"
-                  borderColor="black"
                   bg="brown"
-                  borderWidth="0.5px"
-                  colorScheme=" #320b01"
-                  mr={3}
                   onClick={handleDelete}
+                  leftIcon={<MdAutoDelete />}
                 >
-                  <HStack>
-                    <Box>
-                      <MdAutoDelete size="1.2rem" />
-                    </Box>
-                    <Text marginTop="0.9rem" fontSize="1rem">
-                      {" "}
-                      Supprimer
-                    </Text>
-                  </HStack>
+                  Supprimer
                 </Button>
-                <Button
-                  ref={cancelRef}
-                  borderColor="gray.500"
-                  borderRadius="10px"
-                  bg="#08162b"
-                  borderWidth="0.5px"
-                  colorScheme=" #320b01"
-                  color="#1a000d"
-                  mr={3}
-                  onClick={onClose}
-                >
-                  <HStack>
-                    <Box>
-                      <RxCrossCircled color="#ffffff" size="1.2rem" />
-                    </Box>
-                    <Text color="#ffffff" marginTop="0.9rem" fontSize="1rem">
-                      Annuler
-                    </Text>
-                  </HStack>
+
+                <Button ref={cancelRef} onClick={onClose}>
+                  <RxCrossCircled />
+                  Annuler
                 </Button>
               </HStack>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
-      <Box
-        background="#03143B"
-        borderRadius="20px"
-        height="94vh"
-        width="79vw"
-        marginTop="50px"
-        marginLeft="8px"
-      >
-        <VStack spacing="2px">
-          <Box
-            background="#03143B"
-            height="10rem"
-            width="78vw"
-            borderRadius="18px"
-            border="none"
-            marginTop="5px"
-            marginBottom="2px"
-          >
-            <HStack position="relative" top="10px">
-              <Box
-                borderRadius="10px"
-                borderColor=" #14376b"
-                borderWidth="1px"
-                padding="8px"
-                position="relative"
-                bottom="15px"
-                left="10px"
-              >
-                <Link to="/employees_admin/employees_list">
-                  <FaArrowLeftLong color="#ffffff" size="1.5rem" />
-                </Link>
-              </Box>
 
-              <Box marginLeft="1.5rem">
-                <Text fontSize="1.5rem" fontWeight="700" color="#ffffff">
+      {/* PAGE CONTAINER */}
+      <Box
+        bg="#03143B"
+        borderRadius="20px"
+        w="100%"
+        maxW="1400px"
+        mx="auto"
+        ml="0.3rem"
+        mr="0.3rem"
+        mb="1rem"
+        mt={{ base: 1, md: 3 }}
+        p={{ base: 3, md: 6 }}
+      >
+        <VStack spacing={4} align="stretch">
+          {/* HEADER */}
+          <Stack
+            direction={{ base: "column", md: "row" }}
+            justify="space-between"
+            align={{ base: "flex-start", md: "center" }}
+            spacing={4}
+          >
+            <HStack align="center">
+              <Link to="/employees_admin/employees_list">
+                <Box
+                  p={2}
+                  border="1px solid #14376b"
+                  borderRadius="10px"
+                  position="relative"
+                  bottom="0.8rem"
+                >
+                  <FaArrowLeftLong color="white" />
+                </Box>
+              </Link>
+
+              <Box>
+                <Text
+                  fontSize={{ base: "lg", md: "xl" }}
+                  fontWeight="700"
+                  color="white"
+                >
                   Détails de l'employé
                 </Text>
-                <Text color="#C7D2FE" position="relative" bottom="18px">
+                <Text
+                  fontSize="md"
+                  color="#C7D2FE"
+                  position="relative"
+                  bottom="1rem"
+                >
                   Consultez et gérez les informations de l'employé
                 </Text>
               </Box>
-              <Box position="absolute" top="3px" right="5px">
-                <UpdateEmployee _id={_id} employee={employee} />
-              </Box>
             </HStack>
-          </Box>
-          <HStack marginTop="3px">
+
+            <UpdateEmployee _id={_id} employee={employee} />
+          </Stack>
+
+          {/* MAIN CONTENT */}
+          <Stack direction={{ base: "column", lg: "row" }} spacing={4}>
+            {/* LEFT PANEL */}
             <Box
               bg="#0E1E47"
-              borderWidth="1px"
               borderRadius="18px"
-              border="none"
-              height="74vh"
-              width="28vw"
+              p={5}
+              flex={{ base: "1", lg: "0.35" }}
+              minW={0}
+              maxH="70vh"
             >
-              <VStack position="relative" top="60px">
+              <VStack spacing={3}>
                 <Image
                   src={source}
-                  height="120px"
-                  width="120px"
                   boxSize="120px"
                   borderRadius="full"
-                  fit="cover"
+                  objectFit="cover"
                 />
+
                 <Text
-                  color="gray.200"
+                  fontSize="lg"
                   fontWeight="700"
-                  fontSize="1.4rem"
-                  position="relative"
+                  color="gray.200"
+                  textAlign="center"
                 >
                   {employee?.firstName} {employee?.lastName}
                 </Text>
 
-                <Text
-                  color="#C7D2FE"
-                  position="relative"
-                  bottom="15px"
-                  fontSize="1rem"
-                >
-                  {employee?.role}
-                </Text>
+                <Text color="#C7D2FE">{employee?.role}</Text>
 
-                <HStack
-                  bg="#08162b"
-                  width="80px"
-                  border="none"
-                  borderRadius="40px"
-                  marginLeft="12px"
-                >
-                  <span style={{ position: "relative", left: "5px" }}>
-                    <GoDotFill color="green" size="1rem" />
-                  </span>
-                  <Text position="relative" top="7px" color="green.400">
+                <HStack bg="#08162b" px={3} py={1} borderRadius="full">
+                  <GoDotFill color="green" />
+                  <Text
+                    color="green.400"
+                    position="relative"
+                    top="0.3rem"
+                    right="0.3rem"
+                  >
                     Actif
                   </Text>
                 </HStack>
-                <Divider orientation="horizontal" color="gray.400" />
-                <Box position="relative" top="30px">
-                  <Text color="#C7D2FE" fontSize="1.3rem">
-                    Matricule
-                  </Text>
-                  <Text fontSize="1.2rem" color="#F2B705">
+
+                <Divider />
+
+                <Box textAlign="center">
+                  <Text color="#C7D2FE">Matricule</Text>
+                  <Text color="#F2B705" fontWeight="700">
                     {employee?.employeeID}
                   </Text>
                 </Box>
+
                 <Button
-                  borderColor="black"
-                  bg="brown"
-                  borderRadius="15px"
-                  borderWidth="4px"
-                  size="lg"
-                  position="relative"
-                  top="85px"
+                  colorScheme="red"
                   onClick={onOpen}
+                  w="100%"
+                  mt={4}
+                  leftIcon={<MdDeleteForever />}
                 >
-                  <MdDeleteForever color="#ffffff" size="23px" />
-                  <Text
-                    position="relative"
-                    top="8px"
-                    left="5px"
-                    fontSize="1.2rem"
-                    color="#ffffff"
-                  >
-                    Supprimer
-                  </Text>
+                  Supprimer
                 </Button>
               </VStack>
             </Box>
+
+            {/* RIGHT PANEL */}
             <Box
               bg="#03143B"
-              border="none"
-              borderWidth="1px"
               borderRadius="18px"
-              height="74vh"
-              width="50vw"
-              marginTop="1px"
+              flex={1}
+              minW={0}
+              h={{ base: "auto", lg: "74vh" }}
+              overflowY="auto"
             >
-              <EmployeeDetailsTab employee={employee}></EmployeeDetailsTab>
+              <EmployeeDetailsTab employee={employee} />
             </Box>
-          </HStack>
+          </Stack>
         </VStack>
       </Box>
     </>
   );
 };
+
 export default EmployeeDetailsPage;

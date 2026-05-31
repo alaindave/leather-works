@@ -7,12 +7,12 @@ const EmployeeAdminLayout = () => {
     <Flex
       margin="0"
       height="100vh"
-      width="100vw"
+      width="100%"
       bgGradient="radial(#47370b, #061962)"
-      overflowY="hidden"
-      overflowX="hidden"
+      overflowY="auto"
+      overflowX="auto"
     >
-      <Box position="relative" top="2.5rem" left="0.1rem">
+      <Box ml={1.5}>
         <EmployeeNavBar />
       </Box>
       <Outlet />

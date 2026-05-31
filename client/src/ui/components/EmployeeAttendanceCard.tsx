@@ -301,7 +301,7 @@ const EmployeeAttendanceCard = ({
       </Box>
 
       {/* Actions */}
-      <HStack spacing={1} position="relative" bottom="8px">
+      <HStack spacing={1} position="relative" bottom="0.5rem" right="0.8rem">
         {!localAttendance.clockOut && (
           <Button
             bg="transparent"

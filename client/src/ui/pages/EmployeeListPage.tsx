@@ -6,6 +6,7 @@ import {
   Skeleton,
   SkeletonCircle,
   SkeletonText,
+  Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -53,114 +54,134 @@ const EmployeeListPage = () => {
   };
 
   return (
-    <VStack
-      spacing={0}
-      align="stretch"
-      marginTop="48px"
-      marginLeft="4px"
-      ml="3px"
-      width="83vw"
+    <Flex
+      direction="column"
+      w="100%"
+      h="100vh"
+      bg="transparent"
+      px={{ base: 2, md: 4 }}
+      py={4}
     >
-      <Box position="relative" bg="#03143B" height="200px" borderRadius="20px">
-        <Box marginBottom="20px">
-          <Text
-            color="#ffffff"
-            fontSize="27px"
-            fontWeight="700"
-            marginLeft="15px"
-            marginTop="10px"
-          >
-            Employés
-          </Text>
-
-          <Text
-            color="#ffffff"
-            fontSize="15px"
-            fontWeight="500"
-            position="relative"
-            bottom="20px"
-            marginLeft="15px"
-          >
-            Gérez les informations de vos employés
-          </Text>
-        </Box>
-
-        <Box position="absolute" top="1px" right="1px">
+      {/* HEADER */}
+      <Flex
+        direction="column"
+        bg="#03143B"
+        height="10rem"
+        borderRadius={{ base: "12px", md: "20px" }}
+        p={{ base: 3, md: 5 }}
+      >
+        <Flex>
+          <Box position="relative" bottom="0.8rem">
+            <Text
+              color="white"
+              fontSize={{ base: "20px", md: "27px" }}
+              fontWeight="700"
+            >
+              Employés
+            </Text>
+            <Text
+              color="whiteAlpha.800"
+              fontSize={{ base: "13px", md: "15px" }}
+              position="relative"
+              bottom="1rem"
+            >
+              Gérez les informations de vos employés
+            </Text>
+          </Box>
+          <Spacer />
           <AddEmployee onAddEmployee={handleAddEmployee} />
-        </Box>
+        </Flex>
 
-        <Box position="absolute" left="1px" bottom="1px">
-          <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
-        </Box>
+        {/* ACTION ROW  */}
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          gap={3}
+        >
+          <Flex wrap="wrap" gap={2} mt="0.3rem">
+            <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
+          </Flex>
 
-        <Box position="absolute" right="1px" bottom="1px">
-          <SearchBar onSearch={handleOnSearch} />
-        </Box>
-      </Box>
+          <Flex
+            wrap="wrap"
+            gap={2}
+            justify={{ base: "stretch", md: "flex-end" }}
+          >
+            <SearchBar onSearch={handleOnSearch} />
+          </Flex>
+        </Flex>
+      </Flex>
 
-      <Box height="75vh" overflowY="scroll" borderRadius="20px">
-        {loading ? (
-          <VStack spacing={0} mt="2px">
-            {[...Array(6)].map((_, index) => (
-              <Flex
-                key={index}
-                w="100%"
-                bg="#0A1F57"
-                borderBottom="1px solid"
-                borderColor="#1E355A"
-                p={4}
-                alignItems="center"
-                gap={4}
-              >
-                <SkeletonCircle size="14" fadeDuration={0.4} />
-
-                <Box flex="1">
-                  <Skeleton
-                    height="18px"
-                    width="220px"
-                    mb={3}
-                    borderRadius="6px"
-                    startColor="#132C68"
-                    endColor="#1E3A7A"
-                  />
-
-                  <SkeletonText
-                    noOfLines={2}
-                    spacing="3"
-                    skeletonHeight="12px"
-                    startColor="#132C68"
-                    endColor="#1E3A7A"
-                  />
-                </Box>
-              </Flex>
-            ))}
-          </VStack>
-        ) : (
-          <List mt="2px" mb={0} position="relative" right="11px">
-            {employees
-              .filter((employee) => !filter || employee.department === filter)
-              .filter((employee) =>
-                `${employee.firstName} ${employee.lastName}`
-                  .toLowerCase()
-                  .includes(searchText.toLowerCase())
-              )
-              .map((employee) => (
-                <ListItem
-                  key={employee._id}
-                  borderBottom="1px solid"
-                  borderColor="#1E355A"
+      {/* LIST AREA */}
+      <Flex
+        mt={4}
+        flex="1"
+        overflow="hidden"
+        borderRadius={{ base: "12px", md: "20px" }}
+        bg="transparent"
+      >
+        <Box w="100%" h="100%" overflowY="auto" borderRadius="inherit">
+          {loading ? (
+            <VStack spacing={0}>
+              {[...Array(6)].map((_, index) => (
+                <Flex
+                  key={index}
+                  w="100%"
                   bg="#0A1F57"
-                  mb={0}
+                  borderBottom="1px solid #1E355A"
+                  p={4}
+                  align="center"
+                  gap={4}
                 >
-                  <EmployeeCard key={employee.employeeID} employee={employee} />
-                </ListItem>
-              ))}
-          </List>
-        )}
-      </Box>
+                  <SkeletonCircle size="12" />
 
-      <Box bg="#03143B" height="70px" mb="2px"></Box>
-    </VStack>
+                  <Box flex="1">
+                    <Skeleton
+                      height="16px"
+                      width="60%"
+                      mb={3}
+                      borderRadius="6px"
+                      startColor="#132C68"
+                      endColor="#1E3A7A"
+                    />
+
+                    <SkeletonText
+                      noOfLines={2}
+                      spacing="3"
+                      skeletonHeight="10px"
+                      startColor="#132C68"
+                      endColor="#1E3A7A"
+                    />
+                  </Box>
+                </Flex>
+              ))}
+            </VStack>
+          ) : (
+            <List spacing={0}>
+              {employees
+                .filter((employee) => !filter || employee.department === filter)
+                .filter((employee) =>
+                  `${employee.firstName} ${employee.lastName}`
+                    .toLowerCase()
+                    .includes(searchText.toLowerCase())
+                )
+                .map((employee) => (
+                  <ListItem
+                    key={employee._id}
+                    bg="#0A1F57"
+                    borderBottom="1px solid #1E355A"
+                  >
+                    <EmployeeCard employee={employee} />
+                  </ListItem>
+                ))}
+            </List>
+          )}
+        </Box>
+      </Flex>
+
+      {/* FOOTER SPACER  */}
+      <Box h="50px" bg="#03143B" borderRadius="10px"></Box>
+    </Flex>
   );
 };
 
