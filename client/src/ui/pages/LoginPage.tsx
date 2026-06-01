@@ -23,6 +23,7 @@ import { FieldValues, useForm } from "react-hook-form";
 import "../styles/App.css";
 import { useState } from "react";
 import useAdminUser from "../../store/authStore";
+import AdminUser from "../../shared/types/AdminUser";
 
 const schema = z.object({
   email: z.string(),
@@ -40,7 +41,7 @@ const LoginPage = () => {
     resolver: zodResolver(schema),
   });
 
-  const handleLogin = async (data: FieldValues) => {
+  const handleLogin = async (data: AuthData) => {
     console.log("Log in initiated...", data);
     const credentials = { email: data.email, password: data.password };
     try {
@@ -63,7 +64,6 @@ const LoginPage = () => {
       setErrorMessage("Email et/ou mot de passe incorrect.");
     }
   };
-
   const handleChange = () => {
     setErrorMessage("");
   };

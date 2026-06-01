@@ -10,7 +10,6 @@ router.post("/", authorize, verifyRole("manager"), async (req, res) => {
   try {
     const io = req.app.get("io");
     const announcement = {
-      // title: req.body.title,
       message: req.body.message,
       createdAt: new Date(),
     };

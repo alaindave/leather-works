@@ -1,34 +1,28 @@
 const dns = require("dns");
+const nodemailer = require("nodemailer");
 
 dns.setDefaultResultOrder("ipv4first");
 
-const nodemailer = require("nodemailer");
-
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  requireTLS: true,
+  service: "gmail",
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-
-  family: 4,
-
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
 });
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("SMTP verify error:", error);
-  } else {
-    console.log("SMTP server ready:", success);
+(async () => {
+  try {
+    await transporter.verify();
+    console.log("SMTP READY (Gmail connected successfully)");
+  } catch (error) {
+    console.error("SMTP VERIFY FAILED");
+    console.error("Message:", error.message);
+    console.error("Code:", error.code);
+    console.error("Response:", error.response);
   }
-});
+})();
 
 const sendLeaveRequestEmail = async ({
   employeeName,
@@ -37,51 +31,57 @@ const sendLeaveRequestEmail = async ({
   subject,
   notes,
 }) => {
-  return await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: process.env.MANAGER_EMAIL,
-    subject: "Nouvelle demande de congé",
+  try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      throw new Error(
+        "Missing EMAIL_USER or EMAIL_PASS in environment variables"
+      );
+    }
 
-    html: `
-      <div style="
-        font-family: Arial;
-        padding: 20px;
-      ">
-        <h2>
-        Nouvelle demande de congé
-        </h2>
+    const info = await transporter.sendMail({
+      from: `Leather Works <${process.env.EMAIL_USER}>`,
+      to: process.env.MANAGER_EMAIL,
 
-        <p>
-          <strong>Employé:</strong>
-          ${employeeName}
-        </p>
+      subject: "Nouvelle demande de congé",
 
-        <p>
-          <strong>Date de début de congé: </strong>
-          ${new Date(startDate).toLocaleDateString("fr-FR")}
-        </p>
+      html: `
+        <div style="font-family: Arial; padding: 20px;">
+          <h2>Nouvelle demande de congé</h2>
 
-        <p>
-          <strong>Date de fin de congé: </strong>
-          ${new Date(endDate).toLocaleDateString("fr-FR")}
-        </p>
+          <p><strong>Employé:</strong> ${employeeName}</p>
 
-        <p>
-          <strong>Motif:</strong>
-          ${subject}
-        </p>
+          <p><strong>Date de début:</strong> ${new Date(
+            startDate
+          ).toLocaleDateString("fr-FR")}</p>
 
-        <p>
-          <strong>Notes:</strong>
-          ${notes}
-        </p>
-        
-        <p>
-         Veuillez vous connecter dans l'application Leather Works pour approuver ou refuser la demande.
-        </p>
-      </div>
-    `,
-  });
+          <p><strong>Date de fin:</strong> ${new Date(
+            endDate
+          ).toLocaleDateString("fr-FR")}</p>
+
+          <p><strong>Motif:</strong> ${subject}</p>
+
+          <p><strong>Notes:</strong> ${notes}</p>
+
+          <p>
+            Veuillez vous connecter dans l'application Leather Works pour approuver ou refuser la demande.
+          </p>
+        </div>
+      `,
+    });
+
+    console.log(" Email sent successfully:", info.messageId);
+
+    return info;
+  } catch (error) {
+    console.error(" EMAIL SEND FAILED");
+
+    console.error("Message:", error.message);
+    console.error("Code:", error.code);
+    console.error("Response:", error.response);
+    console.error("Command:", error.command);
+
+    throw error;
+  }
 };
 
 module.exports = sendLeaveRequestEmail;

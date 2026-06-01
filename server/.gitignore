@@ -14,9 +14,10 @@ lerna-debug.log*
 /dist
 /dist-ssr
 /dist-react
-/dis-app
+/dist-app
 /dist-electron
 /release
+.env
 *.local
 
 *.exe

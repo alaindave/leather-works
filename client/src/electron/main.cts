@@ -9,7 +9,11 @@ import { createSocket } from "./socket.cjs";
 import { isDev } from "./util.cjs";
 
 console.log("MAIN STARTED");
-const API_URL = process.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = app.isPackaged
+  ? "https://striking-celebration-production-5910.up.railway.app"
+  : process.env.VITE_API_URL;
+
+console.log("API URL:", API_URL);
 
 //Create main and splash windows
 let mainWindow: BrowserWindow;
