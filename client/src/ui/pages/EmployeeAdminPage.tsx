@@ -95,6 +95,7 @@ const EmployeeAdminPage = () => {
   useEffect(() => {
     const unsubscribe = window.electron.announcements.onNew((data) => {
       setLiveAnnouncement(data);
+      console.log("Live announcement fetched: ", data.message);
     });
 
     return () => unsubscribe();
@@ -127,8 +128,6 @@ const EmployeeAdminPage = () => {
       console.error("An error occured while creating announcement: ", error);
     }
   };
-
-  console.log("Live announcement value: ", liveAnnouncement?.message);
 
   return (
     <Flex
@@ -238,7 +237,7 @@ const EmployeeAdminPage = () => {
             <Icon as={FaRegNoteSticky} color="yellow.400" fontSize="lg" />
             <Text
               color="white"
-              fontSize="lg"
+              fontSize="1.3rem"
               fontWeight="600"
               position="relative"
               top="0.4rem"
@@ -255,8 +254,8 @@ const EmployeeAdminPage = () => {
             resize="none"
             bg="#091735"
             border="1px solid rgba(255,255,255,0.1)"
-            color="gray.200"
-            fontSize="lg"
+            color="#ffffff"
+            fontSize="1.2rem"
             _focus={{
               borderColor: "yellow.400",
               boxShadow: "0 0 0 1px #F4C20D",
@@ -296,7 +295,7 @@ const EmployeeAdminPage = () => {
               resize="none"
               bg="#091735"
               border="1px solid rgba(255,255,255,0.1)"
-              color="gray.200"
+              color="#ffffff"
               _hover={{ borderColor: "yellow.300" }}
               _focus={{
                 borderColor: "yellow.400",
@@ -324,12 +323,18 @@ const EmployeeAdminPage = () => {
           >
             <Flex align="center" gap={2} mb={3}>
               <Icon as={TfiAnnouncement} color="yellow.300" fontSize="lg" />
-              <Text color="white" fontSize="lg" fontWeight="600">
+              <Text
+                color="white"
+                fontSize="1.3rem"
+                fontWeight="600"
+                position="relative"
+                top="0.5rem"
+              >
                 Messages de la direction
               </Text>
             </Flex>
 
-            <Text color="gray.200" fontSize="md">
+            <Text color="#ffffff" fontSize="1.2rem">
               {liveAnnouncement?.message || oldAnnouncements[0]?.message}
             </Text>
           </Box>

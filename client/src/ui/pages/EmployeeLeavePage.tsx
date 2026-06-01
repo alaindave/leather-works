@@ -274,10 +274,10 @@ const EmployeeLeavePage = () => {
         <Box
           mt="0.5rem"
           ml="0.3rem"
-          mr="1.2rem"
+          mr="1.5rem"
           bg="#03143B"
           height="10rem"
-          width="80vw"
+          width="78.5vw"
           borderRadius="20px"
         >
           <Flex>
@@ -332,7 +332,7 @@ const EmployeeLeavePage = () => {
             >
               <Box>
                 <Text
-                  fontSize="35px"
+                  fontSize="1.9rem"
                   fontStyle="revert"
                   fontWeight="600"
                   color="gray.200"
@@ -344,10 +344,10 @@ const EmployeeLeavePage = () => {
               <Box
                 background="#08162b"
                 height="4rem"
-                width="78vw"
+                width="79vw"
                 position="relative"
-                top="21rem"
-                right="14rem"
+                top="22rem"
+                right="14.5rem"
               ></Box>
             </Flex>
           ) : (
@@ -358,7 +358,7 @@ const EmployeeLeavePage = () => {
                 background="#08162b"
                 margin="0.3rem"
                 height="66px"
-                width="80vw"
+                width="78.5vw"
                 borderRadius="12px"
               >
                 <Text fontSize="18px" color="#d6b65c" ml={8} mt={4}>
@@ -416,7 +416,12 @@ const EmployeeLeavePage = () => {
                   Actions
                 </Text>
               </Grid>
-              <Box height="90vh" width="80vw" overflowX="auto" overflowY="auto">
+              <Box
+                height="90vh"
+                width="80vw"
+                overflowX="hidden"
+                overflowY="auto"
+              >
                 {leaves.map((leave) => (
                   <EmployeeLeaveCard
                     key={leave._id}
@@ -429,7 +434,7 @@ const EmployeeLeavePage = () => {
               <Box
                 background="#08162b"
                 height="80px"
-                width="80vw"
+                width="79vw"
                 mb="1rem"
                 ml="0.3rem"
                 mr="0.6rem"
@@ -471,7 +476,7 @@ const EmployeeLeavePage = () => {
       <Box>
         <Modal size="5xl" isOpen={isOpen} onClose={onClose}>
           <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
-          <ModalContent bg="#08162b" position="relative">
+          <ModalContent bg="#08162b" position="relative" bottom="1rem">
             <form onSubmit={handleSubmit(onSubmit)}>
               <ModalHeader color="#ffffff" position="relative" left="120px">
                 <HStack>

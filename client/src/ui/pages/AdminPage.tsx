@@ -28,7 +28,7 @@ const AdminPage = () => {
       <Box marginTop="3.2rem" marginLeft="8px">
         <Logo text="Gestion de stock et de personnel" />
       </Box>
-      <HStack spacing="45px" position="relative" top="150px" left="300px">
+      <HStack spacing="45px" position="relative" top="4rem" left="20rem">
         <Card
           backgroundColor="#08162b"
           height="380px"

@@ -155,7 +155,7 @@ const EmployeeAttendanceCard = ({
       bg="#0E1E47"
       borderRadius="18px"
       border="1px solid #22345F"
-      w="80vw"
+      w="78.5vw"
     >
       {/* Employee Name */}
       <Text color="gray.200" fontSize="18px">

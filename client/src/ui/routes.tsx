@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
 import AdminPage from "./pages/AdminPage";
 import App from "./App";
 import EmployeeAdminPage from "./pages/EmployeeAdminPage";
@@ -9,7 +9,7 @@ import ErrorPage from "./pages/ErrorPage";
 import EmployeeLeavePage from "./pages/EmployeeLeavePage";
 import EmployeeAttendancePage from "./pages/EmployeeAttendancePage";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <App />,

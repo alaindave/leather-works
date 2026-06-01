@@ -5,6 +5,8 @@ import { Announcement } from "../shared/types/Announcement";
 
 let socket: Socket | null = null;
 
+const API_URL = process.env.VITE_API_URL || "http://localhost:5000";
+
 export async function createSocket(
   mainWindow: BrowserWindow
 ): Promise<Socket | null> {
@@ -16,7 +18,7 @@ export async function createSocket(
       return null;
     }
 
-    socket = io("http://localhost:5000", {
+    socket = io(`${API_URL}`, {
       auth: {
         token,
       },
@@ -32,7 +34,7 @@ export async function createSocket(
 
     // Announcements event
     socket.on("new-announcement", (data: Announcement) => {
-      console.log("Announcement received:", data);
+      console.log("Live Announcement received from server:", data);
       mainWindow.webContents.send("announcement:new", data);
     });
 

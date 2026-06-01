@@ -368,6 +368,7 @@ const EmployeeAttendancePage = () => {
             mb="0.3rem"
             height="70px"
             marginLeft="5px"
+            width="78.5vw"
           >
             <Text
               color="#d6b65c"
@@ -432,7 +433,7 @@ const EmployeeAttendancePage = () => {
           </Grid>
 
           {/* ROWS */}
-          <Box height="90vh" width="80vw" overflowX="auto" overflowY="auto">
+          <Box height="90vh" width="79vw" overflowX="hidden" overflowY="auto">
             {attendances
               .filter(
                 (attendance) =>
@@ -503,7 +504,7 @@ const EmployeeAttendancePage = () => {
         <Box
           position="relative"
           mt="0.5rem"
-          mr="0.2rem"
+          mr="0.4rem"
           bg="#03143B"
           height="150px"
           borderRadius="20px"
@@ -515,7 +516,7 @@ const EmployeeAttendancePage = () => {
             marginLeft="15px"
             marginTop="10px"
           >
-            Présence
+            Présences
           </Text>
           <Text
             color="#ffffff"

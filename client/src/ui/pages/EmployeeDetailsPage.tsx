@@ -61,7 +61,13 @@ const EmployeeDetailsPage = () => {
         onClose={onClose}
       >
         <AlertDialogOverlay backdropFilter="blur(8px)">
-          <AlertDialogContent bg="#08162b" color="white" mx={4}>
+          <AlertDialogContent
+            bg="#08162b"
+            color="white"
+            mx={4}
+            position="relative"
+            top="3rem"
+          >
             <AlertDialogHeader>Supprimer l'employé</AlertDialogHeader>
 
             <AlertDialogBody>
@@ -77,13 +83,13 @@ const EmployeeDetailsPage = () => {
                 <Button
                   bg="brown"
                   onClick={handleDelete}
-                  leftIcon={<MdAutoDelete />}
+                  leftIcon={<MdAutoDelete fontSize="1.2rem" />}
                 >
                   Supprimer
                 </Button>
 
                 <Button ref={cancelRef} onClick={onClose}>
-                  <RxCrossCircled />
+                  <RxCrossCircled fontSize="1.2rem" />
                   Annuler
                 </Button>
               </HStack>

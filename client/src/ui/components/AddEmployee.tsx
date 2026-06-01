@@ -127,7 +127,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
       </Button>
       <Modal size="5xl" isOpen={isOpen} onClose={onClose}>
         <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
-        <ModalContent position="relative" top="100px" bg="#08162b">
+        <ModalContent position="relative" top="2.5rem" bg="#08162b">
           <form onSubmit={handleSubmit(onSubmit)}>
             <ModalHeader color="#ffffff">
               <HStack>

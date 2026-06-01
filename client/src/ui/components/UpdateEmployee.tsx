@@ -181,7 +181,12 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
         returnFocusOnClose={false}
       >
         <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
-        <ModalContent bg="#08162b" position="relative" top="100px" width="53vw">
+        <ModalContent
+          bg="#08162b"
+          position="relative"
+          top="2.5rem"
+          width="53vw"
+        >
           <form
             onSubmit={handleSubmit(
               (data) => {

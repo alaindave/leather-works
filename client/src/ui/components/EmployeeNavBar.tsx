@@ -50,6 +50,7 @@ const EmployeeNavBar = () => {
 
   return (
     <Flex
+      position="relative"
       direction="column"
       border="none"
       marginTop="10px"
@@ -58,7 +59,7 @@ const EmployeeNavBar = () => {
       padding="8px"
       background="#03143B"
       height="97vh"
-      width="280px"
+      width="17.5rem"
     >
       <Box padding="10px" position="relative" right="13px">
         <Logo text="Gestion de personnel" />
@@ -116,8 +117,9 @@ const EmployeeNavBar = () => {
         borderWidth="0.2px"
         borderColor="gray"
         borderRadius="15px"
-        position="relative"
-        top="12rem"
+        position="absolute"
+        left="0.1rem"
+        bottom="0.1rem"
         height="60px"
         width="277px"
         right="7px"

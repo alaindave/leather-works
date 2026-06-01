@@ -18,7 +18,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
       <Tabs variant="enclosed" h="100%" display="flex" flexDirection="column">
         <TabList
           borderBottomColor="rgba(255,255,255,0.08)"
-          overflowX="auto"
+          overflowX="hidden"
           overflowY="hidden"
           whiteSpace="nowrap"
           flexShrink={0}

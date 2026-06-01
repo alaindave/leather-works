@@ -93,13 +93,14 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
     <Grid
       templateColumns={gridTemplate}
       alignItems="center"
+      ml="0.2rem"
       px={4}
       py={4}
       bg="#0E1E47"
       borderRadius="18px"
       border="1px solid #22345F"
       height="78px"
-      width="80vw"
+      width="78.5vw"
       marginBottom="0.8px"
     >
       <Box ml="11px" mb={14}>
@@ -122,20 +123,20 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           <LeaveNotesPopover subject={subject} notes={notes} />
         </Text>
       </Box>
-      <Box mb={14}>
-        <Text
-          color={
-            status === "Approuvé"
-              ? "#68D391"
-              : status === "Refusé"
-              ? "#FC8181"
-              : "#F6E05E"
-          }
-          fontWeight="600"
-          fontSize="1.05rem"
-        >
-          {status}
-        </Text>
+      <Box mb={14} width="7rem">
+        {status === "En attente d'approbation" ? (
+          <Text color="#F6E05E" fontWeight="600" fontSize="1.05rem">
+            En attente{"\n"}d'approbation
+          </Text>
+        ) : (
+          <Text
+            color={status === "Approuvé" ? "#68D391" : "#FC8181"}
+            fontWeight="600"
+            fontSize="1.05rem"
+          >
+            {status}
+          </Text>
+        )}
       </Box>
       <Box mb={12}>
         <Text

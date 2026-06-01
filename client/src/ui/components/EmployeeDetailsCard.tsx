@@ -15,8 +15,8 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
       mb={3}
       p={4}
       w="100%"
-      minH="50px"
-      maxH="100px"
+      minH="4rem"
+      maxH="6rem"
       bg="#0E1E47"
       borderRadius="12px"
       borderWidth="1px"
@@ -26,7 +26,7 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
         <ChakraIcon as={icon} color="#F2B705" boxSize={{ base: 5, md: 6 }} />
       </Box>
 
-      <Box flex="1" minW={0}>
+      <Box flex="1" minW={0} ml="0.3rem" mt="1.5rem">
         <Text
           color="#C7D2FE"
           fontWeight="700"
@@ -39,6 +39,8 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
           color="gray.300"
           fontSize={{ base: "md", md: "lg" }}
           wordBreak="break-word"
+          position="relative"
+          bottom="0.8rem"
         >
           {value || "N.D."}
           {property === "Salaire" ? " FBU" : ""}

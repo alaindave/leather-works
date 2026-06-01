@@ -9,8 +9,8 @@ const EmployeeAdminLayout = () => {
       height="100vh"
       width="100%"
       bgGradient="radial(#47370b, #061962)"
-      overflowY="auto"
-      overflowX="auto"
+      overflowY="hidden"
+      overflowX="hidden"
     >
       <Box ml={1.5}>
         <EmployeeNavBar />
