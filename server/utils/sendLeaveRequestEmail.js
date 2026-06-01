@@ -1,29 +1,10 @@
-const dns = require("dns");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-dns.setDefaultResultOrder("ipv4first");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-(async () => {
-  try {
-    await transporter.verify();
-    console.log("SMTP READY (Gmail connected successfully)");
-  } catch (error) {
-    console.error("SMTP VERIFY FAILED");
-    console.error("Message:", error.message);
-    console.error("Code:", error.code);
-    console.error("Response:", error.response);
-  }
-})();
-
+// =========================
+// SEND LEAVE REQUEST EMAIL
+// =========================
 const sendLeaveRequestEmail = async ({
   employeeName,
   startDate,
@@ -32,14 +13,12 @@ const sendLeaveRequestEmail = async ({
   notes,
 }) => {
   try {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      throw new Error(
-        "Missing EMAIL_USER or EMAIL_PASS in environment variables"
-      );
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("Missing RESEND_API_KEY in environment variables");
     }
 
-    const info = await transporter.sendMail({
-      from: `Leather Works <${process.env.EMAIL_USER}>`,
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM,
       to: process.env.MANAGER_EMAIL,
 
       subject: "Nouvelle demande de congé",
@@ -69,16 +48,12 @@ const sendLeaveRequestEmail = async ({
       `,
     });
 
-    console.log(" Email sent successfully:", info.messageId);
+    console.log("Email sent via Resend:", result);
 
-    return info;
+    return result;
   } catch (error) {
-    console.error(" EMAIL SEND FAILED");
-
-    console.error("Message:", error.message);
-    console.error("Code:", error.code);
-    console.error("Response:", error.response);
-    console.error("Command:", error.command);
+    console.error(" RESEND EMAIL ERROR:");
+    console.error(error);
 
     throw error;
   }
