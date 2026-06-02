@@ -79,7 +79,7 @@ const updateEmployee = async (id, data) => {
 const deleteEmployee = async (id) => {
   try {
     await Employee.deleteOne({ _id: id });
-    await DailyAttendance.deleteMany({ employee: id });
+    await Attendance.deleteMany({ employee: id });
     await Leave.deleteMany({ employee: id });
     console.log("Transaction was successfull.");
   } catch (e) {

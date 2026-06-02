@@ -52,6 +52,7 @@ const EmployeeAttendanceCard = ({
   onDelete,
   gridTemplate,
 }: Props) => {
+  if (!attendance?.employee) return null;
   const {
     _id,
     employee: { firstName, lastName, employeeID, role, department },
@@ -181,10 +182,11 @@ const EmployeeAttendanceCard = ({
       {/* Clock In */}
 
       {localAttendance.lateMinutes > 0 ? (
-        <VStack position="relative" top="1.3rem" right="1.2rem">
+        <VStack position="relative" top="1.3rem" right="1.5rem">
           <Editable
             position="relative"
-            bottom="8px"
+            bottom="0.5rem"
+            right="1.5rem"
             value={clockInValue}
             onChange={setClockInValue}
             submitOnBlur={false}
@@ -221,7 +223,8 @@ const EmployeeAttendanceCard = ({
       ) : (
         <Editable
           position="relative"
-          bottom="8px"
+          right="1.5rem"
+          bottom="0.5rem"
           value={clockInValue}
           onChange={setClockInValue}
           submitOnBlur={false}
@@ -257,7 +260,8 @@ const EmployeeAttendanceCard = ({
         {localAttendance.clockOut ? (
           <Editable
             position="relative"
-            bottom="8px"
+            bottom="0.5rem"
+            right="1.5rem"
             value={clockOutValue}
             onChange={setClockOutValue}
             submitOnBlur={false}
@@ -312,7 +316,8 @@ const EmployeeAttendanceCard = ({
             selectAllOnFocus
             width="80px"
             position="relative"
-            bottom="8px"
+            bottom="0.5rem"
+            right="1.5rem"
           >
             <EditablePreview
               color="red.500"

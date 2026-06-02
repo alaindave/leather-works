@@ -135,11 +135,11 @@ const EmployeeAttendancePage = () => {
               Etes vous sur de vouloir supprimer{" "}
               <span style={{ color: "#F2B705", fontWeight: "bold" }}>
                 {" "}
-                {attendance?.employee.firstName}{" "}
+                {attendance?.employee?.firstName}{" "}
               </span>
               <span style={{ color: "#F2B705", fontWeight: "bold" }}>
                 {" "}
-                {attendance?.employee.lastName}{" "}
+                {attendance?.employee?.lastName}{" "}
               </span>
               de la liste de présence?
             </AlertDialogBody>
@@ -344,7 +344,7 @@ const EmployeeAttendancePage = () => {
           attendances
             .filter((a) => !filter || a.employee.department === filter)
             .filter((a) =>
-              `${a.employee.firstName} ${a.employee.lastName}`
+              `${a.employee?.firstName} ${a.employee?.lastName}`
                 .toLowerCase()
                 .includes(searchText.toLowerCase())
             )
