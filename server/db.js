@@ -92,7 +92,7 @@ const deleteEmployee = async (id) => {
 //Add attendance
 const addAttendance = async (employeeId, date, clockIn) => {
   // Expected clock in time
-  const expectedHour = 14;
+  const expectedHour = 8;
   const expectedMinute = 0;
   const expectedClockIn = new Date();
 
@@ -104,19 +104,19 @@ const addAttendance = async (employeeId, date, clockIn) => {
 
   const status = lateMinutes > 0 ? "retard" : "ponctuel";
 
-  console.log("clockIn to save to db: ", clockIn);
-  console.log("Type of clockin: ", typeof clockIn);
+  console.log("clockIn time to save to db: ", clockIn);
   console.log("Attendance status:", status);
 
-  const dailyAttendance = new Attendance({
+  const attendance = new Attendance({
     employee: employeeId,
     date,
     clockIn,
+    lateMinutes,
     status,
   });
 
   try {
-    return await dailyAttendance.save();
+    return await attendance.save();
   } catch (error) {
     console.error(error);
     throw error;

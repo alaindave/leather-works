@@ -6,5 +6,6 @@ export default interface Attendance {
   date: string;
   clockIn: Date;
   clockOut: Date;
+  lateMinutes: number;
   status: string;
 }

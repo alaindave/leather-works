@@ -180,7 +180,7 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
         onClose={onClose}
         returnFocusOnClose={false}
       >
-        <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
+        <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
         <ModalContent
           bg="#08162b"
           position="relative"

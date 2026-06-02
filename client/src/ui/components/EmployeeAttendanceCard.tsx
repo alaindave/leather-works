@@ -7,14 +7,13 @@ import {
   Grid,
   HStack,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 
 import axios from "axios";
 import { memo, useMemo, useState } from "react";
-
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
-
 import type Attendance from "../../shared/types/Attendance";
 
 interface Props {
@@ -32,6 +31,21 @@ const formatTime = (date?: string | Date | null) => {
     new Date(date).getMinutes()
   ).padStart(2, "0")}`;
 };
+
+function formatLateMinutes(lateMinutes: number): string {
+  if (lateMinutes < 60) {
+    return `${lateMinutes} min`;
+  }
+
+  const hours = Math.floor(lateMinutes / 60);
+  const minutes = lateMinutes % 60;
+
+  if (minutes === 0) {
+    return `${hours} h`;
+  }
+
+  return `${hours} h ${minutes} min`;
+}
 
 const EmployeeAttendanceCard = ({
   attendance,
@@ -66,19 +80,6 @@ const EmployeeAttendanceCard = ({
   // Edit Clock In
   // =========================
   const handleEditClockIn = async (newTime: string) => {
-    // console.log("Time edited:", newTime);
-    // try {
-    //   const response = await axios.put<Attendance>(
-    //     `${API_URL}/attendances/${_id}`,
-    //     {
-    //       clockIn: newTime,
-    //     }
-    //   );
-    //   setLocalAttendance(response.data);
-    // } catch (error) {
-    //   console.error("Error editing clock in:", error);
-    // }
-
     const [hours, minutes] = newTime.split(":").map(Number);
     const clockInDate = new Date(localAttendance.clockIn);
     clockInDate.setHours(hours, minutes, 0, 0);
@@ -141,7 +142,6 @@ const EmployeeAttendanceCard = ({
       setClockOutMode("completed");
     } catch (error) {
       console.error("Error clocking out:", error);
-
       setClockOutMode("editing");
     }
   };
@@ -156,6 +156,7 @@ const EmployeeAttendanceCard = ({
       borderRadius="18px"
       border="1px solid #22345F"
       w="78.5vw"
+      height="6.3rem"
     >
       {/* Employee Name */}
       <Text color="gray.200" fontSize="18px">
@@ -173,37 +174,77 @@ const EmployeeAttendanceCard = ({
       </Text>
 
       {/* Department */}
-      <Text position="relative" right="8px" color="gray.200" fontSize="18px">
+      <Text color="gray.200" fontSize="1.1rem">
         {department}
       </Text>
 
       {/* Clock In */}
-      <Editable
-        position="relative"
-        bottom="8px"
-        right="10px"
-        value={clockInValue}
-        onChange={setClockInValue}
-        submitOnBlur={false}
-        width="80px"
-        selectAllOnFocus
-        onSubmit={handleEditClockIn}
-      >
-        <EditablePreview
-          color="#63E6BE"
-          fontSize="18px"
-          fontWeight="500"
-          px={2}
-          borderRadius="6px"
-          transition="0.2s"
-          _hover={{
-            bg: "rgba(255,255,255,0.05)",
-            cursor: "pointer",
-          }}
-        />
 
-        <EditableInput color="white" fontSize="18px" width="80px" />
-      </Editable>
+      {localAttendance.lateMinutes > 0 ? (
+        <VStack position="relative" top="1.3rem" right="1.2rem">
+          <Editable
+            position="relative"
+            bottom="8px"
+            value={clockInValue}
+            onChange={setClockInValue}
+            submitOnBlur={false}
+            width="80px"
+            selectAllOnFocus
+            onSubmit={handleEditClockIn}
+          >
+            <EditablePreview
+              color="red.300"
+              fontSize="18px"
+              fontWeight="500"
+              px={2}
+              borderRadius="6px"
+              transition="0.2s"
+              _hover={{
+                bg: "rgba(255,255,255,0.05)",
+                cursor: "pointer",
+              }}
+            />
+
+            <EditableInput color="white" fontSize="18px" width="80px" />
+          </Editable>
+          <Text
+            color="#ffffff"
+            fontSize="0.75rem"
+            position="relative"
+            left="0.3rem"
+            bottom="1.6rem"
+          >
+            {" "}
+            {formatLateMinutes(localAttendance.lateMinutes)}{" "}
+          </Text>
+        </VStack>
+      ) : (
+        <Editable
+          position="relative"
+          bottom="8px"
+          value={clockInValue}
+          onChange={setClockInValue}
+          submitOnBlur={false}
+          width="80px"
+          selectAllOnFocus
+          onSubmit={handleEditClockIn}
+        >
+          <EditablePreview
+            color="#63E6BE"
+            fontSize="18px"
+            fontWeight="500"
+            px={2}
+            borderRadius="6px"
+            transition="0.2s"
+            _hover={{
+              bg: "rgba(255,255,255,0.05)",
+              cursor: "pointer",
+            }}
+          />
+
+          <EditableInput color="white" fontSize="18px" width="80px" />
+        </Editable>
+      )}
 
       {/* Clock Out */}
       <Box
@@ -216,7 +257,6 @@ const EmployeeAttendanceCard = ({
         {localAttendance.clockOut ? (
           <Editable
             position="relative"
-            right="8px"
             bottom="8px"
             value={clockOutValue}
             onChange={setClockOutValue}
@@ -249,7 +289,7 @@ const EmployeeAttendanceCard = ({
             }}
           >
             <EditablePreview
-              color="#FF9E7A"
+              color="yellow.500"
               fontSize="18px"
               fontWeight="500"
               px={2}
@@ -301,7 +341,7 @@ const EmployeeAttendanceCard = ({
       </Box>
 
       {/* Actions */}
-      <HStack spacing={1} position="relative" bottom="0.5rem" right="0.8rem">
+      <HStack spacing={1} position="relative" bottom="0.5rem" right="0.6rem">
         {!localAttendance.clockOut && (
           <Button
             bg="transparent"

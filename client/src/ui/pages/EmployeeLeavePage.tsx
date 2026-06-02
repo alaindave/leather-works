@@ -475,7 +475,7 @@ const EmployeeLeavePage = () => {
       {/* Leave submission modal */}
       <Box>
         <Modal size="5xl" isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
+          <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
           <ModalContent bg="#08162b" position="relative" bottom="1rem">
             <form onSubmit={handleSubmit(onSubmit)}>
               <ModalHeader color="#ffffff" position="relative" left="120px">

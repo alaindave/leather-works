@@ -22,10 +22,9 @@ router.post("/:employeeId", async (req, res) => {
     if (attendance)
       return res.status(404).send("The employee has already clocked in");
     console.log("Employee to attend:", employee);
-    const date = new Date(2026, 5, 1).toLocaleDateString("fr-FR");
+    const date = new Date().toISOString().split("T")[0];
     console.log("current date", date);
     console.log("current time", req.body);
-
     const attendanceReport = await addAttendance(
       req.params.employeeId,
       date,
@@ -38,18 +37,6 @@ router.post("/:employeeId", async (req, res) => {
     res.status(500).send(error);
   }
 });
-
-// //Get all attendances
-// router.get("/", async (req, res) => {
-//   try {
-//     const attendances = await getAllAttendances();
-//     if (!attendances) return res.status(404).send("No attendances found");
-//     console.log("Retrieved attendances:", attendances);
-//     res.status(200).send(attendances);
-//   } catch (error) {
-//     console.error("Unable to retrieve attendances.Error:", error);
-//   }
-// });
 
 //Get attendances by date
 router.get("/", async (req, res) => {

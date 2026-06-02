@@ -89,7 +89,10 @@ const EmployeeListPage = () => {
             </Text>
           </Box>
           <Spacer />
-          <AddEmployee onAddEmployee={handleAddEmployee} />
+
+          <Box position="relative" left="0.5rem" bottom="0.6rem">
+            <AddEmployee onAddEmployee={handleAddEmployee} />
+          </Box>
         </Flex>
 
         {/* ACTION ROW  */}
@@ -157,7 +160,7 @@ const EmployeeListPage = () => {
               ))}
             </VStack>
           ) : (
-            <List spacing={0}>
+            <List spacing={0} position="relative" right="1.5rem">
               {employees
                 .filter((employee) => !filter || employee.department === filter)
                 .filter((employee) =>

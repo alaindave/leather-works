@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Select from "react-select";
 
 function getLast7Days() {
@@ -9,13 +9,13 @@ function getLast7Days() {
     const date = new Date();
     date.setDate(date.getDate() - i);
 
-    const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+    const dayOfWeek = date.getDay();
 
     // skip weekend
     if (dayOfWeek !== 0 && dayOfWeek !== 6) {
       days.push({
         label: formatDate(date),
-        value: date.toLocaleDateString("fr-FR"),
+        value: date.toISOString().split("T")[0],
       });
     }
 
@@ -49,15 +49,20 @@ interface Option {
 
 export default function DateDropdown({ onChange }: Props) {
   const options: Option[] = getLast7Days();
-
   const [selected, setSelected] = useState<Option | null>(options[0] || null);
-
   function handleChange(option: Option | null) {
-    setSelected(option);
     if (option) {
+      setSelected(option);
       onChange?.(option.value);
     }
   }
+
+  useEffect(() => {
+    console.log("DateDropdown mounted");
+    return () => {
+      console.log("DateDropdown unmounted");
+    };
+  }, []);
 
   return (
     <Select
