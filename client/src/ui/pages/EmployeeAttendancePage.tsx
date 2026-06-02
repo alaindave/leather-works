@@ -7,6 +7,9 @@ import {
   AlertDialogOverlay,
   Box,
   Button,
+  Editable,
+  EditableInput,
+  EditablePreview,
   Flex,
   Grid,
   HStack,
@@ -25,6 +28,7 @@ import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
 import { useNavigate } from "react-router-dom";
+import DateDropdown from "../components/DateDropdown";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -48,6 +52,9 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
 const EmployeeAttendancePage = () => {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [attendance, setAttendance] = useState<Attendance | null>(null);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toLocaleDateString("fr-FR")
+  );
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState("");
   const [time, setTime] = useState(new Date());
@@ -69,7 +76,11 @@ const EmployeeAttendancePage = () => {
     }, 1000);
 
     axios
-      .get<Attendance[]>(`${API_URL}/attendances`)
+      .get<Attendance[]>(`${API_URL}/attendances`, {
+        params: {
+          date: selectedDate,
+        },
+      })
       .then((res) => {
         setAttendances(res.data);
       })
@@ -81,7 +92,7 @@ const EmployeeAttendancePage = () => {
       });
 
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedDate]);
 
   const handleOnSearch = (searchText: string) => {
     setSearchText(searchText);
@@ -121,6 +132,27 @@ const EmployeeAttendancePage = () => {
       console.log(result);
     } catch (e) {
       console.log(e);
+    }
+  };
+
+  const handleAttendanceDay = async (attendanceDay: string) => {
+    console.log("Attendance day selected: ", attendanceDay);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/attendances?date=${attendanceDay}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch attendances");
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error(error);
+      return [];
     }
   };
 
@@ -464,17 +496,16 @@ const EmployeeAttendancePage = () => {
             borderRadius="16px"
             justify="space-between"
           >
-            <Text
-              color="#F2B705"
-              fontSize="1.5rem"
-              fontFamily="monospace"
-              fontWeight="600"
+            <Box
+              mb="1rem"
               mt="1rem"
               ml="1rem"
-              marginLeft="12px"
+              fontSize="1.3rem"
+              fontFamily="monospace"
+              fontWeight="600"
             >
-              Présence du {new Date().toLocaleDateString("fr-FR")}
-            </Text>
+              <DateDropdown onChange={(date) => setSelectedDate(date)} />
+            </Box>
             <Box
               color="#F2B705"
               fontSize="24px"
@@ -540,30 +571,26 @@ const EmployeeAttendancePage = () => {
         </Text>
         <Flex
           bg="#08162b"
-          mb="1rem"
-          mr="0.2rem"
-          height="5rem"
+          mb="1.2rem"
+          height="6rem"
           borderRadius="16px"
           justify="space-between"
         >
-          <Text
-            color="#F2B705"
-            fontSize="1.5rem"
+          <Box
+            mt="1.5rem"
+            ml="1rem"
+            fontSize="1.3rem"
             fontFamily="monospace"
             fontWeight="600"
-            position="relative"
-            top="22px"
-            marginLeft="12px"
           >
-            Présence du {new Date().toLocaleDateString("fr-FR")}
-          </Text>
+            <DateDropdown onChange={(date) => setSelectedDate(date)} />
+          </Box>
           <Box
             color="#F2B705"
             fontSize="24px"
             fontWeight="600"
-            position="relative"
-            top="25px"
-            marginRight="12px"
+            mt="1.3rem"
+            mr="1.3rem"
           >
             {String(time.getHours()).padStart(2, "0")}:
             {String(time.getMinutes()).padStart(2, "0")}:

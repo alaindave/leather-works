@@ -79,6 +79,7 @@
     "react-icons": "^4.7.1",
     "react-refresh": "^0.18.0",
     "react-router-dom": "^6.10.0",
+    "react-select": "^5.10.2",
     "simple-zustand-devtools": "^1.1.0",
     "socket.io-client": "^4.8.3",
     "sqlite3": "^6.0.1",

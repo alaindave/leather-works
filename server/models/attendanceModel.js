@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const dailyAttendanceSchema = new mongoose.Schema({
+const attendanceSchema = new mongoose.Schema({
   employee: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Employees",
@@ -8,7 +8,7 @@ const dailyAttendanceSchema = new mongoose.Schema({
   },
 
   date: {
-    type: Date,
+    type: String,
     required: true,
   },
 
@@ -17,18 +17,13 @@ const dailyAttendanceSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["ponctuel", "retard"],
+    enum: ["ponctuel", "retard", "absent", "congé"],
   },
 
   lateMinutes: { type: Number },
-
   totalHours: { type: Number },
-  notes: String,
 });
 
-dailyAttendanceSchema.index({ employee: 1, date: 1 }, { unique: true });
-const DailyAttendance = mongoose.model(
-  "DailyAttendance",
-  dailyAttendanceSchema
-);
-module.exports = DailyAttendance;
+attendanceSchema.index({ employee: 1, date: 1 }, { unique: true });
+const Attendance = mongoose.model("Attendance", attendanceSchema);
+module.exports = Attendance;

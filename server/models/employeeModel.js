@@ -20,8 +20,8 @@ const employeeSchema = new mongoose.Schema({
   salary: { type: String, required: true },
   status: {
     type: String,
-    enum: ["active", "leave", "inactive"],
-    default: "active",
+    enum: ["actif", "inactif"],
+    default: "actif",
     required: true,
   },
   remainingLeave: { type: Number, default: 20, required: true },

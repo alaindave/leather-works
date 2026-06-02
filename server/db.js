@@ -1,5 +1,5 @@
 const Employee = require("./models/employeeModel.js");
-const DailyAttendance = require("./models/dailyAttendanceModel.js");
+const Attendance = require("./models/attendanceModel.js");
 const Leave = require("./models/leaveModel.js");
 const { AdminUser } = require("./models/adminUserModel.js");
 const Announcement = require("./models/announcementModel.js");
@@ -108,7 +108,7 @@ const addAttendance = async (employeeId, date, clockIn) => {
   console.log("Type of clockin: ", typeof clockIn);
   console.log("Attendance status:", status);
 
-  const dailyAttendance = new DailyAttendance({
+  const dailyAttendance = new Attendance({
     employee: employeeId,
     date,
     clockIn,
@@ -123,10 +123,12 @@ const addAttendance = async (employeeId, date, clockIn) => {
   }
 };
 
-//Get all attendances
-const getAllAttendances = async () => {
+//Retrieve attendance by date
+const getAttendanceByDate = async (date) => {
   try {
-    return await DailyAttendance.find()
+    return await Attendance.find({
+      date,
+    })
       .sort({ clockIn: 1 })
       .populate("employee", "firstName lastName employeeID role department");
   } catch (error) {
@@ -138,10 +140,25 @@ const getAllAttendances = async () => {
   }
 };
 
+// //Get all attendances
+// const getAllAttendances = async () => {
+//   try {
+//     return await Attendance.find()
+//       .sort({ clockIn: 1 })
+//       .populate("employee", "firstName lastName employeeID role department");
+//   } catch (error) {
+//     console.error(
+//       "An error occured while fetching attendances from database: ",
+//       error
+//     );
+//     throw error;
+//   }
+// };
+
 //Retrieve attendance by employee ID
 const getAttendanceByEmployeeID = async (employeeObjectId) => {
   try {
-    return await DailyAttendance.findOne({
+    return await Attendance.findOne({
       employee: employeeObjectId,
     });
   } catch (error) {
@@ -153,7 +170,7 @@ const getAttendanceByEmployeeID = async (employeeObjectId) => {
 //Retrieve attendance by attendance ID
 const getAttendance = async (attendanceId) => {
   try {
-    return await DailyAttendance.findById(attendanceId);
+    return await Attendance.findById(attendanceId);
   } catch (e) {
     console.error(e);
     throw e;
@@ -169,15 +186,6 @@ const editAttendance = async (attendanceId, newTime) => {
   let updatedData = { ...rest };
 
   if (clockIn) {
-    // const [hours, minutes] = clockIn.split(":");
-
-    // const clockInDate = new Date();
-
-    // clockInDate.setHours(Number(hours));
-    // clockInDate.setMinutes(Number(minutes));
-    // clockInDate.setSeconds(0);
-    // clockInDate.setMilliseconds(0);
-
     // Expected clock in time
     const expectedHour = 8;
     const expectedMinute = 0;
@@ -196,7 +204,7 @@ const editAttendance = async (attendanceId, newTime) => {
   }
 
   try {
-    return DailyAttendance.findByIdAndUpdate(attendanceId, updatedData, {
+    return Attendance.findByIdAndUpdate(attendanceId, updatedData, {
       new: true,
     });
   } catch (e) {
@@ -208,7 +216,7 @@ const editAttendance = async (attendanceId, newTime) => {
 //Delete an attendance
 const deleteAttendance = async (id) => {
   try {
-    return await DailyAttendance.findByIdAndDelete(id);
+    return await Attendance.findByIdAndDelete(id);
   } catch (e) {
     console.error(e);
     throw e;
@@ -379,9 +387,9 @@ module.exports = {
   updateEmployee,
   addAttendance,
   getAttendance,
+  getAttendanceByDate,
   getAttendanceByEmployeeID,
   editAttendance,
-  getAllAttendances,
   deleteAttendance,
   addLeave,
   getLeaveByID,

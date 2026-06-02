@@ -6,6 +6,7 @@ const {
   addAttendance,
   getAllAttendances,
   getAttendance,
+  getAttendanceByDate,
   getAttendanceByEmployeeID,
   editAttendance,
   deleteAttendance,
@@ -21,7 +22,7 @@ router.post("/:employeeId", async (req, res) => {
     if (attendance)
       return res.status(404).send("The employee has already clocked in");
     console.log("Employee to attend:", employee);
-    const date = new Date();
+    const date = new Date(2026, 5, 1).toLocaleDateString("fr-FR");
     console.log("current date", date);
     console.log("current time", req.body);
 
@@ -33,20 +34,42 @@ router.post("/:employeeId", async (req, res) => {
     res.status(200).send(attendanceReport);
     console.log("Employee attendance success:", attendanceReport);
   } catch (error) {
-    console.error("This is the attendance error", error);
+    console.error("An error occured during attendance entry: ", error);
     res.status(500).send(error);
   }
 });
 
-//Get all attendances
+// //Get all attendances
+// router.get("/", async (req, res) => {
+//   try {
+//     const attendances = await getAllAttendances();
+//     if (!attendances) return res.status(404).send("No attendances found");
+//     console.log("Retrieved attendances:", attendances);
+//     res.status(200).send(attendances);
+//   } catch (error) {
+//     console.error("Unable to retrieve attendances.Error:", error);
+//   }
+// });
+
+//Get attendances by date
 router.get("/", async (req, res) => {
+  console.log("Date received:", req.query.date);
   try {
-    const attendances = await getAllAttendances();
-    if (!attendances) return res.status(404).send("No attendances found");
-    console.log("Retrieved attendances:", attendances);
-    res.status(200).send(attendances);
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).send("Date is required");
+    }
+
+    const attendances = await getAttendanceByDate(date);
+    console.log("Fetched attendances by date:", attendances);
+    res.send(attendances);
   } catch (error) {
-    console.error("Unable to retrieve attendances.Error:", error);
+    console.error(
+      "An error occured while retrieving attendances by date: ",
+      error
+    );
+    res.status(500).send("Server error");
   }
 });
 
