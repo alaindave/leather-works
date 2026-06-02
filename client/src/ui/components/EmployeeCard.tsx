@@ -15,6 +15,7 @@ import { CiClock2 } from "react-icons/ci";
 import { GiClockwork } from "react-icons/gi";
 import { GoDotFill } from "react-icons/go";
 import { Link } from "react-router-dom";
+import source from "../assets/employee_photos/Jeanne.jpeg";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
 // @ts-ignore
@@ -117,12 +118,7 @@ const EmployeeCard = ({ employee }: Props) => {
             pathname: `/employees_admin/employees_list/${employee._id}`,
           }}
         >
-          <Image
-            src={`/src/ui/assets/employee_photos/jeanne.jpeg`}
-            boxSize="70px"
-            borderRadius="full"
-            fit="cover"
-          />
+          <Image src={source} boxSize="70px" borderRadius="full" fit="cover" />
         </Link>
       </Box>
       <Box position="relative" top="10px">
