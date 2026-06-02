@@ -319,7 +319,7 @@ const EmployeeAttendancePage = () => {
       </Grid>
 
       {/* ================= BODY ================= */}
-      <Box height="90vh" width="79vw" overflowY="auto">
+      <Box height="90vh" width="79vw" overflowY="auto" overflowX="hidden">
         {loading ? (
           <>
             <Box as="style">{shimmerKeyframes}</Box>

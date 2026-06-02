@@ -140,25 +140,11 @@ const getAttendanceByDate = async (date) => {
   }
 };
 
-// //Get all attendances
-// const getAllAttendances = async () => {
-//   try {
-//     return await Attendance.find()
-//       .sort({ clockIn: 1 })
-//       .populate("employee", "firstName lastName employeeID role department");
-//   } catch (error) {
-//     console.error(
-//       "An error occured while fetching attendances from database: ",
-//       error
-//     );
-//     throw error;
-//   }
-// };
-
-//Retrieve attendance by employee ID
+//Retrieve daily attendance by employee ID
 const getAttendanceByEmployeeID = async (employeeObjectId) => {
   try {
     return await Attendance.findOne({
+      date: new Date().toISOString().split("T")[0],
       employee: employeeObjectId,
     });
   } catch (error) {

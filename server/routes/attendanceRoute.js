@@ -60,7 +60,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-//Get attendance by employee ID
+//Get daily attendance by employee ID
 router.get("/:employeeId", async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.employeeId)) {
