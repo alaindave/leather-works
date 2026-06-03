@@ -39,9 +39,9 @@ const addEmployee = async ({
 
   try {
     return await employee.save();
-  } catch (e) {
-    console.error(e);
-    throw e;
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 };
 

@@ -174,7 +174,7 @@ const EmployeeAttendanceCard = ({
       {/* Clock In */}
 
       {localAttendance.lateMinutes > 0 ? (
-        <Box ml="1rem">
+        <Box ml="0.3rem">
           <ClockInNotesPopover
             clockInTime={clockInValue}
             lateMinutes={localAttendance.lateMinutes}
@@ -220,6 +220,7 @@ const EmployeeAttendanceCard = ({
         // </VStack>
         <Editable
           position="relative"
+          right="0.5rem"
           bottom="0.5rem"
           value={clockInValue}
           onChange={setClockInValue}
@@ -256,6 +257,7 @@ const EmployeeAttendanceCard = ({
         {localAttendance.clockOut ? (
           <Editable
             position="relative"
+            right="0.5rem"
             bottom="0.5rem"
             value={clockOutValue}
             onChange={setClockOutValue}
@@ -289,7 +291,7 @@ const EmployeeAttendanceCard = ({
           >
             <EditablePreview
               color="#B197FC"
-              fontSize="1.1rem"
+              fontSize="18px"
               fontWeight="500"
               px={2}
               borderRadius="6px"

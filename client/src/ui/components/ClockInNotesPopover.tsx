@@ -35,7 +35,7 @@ const ClockInNotesPopover = ({ clockInTime, lateMinutes, notes }: Props) => {
     <Popover trigger="hover" placement="left">
       <PopoverTrigger>
         <Text
-          fontSize="1.1rem"
+          fontSize="18px"
           color="#FF8787"
           cursor="pointer"
           _hover={{

@@ -12,18 +12,17 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 // @ts-ignore
-import logo from "../assets/afritan_logo.png";
-import { IoIosMail } from "react-icons/io";
-import { FaUnlockAlt } from "react-icons/fa";
-import { CiLock } from "react-icons/ci";
-import SignUp from "../components/SignUp";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { FieldValues, useForm } from "react-hook-form";
-import "../styles/App.css";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { CiLock } from "react-icons/ci";
+import { FaUnlockAlt } from "react-icons/fa";
+import { IoIosMail } from "react-icons/io";
+import { z } from "zod";
 import useAdminUser from "../../store/authStore";
-import AdminUser from "../../shared/types/AdminUser";
+import logo from "../assets/afritan_logo.png";
+import SignUp from "../components/SignUp";
+import "../styles/App.css";
 
 const schema = z.object({
   email: z.string(),
@@ -36,12 +35,13 @@ const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const setLogIn = useAdminUser((store) => store.login);
-
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { register, handleSubmit } = useForm<AuthData>({
     resolver: zodResolver(schema),
   });
 
   const handleLogin = async (data: AuthData) => {
+    setIsLoggingIn(true);
     console.log("Log in initiated...", data);
     const credentials = { email: data.email, password: data.password };
     try {
@@ -62,8 +62,11 @@ const LoginPage = () => {
     } catch (error) {
       console.error("An error occured while logging in:", error);
       setErrorMessage("Email et/ou mot de passe incorrect.");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
+
   const handleChange = () => {
     setErrorMessage("");
   };
@@ -166,6 +169,10 @@ const LoginPage = () => {
             size="lg"
             width="100%"
             height="64px"
+            isLoading={isLoggingIn}
+            loadingText="Connexion..."
+            spinnerPlacement="start"
+            isDisabled={isLoggingIn}
             _hover={{ bg: "#2563eb" }}
           >
             <Box position="relative" right="30px">
