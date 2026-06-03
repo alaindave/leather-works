@@ -9,6 +9,7 @@ import {
   Button,
   Flex,
   FormLabel,
+  Grid,
   HStack,
   Input,
   Modal,
@@ -43,17 +44,17 @@ import { RxCrossCircled } from "react-icons/rx";
 interface Props {
   _id: string | undefined;
   employee: Employee;
+  onUpdated?: () => void;
 }
 
-const errorMessage = "Ce champ est obligatoire";
 const schema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  dateBirth: z.coerce.date().nullable().optional(),
+  dateBirth: z.date().nullable().optional(),
   employeeID: z.string().min(1),
   role: z.string().optional(),
   department: z.string().optional(),
-  dateHired: z.coerce.date().nullable().optional(),
+  dateHired: z.date().nullable().optional(),
   telephone: z.string().optional(),
   address: z.string().optional(),
   salary: z.string().optional(),
@@ -64,10 +65,9 @@ const schema = z.object({
 
 type EmployeeData = z.infer<typeof schema>;
 
-const UpdateEmployee = ({ _id, employee }: Props) => {
+const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
-  const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const {
@@ -125,8 +125,8 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
         relationship: employee.relationship,
         contactPhone: employee.contactPhone,
         address: employee.address,
-        dateBirth: employee.dateBirth ? new Date(employee.dateBirth) : null,
         dateHired: employee.dateHired ? new Date(employee.dateHired) : null,
+        dateBirth: employee.dateBirth ? new Date(employee.dateBirth) : null,
       });
     }
   }, [employee, reset]);
@@ -138,7 +138,8 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
       .put<Employee>(`${API_URL}/employees/${_id}`, data)
       .then((response) => {
         console.log("Updated employee:", response.data);
-        navigate("/employees_admin/employees_list");
+        onUpdated?.();
+        onClose();
       })
       .catch((error) => {
         console.error("An error occured while updating info:", error);
@@ -148,10 +149,9 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
       });
   };
 
-  const safeDate = (value: unknown): Date | null => {
-    if (!value) return null;
-    const date = new Date(value as string | Date);
-    return isNaN(date.getTime()) ? null : date;
+  const handleFormClosed = () => {
+    setServerErrorMessage("");
+    onClose();
   };
   return (
     <>
@@ -181,12 +181,7 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
         returnFocusOnClose={false}
       >
         <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
-        <ModalContent
-          bg="#08162b"
-          position="relative"
-          top="2.5rem"
-          width="53vw"
-        >
+        <ModalContent bg="#08162b" position="relative" top="1rem" width="53vw">
           <form
             onSubmit={handleSubmit(
               (data) => {
@@ -300,10 +295,15 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                     name="dateBirth"
                     render={({ field }) => (
                       <DatePicker
-                        selected={safeDate(field.value)}
-                        onChange={(date: Date | null) => field.onChange(date)}
+                        selected={field.value ?? null}
+                        onChange={(date: Date | null) => {
+                          field.onChange(
+                            date && !isNaN(date.getTime()) ? date : null
+                          );
+                        }}
                         locale="fr"
                         dateFormat="dd/MM/yyyy"
+                        isClearable
                         showYearDropdown
                         scrollableYearDropdown
                         yearDropdownItemNumber={80}
@@ -321,10 +321,6 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                       />
                     )}
                   />
-
-                  {errors.dateBirth && (
-                    <p className="text-danger">{errors.dateBirth.message}</p>
-                  )}
                 </Box>
               </HStack>
 
@@ -483,7 +479,7 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                       <FaCalendarDays color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
-                      Date d'engagement
+                      Date d'embauche
                       <span style={{ color: "#F2B705", fontSize: "1rem" }}>
                         *
                       </span>
@@ -496,10 +492,15 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                     name="dateHired"
                     render={({ field }) => (
                       <DatePicker
-                        selected={safeDate(field.value)}
-                        onChange={(date: Date | null) => field.onChange(date)}
+                        selected={field.value ?? null}
+                        onChange={(date: Date | null) => {
+                          field.onChange(
+                            date && !isNaN(date.getTime()) ? date : null
+                          );
+                        }}
                         locale="fr"
                         dateFormat="dd/MM/yyyy"
+                        isClearable
                         showYearDropdown
                         scrollableYearDropdown
                         yearDropdownItemNumber={80}
@@ -517,22 +518,25 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                       />
                     )}
                   />
-
-                  {errors.dateHired && (
-                    <p className="text-danger">{errors.dateHired.message}</p>
-                  )}
                 </Box>
               </HStack>
 
               {/* Emergency contact */}
-              <HStack spacing="12px" marginBottom="10px">
+              <Grid templateColumns="repeat(3, 1fr)" gap={4}>
+                {" "}
                 <Box>
                   <HStack>
+                    {" "}
                     <Box marginBottom="10px">
                       <MdPerson2 color="#F2B705" size="1.3rem" />
                     </Box>
-                    <FormLabel color="#C7D2FE" marginBottom="10px">
-                      Nom du contact d'urgence
+                    <FormLabel
+                      color="#C7D2FE"
+                      marginBottom="10px"
+                      alignItems="center"
+                    >
+                      {" "}
+                      Contact d'urgence
                       <span style={{ color: "#F2B705", fontSize: "1rem" }}>
                         *
                       </span>
@@ -542,6 +546,7 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                   <Input
                     color="#e6ebfe"
                     type="text"
+                    h="40px"
                     {...register("emergencyContact")}
                   />
                   {errors.emergencyContact && (
@@ -550,13 +555,18 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                     </p>
                   )}
                 </Box>
-
                 <Box>
                   <HStack>
+                    {" "}
                     <Box marginBottom="10px">
                       <GiRelationshipBounds color="#F2B705" size="1.3rem" />
                     </Box>
-                    <FormLabel color="#C7D2FE" marginBottom="10px">
+                    <FormLabel
+                      color="#C7D2FE"
+                      marginBottom="10px"
+                      alignItems="center"
+                    >
+                      {" "}
                       Relation avec l'employé
                       <span style={{ color: "#F2B705", fontSize: "1rem" }}>
                         *
@@ -566,19 +576,25 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                   <Input
                     color="#e6ebfe"
                     type="text"
+                    h="40px"
                     {...register("relationship")}
                   />
                   {errors.relationship && (
                     <p className="text-danger">{errors.relationship.message}</p>
                   )}
                 </Box>
-
-                <Box position="relative" top="10px">
+                <Box>
                   <HStack>
+                    {" "}
                     <Box marginBottom="10px">
                       <MdOutlineNumbers color="#F2B705" size="1.3rem" />
                     </Box>
-                    <FormLabel color="#C7D2FE" marginBottom="10px">
+                    <FormLabel
+                      color="#C7D2FE"
+                      marginBottom="10px"
+                      alignItems="center"
+                    >
+                      {" "}
                       Telephone du contact
                       <span style={{ color: "#F2B705", fontSize: "1rem" }}>
                         *
@@ -588,13 +604,14 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                   <Input
                     color="#e6ebfe"
                     type="text"
+                    h="40px"
                     {...register("contactPhone")}
                   />
                   {errors.contactPhone && (
                     <p className="text-danger">{errors.contactPhone.message}</p>
                   )}
                 </Box>
-              </HStack>
+              </Grid>
 
               {/* Address */}
               <Box marginTop="10px">
@@ -617,7 +634,7 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
             </ModalBody>
 
             <ModalFooter bg="#08162b">
-              <HStack position="relative" right="2rem">
+              <VStack position="relative" right="2rem">
                 <Text
                   position="relative"
                   right="20px"
@@ -627,48 +644,50 @@ const UpdateEmployee = ({ _id, employee }: Props) => {
                 >
                   {ServerErrorMessage}
                 </Text>
-                <Button
-                  borderColor="black"
-                  bg="#F2B705"
-                  borderWidth="3px"
-                  colorScheme=" #320b01"
-                  color="black"
-                  mr={3}
-                  type="submit"
-                >
-                  <HStack>
-                    <Box>
-                      <FaSave />
-                    </Box>
-                    <Text position="relative" top="8px" fontSize="1rem">
-                      Modifier
-                    </Text>
-                  </HStack>
-                </Button>
-                <Button
-                  borderColor="#ffffff"
-                  bg="#08162b"
-                  borderWidth="0.5px"
-                  colorScheme=" #320b01"
-                  color="#1a000d"
-                  mr={3}
-                  onClick={onClose}
-                >
-                  <HStack>
-                    <Box>
-                      <RxCrossCircled color="#ffffff" size="18px" />
-                    </Box>
-                    <Text
-                      color="#ffffff"
-                      position="relative"
-                      top="8px"
-                      fontSize="1rem"
-                    >
-                      Fermer
-                    </Text>
-                  </HStack>
-                </Button>
-              </HStack>
+                <Box>
+                  <Button
+                    borderColor="black"
+                    bg="#F2B705"
+                    borderWidth="3px"
+                    colorScheme=" #320b01"
+                    color="black"
+                    mr={3}
+                    type="submit"
+                  >
+                    <HStack>
+                      <Box>
+                        <FaSave />
+                      </Box>
+                      <Text position="relative" top="8px" fontSize="1rem">
+                        Modifier
+                      </Text>
+                    </HStack>
+                  </Button>
+                  <Button
+                    borderColor="#ffffff"
+                    bg="#08162b"
+                    borderWidth="0.5px"
+                    colorScheme=" #320b01"
+                    color="#1a000d"
+                    mr={3}
+                    onClick={handleFormClosed}
+                  >
+                    <HStack>
+                      <Box>
+                        <RxCrossCircled color="#ffffff" size="18px" />
+                      </Box>
+                      <Text
+                        color="#ffffff"
+                        position="relative"
+                        top="8px"
+                        fontSize="1rem"
+                      >
+                        Fermer
+                      </Text>
+                    </HStack>
+                  </Button>
+                </Box>
+              </VStack>
             </ModalFooter>
           </form>
         </ModalContent>

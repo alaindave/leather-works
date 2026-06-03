@@ -43,6 +43,11 @@ const EmployeeDetailsPage = () => {
       .catch((error) => console.error("Error while fetching employee:", error));
   }, []);
 
+  const refreshEmployee = async () => {
+    const res = await axios.get<Employee>(`${API_URL}/employees/${_id}`);
+    setEmployee(res.data);
+  };
+
   const handleDelete = async () => {
     try {
       await axios.delete(`${API_URL}/employees/${_id}`);
@@ -151,7 +156,11 @@ const EmployeeDetailsPage = () => {
               </Box>
             </HStack>
 
-            <UpdateEmployee _id={_id} employee={employee} />
+            <UpdateEmployee
+              _id={_id}
+              employee={employee}
+              onUpdated={refreshEmployee}
+            />
           </Stack>
 
           {/* MAIN CONTENT */}
