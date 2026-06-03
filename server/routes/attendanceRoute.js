@@ -20,9 +20,9 @@ router.post("/:employeeId", async (req, res) => {
       return res.status(404).send("No employee found with the given ID.");
     const attendance = await getAttendanceByEmployeeID(req.params.employeeId);
     if (attendance)
-      return res.status(404).send("The employee has already clocked in");
+      return res.status(409).send("The employee has already clocked in");
     console.log("Employee to attend:", employee);
-    console.log("current time", req.body);
+    console.log("Submitted clock in time: ", req.body.clockIn);
     const attendanceReport = await addAttendance(
       req.params.employeeId,
       req.body.clockIn
@@ -95,9 +95,9 @@ router.put("/:attendanceId", async (req, res) => {
     );
     res.status(200).send(attendanceEdit);
     console.log("Attendance edit success:", attendanceEdit);
-  } catch (e) {
-    console.error("Attendance edit error:", e);
-    res.status(500).send("Unable to edit attendance", e);
+  } catch (error) {
+    console.error("Attendance edit error:", error);
+    res.status(500).send("Unable to edit attendance", error);
   }
 });
 

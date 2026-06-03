@@ -8,4 +8,5 @@ export default interface Attendance {
   clockOut: Date;
   lateMinutes: number;
   status: string;
+  lateNotes: string;
 }

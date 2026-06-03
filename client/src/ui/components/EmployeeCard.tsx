@@ -21,6 +21,7 @@ import type Employee from "../../shared/types/Employee";
 // @ts-ignore
 import { useEffect, useState } from "react";
 import "../styles/App.css";
+import AddClockInNotesPopover from "./AddClockInNotesPopover";
 
 interface Props {
   employee: Employee;
@@ -82,6 +83,22 @@ const EmployeeCard = ({ employee }: Props) => {
         setShowEditable(false);
       })
       .catch((error: Error) => console.error(error));
+  };
+
+  const handleLateNotes = async (lateNotes: string) => {
+    console.log("Late notes to submit to server: ", lateNotes);
+    try {
+      const response = await axios.put(
+        `${API_URL}/attendances/${attendance?._id}`,
+        {
+          lateNotes,
+        }
+      );
+      console.log("Late notes success:", response.data);
+      setAttendance(response.data);
+    } catch (error) {
+      console.error("Error submitting late notes:", error);
+    }
   };
 
   const flashLate = keyframes`
@@ -159,14 +176,13 @@ const EmployeeCard = ({ employee }: Props) => {
             top="15px"
             right="150px"
           >
-            <Badge
-              bg={attendance?.status === "ponctuel" ? "#123D2B" : "#4A1F2D"}
-              color={attendance?.status === "ponctuel" ? "#5EF29B" : "#FF6B81"}
-              fontSize="14px"
-            >
-              {attendance?.status === "ponctuel" ? "A l'heure" : null}
-              {attendance?.status === "retard" ? "En retard" : null}
-            </Badge>
+            {attendance?.status === "ponctuel" ? (
+              <Badge bg="#123D2B" color="#5EF29B" fontSize="14px">
+                A l'heure
+              </Badge>
+            ) : (
+              <AddClockInNotesPopover onSubmit={handleLateNotes} />
+            )}
           </Box>
           <Box
             opacity={attendance ? 1 : 0}

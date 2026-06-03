@@ -14,6 +14,7 @@ import axios from "axios";
 import { memo, useMemo, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
+import ClockInNotesPopover from "../components/clockInNotesPopover";
 import type Attendance from "../../shared/types/Attendance";
 
 interface Props {
@@ -31,21 +32,6 @@ const formatTime = (date?: string | Date | null) => {
     new Date(date).getMinutes()
   ).padStart(2, "0")}`;
 };
-
-function formatLateMinutes(lateMinutes: number): string {
-  if (lateMinutes < 60) {
-    return `${lateMinutes} min`;
-  }
-
-  const hours = Math.floor(lateMinutes / 60);
-  const minutes = lateMinutes % 60;
-
-  if (minutes === 0) {
-    return `${hours} h`;
-  }
-
-  return `${hours} h ${minutes} min`;
-}
 
 const EmployeeAttendanceCard = ({
   attendance,
@@ -160,7 +146,13 @@ const EmployeeAttendanceCard = ({
       height="6.3rem"
     >
       {/* Employee Name */}
-      <Text color="gray.200" fontSize="18px">
+      <Text
+        color="gray.200"
+        fontSize="18px"
+        whiteSpace="normal"
+        wordBreak="break-word"
+        maxW="140px"
+      >
         {firstName} {lastName}
       </Text>
 
@@ -182,43 +174,50 @@ const EmployeeAttendanceCard = ({
       {/* Clock In */}
 
       {localAttendance.lateMinutes > 0 ? (
-        <VStack position="relative" top="1.3rem" right="1.5rem">
-          <Editable
-            position="relative"
-            bottom="0.5rem"
-            value={clockInValue}
-            onChange={setClockInValue}
-            submitOnBlur={false}
-            width="80px"
-            selectAllOnFocus
-            onSubmit={handleEditClockIn}
-          >
-            <EditablePreview
-              color="#FF8787"
-              fontSize="18px"
-              fontWeight="500"
-              px={2}
-              borderRadius="6px"
-              transition="0.2s"
-              _hover={{
-                bg: "rgba(255,255,255,0.05)",
-                cursor: "pointer",
-              }}
-            />
-
-            <EditableInput color="white" fontSize="18px" width="80px" />
-          </Editable>
-          <Text
-            color="#ffffff"
-            fontSize="0.75rem"
-            position="relative"
-            bottom="1.6rem"
-          >
-            {" "}
-            {formatLateMinutes(localAttendance.lateMinutes)}{" "}
-          </Text>
-        </VStack>
+        <Box ml="1rem">
+          <ClockInNotesPopover
+            clockInTime={clockInValue}
+            lateMinutes={localAttendance.lateMinutes}
+            notes={localAttendance?.lateNotes}
+          />
+        </Box>
       ) : (
+        // <VStack position="relative" top="1.3rem" right="1.5rem">
+        //   <Editable
+        //     position="relative"
+        //     bottom="0.5rem"
+        //     value={clockInValue}
+        //     onChange={setClockInValue}
+        //     submitOnBlur={false}
+        //     width="80px"
+        //     selectAllOnFocus
+        //     onSubmit={handleEditClockIn}
+        //   >
+        //     <EditablePreview
+        //       color="#FF8787"
+        //       fontSize="18px"
+        //       fontWeight="500"
+        //       px={2}
+        //       borderRadius="6px"
+        //       transition="0.2s"
+        //       _hover={{
+        //         bg: "rgba(255,255,255,0.05)",
+        //         cursor: "pointer",
+        //       }}
+        //     />
+
+        //     <EditableInput color="white" fontSize="18px" width="80px" />
+        //   </Editable>
+        //   <Text
+        //     color="#ffffff"
+        //     fontSize="0.75rem"
+        //     position="relative"
+        //     bottom="1.6rem"
+        //   >
+        //     {" "}
+        //     {formatLateMinutes(localAttendance.lateMinutes)}{" "}
+        //   </Text>
+        // </VStack>
         <Editable
           position="relative"
           bottom="0.5rem"

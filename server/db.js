@@ -100,6 +100,7 @@ const addAttendance = async (employeeId, clockIn) => {
   const expectedMinute = 0;
   expectedClockIn.setHours(expectedHour, expectedMinute, 0, 0);
 
+  console.log("Expected clock in time:", expectedClockIn);
   const diffMs = new Date(clockIn).getTime() - expectedClockIn.getTime();
   const lateMinutes = Math.max(0, Math.floor(diffMs / 60000));
   const status = lateMinutes > 0 ? "retard" : "ponctuel";
@@ -111,8 +112,8 @@ const addAttendance = async (employeeId, clockIn) => {
     employee: employeeId,
     date,
     clockIn,
-    lateMinutes,
     status,
+    lateMinutes,
   });
 
   try {
