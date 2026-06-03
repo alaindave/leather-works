@@ -49,20 +49,19 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
 const EmployeeAttendancePage = () => {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [attendance, setAttendance] = useState<Attendance | null>(null);
-
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState("");
   const [time, setTime] = useState(new Date());
   const [loading, setLoading] = useState(false);
-
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
-
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const gridTemplate = `
+  1.5fr 1.5fr 1.3fr 1.3fr 1fr 1fr 1fr
+`;
 
   /* ================= CLOCK ================= */
   useEffect(() => {
@@ -82,10 +81,6 @@ const EmployeeAttendancePage = () => {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [selectedDate]);
-
-  const gridTemplate = `
-    1.5fr 1.4fr 1.3fr 1.3fr 115px 115px 115px
-  `;
 
   const handleDelete = async () => {
     try {
@@ -253,67 +248,28 @@ const EmployeeAttendancePage = () => {
         mt="0.3rem"
         mb="0.3rem"
         height="70px"
-        marginLeft="5px"
+        ml="0.3rem"
         width="78.5vw"
       >
-        <Text
-          color="#d6b65c"
-          fontSize="18px"
-          marginTop="12px"
-          position="relative"
-          right="28px"
-        >
+        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
           Employé
         </Text>
-        <Text
-          color="#d6b65c"
-          fontSize="18px"
-          marginTop="12px"
-          position="relative"
-        >
+        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
           ID
         </Text>
-        <Text
-          fontSize="18px"
-          color="#d6b65c"
-          marginTop="12px"
-          position="relative"
-        >
+        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
           Poste
         </Text>
-        <Text
-          fontSize="18px"
-          color="#d6b65c"
-          marginTop="12px"
-          position="relative"
-        >
+        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
           Departement
         </Text>
-        <Text
-          fontSize="18px"
-          color="#d6b65c"
-          marginTop="12px"
-          position="relative"
-          left="18px"
-        >
+        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
           Arrivée
         </Text>
-        <Text
-          fontSize="18px"
-          color="#d6b65c"
-          marginTop="12px"
-          position="relative"
-          left="22px"
-        >
+        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
           Départ
         </Text>
-        <Text
-          fontSize="18px"
-          color="#d6b65c"
-          marginTop="12px"
-          position="relative"
-          left="22px"
-        >
+        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
           Actions
         </Text>
       </Grid>

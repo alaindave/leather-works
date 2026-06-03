@@ -73,7 +73,7 @@ const schema = z.object({
 type LeaveData = z.infer<typeof schema>;
 
 const gridTemplate = `
-1.7fr 1.5fr 1.5fr 1.5fr 1.5fr 100px 100px
+1.5fr 1.5fr 1.5fr 1.4fr 1.4fr 1.1fr 1.1fr
 `;
 
 const EmployeeLeavePage = () => {
@@ -278,26 +278,26 @@ const EmployeeLeavePage = () => {
           bg="#03143B"
           height="10rem"
           width="78.5vw"
-          borderRadius="20px"
+          borderRadius="1.2rem"
         >
           <Flex>
             <Box>
               <Text
                 color="#ffffff"
-                fontSize="27px"
+                fontSize="1.8rem"
                 fontWeight="700"
-                marginLeft="15px"
-                marginTop="10px"
+                ml="1rem"
+                mt="0.8rem"
               >
                 Congés
               </Text>
               <Text
                 color="#ffffff"
-                fontSize="15px"
+                fontSize="1rem"
                 fontWeight="500"
                 position="relative"
-                bottom="20px"
-                marginLeft="15px"
+                bottom="1.1rem"
+                ml="1rem"
               >
                 Gérez les demandes de congés
               </Text>
@@ -306,8 +306,8 @@ const EmployeeLeavePage = () => {
             <Button
               borderColor="black"
               backgroundColor="#F2B705"
-              borderRadius="15px"
-              borderWidth="5px"
+              borderRadius="1rem"
+              borderWidth="0.3rem"
               color="black"
               size="md"
               onClick={onOpen}
@@ -316,7 +316,12 @@ const EmployeeLeavePage = () => {
               mr="0.4rem"
             >
               <FaCirclePlus />{" "}
-              <Text position="relative" top="8px" fontSize="18px" left="8px">
+              <Text
+                position="relative"
+                top="0.5rem"
+                fontSize="1.1rem"
+                left="0.5rem"
+              >
                 Soumettre une demande
               </Text>
             </Button>
@@ -357,60 +362,39 @@ const EmployeeLeavePage = () => {
                 fontWeight="600"
                 background="#08162b"
                 margin="0.3rem"
-                height="66px"
+                height="3.6rem"
                 width="78.5vw"
                 borderRadius="12px"
               >
                 <Text fontSize="18px" color="#d6b65c" ml={8} mt={4}>
                   Employé
                 </Text>
-                <Text
-                  fontSize="18px"
-                  color="#d6b65c"
-                  mt={4}
-                  position="relative"
-                  left="10px"
-                >
+                <Text fontSize="18px" color="#d6b65c" mt={4}>
                   Debut de congé
                 </Text>
-                <Text
-                  fontSize="18px"
-                  color="#d6b65c"
-                  mt={4}
-                  position="relative"
-                  left="10px"
-                >
+                <Text fontSize="18px" color="#d6b65c" mt={4}>
                   Fin de congé
                 </Text>
-                <Text
-                  fontSize="18px"
-                  color="#d6b65c"
-                  mt={4}
-                  position="relative"
-                  left="5px"
-                >
+                <Text fontSize="18px" color="#d6b65c" mt={4}>
                   Motif
                 </Text>
-                <Text
-                  fontSize="18px"
-                  color="#d6b65c"
-                  mt={4}
-                  position="relative"
-                  right="12px"
-                >
+                <Text fontSize="18px" color="#d6b65c" mt={4}>
                   Statut
                 </Text>
 
-                <Text
-                  fontSize="18px"
-                  color="#d6b65c"
-                  mt={3.5}
-                  position="relative"
-                  right="35px"
-                  bottom="5px"
-                >
-                  Congés restants
-                </Text>
+                <Box mt="0.4rem" position="relative" right="1rem">
+                  <Text fontSize="18px" color="#d6b65c">
+                    Congés
+                  </Text>
+                  <Text
+                    fontSize="18px"
+                    color="#d6b65c"
+                    position="relative"
+                    bottom="1.4rem"
+                  >
+                    restants
+                  </Text>
+                </Box>
 
                 <Text fontSize="18px" color="#d6b65c" mt={4}>
                   Actions

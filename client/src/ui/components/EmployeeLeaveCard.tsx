@@ -113,12 +113,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           {new Date(startDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
-      <Box ml="1rem" mb={14}>
+      <Box mb={14}>
         <Text color="gray.200" fontSize="1.1rem">
           {new Date(endDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
-      <Box mb={14} ml="1rem">
+      <Box mb={14}>
         <Text color="gray.200" fontSize="1.1rem">
           <LeaveNotesPopover subject={subject} notes={notes} />
         </Text>

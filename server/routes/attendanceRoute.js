@@ -22,12 +22,9 @@ router.post("/:employeeId", async (req, res) => {
     if (attendance)
       return res.status(404).send("The employee has already clocked in");
     console.log("Employee to attend:", employee);
-    const date = new Date().toISOString().split("T")[0];
-    console.log("current date", date);
     console.log("current time", req.body);
     const attendanceReport = await addAttendance(
       req.params.employeeId,
-      date,
       req.body.clockIn
     );
     res.status(200).send(attendanceReport);
@@ -40,7 +37,7 @@ router.post("/:employeeId", async (req, res) => {
 
 //Get attendances by date
 router.get("/", async (req, res) => {
-  console.log("Date received:", req.query.date);
+  console.log("Fetch all attendances for date:", req.query.date);
   try {
     const { date } = req.query;
 

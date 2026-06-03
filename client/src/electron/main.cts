@@ -64,7 +64,7 @@ const createMainWindow = async () => {
     if (splash && !splash.isDestroyed()) {
       // minimum splash display time
       const elapsed = Date.now() - splashStartTime;
-      const minimumSplashTime = 8000;
+      const minimumSplashTime = 5000;
 
       if (elapsed < minimumSplashTime) {
         await delay(minimumSplashTime - elapsed);
@@ -90,6 +90,8 @@ const createMainWindow = async () => {
     mainWindow.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
 };
+
+app.disableHardwareAcceleration();
 
 app
   .whenReady()

@@ -186,7 +186,6 @@ const EmployeeAttendanceCard = ({
           <Editable
             position="relative"
             bottom="0.5rem"
-            right="1.5rem"
             value={clockInValue}
             onChange={setClockInValue}
             submitOnBlur={false}
@@ -195,7 +194,7 @@ const EmployeeAttendanceCard = ({
             onSubmit={handleEditClockIn}
           >
             <EditablePreview
-              color="red.300"
+              color="#FF8787"
               fontSize="18px"
               fontWeight="500"
               px={2}
@@ -213,7 +212,6 @@ const EmployeeAttendanceCard = ({
             color="#ffffff"
             fontSize="0.75rem"
             position="relative"
-            left="0.3rem"
             bottom="1.6rem"
           >
             {" "}
@@ -223,7 +221,6 @@ const EmployeeAttendanceCard = ({
       ) : (
         <Editable
           position="relative"
-          right="1.5rem"
           bottom="0.5rem"
           value={clockInValue}
           onChange={setClockInValue}
@@ -245,7 +242,7 @@ const EmployeeAttendanceCard = ({
             }}
           />
 
-          <EditableInput color="white" fontSize="18px" width="80px" />
+          <EditableInput color="white" fontSize="1.1rem" width="80px" />
         </Editable>
       )}
 
@@ -261,7 +258,6 @@ const EmployeeAttendanceCard = ({
           <Editable
             position="relative"
             bottom="0.5rem"
-            right="1.5rem"
             value={clockOutValue}
             onChange={setClockOutValue}
             submitOnBlur={false}
@@ -293,8 +289,8 @@ const EmployeeAttendanceCard = ({
             }}
           >
             <EditablePreview
-              color="yellow.500"
-              fontSize="18px"
+              color="#B197FC"
+              fontSize="1.1rem"
               fontWeight="500"
               px={2}
               borderRadius="6px"
@@ -317,7 +313,6 @@ const EmployeeAttendanceCard = ({
             width="80px"
             position="relative"
             bottom="0.5rem"
-            right="1.5rem"
           >
             <EditablePreview
               color="red.500"
@@ -365,7 +360,7 @@ const EmployeeAttendanceCard = ({
           _hover={{
             bg: "transparent",
           }}
-          color="#ff4d4d"
+          color="red.600"
           onClick={onDelete}
         >
           <FaWindowClose size="1.1rem" />

@@ -52,7 +52,9 @@ const EmployeeAdminPage = () => {
       .get<Employee[]>(`${API_URL}/employees`)
       .then((res) => {
         setEmployees(res.data);
-        return axios.get<Attendance[]>(`${API_URL}/attendances`);
+        return axios.get<Attendance[]>(`${API_URL}/attendances`, {
+          params: { date: new Date().toISOString().split("T")[0] },
+        });
       })
       .then((res) => {
         setAttendances(res.data);
@@ -255,7 +257,8 @@ const EmployeeAdminPage = () => {
             bg="#091735"
             border="1px solid rgba(255,255,255,0.1)"
             color="#ffffff"
-            fontSize="1.2rem"
+            fontSize="1.3rem"
+            fontFamily="revert-layer"
             _focus={{
               borderColor: "yellow.400",
               boxShadow: "0 0 0 1px #F4C20D",

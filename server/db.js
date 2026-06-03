@@ -90,18 +90,18 @@ const deleteEmployee = async (id) => {
 
 //Attendance operations
 //Add attendance
-const addAttendance = async (employeeId, date, clockIn) => {
+const addAttendance = async (employeeId, clockIn) => {
+  const expectedClockIn = new Date();
+  const date = expectedClockIn.toISOString().split("T")[0];
+  console.log("Current date: ", date);
+
   // Expected clock in time
   const expectedHour = 8;
   const expectedMinute = 0;
-  const expectedClockIn = new Date();
-
   expectedClockIn.setHours(expectedHour, expectedMinute, 0, 0);
 
   const diffMs = new Date(clockIn).getTime() - expectedClockIn.getTime();
-
   const lateMinutes = Math.max(0, Math.floor(diffMs / 60000));
-
   const status = lateMinutes > 0 ? "retard" : "ponctuel";
 
   console.log("clockIn time to save to db: ", clockIn);
@@ -178,15 +178,13 @@ const editAttendance = async (attendanceId, newTime) => {
     const expectedClockIn = new Date();
 
     expectedClockIn.setHours(expectedHour, expectedMinute, 0, 0);
-
     const diffMs = new Date(clockIn).getTime() - expectedClockIn.getTime();
-
     const lateMinutes = Math.max(0, Math.floor(diffMs / 60000));
-
     const status = lateMinutes > 0 ? "retard" : "ponctuel";
 
     updatedData.clockIn = new Date(clockIn);
     updatedData.status = status;
+    updatedData.lateMinutes = lateMinutes;
   }
 
   try {
