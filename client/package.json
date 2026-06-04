@@ -21,7 +21,9 @@
     ],
     "publish": [
       {
-        "provider": "github"
+        "provider": "github",
+        "owner":"alaindave",
+        "repo":"leather-works"
       }
     ],
     "win": {

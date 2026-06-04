@@ -166,7 +166,7 @@ const SignUp = () => {
 
                     <Input
                       color="#e6ebfe"
-                      width="310px"
+                      width="20rem"
                       type="text"
                       {...register("lastName")}
                       marginBottom="3px"
@@ -196,7 +196,7 @@ const SignUp = () => {
                     </HStack>
                     <Input
                       color="#e6ebfe"
-                      width="310px"
+                      width="20rem"
                       type="text"
                       {...register("firstName")}
                       marginBottom="3px"
@@ -226,7 +226,7 @@ const SignUp = () => {
                     </HStack>
                     <Input
                       color="#e6ebfe"
-                      width="310px"
+                      width="20rem"
                       type="email"
                       {...register("email")}
                       marginBottom="3px"
@@ -256,10 +256,14 @@ const SignUp = () => {
                     </HStack>
                     <Input
                       color="#e6ebfe"
-                      width="310px"
+                      width="20rem"
                       type="password"
                       placeholder="Min. 8 car. avec 1 chiffre et 1 lettre maj"
-                      _placeholder={{ opacity: 1, color: "#e6ebfe" }}
+                      _placeholder={{
+                        opacity: 1,
+                        color: "#e6ebfe",
+                        fontSize: "1rem",
+                      }}
                       {...register("password")}
                       marginBottom="3px"
                     />
@@ -288,10 +292,14 @@ const SignUp = () => {
                     </HStack>
                     <Input
                       color="#e6ebfe"
-                      width="310px"
+                      width="20rem"
                       type="password"
                       placeholder="Min. 8 car. avec 1 chiffre et 1 lettre maj"
-                      _placeholder={{ opacity: 1, color: "#e6ebfe" }}
+                      _placeholder={{
+                        opacity: 1,
+                        color: "#e6ebfe",
+                        fontSize: "1rem",
+                      }}
                       {...register("confirmPassword")}
                       marginBottom="3px"
                     />
@@ -313,7 +321,7 @@ const SignUp = () => {
             </ModalBody>
 
             <ModalFooter bg="#08162b">
-              <HStack position="relative" bottom="10px" right="14rem">
+              <HStack position="relative" bottom="10px" right="12rem">
                 <Button
                   borderColor="#ffffff"
                   borderRadius="10px"

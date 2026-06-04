@@ -95,7 +95,7 @@ const LoginPage = () => {
             height="8rem"
             src={logo}
             position="relative"
-            left="100px"
+            left="5rem"
             bottom="30px"
           />
           <InputGroup position="relative" right="50px" top="30px">

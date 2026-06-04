@@ -1,10 +1,12 @@
-name: Build Windows Electron App
+name: Build & Release Windows Electron App
 
 on:
   push:
-    branches:
-      - sql
-  workflow_dispatch:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:
@@ -21,39 +23,23 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 23
+          node-version: 20
           cache: npm
           cache-dependency-path: client/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Clean previous builds
-        shell: pwsh
-        run: |
-          if (Test-Path dist) { Remove-Item dist -Recurse -Force }
-          if (Test-Path dist-electron) { Remove-Item dist-electron -Recurse -Force }
+      - name: Rebuild native Electron modules
+        run: npx electron-builder install-app-deps
 
-      - name: Build React app
+      - name: Build React App
         run: npm run build
 
-      - name: Build Electron App
-  run: npx electron-builder --win --x64 --publish never
+      - name: Build and Publish Release
+        run: npx electron-builder --win --x64 --publish never
 
-      - name: Upload Windows Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: leather-works-windows
-          path: |
-            client/dist-app/*.exe
-            client/dist-app/*.msi
-            client/dist-app/*.zip
-            client/dist-app/*.yml
-            client/dist-app/win-unpacked/**
-          if-no-files-found: warn
-
-      - name: Show build output
+      - name: Show generated files
         shell: pwsh
-        run: Get-ChildItem -Path dist-app -Recurse
-
-    
+        run: |
+          Get-ChildItem -Path dist-app -Recurse
