@@ -38,19 +38,22 @@ jobs:
         run: npm run build
 
       - name: Build Electron App
-        run: npx electron-builder --win --x64 --publish never
+  run: npx electron-builder --win --x64 --publish never
 
       - name: Upload Windows Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: leather-works-windows
           path: |
-            client/dist-electron/*.exe
-            client/dist-electron/*.msi
-            client/dist-electron/*.zip
-            client/dist-electron/latest.yml
+            client/dist-app/*.exe
+            client/dist-app/*.msi
+            client/dist-app/*.zip
+            client/dist-app/*.yml
+            client/dist-app/win-unpacked/**
           if-no-files-found: warn
 
       - name: Show build output
         shell: pwsh
-        run: Get-ChildItem -Recurse dist-electron
+        run: Get-ChildItem -Path dist-app -Recurse
+
+    
