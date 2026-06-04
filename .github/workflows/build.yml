@@ -1,12 +1,10 @@
-name: Build & Release Windows Electron App
+name: Build Windows Electron App
 
 on:
   push:
-    tags:
-      - "v*"
-
-permissions:
-  contents: write
+    branches:
+      - sql
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -39,11 +37,20 @@ jobs:
       - name: Build React app
         run: npm run build
 
-      - name: Build & Publish to GitHub Releases
-        run: npx electron-builder --win --x64 --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Electron App
+        run: npx electron-builder --win --x64
+
+      - name: Upload Windows Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: leather-works-windows
+          path: |
+            client/dist-electron/*.exe
+            client/dist-electron/*.msi
+            client/dist-electron/*.zip
+            client/dist-electron/latest.yml
+          if-no-files-found: warn
 
       - name: Show build output
         shell: pwsh
-        run: Get-ChildItem -Recurse dist
+        run: Get-ChildItem -Recurse dist-electron

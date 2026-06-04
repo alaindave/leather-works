@@ -44,4 +44,4 @@ contextBridge.exposeInMainWorld("electron", {
     delete: (_id: string): Promise<void> =>
       ipcRenderer.invoke("employees:delete", _id),
   },
-});
+}) satisfies Window["electron"];
