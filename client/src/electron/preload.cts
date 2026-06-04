@@ -1,16 +1,17 @@
 const { contextBridge, ipcRenderer } = require("electron");
+import type Employee from "../shared/types/Employee";
 
 console.log(" Preload loaded!");
 
 contextBridge.exposeInMainWorld("electron", {
   file: { save: (data: string) => ipcRenderer.invoke("save-file", data) },
   auth: {
-    login: (credentials) => ipcRenderer.invoke("auth:login", credentials),
+    login: (credentials: any) => ipcRenderer.invoke("auth:login", credentials),
     logout: () => ipcRenderer.invoke("auth:logout"),
   },
 
   announcements: {
-    createAnnouncement: (data) =>
+    createAnnouncement: (data: any) =>
       ipcRenderer.invoke("announcements:create", data),
 
     getAnnouncements: () => ipcRenderer.invoke("announcements:get"),
@@ -27,4 +28,20 @@ contextBridge.exposeInMainWorld("electron", {
       };
     },
   },
-} satisfies Window["electron"]);
+
+  employees: {
+    getAll: (): Promise<Employee[]> => ipcRenderer.invoke("employees:getAll"),
+
+    getById: (_id: string): Promise<Employee> =>
+      ipcRenderer.invoke("employees:getById", _id),
+
+    create: (data: Partial<Employee>): Promise<Employee> =>
+      ipcRenderer.invoke("employees:create", data),
+
+    update: (_id: string, data: Partial<Employee>): Promise<Employee> =>
+      ipcRenderer.invoke("employees:update", { _id, data }),
+
+    delete: (_id: string): Promise<void> =>
+      ipcRenderer.invoke("employees:delete", _id),
+  },
+});

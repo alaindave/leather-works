@@ -72,16 +72,12 @@ const EmployeeListPage = () => {
       >
         <Flex>
           <Box position="relative" bottom="0.8rem">
-            <Text
-              color="white"
-              fontSize={{ base: "20px", md: "27px" }}
-              fontWeight="700"
-            >
+            <Text color="white" fontSize="1.6rem" fontWeight="700">
               Employés
             </Text>
             <Text
               color="whiteAlpha.800"
-              fontSize={{ base: "13px", md: "15px" }}
+              fontSize="1rem"
               position="relative"
               bottom="1rem"
             >

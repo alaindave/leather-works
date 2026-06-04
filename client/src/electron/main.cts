@@ -64,7 +64,7 @@ const createMainWindow = async () => {
     if (splash && !splash.isDestroyed()) {
       // minimum splash display time
       const elapsed = Date.now() - splashStartTime;
-      const minimumSplashTime = 5000;
+      const minimumSplashTime = 4000;
 
       if (elapsed < minimumSplashTime) {
         await delay(minimumSplashTime - elapsed);

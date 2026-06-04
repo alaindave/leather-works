@@ -13,22 +13,27 @@ import {
 } from "@chakra-ui/react";
 
 interface Props {
-  onSubmit: (notes: string) => void;
+  onSubmit: (notes: string) => Promise<boolean>;
 }
 
 const AddClockInNotesPopover = ({ onSubmit }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [lateNote, setLateNote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSave = async () => {
+    setIsSubmitting(true);
     try {
-      console.log("Saving note:", lateNote);
-      onSubmit(lateNote);
-      onClose();
-      setLateNote("");
+      console.log("Notes to save:", lateNote);
+      const success = await onSubmit(lateNote);
+      if (success) {
+        setIsSubmitting(false);
+        setLateNote("");
+        onClose();
+      }
     } catch (error) {
-      console.error("Failed to save note:", error);
+      console.error("Failed to save late notes:", error);
     }
   };
 
@@ -64,7 +69,16 @@ const AddClockInNotesPopover = ({ onSubmit }: Props) => {
             minH="100px"
           />
 
-          <Button mt={3} size="sm" colorScheme="yellow" onClick={handleSave}>
+          <Button
+            mt={3}
+            size="sm"
+            colorScheme="yellow"
+            onClick={handleSave}
+            isLoading={isSubmitting}
+            loadingText="Patientez..."
+            spinnerPlacement="start"
+            isDisabled={isSubmitting}
+          >
             Sauvegarder
           </Button>
         </PopoverBody>

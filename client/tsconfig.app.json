@@ -5,7 +5,6 @@
     "useDefineForClassFields": true,
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "types": ["vite/client"],
     "skipLibCheck": true,
     "composite": true,
 
@@ -23,6 +22,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
   },
-  "include": ["./src/**/*", "ui/components", "ui/pages", "ui/App.tsx", "ui/Attendance.ts", "ui/Employee.ts", "ui/global.*d.ts", "ui/Leave.ts", "ui/main.tsx", "ui/routes.tsx"],
+  "include": ["./src/**/*", "ui/components", "ui/pages", "ui/App.tsx", "ui/Attendance.ts", "ui/Employee.ts", "ui/global.*d.ts", "ui/Leave.ts", "ui/main.tsx", "ui/routes.tsx",  "../../src/types/**/*.d.ts"
+],
   "exclude":["src/electron"]
 }

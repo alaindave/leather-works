@@ -8,11 +8,14 @@ export default interface Employee {
   department: string;
   dateHired: Date;
   salary: string;
-  status: string;
+  status: "actif" | "inactif";
   telephone: string;
   address: string;
   emergencyContact: string;
   relationship: string;
   contactPhone: string;
   remainingLeave: number;
+  synced: number;
+  createdAt?: string;
+  updatedAt?: string;
 }

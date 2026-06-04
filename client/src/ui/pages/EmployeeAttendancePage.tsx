@@ -198,8 +198,8 @@ const EmployeeAttendancePage = () => {
         <Flex>
           <Box>
             <Text
-              color="white"
-              fontSize="27px"
+              color="#ffffff"
+              fontSize="1.6rem"
               fontWeight="700"
               ml="0.5rem"
               mt="0.5rem"
@@ -207,8 +207,8 @@ const EmployeeAttendancePage = () => {
               Présences
             </Text>
             <Text
-              color="#ffffff"
-              fontSize="15px"
+              color="whiteAlpha.800"
+              fontSize="1rem"
               fontWeight="500"
               position="relative"
               bottom="1.2rem"

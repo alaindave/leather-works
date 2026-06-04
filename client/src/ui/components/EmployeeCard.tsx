@@ -33,6 +33,8 @@ const EmployeeCard = ({ employee }: Props) => {
   const [isClockingIn, setIsClockingIn] = useState(false);
   const [displayClock, setDisplayClock] = useState(true);
   const [showEditable, setShowEditable] = useState(false);
+  const [loadingAttendance, setLoadingAttendance] = useState(true);
+  const [notesSuccess, setNotesSuccess] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -42,12 +44,13 @@ const EmployeeCard = ({ employee }: Props) => {
 
       .then((res) => {
         setAttendance(res.data);
-        console.log("Attendance received: ", res.data);
+        console.log("Attendance fetched: ", res.data);
       })
 
       .catch((error) => {
-        console.error("Error while fetching attendance: ", error);
-      });
+        console.error("An error occured while fetching attendance: ", error);
+      })
+      .finally(() => setLoadingAttendance(false));
   }, []);
 
   const handleToggleClockInEdit = () => {
@@ -85,19 +88,17 @@ const EmployeeCard = ({ employee }: Props) => {
       .catch((error: Error) => console.error(error));
   };
 
-  const handleLateNotes = async (lateNotes: string) => {
-    console.log("Late notes to submit to server: ", lateNotes);
+  const handleLateNotes = async (lateNotes: string): Promise<boolean> => {
     try {
       const response = await axios.put(
         `${API_URL}/attendances/${attendance?._id}`,
-        {
-          lateNotes,
-        }
+        { lateNotes }
       );
-      console.log("Late notes success:", response.data);
       setAttendance(response.data);
+      return true;
     } catch (error) {
-      console.error("Error submitting late notes:", error);
+      console.error("An error occured while submitting late notes: ", error);
+      return false;
     }
   };
 
@@ -129,7 +130,7 @@ const EmployeeCard = ({ employee }: Props) => {
       right="20px"
       spacing={5}
     >
-      <Box>
+      <Box ml="0.5rem">
         <Link
           to={{
             pathname: `/employees_admin/employees_list/${employee._id}`,
@@ -151,7 +152,7 @@ const EmployeeCard = ({ employee }: Props) => {
         </Text>
 
         <HStack position="relative" left="30px" bottom="12px">
-          <Text color="#A9B4D0" fontSize="16px" fontWeight="400">
+          <Text color="#A9B4D0" fontSize="16px" fontWeight="500">
             {employee.role}
           </Text>{" "}
           <Box color="green" fontSize="14px" position="relative" bottom="7px">
@@ -168,7 +169,7 @@ const EmployeeCard = ({ employee }: Props) => {
             opacity={attendance ? 1 : 0}
             pointerEvents={attendance ? "auto" : "none"}
             animation={
-              attendance?.status !== "ponctuel"
+              attendance && attendance?.status !== "ponctuel"
                 ? `${flashLate} 1.4s ease-in-out 3`
                 : undefined
             }
@@ -176,7 +177,7 @@ const EmployeeCard = ({ employee }: Props) => {
             top="15px"
             right="150px"
           >
-            {attendance?.status === "ponctuel" ? (
+            {!loadingAttendance && attendance?.status === "ponctuel" ? (
               <Badge bg="#123D2B" color="#5EF29B" fontSize="14px">
                 A l'heure
               </Badge>

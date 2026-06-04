@@ -91,7 +91,13 @@ const LoginPage = () => {
           onSubmit={handleSubmit(handleLogin)}
           onChange={handleChange}
         >
-          <Image src={logo} position="relative" left="100px" bottom="30px" />
+          <Image
+            height="8rem"
+            src={logo}
+            position="relative"
+            left="100px"
+            bottom="30px"
+          />
           <InputGroup position="relative" right="50px" top="30px">
             <InputLeftElement pointerEvents="none">
               <Box position="relative" top="6px">
@@ -184,14 +190,14 @@ const LoginPage = () => {
           </Button>
           <Text
             position="relative"
-            top="135px"
-            left="120px"
+            top="7rem"
+            left="8rem"
             color="gray.400"
             fontSize="20px"
           >
             ou
           </Text>
-          <Box position="relative" top="155px" left="58px">
+          <Box position="relative" top="8rem" left="58px">
             <SignUp />
           </Box>
         </form>

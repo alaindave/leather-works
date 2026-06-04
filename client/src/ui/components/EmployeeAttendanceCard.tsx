@@ -7,14 +7,13 @@ import {
   Grid,
   HStack,
   Text,
-  VStack,
 } from "@chakra-ui/react";
 
 import axios from "axios";
 import { memo, useMemo, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
-import ClockInNotesPopover from "../components/clockInNotesPopover";
+import ClockInNotesPopover from "../components/ClockInNotesPopover";
 import type Attendance from "../../shared/types/Attendance";
 
 interface Props {
@@ -44,9 +43,7 @@ const EmployeeAttendanceCard = ({
     employee: { firstName, lastName, employeeID, role, department },
   } = attendance;
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
   const [localAttendance, setLocalAttendance] = useState(attendance);
-
   const [clockOutMode, setClockOutMode] = useState<ClockOutMode>("idle");
 
   const formattedClockIn = useMemo(
@@ -66,7 +63,7 @@ const EmployeeAttendanceCard = ({
   // =========================
   // Edit Clock In
   // =========================
-  const handleEditClockIn = async (newTime: string) => {
+  const handleEditClockIn = async (newTime: string): Promise<boolean> => {
     const [hours, minutes] = newTime.split(":").map(Number);
     const clockInDate = new Date(localAttendance.clockIn);
     clockInDate.setHours(hours, minutes, 0, 0);
@@ -75,8 +72,10 @@ const EmployeeAttendanceCard = ({
         clockIn: clockInDate.toISOString(),
       });
       setLocalAttendance(response.data);
+      return true;
     } catch (error) {
       console.error("Error editing clock in:", error);
+      return false;
     }
   };
 
@@ -90,9 +89,7 @@ const EmployeeAttendanceCard = ({
       setClockOutMode("idle");
       return;
     }
-
     const now = new Date();
-
     const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(
       now.getMinutes()
     ).padStart(2, "0")}`;
@@ -179,45 +176,10 @@ const EmployeeAttendanceCard = ({
             clockInTime={clockInValue}
             lateMinutes={localAttendance.lateMinutes}
             notes={localAttendance?.lateNotes}
+            onTimeEdit={handleEditClockIn}
           />
         </Box>
       ) : (
-        // <VStack position="relative" top="1.3rem" right="1.5rem">
-        //   <Editable
-        //     position="relative"
-        //     bottom="0.5rem"
-        //     value={clockInValue}
-        //     onChange={setClockInValue}
-        //     submitOnBlur={false}
-        //     width="80px"
-        //     selectAllOnFocus
-        //     onSubmit={handleEditClockIn}
-        //   >
-        //     <EditablePreview
-        //       color="#FF8787"
-        //       fontSize="18px"
-        //       fontWeight="500"
-        //       px={2}
-        //       borderRadius="6px"
-        //       transition="0.2s"
-        //       _hover={{
-        //         bg: "rgba(255,255,255,0.05)",
-        //         cursor: "pointer",
-        //       }}
-        //     />
-
-        //     <EditableInput color="white" fontSize="18px" width="80px" />
-        //   </Editable>
-        //   <Text
-        //     color="#ffffff"
-        //     fontSize="0.75rem"
-        //     position="relative"
-        //     bottom="1.6rem"
-        //   >
-        //     {" "}
-        //     {formatLateMinutes(localAttendance.lateMinutes)}{" "}
-        //   </Text>
-        // </VStack>
         <Editable
           position="relative"
           right="0.5rem"

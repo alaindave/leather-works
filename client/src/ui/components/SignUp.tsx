@@ -29,6 +29,7 @@ import { MdPerson2 } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import { RiLockPasswordFill } from "react-icons/ri";
 import logo from "../assets/afritan_logo.png";
+import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const schema = z
@@ -60,6 +61,8 @@ const SignUp = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
   const setAuth = useAdminUser((store) => store.login);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const {
     register,
@@ -68,26 +71,33 @@ const SignUp = () => {
   } = useForm<UserData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FieldValues) => {
+    setIsLoggingIn(true);
+    setErrorMessage("");
     console.log("Form submitted:", data);
-    await axios
-      .post(`${API_URL}/adminUsers`, {
+
+    try {
+      const res = await axios.post(`${API_URL}/adminUsers`, {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
-      })
-      .then((res) => {
-        console.log("User successfully created: ", res.data);
-        setAuth(
-          res.data._id,
-          res.data.firstName,
-          res.data.lastName,
-          res.data.email,
-          res.data.roles
-        );
-        navigate("/admin");
-      })
-      .catch((error) => console.error(error));
+      });
+
+      console.log("User successfully created: ", res.data);
+      setAuth(
+        res.data._id,
+        res.data.firstName,
+        res.data.lastName,
+        res.data.email,
+        res.data.roles
+      );
+      navigate("/admin");
+    } catch (error) {
+      console.error("An error occured while signing up", error);
+      setErrorMessage("Une erreur est survenue. Veuillez contacter ADB Tech.");
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   return (
@@ -107,7 +117,7 @@ const SignUp = () => {
       </Button>
       <Modal size="3xl" isOpen={isOpen} onClose={onClose}>
         <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
-        <ModalContent position="relative" top="60px" bg="#08162b">
+        <ModalContent bg="#08162b">
           <form noValidate onSubmit={handleSubmit(onSubmit)}>
             <ModalHeader color="#ffffff">
               <HStack position="relative" left="130px">
@@ -248,7 +258,7 @@ const SignUp = () => {
                       color="#e6ebfe"
                       width="310px"
                       type="password"
-                      placeholder="Minimum de 8 caractères et 1 chiffre"
+                      placeholder="Min. 8 car. avec 1 chiffre et 1 lettre maj"
                       _placeholder={{ opacity: 1, color: "#e6ebfe" }}
                       {...register("password")}
                       marginBottom="3px"
@@ -280,7 +290,7 @@ const SignUp = () => {
                       color="#e6ebfe"
                       width="310px"
                       type="password"
-                      placeholder="Minimum de 8 caractères et 1 chiffre"
+                      placeholder="Min. 8 car. avec 1 chiffre et 1 lettre maj"
                       _placeholder={{ opacity: 1, color: "#e6ebfe" }}
                       {...register("confirmPassword")}
                       marginBottom="3px"
@@ -295,6 +305,9 @@ const SignUp = () => {
                       </Text>
                     </Box>
                   </Box>
+                  <Text fontSize="1rem" color="red.300">
+                    {errorMessage}
+                  </Text>
                 </VStack>
               </FormControl>
             </ModalBody>
@@ -327,6 +340,7 @@ const SignUp = () => {
                 </Button>
 
                 <Button
+                  type="submit"
                   borderRadius="10px"
                   borderColor="black"
                   bg="#F2B705"
@@ -334,7 +348,10 @@ const SignUp = () => {
                   colorScheme=" #320b01"
                   color="black"
                   mr={3}
-                  type="submit"
+                  isLoading={isLoggingIn}
+                  loadingText="Connexion..."
+                  spinnerPlacement="start"
+                  isDisabled={isLoggingIn}
                 >
                   <HStack>
                     <Box>
@@ -342,7 +359,7 @@ const SignUp = () => {
                     </Box>
                     <Text position="relative" top="8px" fontSize="1rem">
                       {" "}
-                      Ajouter
+                      Se connecter
                     </Text>
                   </HStack>
                 </Button>

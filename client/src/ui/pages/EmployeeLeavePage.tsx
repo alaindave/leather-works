@@ -284,7 +284,7 @@ const EmployeeLeavePage = () => {
             <Box>
               <Text
                 color="#ffffff"
-                fontSize="1.8rem"
+                fontSize="1.6rem"
                 fontWeight="700"
                 ml="1rem"
                 mt="0.8rem"
@@ -292,7 +292,7 @@ const EmployeeLeavePage = () => {
                 Congés
               </Text>
               <Text
-                color="#ffffff"
+                color="whiteAlpha.800"
                 fontSize="1rem"
                 fontWeight="500"
                 position="relative"
@@ -460,7 +460,7 @@ const EmployeeLeavePage = () => {
       <Box>
         <Modal size="5xl" isOpen={isOpen} onClose={onClose}>
           <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
-          <ModalContent bg="#08162b" position="relative" bottom="1rem">
+          <ModalContent bg="#08162b">
             <form onSubmit={handleSubmit(onSubmit)}>
               <ModalHeader color="#ffffff" position="relative" left="120px">
                 <HStack>

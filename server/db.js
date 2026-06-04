@@ -96,7 +96,7 @@ const addAttendance = async (employeeId, clockIn) => {
   console.log("Current date: ", date);
 
   // Expected clock in time
-  const expectedHour = 8;
+  const expectedHour = 6;
   const expectedMinute = 0;
   expectedClockIn.setHours(expectedHour, expectedMinute, 0, 0);
 
