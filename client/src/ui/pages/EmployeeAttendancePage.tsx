@@ -246,7 +246,7 @@ const EmployeeAttendancePage = () => {
         background="#08162b"
         mt="0.3rem"
         mb="0.3rem"
-        height="70px"
+        height="4.7rem"
         ml="0.3rem"
         width="78.5vw"
         overflowY="hidden"

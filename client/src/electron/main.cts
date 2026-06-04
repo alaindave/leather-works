@@ -156,11 +156,7 @@ ipcMain.handle("auth:login", async (_, credentials) => {
   }
   const { email, password } = credentials;
   try {
-    const res = await axios.post(
-      `${API_URL}/auth`,
-      { email, password },
-      { timeout: 10000 }
-    );
+    const res = await axios.post(`${API_URL}/auth`, { email, password });
     await saveToken(res.headers["x-auth-token"]);
     console.log("LOGIN RESPONSE:", res.data);
     return res.data;
@@ -195,7 +191,6 @@ ipcMain.handle("announcements:create", async (_, announcement) => {
       headers: {
         "x-auth-token": token,
       },
-      timeout: 10000,
     });
     console.log("From Main: Announcement saved: ", res.data);
     return res.data;
@@ -218,7 +213,6 @@ ipcMain.handle("announcements:get", async () => {
       headers: {
         "x-auth-token": token,
       },
-      timeout: 10000,
     });
 
     console.log("From main: Announcements fetched: ", res.data);

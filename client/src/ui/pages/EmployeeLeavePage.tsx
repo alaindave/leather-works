@@ -362,7 +362,7 @@ const EmployeeLeavePage = () => {
                 fontWeight="600"
                 background="#08162b"
                 margin="0.3rem"
-                height="3.6rem"
+                height="5rem"
                 width="78.5vw"
                 borderRadius="12px"
                 overflowY="hidden"
