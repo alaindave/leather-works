@@ -244,12 +244,13 @@ const EmployeeAttendancePage = () => {
         bg="gray.400"
         fontWeight="600"
         background="#08162b"
-        overflowX="auto"
         mt="0.3rem"
         mb="0.3rem"
         height="70px"
         ml="0.3rem"
         width="78.5vw"
+        overflowY="hidden"
+        overflowX="hidden"
       >
         <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
           Employé

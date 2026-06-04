@@ -365,6 +365,8 @@ const EmployeeLeavePage = () => {
                 height="3.6rem"
                 width="78.5vw"
                 borderRadius="12px"
+                overflowY="hidden"
+                overflowX="hidden"
               >
                 <Text fontSize="18px" color="#d6b65c" ml={8} mt={4}>
                   Employé
