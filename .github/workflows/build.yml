@@ -17,11 +17,9 @@ jobs:
         working-directory: ./client
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -30,16 +28,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Rebuild native Electron modules
+      - name: Rebuild native modules
         run: npx electron-builder install-app-deps
 
       - name: Build React App
         run: npm run build
 
-      - name: Build and Publish Release
+      - name: Build Windows Installer
         run: npx electron-builder --win --x64 --publish never
 
-      - name: Show generated files
-        shell: pwsh
-        run: |
-          Get-ChildItem -Path dist-app -Recurse
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            client/dist-app/*.exe
+            client/dist-app/*.yml
