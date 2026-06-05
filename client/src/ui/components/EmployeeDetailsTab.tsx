@@ -87,19 +87,19 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
           <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Nom"
-              value={employee?.lastName ?? "N.D."}
+              value={employee?.lastName || "N.D."}
               icon={IoPerson}
             />
 
             <EmployeeDetailsCard
               property="Prénom"
-              value={employee?.firstName ?? "N.D."}
+              value={employee?.firstName || "N.D."}
               icon={IoPerson}
             />
 
             <EmployeeDetailsCard
               property="Matricule"
-              value={employee?.employeeID ?? "N.D."}
+              value={employee?.employeeID || "N.D."}
               icon={FaHashtag}
             />
 
@@ -129,7 +129,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
 
             <EmployeeDetailsCard
               property="Salaire"
-              value={employee?.salary || "N.D."}
+              value={employee?.salary?.toLocaleString("fr-BI") || "N.D."}
               icon={MdAttachMoney}
             />
 
@@ -147,31 +147,31 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
           <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Adresse"
-              value={employee?.address}
+              value={employee?.address || "N.D."}
               icon={FaHouseChimneyWindow}
             />
 
             <EmployeeDetailsCard
               property="Téléphone"
-              value={employee?.telephone}
+              value={employee?.telephone || "N.D."}
               icon={GiRotaryPhone}
             />
 
             <EmployeeDetailsCard
               property="Nom du contact d'urgence"
-              value={employee?.emergencyContact}
+              value={employee?.emergencyContact || "N.D."}
               icon={IoPerson}
             />
 
             <EmployeeDetailsCard
               property="Relation avec l'employé"
-              value={employee?.relationship}
+              value={employee?.relationship || "N.D."}
               icon={GiRelationshipBounds}
             />
 
             <EmployeeDetailsCard
               property="Téléphone du contact d'urgence"
-              value={employee?.contactPhone}
+              value={employee?.contactPhone || "N.D."}
               icon={GiRotaryPhone}
             />
           </TabPanel>

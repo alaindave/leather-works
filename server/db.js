@@ -174,7 +174,7 @@ const editAttendance = async (attendanceId, newTime) => {
 
   if (clockIn) {
     // Expected clock in time
-    const expectedHour = 8;
+    const expectedHour = 6;
     const expectedMinute = 0;
     const expectedClockIn = new Date();
 

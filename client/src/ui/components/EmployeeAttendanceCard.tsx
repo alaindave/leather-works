@@ -67,9 +67,10 @@ const EmployeeAttendanceCard = ({
     const [hours, minutes] = newTime.split(":").map(Number);
     const clockInDate = new Date(localAttendance.clockIn);
     clockInDate.setHours(hours, minutes, 0, 0);
+    console.log("Time edit to update: ", clockInDate);
     try {
       const response = await axios.put(`${API_URL}/attendances/${_id}`, {
-        clockIn: clockInDate.toISOString(),
+        clockIn: clockInDate,
       });
       setLocalAttendance(response.data);
       return true;

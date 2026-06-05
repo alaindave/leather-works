@@ -64,21 +64,28 @@ const schema = z.object({
   role: z.string().min(1, { message: errorMessage }),
   department: z.string().min(1, { message: errorMessage }),
   dateHired: z.date({ message: errorMessage }),
-  telephone: z.string().min(1, { message: errorMessage }),
+  telephone: z
+    .string()
+    .min(1, "Le numéro de téléphone est obligatoire")
+    .regex(/^\+?[0-9]{8,15}$/, "Numéro de téléphone invalide"),
   address: z.string().min(1, { message: errorMessage }),
   emergencyContact: z.string().min(1, { message: errorMessage }),
   relationship: z.string().min(1, { message: errorMessage }),
   contactPhone: z.string().min(1, { message: errorMessage }),
-  salary: z.string().min(1, { message: errorMessage }),
+  salary: z
+    .number({
+      invalid_type_error: "Le salaire doit être un nombre",
+    })
+    .min(0, "Le salaire ne peut pas être négatif")
+    .optional(),
 });
 
 type EmployeeData = z.infer<typeof schema>;
 
 const AddEmployee = ({ onAddEmployee }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [dateBirthType, setDateBirthType] = useState("text");
-  const [dateHiredType, setDateHiredType] = useState("text");
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const {
@@ -89,20 +96,21 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
   } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FieldValues) => {
+    setIsSaving(true);
     console.log("Form to be submitted:", data);
-    await axios
-      .post(`${API_URL}/employees`, data)
-      .then((response) => {
-        console.log("Employee successfully saved", response.data);
-        onAddEmployee(response.data);
-        onClose();
-      })
-      .catch((error) => {
-        console.log(error);
-        setServerErrorMessage(
-          "Une erreur s'est produite.Veuillez contacter ADB Tech."
-        );
-      });
+    try {
+      const res = await axios.post(`${API_URL}/employees`, data);
+      console.log("Employee successfully saved", res.data);
+      onAddEmployee(res.data);
+      onClose();
+    } catch (error) {
+      console.error("An error occured while adding employee: ", error);
+      setServerErrorMessage(
+        "Une erreur s'est produite.Veuillez contacter ADB Tech."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -119,6 +127,10 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
           color: "#e6e6e6",
           transform: "scale(1.05)",
         }}
+        isLoading={isSaving}
+        loadingText="Patientez..."
+        spinnerPlacement="start"
+        isDisabled={isSaving}
       >
         <IoPersonAdd />{" "}
         <Text fontSize="15px" marginLeft="10px" marginTop="15px">
@@ -262,7 +274,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                           dateFormat="dd/MM/yyyy"
                           showYearDropdown
                           scrollableYearDropdown
-                          yearDropdownItemNumber={100}
+                          yearDropdownItemNumber={80}
                           customInput={
                             <Input
                               color="#e6ebfe"
@@ -382,7 +394,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                           showYearDropdown
                           scrollableYearDropdown
                           yearDropdownItemNumber={80}
-                          minDate={new Date(2003, 0, 1)}
+                          minDate={new Date(1990, 0, 1)}
                           maxDate={new Date()}
                           customInput={
                             <Input
@@ -571,6 +583,10 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                   color="black"
                   mr={3}
                   type="submit"
+                  isLoading={isSaving}
+                  loadingText="Patientez..."
+                  spinnerPlacement="start"
+                  isDisabled={isSaving}
                 >
                   <HStack>
                     <Box>
@@ -578,7 +594,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     </Box>
                     <Text position="relative" top="8px" fontSize="1rem">
                       {" "}
-                      Ajouter
+                      Sauvegarder
                     </Text>
                   </HStack>
                 </Button>

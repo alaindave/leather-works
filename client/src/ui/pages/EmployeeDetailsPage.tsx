@@ -26,9 +26,12 @@ import { RxCrossCircled } from "react-icons/rx";
 import source from "../assets/employee_photos/Jeanne.jpeg";
 import UpdateEmployee from "../components/UpdateEmployee";
 import { useEffect, useRef, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import ComponentErrorFallback from "./ComponentErrorFallback";
 
 const EmployeeDetailsPage = () => {
   const [employee, setEmployee] = useState<Employee>({} as Employee);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { _id } = useParams();
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -49,11 +52,14 @@ const EmployeeDetailsPage = () => {
   };
 
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
       await axios.delete(`${API_URL}/employees/${_id}`);
       navigate("/employees_admin/employees_list");
     } catch (error) {
       console.error("Unable to delete employee:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -80,21 +86,28 @@ const EmployeeDetailsPage = () => {
               <b style={{ color: "#F2B705" }}>
                 {employee?.firstName} {employee?.lastName}
               </b>{" "}
-              ?
+              de la liste des employés ?
             </AlertDialogBody>
 
             <AlertDialogFooter>
               <HStack>
                 <Button
-                  bg="brown"
+                  colorScheme="red"
                   onClick={handleDelete}
                   leftIcon={<MdAutoDelete fontSize="1.2rem" />}
+                  isLoading={isDeleting}
+                  loadingText="Patientez..."
+                  spinnerPlacement="start"
+                  isDisabled={isDeleting}
                 >
                   Supprimer
                 </Button>
 
-                <Button ref={cancelRef} onClick={onClose}>
-                  <RxCrossCircled fontSize="1.2rem" />
+                <Button
+                  ref={cancelRef}
+                  onClick={onClose}
+                  leftIcon={<RxCrossCircled fontSize="1.2rem" />}
+                >
                   Annuler
                 </Button>
               </HStack>
@@ -156,11 +169,13 @@ const EmployeeDetailsPage = () => {
               </Box>
             </HStack>
 
-            <UpdateEmployee
-              _id={_id}
-              employee={employee}
-              onUpdated={refreshEmployee}
-            />
+            <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
+              <UpdateEmployee
+                _id={_id}
+                employee={employee}
+                onUpdated={refreshEmployee}
+              />
+            </ErrorBoundary>
           </Stack>
 
           {/* MAIN CONTENT */}
@@ -235,7 +250,9 @@ const EmployeeDetailsPage = () => {
               h={{ base: "auto", lg: "74vh" }}
               overflowY="auto"
             >
-              <EmployeeDetailsTab employee={employee} />
+              <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
+                <EmployeeDetailsTab employee={employee} />
+              </ErrorBoundary>
             </Box>
           </Stack>
         </VStack>

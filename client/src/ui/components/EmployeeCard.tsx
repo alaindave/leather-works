@@ -170,7 +170,7 @@ const EmployeeCard = ({ employee }: Props) => {
             pointerEvents={attendance ? "auto" : "none"}
             animation={
               attendance && attendance?.status !== "ponctuel"
-                ? `${flashLate} 1.4s ease-in-out 3`
+                ? `${flashLate} 1.4s ease-in-out 2`
                 : undefined
             }
             position="absolute"
@@ -234,8 +234,8 @@ const EmployeeCard = ({ employee }: Props) => {
               <Editable
                 width="65px"
                 position="absolute"
-                right="63px"
-                bottom="25px"
+                right="5rem"
+                bottom="1.5rem"
                 defaultValue={_clockIn}
                 onChange={(clockIn) => setClockIn(clockIn)}
                 submitOnBlur={false}

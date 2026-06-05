@@ -8,12 +8,12 @@ const leaveSchema = new mongoose.Schema({
   },
 
   startDate: {
-    type: String,
+    type: Date,
     required: true,
   },
 
   endDate: {
-    type: String,
+    type: Date,
     required: true,
   },
   subject: {
@@ -30,8 +30,6 @@ const leaveSchema = new mongoose.Schema({
     default: `En attente d'approbation`,
   },
 });
-
-// leaveSchema.index({ employee: 1 }, { unique: true });
 
 const Leave = mongoose.model("Leave", leaveSchema);
 module.exports = Leave;

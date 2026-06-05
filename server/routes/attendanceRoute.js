@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 const {
   getEmployee,
   addAttendance,
-  getAllAttendances,
   getAttendance,
   getAttendanceByDate,
   getAttendanceByEmployeeID,
@@ -115,9 +114,9 @@ router.delete("/:attendanceId", async (req, res) => {
     const attendanceDeleted = await deleteAttendance(req.params.attendanceId);
     res.status(200).send(attendanceDeleted);
     console.log("Attendance delete success:", attendanceDeleted);
-  } catch (e) {
-    console.log("Attendance deletion error:", e.message);
-    res.status(500).send("Unable to delete attendance", e.message);
+  } catch (error) {
+    console.error("Attendance deletion error:", error);
+    res.status(500).send("Unable to delete attendance", error);
   }
 });
 

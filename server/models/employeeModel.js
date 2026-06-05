@@ -4,9 +4,9 @@ const employeeSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   employeeID: { type: String, required: true },
-  dateBirth: { type: String, required: true },
+  dateBirth: { type: Date, required: true },
   role: { type: String, required: true },
-  dateHired: { type: String, required: true },
+  dateHired: { type: Date, required: true },
   department: {
     type: String,
     enum: ["Administration", "Atelier", "Usine", "Magasin", "Sentinelle"],
@@ -17,7 +17,7 @@ const employeeSchema = new mongoose.Schema({
   emergencyContact: { type: String, required: true },
   relationship: { type: String, required: true },
   contactPhone: { type: String, required: true },
-  salary: { type: String, required: true },
+  salary: { type: Number, required: true },
   status: {
     type: String,
     enum: ["actif", "inactif"],

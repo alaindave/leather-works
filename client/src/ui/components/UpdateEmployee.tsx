@@ -1,13 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import type Employee from "../../shared/types/Employee";
 
 import {
   Box,
   Button,
   Flex,
+  FormControl,
+  FormErrorMessage,
   FormLabel,
   Grid,
   HStack,
@@ -27,40 +28,46 @@ import {
 import { fr } from "date-fns/locale";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-registerLocale("fr", fr);
-
 import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
 import { FaEdit, FaSave, FaUserEdit } from "react-icons/fa";
 import { FaCalendarDays } from "react-icons/fa6";
-import { GiRotaryPhone } from "react-icons/gi";
-import { IoHome } from "react-icons/io5";
+import { GiRelationshipBounds, GiRotaryPhone } from "react-icons/gi";
+import { IoCalendarNumberSharp, IoHome } from "react-icons/io5";
 import { LuCircleDollarSign } from "react-icons/lu";
-import { IoCalendarNumberSharp } from "react-icons/io5";
-import { GiRelationshipBounds } from "react-icons/gi";
 import { MdFactory, MdOutlineNumbers, MdPerson2, MdWork } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
+import { z } from "zod";
+registerLocale("fr", fr);
 
 interface Props {
   _id: string | undefined;
   employee: Employee;
   onUpdated?: () => void;
 }
+const errorMessage = "Ce champ est obligatoire";
 
 const schema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  dateBirth: z.date().nullable().optional(),
-  employeeID: z.string().min(1),
-  role: z.string().optional(),
-  department: z.string().optional(),
-  dateHired: z.date().nullable().optional(),
-  telephone: z.string().optional(),
-  address: z.string().optional(),
-  salary: z.string().optional(),
-  emergencyContact: z.string().optional(),
-  relationship: z.string().optional(),
-  contactPhone: z.string().optional(),
+  firstName: z.string().min(1, { message: errorMessage }),
+  lastName: z.string().min(1, { message: errorMessage }),
+  employeeID: z.string().min(1, { message: errorMessage }),
+  dateBirth: z.date().optional().nullable(),
+  role: z.string().min(1, { message: errorMessage }),
+  department: z.string().min(1, { message: errorMessage }),
+  dateHired: z.date().optional().nullable(),
+  telephone: z
+    .string()
+    .min(1, "Le numéro de téléphone est obligatoire")
+    .regex(/^\+?[0-9]{1,15}$/, "Numéro de téléphone invalide"),
+  address: z.string().min(1, { message: errorMessage }),
+  emergencyContact: z.string().min(1, { message: errorMessage }),
+  relationship: z.string().min(1, { message: errorMessage }),
+  contactPhone: z.string().min(1, { message: errorMessage }),
+  salary: z
+    .number({
+      invalid_type_error: "Le salaire doit être un nombre",
+    })
+    .min(0, "Le salaire ne peut pas être négatif")
+    .optional(),
 });
 
 type EmployeeData = z.infer<typeof schema>;
@@ -69,6 +76,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const {
     firstName,
@@ -132,21 +140,25 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
   }, [employee, reset]);
 
   const onSubmit = async (data: EmployeeData) => {
-    console.log("Info to update: ", data);
-
-    await axios
-      .put<Employee>(`${API_URL}/employees/${_id}`, data)
-      .then((response) => {
-        console.log("Updated employee:", response.data);
-        onUpdated?.();
-        onClose();
-      })
-      .catch((error) => {
-        console.error("An error occured while updating info:", error);
-        setServerErrorMessage(
-          "Une erreur s'est produite.Veuillez contacter ADB Tech."
-        );
-      });
+    setServerErrorMessage("");
+    setIsUpdating(true);
+    try {
+      console.log("Info to update:", data);
+      const response = await axios.put<Employee>(
+        `${API_URL}/employees/${_id}`,
+        data
+      );
+      console.log("Updated employee:", response.data);
+      onUpdated?.();
+      onClose();
+    } catch (error) {
+      console.error("An error occurred while updating info:", error);
+      setServerErrorMessage(
+        "Une erreur s'est produite. Veuillez contacter ADB Tech."
+      );
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleFormClosed = () => {
@@ -226,18 +238,19 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
             </ModalHeader>
             <ModalCloseButton />
             <ModalBody marginLeft={4}>
-              <HStack spacing="12px" marginBottom="10px">
+              <HStack
+                spacing="0.8rem"
+                marginBottom="0.7rem"
+                alignItems="flex-start"
+              >
                 {/* Last Name */}
-                <Box>
+                <FormControl isInvalid={!!errors.lastName}>
                   <HStack>
                     <Box marginBottom="10px">
                       <MdPerson2 color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Nom
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
@@ -246,47 +259,44 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     color="gray.300"
                     {...register("lastName")}
                   />
-                  {errors.lastName && (
-                    <p className="text-danger">{errors.lastName.message}</p>
-                  )}
-                </Box>
-
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.lastName?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
                 {/* First Name */}
-                <Box>
+                <FormControl isInvalid={!!errors.firstName}>
                   <HStack>
                     <Box marginBottom="10px">
                       <MdPerson2 color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Prenom
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
                   <Input
                     type="text"
                     color="gray.300"
+                    borderColor={errors.firstName ? "red.400" : undefined}
                     {...register("firstName")}
                   />
-                  {errors.firstName && (
-                    <p className="text-danger">{errors.firstName.message}</p>
-                  )}
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.firstName?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
 
                 {/* Date of birth */}
-
-                <Box>
+                <FormControl isInvalid={!!errors.firstName}>
                   <HStack>
                     <Box marginBottom="10px">
                       <IoCalendarNumberSharp color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Date de naissance
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
@@ -307,7 +317,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                         showYearDropdown
                         scrollableYearDropdown
                         yearDropdownItemNumber={80}
-                        minDate={new Date(1926, 0, 1)}
+                        minDate={new Date(1940, 0, 1)}
                         maxDate={new Date()}
                         customInput={
                           <Input
@@ -321,21 +331,27 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                       />
                     )}
                   />
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.dateBirth?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
               </HStack>
 
-              <HStack spacing="12px" marginBottom="10px">
+              <HStack
+                spacing="0.8rem"
+                marginBottom="0.7rem"
+                alignItems="flex-start"
+              >
                 {/* Employee ID */}
-                <Box>
+                <FormControl isInvalid={!!errors.employeeID}>
                   <HStack>
                     <Box marginBottom="10px">
                       <MdOutlineNumbers color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Matricule
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
@@ -344,33 +360,32 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     color="gray.300"
                     {...register("employeeID")}
                   />
-                  {errors.employeeID && (
-                    <p className="text-danger">{errors.employeeID.message}</p>
-                  )}
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.employeeID?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
 
                 {/* Role */}
-                <Box>
+                <FormControl isInvalid={!!errors.role}>
                   <HStack>
                     <Box marginBottom="10px">
                       <MdWork color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Poste
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
                   <Input type="text" color="gray.300" {...register("role")} />
-                  {errors.role && (
-                    <p className="text-danger">{errors.role.message}</p>
-                  )}
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>{errors.role?.message}</FormErrorMessage>
+                  </Box>
+                </FormControl>
 
                 {/* Department */}
-                <Box>
+                <FormControl isInvalid={!!errors.department}>
                   <HStack>
                     <Box marginBottom="10px">
                       <MdFactory color="#F2B705" size="1.3rem" />
@@ -378,9 +393,6 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
 
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Departement
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
@@ -418,48 +430,50 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     </option>
                   </Select>
 
-                  {errors.department && (
-                    <p className="text-danger">{errors.department.message}</p>
-                  )}
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.department?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
               </HStack>
 
-              <HStack spacing="12px" marginBottom="10px">
+              <HStack
+                spacing="0.8rem"
+                marginBottom="0.7rem"
+                alignItems="flex-start"
+              >
                 {/* Salary */}
-                <Box>
+                <FormControl isInvalid={!!errors.salary}>
                   <HStack>
                     <Box marginBottom="10px">
                       <LuCircleDollarSign color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Salaire
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
                   <Input
                     type="number"
                     color="gray.300"
-                    {...register("salary")}
+                    {...register("salary", { valueAsNumber: true })}
                   />
-                  {errors.salary && (
-                    <p className="text-danger">{errors.salary.message}</p>
-                  )}
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.salary?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
 
                 {/* Telephone */}
-                <Box>
+                <FormControl isInvalid={!!errors.telephone}>
                   <HStack>
                     <Box marginBottom="10px">
                       <GiRotaryPhone color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Telephone
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
@@ -468,21 +482,20 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     color="gray.300"
                     {...register("telephone")}
                   />
-                  {errors.telephone && (
-                    <p className="text-danger">{errors.telephone.message}</p>
-                  )}
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.telephone?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
                 {/* Hiring date */}
-                <Box>
+                <FormControl isInvalid={!!errors.dateHired}>
                   <HStack>
                     <Box marginBottom="10px">
                       <FaCalendarDays color="#F2B705" size="1.3rem" />
                     </Box>
                     <FormLabel color="#C7D2FE" marginBottom="10px">
                       Date d'embauche
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
                   {/* <InputGroup> */}
@@ -504,7 +517,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                         showYearDropdown
                         scrollableYearDropdown
                         yearDropdownItemNumber={80}
-                        minDate={new Date(2003, 0, 1)}
+                        minDate={new Date(1990, 0, 1)}
                         maxDate={new Date()}
                         customInput={
                           <Input
@@ -518,13 +531,18 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                       />
                     )}
                   />
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.dateHired?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
               </HStack>
 
               {/* Emergency contact */}
               <Grid templateColumns="repeat(3, 1fr)" gap={4}>
                 {" "}
-                <Box>
+                <FormControl isInvalid={!!errors.emergencyContact}>
                   <HStack>
                     {" "}
                     <Box marginBottom="10px">
@@ -537,9 +555,6 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     >
                       {" "}
                       Contact d'urgence
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
 
@@ -549,13 +564,13 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     h="40px"
                     {...register("emergencyContact")}
                   />
-                  {errors.emergencyContact && (
-                    <p className="text-danger">
-                      {errors.emergencyContact.message}
-                    </p>
-                  )}
-                </Box>
-                <Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.emergencyContact?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
+                <FormControl isInvalid={!!errors.relationship}>
                   <HStack>
                     {" "}
                     <Box marginBottom="10px">
@@ -568,9 +583,6 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     >
                       {" "}
                       Relation avec l'employé
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
                   <Input
@@ -579,11 +591,13 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     h="40px"
                     {...register("relationship")}
                   />
-                  {errors.relationship && (
-                    <p className="text-danger">{errors.relationship.message}</p>
-                  )}
-                </Box>
-                <Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.relationship?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
+                <FormControl isInvalid={!!errors.contactPhone}>
                   <HStack>
                     {" "}
                     <Box marginBottom="10px">
@@ -596,9 +610,6 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     >
                       {" "}
                       Telephone du contact
-                      <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                        *
-                      </span>
                     </FormLabel>
                   </HStack>
                   <Input
@@ -607,30 +618,29 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     h="40px"
                     {...register("contactPhone")}
                   />
-                  {errors.contactPhone && (
-                    <p className="text-danger">{errors.contactPhone.message}</p>
-                  )}
-                </Box>
+                  <Box minH="24px">
+                    <FormErrorMessage>
+                      {errors.contactPhone?.message}
+                    </FormErrorMessage>
+                  </Box>
+                </FormControl>
               </Grid>
 
               {/* Address */}
-              <Box marginTop="10px">
+              <FormControl isInvalid={!!errors.address}>
                 <HStack>
                   <Box marginBottom="10px">
                     <IoHome color="#F2B705" size="1.3rem" />
                   </Box>
                   <FormLabel color="#C7D2FE" marginBottom="10px">
                     Addresse
-                    <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                      *
-                    </span>
                   </FormLabel>
                 </HStack>
                 <Input type="text" color="gray.300" {...register("address")} />
-                {errors.address && (
-                  <p className="text-danger">{errors.address.message}</p>
-                )}
-              </Box>
+                <Box minH="24px">
+                  <FormErrorMessage>{errors.address?.message}</FormErrorMessage>
+                </Box>{" "}
+              </FormControl>
             </ModalBody>
 
             <ModalFooter bg="#08162b">
@@ -653,6 +663,10 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     color="black"
                     mr={3}
                     type="submit"
+                    isLoading={isUpdating}
+                    loadingText="Patientez..."
+                    spinnerPlacement="start"
+                    isDisabled={isUpdating}
                   >
                     <HStack>
                       <Box>
