@@ -37,6 +37,15 @@ jobs:
       - name: Build Windows Installer
         run: npx electron-builder --win --x64 --publish never
 
+      - name: Debug dist-app
+        shell: pwsh
+        run: |
+            Write-Host "Current directory:"
+            Get-Location
+
+            Write-Host "Contents of client/dist-app:"
+            Get-ChildItem -Path dist-app -Recurse
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
