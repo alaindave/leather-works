@@ -73,6 +73,8 @@ const EmployeeAttendancePage = () => {
   useEffect(() => {
     setLoading(true);
 
+    console.log("Selected date:", selectedDate);
+
     axios
       .get<Attendance[]>(`${API_URL}/attendances`, {
         params: { date: selectedDate },
@@ -241,7 +243,6 @@ const EmployeeAttendancePage = () => {
       <Grid
         templateColumns={gridTemplate}
         px={10}
-        bg="gray.400"
         fontWeight="600"
         background="#08162b"
         mt="0.3rem"

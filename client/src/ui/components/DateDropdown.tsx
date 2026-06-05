@@ -50,6 +50,8 @@ interface Option {
 export default function DateDropdown({ onChange }: Props) {
   const options: Option[] = getLast7Days();
   const [selected, setSelected] = useState<Option | null>(options[0] || null);
+
+  // console.log("Dates in dropdown menu: ", options);
   function handleChange(option: Option | null) {
     if (option) {
       setSelected(option);

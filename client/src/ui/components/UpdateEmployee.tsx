@@ -290,7 +290,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                 </FormControl>
 
                 {/* Date of birth */}
-                <FormControl isInvalid={!!errors.firstName}>
+                <FormControl isInvalid={!!errors.dateBirth}>
                   <HStack>
                     <Box marginBottom="10px">
                       <IoCalendarNumberSharp color="#F2B705" size="1.3rem" />
