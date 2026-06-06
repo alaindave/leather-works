@@ -165,36 +165,35 @@ const getAttendance = async (attendanceId) => {
 };
 
 //Edit attendance
-const editAttendance = async (attendanceId, newTime) => {
-  console.log("New time db: ", newTime.clockIn);
-  console.log("Type of New time db: ", typeof newTime.clockIn);
-
-  const { clockIn, ...rest } = newTime;
-  let updatedData = { ...rest };
+const editAttendance = async (attendanceId, attendanceData) => {
+  const { clockIn, ...rest } = attendanceData;
+  let updatedAttendance = { ...rest };
+  console.log("Clock in time to update: ", clockIn);
 
   if (clockIn) {
     // Expected clock in time
     const expectedHour = 6;
     const expectedMinute = 0;
-    const expectedClockIn = new Date();
-
+    const expectedClockIn = new Date(clockIn);
     expectedClockIn.setHours(expectedHour, expectedMinute, 0, 0);
+    console.log("Expected clock in time: ", expectedClockIn);
+
     const diffMs = new Date(clockIn).getTime() - expectedClockIn.getTime();
     const lateMinutes = Math.max(0, Math.floor(diffMs / 60000));
     const status = lateMinutes > 0 ? "retard" : "ponctuel";
 
-    updatedData.clockIn = new Date(clockIn);
-    updatedData.status = status;
-    updatedData.lateMinutes = lateMinutes;
+    updatedAttendance.clockIn = new Date(clockIn);
+    updatedAttendance.lateMinutes = lateMinutes;
+    updatedAttendance.status = status;
   }
 
   try {
-    return Attendance.findByIdAndUpdate(attendanceId, updatedData, {
+    return Attendance.findByIdAndUpdate(attendanceId, updatedAttendance, {
       new: true,
     });
-  } catch (e) {
-    console.error(e);
-    throw e;
+  } catch (error) {
+    console.error("An error occured while updating attendance:", error);
+    throw error;
   }
 };
 
