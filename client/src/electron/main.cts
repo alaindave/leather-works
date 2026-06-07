@@ -1,6 +1,6 @@
-import "dotenv/config";
 import axios from "axios";
-import { BrowserWindow, app, dialog, ipcMain, Menu } from "electron";
+import "dotenv/config";
+import { BrowserWindow, Menu, app, dialog, ipcMain } from "electron";
 import fs from "fs";
 import path from "path";
 import { clearToken, getToken, saveToken } from "./auth.cjs";
@@ -98,8 +98,8 @@ app
   .then(() => {
     createSplashWindow();
     createMainWindow();
-    // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-    // Menu.setApplicationMenu(mainMenu);
+    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    Menu.setApplicationMenu(mainMenu);
   })
   .catch((error) =>
     console.error("An error occured while creating windows...", error)

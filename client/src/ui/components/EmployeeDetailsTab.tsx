@@ -142,6 +142,11 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               }
               icon={FaCalendarAlt}
             />
+            <EmployeeDetailsCard
+              property="Congés restants"
+              value={employee?.remainingLeave || "N.D."}
+              icon={FaCalendarAlt}
+            />
           </TabPanel>
 
           <TabPanel p={0}>

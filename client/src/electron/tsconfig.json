@@ -1,25 +1,19 @@
 {
   "compilerOptions": {
     "strict": true,
-
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
     "target": "ES2022",
     "module": "CommonJS",
-
     "outDir": "../../dist-electron",
-
     "rootDir": "../",
-
     "baseUrl": "../../",
-
     "moduleResolution": "node",
-
     "skipLibCheck": true,
-
     "types": ["node"],
-
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-
     "paths": {
       "@shared/*": ["src/shared/*"]
     }

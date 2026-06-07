@@ -88,7 +88,9 @@ const EmployeeCard = ({ employee }: Props) => {
       .catch((error: Error) => console.error(error));
   };
 
-  const handleLateNotes = async (lateNotes: string): Promise<boolean> => {
+  const handleLateNotes = async (
+    lateNotes: string | undefined
+  ): Promise<boolean> => {
     try {
       const response = await axios.put(
         `${API_URL}/attendances/${attendance?._id}`,
@@ -182,7 +184,10 @@ const EmployeeCard = ({ employee }: Props) => {
                 A l'heure
               </Badge>
             ) : (
-              <AddClockInNotesPopover onSubmit={handleLateNotes} />
+              <AddClockInNotesPopover
+                existingNotes={attendance?.lateNotes}
+                onSubmit={handleLateNotes}
+              />
             )}
           </Box>
           <Box

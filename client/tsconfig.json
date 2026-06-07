@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "strict": true,
     "types": [],
     "target": "ESNext",
     "useDefineForClassFields": true,
@@ -8,8 +9,10 @@
     "skipLibCheck": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,

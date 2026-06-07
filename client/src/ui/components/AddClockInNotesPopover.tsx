@@ -13,13 +13,14 @@ import {
 } from "@chakra-ui/react";
 
 interface Props {
-  onSubmit: (notes: string) => Promise<boolean>;
+  onSubmit: (notes: string | undefined) => Promise<boolean>;
+  existingNotes?: string;
 }
 
-const AddClockInNotesPopover = ({ onSubmit }: Props) => {
+const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [lateNote, setLateNote] = useState("");
+  const [lateNote, setLateNote] = useState(existingNotes);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSave = async () => {

@@ -38,7 +38,7 @@
     }
   },
   "scripts": {
-    "clean": "rimraf dist dist-electron",
+    "clean": "rimraf dist dist-app dist-electron",
     "start": "vite",
     "dev": "npm-run-all --parallel dev:react dev:electron",
     "dev:react": "vite --host",
