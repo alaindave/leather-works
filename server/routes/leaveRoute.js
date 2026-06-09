@@ -5,6 +5,7 @@ const {
   getEmployee,
   addLeave,
   getLeavesByMonth,
+  getOnGoingLeaves,
   getLeaveByID,
   getPendingLeaves,
   editLeave,
@@ -12,28 +13,6 @@ const {
 } = require("../db");
 
 const sendLeaveRequestEmail = require("../utils/sendLeaveRequestEmail");
-
-///Get leaves by submission month
-router.get("/", async (req, res) => {
-  console.log(
-    `Fetch leaves for month:${req.query.month} and year: ${req.query.year}`
-  );
-
-  try {
-    const { month, year } = req.query;
-
-    if (!month || !year) {
-      return res.status(400).send("The month and year are required");
-    }
-
-    const leaves = await getLeavesByMonth(month, year);
-    console.log("Fetched leaves by month:", leaves);
-    res.send(leaves);
-  } catch (error) {
-    console.error("An error occured while retrieving leaves by month: ", error);
-    res.status(500).send("Server error");
-  }
-});
 
 //Add leave
 router.post("/:employeeId", async (req, res) => {
@@ -80,6 +59,53 @@ router.post("/:employeeId", async (req, res) => {
     return res.status(500).send(error);
   }
 });
+
+//Get leaves by submission month
+router.get("/", async (req, res) => {
+  console.log(
+    `Fetch leaves for month:${req.query.month} and year: ${req.query.year}`
+  );
+
+  try {
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).send("The month and year are required");
+    }
+
+    const leaves = await getLeavesByMonth(month, year);
+    console.log("Fetched leaves by month:", leaves);
+    res.send(leaves);
+  } catch (error) {
+    console.error("An error occured while retrieving leaves by month: ", error);
+    res.status(500).send("Server error");
+  }
+});
+
+//Fetch ongoing leaves
+router.get("/ongoing", async (req, res) => {
+  try {
+    const onGoingLeaves = await getOnGoingLeaves();
+    console.log("Fetched ongoing leaves", onGoingLeaves);
+    res.status(200).send(onGoingLeaves);
+  } catch (error) {
+    console.error("An error occured while fetching ongoing leaves: ", error);
+    res.status(500).send("Server error");
+  }
+});
+
+//Fetch leave by ID
+router.get("/:leaveId", async (req, res) => {
+  try {
+    const leave = await getLeaveByID(req.params.leaveId);
+    console.log("Leave fetched:", leave);
+    res.status(200).send(leave);
+  } catch (error) {
+    console.error("An error occured while fetching leave: ", error);
+    res.status(500).send("Server error");
+  }
+});
+
 //Edit leave
 router.put("/:leaveId", async (req, res) => {
   try {

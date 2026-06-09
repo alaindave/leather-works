@@ -25,6 +25,9 @@ const LeaveNotesPopover = ({ subject, notes }: Props) => {
           _hover={{
             color: "#F2B705",
           }}
+          whiteSpace="normal"
+          wordBreak="break-word"
+          maxW="7.5rem"
         >
           {subject}
         </Text>

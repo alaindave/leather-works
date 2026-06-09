@@ -209,8 +209,6 @@ const deleteAttendance = async (id) => {
 
 // Leave operations
 //Add leave
-//Get current month
-
 const addLeave = async (employeeId, startDate, endDate, subject, notes) => {
   const leave = new Leave({
     employee: employeeId,
@@ -225,7 +223,7 @@ const addLeave = async (employeeId, startDate, endDate, subject, notes) => {
     const savedLeave = await leave.save();
     const populatedLeave = await Leave.findById(savedLeave._id).populate(
       "employee",
-      "firstName lastName employeeID remainingLeave"
+      "firstName lastName employeeID department role remainingLeave"
     );
     return populatedLeave;
   } catch (error) {
@@ -246,9 +244,31 @@ const getLeavesByMonth = async (month, year) => {
       },
     })
       .sort({ submittedAt: 1 })
-      .populate("employee", "firstName lastName employeeID remainingLeave");
+      .populate(
+        "employee",
+        "firstName lastName employeeID department role remainingLeave"
+      );
   } catch (error) {
     console.error(error);
+    throw error;
+  }
+};
+
+//Get ongoing leaves
+const getOnGoingLeaves = async () => {
+  try {
+    const today = new Date();
+    return await Leave.find({
+      status: "Approuvé",
+      startDate: { $lte: today },
+      endDate: { $gte: today },
+    })
+      .sort({ startDate: 1 })
+      .populate(
+        "employee",
+        "firstName lastName employeeID department role remainingLeave"
+      );
+  } catch (error) {
     throw error;
   }
 };
@@ -256,7 +276,10 @@ const getLeavesByMonth = async (month, year) => {
 //Retrieve leave by ID
 const getLeaveByID = async (leaveId) => {
   try {
-    return await Leave.findById(leaveId);
+    return await Leave.findById(leaveId).populate(
+      "employee",
+      "firstName lastName employeeID department role remainingLeave"
+    );
   } catch (e) {
     console.error(e);
     throw e;
@@ -390,6 +413,7 @@ module.exports = {
   getPendingLeaves,
   editLeave,
   getLeavesByMonth,
+  getOnGoingLeaves,
   deleteLeave,
   createAdminUser,
   getAdminUserByID,

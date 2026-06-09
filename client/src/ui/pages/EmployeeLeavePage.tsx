@@ -399,14 +399,17 @@ const EmployeeLeavePage = () => {
               </Text>
             </Grid>
             <Box height="90vh" width="80vw" overflowX="hidden" overflowY="auto">
-              {leaves.map((leave) => (
-                <EmployeeLeaveCard
-                  key={leave._id}
-                  leave={leave}
-                  gridTemplate={gridTemplate}
-                  onDelete={() => handleDeleteConfirmation(leave)}
-                />
-              ))}
+              {leaves.map((leave, index) => {
+                console.log("Leave at index", index, leave);
+                return (
+                  <EmployeeLeaveCard
+                    key={leave?._id ?? index}
+                    leave={leave}
+                    gridTemplate={gridTemplate}
+                    onDelete={() => handleDeleteConfirmation(leave)}
+                  />
+                );
+              })}
             </Box>
           </>
         )}
@@ -451,20 +454,19 @@ const EmployeeLeavePage = () => {
         <AlertDialogOverlay backdropFilter="auto" backdropBlur="10px">
           <AlertDialogContent bg="#08162b">
             <AlertDialogHeader fontSize="lg" fontWeight="bold" color="#ffffff">
-              Supprimer de la liste de congé
+              Annuler la demande
             </AlertDialogHeader>
 
             <AlertDialogBody color="#ffffff">
-              Etes de vous sur de vouloir supprimer l'employé de la liste de
-              congé?
+              Etes vous sur de vouloir annuler cette demande?
             </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onConfirmationClose}>
-                Annuler
+                Non
               </Button>
               <Button colorScheme="red" onClick={handleLeaveDelete} ml={3}>
-                Supprimer
+                Oui
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

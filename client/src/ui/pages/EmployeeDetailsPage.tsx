@@ -1,33 +1,36 @@
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
+  Button,
+  Divider,
   HStack,
+  Image,
+  Stack,
   Text,
   VStack,
-  Image,
-  Divider,
-  Button,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
   useDisclosure,
-  Stack,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import type Employee from "../../shared/types/Employee";
-import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
-import { FaArrowLeftLong } from "react-icons/fa6";
-import { GoDotFill } from "react-icons/go";
-import { MdDeleteForever, MdAutoDelete } from "react-icons/md";
-import { RxCrossCircled } from "react-icons/rx";
-import source from "../assets/employee_photos/Jeanne.jpeg";
-import UpdateEmployee from "../components/UpdateEmployee";
 import { useEffect, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { FaArrowLeftLong } from "react-icons/fa6";
+import { FaUserEdit } from "react-icons/fa";
+import { GoDotFill } from "react-icons/go";
+import { MdAutoDelete, MdDeleteForever } from "react-icons/md";
+import { RxCrossCircled } from "react-icons/rx";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import type Employee from "../../shared/types/Employee";
+import useAdminUser from "../../store/authStore";
+import source from "../assets/employee_photos/Jeanne.jpeg";
+import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
+import UpdateEmployee from "../components/UpdateEmployee";
 import ComponentErrorFallback from "./ComponentErrorFallback";
+import NotAuthorized from "../components/NotAuthorized";
 
 const EmployeeDetailsPage = () => {
   const [employee, setEmployee] = useState<Employee>({} as Employee);
@@ -36,7 +39,7 @@ const EmployeeDetailsPage = () => {
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
-
+  const adminUser = useAdminUser((store) => store.adminUser);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
@@ -168,14 +171,23 @@ const EmployeeDetailsPage = () => {
                 </Text>
               </Box>
             </HStack>
-
-            <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
-              <UpdateEmployee
-                _id={_id}
-                employee={employee}
-                onUpdated={refreshEmployee}
+            {adminUser?.role === "manager" ? (
+              <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
+                <UpdateEmployee
+                  _id={_id}
+                  employee={employee}
+                  onUpdated={refreshEmployee}
+                />
+              </ErrorBoundary>
+            ) : (
+              <NotAuthorized
+                buttonText="Modifier"
+                buttonColor="red"
+                icon={FaUserEdit}
+                placement="left"
+                width="13rem"
               />
-            </ErrorBoundary>
+            )}
           </Stack>
 
           {/* MAIN CONTENT */}
@@ -228,16 +240,25 @@ const EmployeeDetailsPage = () => {
                     {employee?.employeeID}
                   </Text>
                 </Box>
-
-                <Button
-                  colorScheme="red"
-                  onClick={onOpen}
-                  w="100%"
-                  mt={4}
-                  leftIcon={<MdDeleteForever />}
-                >
-                  Supprimer
-                </Button>
+                {adminUser?.role === "manager" ? (
+                  <Button
+                    colorScheme="red"
+                    onClick={onOpen}
+                    w="100%"
+                    mt={4}
+                    leftIcon={<MdDeleteForever />}
+                  >
+                    Supprimer
+                  </Button>
+                ) : (
+                  <NotAuthorized
+                    buttonText="Supprimer"
+                    buttonColor="red"
+                    icon={MdDeleteForever}
+                    placement="bottom"
+                    width="13rem"
+                  />
+                )}
               </VStack>
             </Box>
 

@@ -1,30 +1,46 @@
 import {
+  Alert,
+  AlertIcon,
   Box,
+  Button,
   Flex,
+  HStack,
+  Icon,
   List,
   ListItem,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
   Skeleton,
   SkeletonCircle,
   SkeletonText,
   Spacer,
   Text,
+  Tooltip,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import type Employee from "../../shared/types/Employee";
 import AddEmployee from "../components/AddEmployee";
+import useAdminUser from "../../store/authStore";
 import EmployeeCard from "../components/EmployeeCard";
 import SearchBar from "../components/SearchBar";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
+import { FaAddressBook } from "react-icons/fa6";
+import NotAuthorized from "../components/NotAuthorized";
 
 const EmployeeListPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const adminUser = useAdminUser((store) => store.adminUser);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const toast = useToast();
 
   useEffect(() => {
     axios
@@ -85,10 +101,21 @@ const EmployeeListPage = () => {
             </Text>
           </Box>
           <Spacer />
-
-          <Box position="relative" left="0.5rem" bottom="0.6rem">
-            <AddEmployee onAddEmployee={handleAddEmployee} />
-          </Box>
+          {adminUser?.role === "manager" ? (
+            <Box position="relative" left="0.5rem" bottom="0.6rem">
+              <AddEmployee onAddEmployee={handleAddEmployee} />
+            </Box>
+          ) : (
+            <Box position="relative" bottom="1.2rem">
+              <NotAuthorized
+                buttonText="Ajouter un employé"
+                buttonColor="red"
+                icon={FaAddressBook}
+                placement="left"
+                width="13rem"
+              />
+            </Box>
+          )}
         </Flex>
 
         {/* ACTION ROW  */}

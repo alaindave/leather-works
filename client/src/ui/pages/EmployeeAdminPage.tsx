@@ -58,7 +58,7 @@ const EmployeeAdminPage = () => {
       })
       .then((res) => {
         setAttendances(res.data);
-        return axios.get<Leave[]>(`${API_URL}/leaves`);
+        return axios.get<Leave[]>(`${API_URL}/leaves/ongoing`);
       })
       .then((res) => {
         setLeaves(res.data);

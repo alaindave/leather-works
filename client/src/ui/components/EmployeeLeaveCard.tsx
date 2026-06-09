@@ -10,14 +10,15 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState } from "react";
+import useAdminUser from "../../store/authStore";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { PiDotsThreeOutlineVerticalDuotone } from "react-icons/pi";
 import { TiDeleteOutline } from "react-icons/ti";
-
 import Employee from "../../shared/types/Employee";
 import Leave from "../../shared/types/Leave";
 import LeaveNotesPopover from "./LeaveNotesPopover";
+import LeaveEdit from "./LeaveEdit";
 
 interface Props {
   leave: Leave;
@@ -29,7 +30,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   const [localLeave, setLocalLeave] = useState<Leave>(leave);
   const {
     _id,
-    employee: { employeeID, firstName, lastName, remainingLeave },
+    employee: { firstName, lastName, remainingLeave },
     startDate,
     endDate,
     subject,
@@ -37,6 +38,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
     status,
   } = localLeave;
 
+  const adminUser = useAdminUser((store) => store.adminUser);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   //Handle leave approval
@@ -89,6 +91,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       );
   };
 
+  //Leave refresh
+  const refreshLeave = async () => {
+    const res = await axios.get<Leave>(`${API_URL}/leaves/${_id}`);
+    setLocalLeave(res.data);
+  };
+
   return (
     <Grid
       templateColumns={gridTemplate}
@@ -104,7 +112,13 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       marginBottom="0.8px"
     >
       <Box ml="11px" mb={14}>
-        <Text color="gray.200" fontSize="1.1rem">
+        <Text
+          color="gray.200"
+          fontSize="1.1rem"
+          whiteSpace="normal"
+          wordBreak="break-word"
+          maxW="8rem"
+        >
           {firstName} {lastName}
         </Text>
       </Box>
@@ -149,88 +163,160 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           {remainingLeave}
         </Text>
       </Box>
-      <Box mb={6} position="relative" left="40px">
-        <Text color="gray.200" fontSize="1.1rem">
-          <Menu placement="bottom-end">
-            <MenuButton
-              mb={10}
-              as={IconButton}
-              icon={<PiDotsThreeOutlineVerticalDuotone size="18px" />}
-              variant="ghost"
-              size="sm"
-              borderRadius="full"
-              color="yellow.300"
-              _hover={{
-                bg: "#1D326B",
-                color: "white",
-              }}
-              _expanded={{
-                bg: "#1D326B",
-              }}
-              aria-label="Actions"
-            />
-
-            <MenuList
-              bg="#132250"
-              border="1px solid #2A3D70"
-              borderRadius="14px"
-              minW="170px"
-              p="6px"
-              boxShadow="0 8px 30px rgba(0,0,0,0.35)"
-            >
-              {status === "En attente d'approbation" && (
-                <>
-                  <MenuItem
-                    icon={
-                      <IoIosCheckmarkCircleOutline
-                        color="green.300"
-                        size="20px"
-                      />
-                    }
-                    bg="transparent"
-                    borderTop="1px solid #2A3D70"
-                    color="white"
-                    borderRadius="10px"
-                    _hover={{ bg: "#1D326B" }}
-                    onClick={handleApprove}
-                  >
-                    Approuver
-                  </MenuItem>
-
-                  <MenuItem
-                    icon={<TiDeleteOutline color="orange.300" size="20px" />}
-                    bg="transparent"
-                    borderTop="1px solid #2A3D70"
-                    color="white"
-                    borderRadius="10px"
-                    _hover={{ bg: "#1D326B" }}
-                    onClick={handleDeny}
-                  >
-                    Refuser
-                  </MenuItem>
-                </>
-              )}
-
-              <MenuItem
-                height="30px"
-                mt={2}
-                pt={3}
-                borderTop="0.3px solid #2A3D70"
-                icon={<MdOutlineDeleteForever color="red.300" size="20px" />}
-                bg="transparent"
-                color="red.300"
-                borderRadius="10px"
+      {adminUser?.role === "manager" ? (
+        <Box mb={6} position="relative" left="40px">
+          <Text color="gray.200" fontSize="1.1rem">
+            <Menu placement="bottom-end">
+              <MenuButton
+                mb={10}
+                as={IconButton}
+                icon={<PiDotsThreeOutlineVerticalDuotone size="18px" />}
+                variant="ghost"
+                size="sm"
+                borderRadius="full"
+                color="yellow.300"
                 _hover={{
-                  bg: "rgba(255,0,0,0.08)",
+                  bg: "#1D326B",
+                  color: "white",
                 }}
-                onClick={() => onDelete()}
+                _expanded={{
+                  bg: "#1D326B",
+                }}
+                aria-label="Actions"
+              />
+
+              <MenuList
+                bg="#132250"
+                border="1px solid #2A3D70"
+                borderRadius="14px"
+                minW="170px"
+                p="6px"
+                boxShadow="0 8px 30px rgba(0,0,0,0.35)"
               >
-                Supprimer
-              </MenuItem>
-            </MenuList>
-          </Menu>
-        </Text>
-      </Box>
+                {status === "En attente d'approbation" && (
+                  <>
+                    <MenuItem
+                      mb={2}
+                      icon={
+                        <IoIosCheckmarkCircleOutline
+                          color="green.300"
+                          size="20px"
+                        />
+                      }
+                      borderBottom="1px solid #2A3D70"
+                      bg="transparent"
+                      color="white"
+                      borderRadius="10px"
+                      _hover={{ bg: "#1D326B" }}
+                      onClick={handleApprove}
+                    >
+                      Approuver
+                    </MenuItem>
+
+                    <MenuItem
+                      icon={<TiDeleteOutline color="orange.300" size="20px" />}
+                      bg="transparent"
+                      borderBottom="1px solid #2A3D70"
+                      color="white"
+                      borderRadius="10px"
+                      _hover={{ bg: "#1D326B" }}
+                      onClick={handleDeny}
+                      mb={2}
+                    >
+                      Refuser
+                    </MenuItem>
+                  </>
+                )}
+
+                <MenuItem
+                  height="20px"
+                  mb={2}
+                  pt={3}
+                  icon={<MdOutlineDeleteForever color="red.300" size="20px" />}
+                  bg="transparent"
+                  color="red.300"
+                  borderRadius="10px"
+                  _hover={{
+                    bg: "rgba(255,0,0,0.08)",
+                  }}
+                  onClick={() => onDelete()}
+                >
+                  Annuler
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Text>
+        </Box>
+      ) : (
+        <Box mb={6} position="relative" left="40px">
+          <Text color="gray.200" fontSize="1.1rem">
+            <Menu placement="bottom-end">
+              <MenuButton
+                mb={10}
+                as={IconButton}
+                icon={<PiDotsThreeOutlineVerticalDuotone size="18px" />}
+                variant="ghost"
+                size="sm"
+                borderRadius="full"
+                color="yellow.300"
+                _hover={{
+                  bg: "#1D326B",
+                  color: "white",
+                }}
+                _expanded={{
+                  bg: "#1D326B",
+                }}
+                aria-label="Actions"
+              />
+
+              <MenuList
+                bg="#132250"
+                border="1px solid #2A3D70"
+                borderRadius="14px"
+                minW="170px"
+                p="6px"
+                boxShadow="0 8px 30px rgba(0,0,0,0.35)"
+              >
+                {status === "En attente d'approbation" ? (
+                  <>
+                    <MenuItem
+                      bg="transparent"
+                      color="white"
+                      borderRadius="10px"
+                      _hover={{ bg: "#1D326B" }}
+                    >
+                      <LeaveEdit leave={leave} onUpdated={refreshLeave} />
+                    </MenuItem>
+                    <MenuItem
+                      bg="transparent"
+                      borderTop="1px solid #2A3D70"
+                      color="white"
+                      borderRadius="10px"
+                      _hover={{ bg: "#1D326B" }}
+                      onClick={() => onDelete()}
+                    >
+                      <Text ml="1.5rem" fontWeight="600" fontSize="1rem">
+                        Annuler
+                      </Text>
+                    </MenuItem>
+                  </>
+                ) : (
+                  <MenuItem
+                    bg="transparent"
+                    color="white"
+                    borderRadius="10px"
+                    _hover={{ bg: "#1D326B" }}
+                    fontSize="1rem"
+                    fontWeight="600"
+                  >
+                    Retirer la demande
+                  </MenuItem>
+                )}
+              </MenuList>
+            </Menu>
+          </Text>
+        </Box>
+      )}
     </Grid>
   );
 };
