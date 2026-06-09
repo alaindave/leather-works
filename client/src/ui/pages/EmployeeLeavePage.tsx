@@ -42,6 +42,7 @@ import { z } from "zod";
 import type Employee from "../../shared/types/Employee";
 import type Leave from "../../shared/types/Leave";
 import EmployeeLeaveCard from "../components/EmployeeLeaveCard";
+import MonthDropDown from "../components/MonthDropDown";
 
 const shimmerKeyframes = `
 @keyframes shimmer {
@@ -88,11 +89,13 @@ const EmployeeLeavePage = () => {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [leave, setLeave] = useState<Leave | null>(null);
   const [employee, setEmployee] = useState<Employee | null>(null);
-  const [startDateType, setStartDateType] = useState("text");
-  const [endDateType, setEndDateType] = useState("text");
   const cancelRef = useRef<HTMLButtonElement>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionMonth, setSubmissionMonth] = useState(
+    new Date().toISOString().slice(0, 7)
+  );
 
   const {
     register,
@@ -104,8 +107,31 @@ const EmployeeLeavePage = () => {
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+  useEffect(() => {
+    const year = submissionMonth.slice(0, 4);
+    const month = submissionMonth.slice(5, 7);
+    axios
+      .get<Leave[]>(`${API_URL}/leaves`, {
+        params: { month, year },
+      })
+      .then((res) => {
+        setLeaves(res.data);
+        return axios.get<Employee[]>(`${API_URL}/employees`);
+      })
+      .then((res) => {
+        setEmployees(res.data);
+      })
+      .catch((error) => {
+        console.error("Error while fetching leaves: ", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [submissionMonth]);
+
   //Handle leave submission
   const onSubmit = async (data: LeaveData) => {
+    setIsSubmitting(true);
     if (!employee?._id) {
       console.error("No employee selected");
       return;
@@ -133,6 +159,8 @@ const EmployeeLeavePage = () => {
       console.error("Unable to save leave:error status", error.status);
       if (error.status == "400")
         setErrorMessage("Une demande de congé existe deja pour cet employé");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -171,24 +199,6 @@ const EmployeeLeavePage = () => {
     onConfirmationOpen();
     setLeave(leave);
   };
-
-  useEffect(() => {
-    axios
-      .get<Leave[]>(`${API_URL}/leaves`)
-      .then((res) => {
-        setLeaves(res.data);
-        return axios.get<Employee[]>(`${API_URL}/employees`);
-      })
-      .then((res) => {
-        setEmployees(res.data);
-      })
-      .catch((error) => {
-        console.error("Error while fetching leaves: ", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
 
   /* ================= LOADING UI ================= */
   if (loading)
@@ -270,7 +280,7 @@ const EmployeeLeavePage = () => {
 
   return (
     <>
-      <Flex direction="column">
+      <Flex direction="column" justify="space-between">
         <Box
           mt="0.5rem"
           ml="0.3rem"
@@ -327,107 +337,109 @@ const EmployeeLeavePage = () => {
             </Button>
           </Flex>
         </Box>
-        <>
-          {leaves.length === 0 ? (
-            <Flex
-              direction="column"
+
+        {leaves.length === 0 ? (
+          <Box>
+            <Text
+              fontSize="2rem"
+              fontStyle="revert"
+              fontWeight="600"
+              color="gray.200"
               position="relative"
-              top="15rem"
-              left="15rem"
+              left="20rem"
             >
-              <Box>
+              Aucune demande de congé retrouvée
+            </Text>
+          </Box>
+        ) : (
+          <>
+            <Grid
+              templateColumns={gridTemplate}
+              fontWeight="600"
+              background="#08162b"
+              margin="0.3rem"
+              height="5rem"
+              width="78.5vw"
+              borderRadius="12px"
+              overflowY="hidden"
+              overflowX="hidden"
+            >
+              <Text fontSize="18px" color="#d6b65c" ml={8} mt={4}>
+                Employé
+              </Text>
+              <Text fontSize="18px" color="#d6b65c" mt={4}>
+                Debut de congé
+              </Text>
+              <Text fontSize="18px" color="#d6b65c" mt={4}>
+                Fin de congé
+              </Text>
+              <Text fontSize="18px" color="#d6b65c" mt={4}>
+                Motif
+              </Text>
+              <Text fontSize="18px" color="#d6b65c" mt={4}>
+                Statut
+              </Text>
+
+              <Box mt="0.4rem" position="relative" right="1rem">
+                <Text fontSize="18px" color="#d6b65c">
+                  Congés
+                </Text>
                 <Text
-                  fontSize="1.9rem"
-                  fontStyle="revert"
-                  fontWeight="600"
-                  color="gray.200"
+                  fontSize="18px"
+                  color="#d6b65c"
+                  position="relative"
+                  bottom="1.4rem"
                 >
-                  Aucune demande de congé retrouvée
+                  restants
                 </Text>
               </Box>
-              <Spacer />
-              <Box
-                background="#08162b"
-                height="4rem"
-                width="79vw"
-                position="relative"
-                top="22rem"
-                right="14.5rem"
-              ></Box>
-            </Flex>
-          ) : (
-            <>
-              <Grid
-                templateColumns={gridTemplate}
-                fontWeight="600"
-                background="#08162b"
-                margin="0.3rem"
-                height="5rem"
-                width="78.5vw"
-                borderRadius="12px"
-                overflowY="hidden"
-                overflowX="hidden"
-              >
-                <Text fontSize="18px" color="#d6b65c" ml={8} mt={4}>
-                  Employé
-                </Text>
-                <Text fontSize="18px" color="#d6b65c" mt={4}>
-                  Debut de congé
-                </Text>
-                <Text fontSize="18px" color="#d6b65c" mt={4}>
-                  Fin de congé
-                </Text>
-                <Text fontSize="18px" color="#d6b65c" mt={4}>
-                  Motif
-                </Text>
-                <Text fontSize="18px" color="#d6b65c" mt={4}>
-                  Statut
-                </Text>
 
-                <Box mt="0.4rem" position="relative" right="1rem">
-                  <Text fontSize="18px" color="#d6b65c">
-                    Congés
-                  </Text>
-                  <Text
-                    fontSize="18px"
-                    color="#d6b65c"
-                    position="relative"
-                    bottom="1.4rem"
-                  >
-                    restants
-                  </Text>
-                </Box>
+              <Text fontSize="18px" color="#d6b65c" mt={4}>
+                Actions
+              </Text>
+            </Grid>
+            <Box height="90vh" width="80vw" overflowX="hidden" overflowY="auto">
+              {leaves.map((leave) => (
+                <EmployeeLeaveCard
+                  key={leave._id}
+                  leave={leave}
+                  gridTemplate={gridTemplate}
+                  onDelete={() => handleDeleteConfirmation(leave)}
+                />
+              ))}
+            </Box>
+          </>
+        )}
 
-                <Text fontSize="18px" color="#d6b65c" mt={4}>
-                  Actions
-                </Text>
-              </Grid>
-              <Box
-                height="90vh"
-                width="80vw"
-                overflowX="hidden"
-                overflowY="auto"
-              >
-                {leaves.map((leave) => (
-                  <EmployeeLeaveCard
-                    key={leave._id}
-                    leave={leave}
-                    gridTemplate={gridTemplate}
-                    onDelete={() => handleDeleteConfirmation(leave)}
-                  />
-                ))}
-              </Box>
-              <Box
-                background="#08162b"
-                height="80px"
-                width="79vw"
-                mb="1rem"
-                ml="0.3rem"
-                mr="0.6rem"
-              ></Box>
-            </>
-          )}
-        </>
+        <Flex
+          bg="#08162b"
+          mb="1.2rem"
+          ml="0.3rem"
+          maxHeight="6rem"
+          width="79.5vw"
+          borderRadius="16px"
+          justify="space-between"
+        >
+          <Box
+            mt="1rem"
+            ml="2rem"
+            fontSize="1.2rem"
+            fontFamily="monospace"
+            fontWeight="600"
+          >
+            <MonthDropDown onChange={(month) => setSubmissionMonth(month)} />
+          </Box>
+
+          <Box
+            color="#F2B705"
+            fontSize="24px"
+            fontWeight="600"
+            mt="1rem"
+            mr="2rem"
+          >
+            <Text>{new Date().toLocaleDateString("fr-FR")}</Text>
+          </Box>
+        </Flex>
       </Flex>
 
       {/* Leave deletion confirmation dialog */}
@@ -775,6 +787,10 @@ const EmployeeLeavePage = () => {
                     color="black"
                     mr={3}
                     type="submit"
+                    isLoading={isSubmitting}
+                    loadingText="Patientez..."
+                    spinnerPlacement="start"
+                    isDisabled={isSubmitting}
                   >
                     <HStack>
                       <Box>

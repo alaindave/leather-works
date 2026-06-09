@@ -4,7 +4,7 @@ const router = express.Router();
 const {
   getEmployee,
   addLeave,
-  getAllLeaves,
+  getLeavesByMonth,
   getLeaveByID,
   getPendingLeaves,
   editLeave,
@@ -13,15 +13,25 @@ const {
 
 const sendLeaveRequestEmail = require("../utils/sendLeaveRequestEmail");
 
-//Get all leaves
+///Get leaves by submission month
 router.get("/", async (req, res) => {
+  console.log(
+    `Fetch leaves for month:${req.query.month} and year: ${req.query.year}`
+  );
+
   try {
-    const leaves = await getAllLeaves();
-    if (!leaves) return res.status(404).send("no leaves found");
-    console.log("Retrieved leaves:", leaves);
-    res.status(200).send(leaves);
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).send("The month and year are required");
+    }
+
+    const leaves = await getLeavesByMonth(month, year);
+    console.log("Fetched leaves by month:", leaves);
+    res.send(leaves);
   } catch (error) {
-    console.error("Unable to retrieve leaves.Error:", error);
+    console.error("An error occured while retrieving leaves by month: ", error);
+    res.status(500).send("Server error");
   }
 });
 

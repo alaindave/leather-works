@@ -74,7 +74,6 @@ const EmployeeAttendancePage = () => {
     setLoading(true);
 
     console.log("Selected date:", selectedDate);
-
     axios
       .get<Attendance[]>(`${API_URL}/attendances`, {
         params: { date: selectedDate },
@@ -87,11 +86,9 @@ const EmployeeAttendancePage = () => {
   const handleDelete = async () => {
     try {
       await axios.delete(`${API_URL}/attendances/${attendance?._id}`);
-
       setAttendances((prev) =>
         prev.filter((att) => att._id !== attendance?._id)
       );
-
       onClose();
     } catch (err) {
       console.error(err);

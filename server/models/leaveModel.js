@@ -7,6 +7,11 @@ const leaveSchema = new mongoose.Schema({
     required: true,
   },
 
+  submittedAt: {
+    type: Date,
+    required: true,
+  },
+
   startDate: {
     type: Date,
     required: true,

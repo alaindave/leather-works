@@ -10,14 +10,13 @@ function getLast7Days() {
     date.setDate(date.getDate() - i);
 
     const dayOfWeek = date.getDay();
-
-    // skip weekend
-    // if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-    days.push({
-      label: formatDate(date),
-      value: date.toISOString().split("T")[0],
-    });
-    // }
+    // Skip weekend
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      days.push({
+        label: formatDate(date),
+        value: date.toISOString().split("T")[0],
+      });
+    }
 
     i++;
   }
@@ -50,8 +49,6 @@ interface Option {
 export default function DateDropdown({ onChange }: Props) {
   const options: Option[] = getLast7Days();
   const [selected, setSelected] = useState<Option | null>(options[0] || null);
-
-  // console.log("Dates in dropdown menu: ", options);
   function handleChange(option: Option | null) {
     if (option) {
       setSelected(option);

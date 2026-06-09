@@ -209,9 +209,12 @@ const deleteAttendance = async (id) => {
 
 // Leave operations
 //Add leave
+//Get current month
+
 const addLeave = async (employeeId, startDate, endDate, subject, notes) => {
   const leave = new Leave({
     employee: employeeId,
+    submittedAt: new Date(),
     startDate,
     endDate,
     subject,
@@ -231,11 +234,18 @@ const addLeave = async (employeeId, startDate, endDate, subject, notes) => {
   }
 };
 
-//Get all leaves
-const getAllLeaves = async () => {
+//Get leaves by month
+const getLeavesByMonth = async (month, year) => {
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 1);
   try {
-    return await Leave.find()
-      .sort({ startDate: 1 })
+    return await Leave.find({
+      submittedAt: {
+        $gte: start,
+        $lt: end,
+      },
+    })
+      .sort({ submittedAt: 1 })
       .populate("employee", "firstName lastName employeeID remainingLeave");
   } catch (error) {
     console.error(error);
@@ -379,7 +389,7 @@ module.exports = {
   getLeaveByID,
   getPendingLeaves,
   editLeave,
-  getAllLeaves,
+  getLeavesByMonth,
   deleteLeave,
   createAdminUser,
   getAdminUserByID,
