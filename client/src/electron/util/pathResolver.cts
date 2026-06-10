@@ -1,6 +1,6 @@
 import path from "path";
 import { app } from "electron";
-import { isDev } from "./util.cjs";
+import { isDev } from "./env-util.cjs";
 
 export function getPreloadPath() {
   return path.join(__dirname, "preload.cjs");

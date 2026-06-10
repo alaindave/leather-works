@@ -5,17 +5,19 @@ export default interface Employee {
   employeeID: string;
   dateBirth: Date;
   role: string;
-  department: string;
   dateHired: Date;
-  salary: number;
-  status: "actif" | "inactif";
+  department: string;
   telephone: string;
   address: string;
   emergencyContact: string;
   relationship: string;
   contactPhone: string;
+  salary: string;
+  status: string;
   remainingLeave: number;
-  synced: number;
-  createdAt?: string;
-  updatedAt?: string;
+  synced: boolean;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastSyncedAt?: string | null;
 }

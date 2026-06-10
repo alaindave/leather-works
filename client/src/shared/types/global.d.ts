@@ -1,4 +1,6 @@
 export {};
+import type Employee from "./Employee";
+
 interface SaveFileResult {
   success: boolean;
   filePath?: string;
@@ -42,6 +44,18 @@ declare global {
         ) => Promise<Announcement>;
 
         onNew: (callback: (data: Announcement) => void) => () => void;
+      };
+
+      employees: {
+        create: (employee: Partial<Employee>) => Promise<Employee>;
+        getAll: () => Promise<Employee[]>;
+        getById: (_id: string) => Promise<Employee | null>;
+        search: (searchTerm: string) => Promise<Employee[]>;
+        update: (
+          _id: string,
+          data: Partial<Employee>
+        ) => Promise<Employee | null>;
+        delete: (_id: string) => Promise<void>;
       };
     };
   }

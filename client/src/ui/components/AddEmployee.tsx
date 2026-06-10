@@ -64,20 +64,12 @@ const schema = z.object({
   role: z.string().min(1, { message: errorMessage }),
   department: z.string().min(1, { message: errorMessage }),
   dateHired: z.date({ message: errorMessage }),
-  telephone: z
-    .string()
-    .min(1, "Le numéro de téléphone est obligatoire")
-    .regex(/^\+?[0-9]{8,15}$/, "Numéro de téléphone invalide"),
+  telephone: z.string().min(1, "Le numéro de téléphone est obligatoire"),
   address: z.string().min(1, { message: errorMessage }),
   emergencyContact: z.string().min(1, { message: errorMessage }),
   relationship: z.string().min(1, { message: errorMessage }),
   contactPhone: z.string().min(1, { message: errorMessage }),
-  salary: z
-    .number({
-      invalid_type_error: "Le salaire doit être un nombre",
-    })
-    .min(0, "Le salaire ne peut pas être négatif")
-    .optional(),
+  salary: z.string().min(1, { message: errorMessage }),
 });
 
 type EmployeeData = z.infer<typeof schema>;
@@ -86,7 +78,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const {
     register,
@@ -95,13 +87,14 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
     formState: { errors },
   } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = async (data: FieldValues) => {
+  const onSubmit = async (formData: EmployeeData) => {
     setIsSaving(true);
-    console.log("Form to be submitted:", data);
+    console.log("Form to be submitted:", formData);
     try {
-      const res = await axios.post(`${API_URL}/employees`, data);
-      console.log("Employee successfully saved", res.data);
-      onAddEmployee(res.data);
+      // const res = await axios.post(`${API_URL}/employees`, data);
+      const employee = await window.electron.employees.create(formData);
+      console.log("Employee successfully saved", employee);
+      onAddEmployee(employee);
       onClose();
     } catch (error) {
       console.error("An error occured while adding employee: ", error);
@@ -249,7 +242,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     )}
                   </Box>
                 </HStack>
-                <HStack spacing="12px" marginBottom="10px">
+                <HStack spacing="0.8rem" alignItems="flex-start">
                   {/* Date of birth input */}
                   <Box>
                     <HStack>
@@ -287,6 +280,9 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                         />
                       )}
                     />
+                    {errors.dateBirth && (
+                      <p className="text-danger">{errors.dateBirth.message}</p>
+                    )}
                   </Box>
                   {/* Role input */}
                   <Box>
@@ -366,7 +362,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     )}
                   </Box>
                 </HStack>
-                <HStack spacing="12px" marginBottom="10px">
+                <HStack spacing="0.8rem" alignItems="flex-start">
                   {/* Hire date input */}
                   <Box>
                     <HStack>
@@ -461,7 +457,11 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                   </Box>
                 </HStack>
                 {/* Emergency contact */}
-                <HStack spacing="12px" marginBottom="10px">
+                <HStack
+                  spacing="0.8rem"
+                  marginBottom="0.7rem"
+                  alignItems="flex-start"
+                >
                   <Box>
                     <HStack>
                       <Box marginBottom="10px">
@@ -567,7 +567,8 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
               <HStack position="relative" right="2rem">
                 <Text
                   position="relative"
-                  right="20px"
+                  top="0.6rem"
+                  right="2rem"
                   fontSize="1.1rem"
                   fontWeight="600"
                   color="red.300"
