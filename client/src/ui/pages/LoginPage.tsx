@@ -19,6 +19,7 @@ import { CiLock } from "react-icons/ci";
 import { FaUnlockAlt } from "react-icons/fa";
 import { IoIosMail } from "react-icons/io";
 import { z } from "zod";
+
 import useAdminUser from "../../store/authStore";
 import logo from "../assets/afritan_logo.png";
 import SignUp from "../components/SignUp";
@@ -36,17 +37,20 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const setLogIn = useAdminUser((store) => store.login);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const { register, handleSubmit } = useForm<AuthData>({
     resolver: zodResolver(schema),
   });
 
   const handleLogin = async (data: AuthData) => {
     setIsLoggingIn(true);
-    console.log("Log in initiated...", data);
-    const credentials = { email: data.email, password: data.password };
+
     try {
-      const adminUser = await window.electron.auth.login(credentials);
-      console.log("Result from main process login request:", adminUser);
+      const adminUser = await window.electron.auth.login({
+        email: data.email,
+        password: data.password,
+      });
+
       if (adminUser) {
         setLogIn(
           adminUser._id,
@@ -55,12 +59,13 @@ const LoginPage = () => {
           adminUser.email,
           adminUser.role
         );
+
         navigate("/admin", {
           replace: true,
         });
       }
     } catch (error) {
-      console.error("An error occured while logging in:", error);
+      console.error("Login error:", error);
       setErrorMessage("Email et/ou mot de passe incorrect.");
     } finally {
       setIsLoggingIn(false);
@@ -72,136 +77,150 @@ const LoginPage = () => {
   };
 
   return (
-    <Flex
-      borderColor="#244b9e"
-      background="rgba(3, 8, 21, 0.95)"
-      borderWidth=" 1px"
-      borderRadius="20px"
-      marginBottom="10px"
-      marginLeft="30px"
-      paddingLeft="100px"
-      paddingTop="60px"
-      width="500px"
-      height="660px"
-      direction="column"
-    >
-      <FormControl mb="160px">
+    <Flex justify="center" align="center" minH="100vh" px={6}>
+      <Box
+        bg="white"
+        border="1px solid"
+        borderColor="#D1D5DB"
+        borderRadius="18px"
+        boxShadow="0 6px 20px rgba(0,0,0,0.12)"
+        w="460px"
+        p={10}
+      >
         <form
           noValidate
           onSubmit={handleSubmit(handleLogin)}
           onChange={handleChange}
         >
-          <Image
-            height="8rem"
-            src={logo}
-            position="relative"
-            left="5rem"
-            bottom="30px"
-          />
-          <InputGroup position="relative" right="50px" top="30px">
-            <InputLeftElement pointerEvents="none">
-              <Box position="relative" top="6px">
-                <IoIosMail color="#ffffff" size="22px" />
-              </Box>
-            </InputLeftElement>
-            <VStack>
-              <Input
-                type="email"
-                textIndent="15px"
-                marginBottom="20px"
-                borderColor="#244b9e"
-                borderWidth="2px"
-                height="50px"
-                width="400px"
-                placeholder="Email"
-                _placeholder={{
-                  opacity: 1,
-                  color: "#93a4d1",
-                  position: "relative",
-                  left: "8px",
-                }}
-                textColor="#ffffff"
-                {...register("email")}
-              />
-            </VStack>
-          </InputGroup>
-          <InputGroup>
-            <InputLeftElement pointerEvents="none">
-              <Box position="relative" top="53px" right="50px">
-                <FaUnlockAlt color="#ffffff" size="18px" />
-              </Box>
-            </InputLeftElement>
-            <VStack>
-              <Input
-                type="password"
-                textIndent="15px"
-                marginBottom="20px"
-                borderColor="#244b9e"
-                borderWidth="2px"
-                position="relative"
-                right="50px"
-                top="50px"
-                height="50px"
-                width="400px"
-                placeholder="Mot de passe"
-                _placeholder={{
-                  opacity: 1,
-                  color: "#93a4d1",
-                  position: "relative",
-                  left: "8px",
-                }}
-                textColor="#ffffff"
-                {...register("password")}
-              />
+          <VStack spacing={6} align="stretch">
+            <Image
+              src={logo}
+              h="90px"
+              boxSize="6.9rem"
+              objectFit="contain"
+              mx="auto"
+            />
 
-              <Box position="relative" top="30px" right="40px" width="280px">
-                <Text position="absolute" className="text-danger">
+            <Text
+              textAlign="center"
+              fontSize="1.6rem"
+              fontWeight="700"
+              color="#1F2937"
+            >
+              Connexion
+            </Text>
+
+            <FormControl>
+              <InputGroup>
+                <InputLeftElement pointerEvents="none" h="52px">
+                  <IoIosMail size="20px" color="#5B6472" />
+                </InputLeftElement>
+
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  h="52px"
+                  pl="42px"
+                  bg="#F9FAFB"
+                  border="1px solid"
+                  borderColor="#B8C2CC"
+                  color="#1F2937"
+                  _placeholder={{
+                    color: "#6B7280",
+                  }}
+                  _hover={{
+                    borderColor: "#0078D4",
+                  }}
+                  _focus={{
+                    borderColor: "#0078D4",
+                    boxShadow: "0 0 0 1px #0078D4",
+                  }}
+                  {...register("email")}
+                />
+              </InputGroup>
+            </FormControl>
+
+            <FormControl>
+              <InputGroup>
+                <InputLeftElement pointerEvents="none" h="52px">
+                  <FaUnlockAlt size="16px" color="#5B6472" />
+                </InputLeftElement>
+
+                <Input
+                  type="password"
+                  placeholder="Mot de passe"
+                  h="52px"
+                  pl="42px"
+                  bg="#F9FAFB"
+                  border="1px solid"
+                  borderColor="#B8C2CC"
+                  color="#1F2937"
+                  _placeholder={{
+                    color: "#6B7280",
+                  }}
+                  _hover={{
+                    borderColor: "#B8C2CC",
+                  }}
+                  _focus={{
+                    borderColor: "#0078D4",
+                    boxShadow: "0 0 0 1px #0078D4",
+                  }}
+                  {...register("password")}
+                />
+              </InputGroup>
+
+              {errorMessage && (
+                <Text
+                  color="#D13438"
+                  fontSize="1rem"
+                  fontWeight="500"
+                  position="relative"
+                  left="4rem"
+                  top="1rem"
+                >
                   {errorMessage}
                 </Text>
-              </Box>
-            </VStack>
-          </InputGroup>
-          <Button
-            position="relative"
-            top="90px"
-            right="50px"
-            type="submit"
-            bgGradient="linear(to-r, #3b82f6, #1d4ed8)"
-            borderRadius="18px"
-            border="none"
-            color="#ffffff"
-            fontSize="1.3rem"
-            fontWeight="700"
-            size="lg"
-            width="100%"
-            height="64px"
-            isLoading={isLoggingIn}
-            loadingText="Connexion..."
-            spinnerPlacement="start"
-            isDisabled={isLoggingIn}
-            _hover={{ bg: "#2563eb" }}
-          >
-            <Box position="relative" right="30px">
-              <CiLock size="25px" />
-            </Box>
-            <Text position="relative" right="10px" top="10px">
+              )}
+            </FormControl>
+
+            <Button
+              type="submit"
+              h="56px"
+              bg="#0078D4"
+              mt="1rem"
+              color="white"
+              fontSize="1.2rem"
+              fontWeight="600"
+              leftIcon={<CiLock size={22} />}
+              isLoading={isLoggingIn}
+              loadingText="Connexion..."
+              isDisabled={isLoggingIn}
+              _hover={{
+                bg: "#106EBE",
+              }}
+              _active={{
+                bg: "#005A9E",
+              }}
+            >
               Se connecter
+            </Button>
+
+            <Text
+              position="relative"
+              top="0.5rem"
+              fontSize="1.1rem"
+              textAlign="center"
+              color="#1F2937"
+            >
+              ou
             </Text>
-          </Button>
-          <Text
-            position="relative"
-            top="7rem"
-            left="8rem"
-            color="gray.400"
-            fontSize="20px"
-          >
-            ou
-          </Text>
-          <Box position="relative" top="8rem" left="58px">
-            <SignUp />
-          </Box>
+
+            <Flex justify="center">
+              <SignUp />
+            </Flex>
+          </VStack>
         </form>
-      </FormControl>
+      </Box>
     </Flex>
   );
 };

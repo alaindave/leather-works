@@ -52,31 +52,34 @@ const EmployeeNavBar = () => {
     <Flex
       position="relative"
       direction="column"
-      border="none"
       marginTop="10px"
       marginLeft="2px"
-      borderRadius="20px"
       padding="8px"
-      background="#03143B"
-      height="97vh"
+      height="98vh"
       width="17.5rem"
+      bg="#FFFFFF"
+      borderRight="1px solid"
+      borderColor="#D1D9E0"
+      boxShadow="2px 0 8px rgba(0,0,0,0.04)"
+      borderRadius="0"
     >
-      <Box padding="10px" position="relative" right="13px">
+      <Box borderBottom="1px solid" borderColor="#D1D9E0" pb="0.1rem" mb={4}>
         <Logo text="Gestion de personnel" />
       </Box>
-      <Box className="nav-list">
+      <Box position="relative" top="2rem">
         <List>
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
-              <FaHome size="1.8rem" color="#C7D2FE" />
+            <HStack position="relative" right="1.5rem">
+              {" "}
+              <FaHome size="1.5rem" color="#0078D4" />
               <NavLink className="nav-button" end to="/employees_admin">
                 Tableau de bord
               </NavLink>
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
-              <IoPeopleSharp size="1.8rem" color="#C7D2FE" />
+            <HStack position="relative" right="1.5rem">
+              <IoPeopleSharp size="1.5rem" color="#0078D4" />
               <NavLink
                 className="nav-button"
                 to="/employees_admin/employees_list"
@@ -86,16 +89,16 @@ const EmployeeNavBar = () => {
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
-              <FaRegClock size="1.8rem" color="#C7D2FE" />
+            <HStack position="relative" right="1.5rem">
+              <FaRegClock size="1.5rem" color="#0078D4" />
               <NavLink className="nav-button" to="/employees_admin/attendances">
                 Présence
               </NavLink>
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
-              <FaRegCalendarAlt size="1.8rem" color="#C7D2FE" />
+            <HStack position="relative" right="1.5rem">
+              <FaRegCalendarAlt size="1.5rem" color="#0078D4" />
               <NavLink className="nav-button" to="/employees_admin/leaves">
                 Congés
               </NavLink>
@@ -104,7 +107,7 @@ const EmployeeNavBar = () => {
 
           <ListItem marginBottom="40px">
             <HStack position="relative" right="30px">
-              <FaFileSignature size="1.8rem" color="#C7D2FE" />
+              <FaFileSignature size="1.5rem" color="#0078D4" />
               <NavLink className="nav-button" to="/admin">
                 Fiches de paye
               </NavLink>
@@ -130,29 +133,29 @@ const EmployeeNavBar = () => {
           width="40px"
           borderWidth="0.5px"
           borderRadius="20px"
-          bg="#0b1e3a"
-          borderColor="#A9B4C2"
+          bg="#E5F1FB"
+          borderColor="#0078D4"
           position="relative"
           top="8px"
           justifyContent="center"
           alignItems="center"
         >
           <MdPersonOutline
-            color={adminUser?.role === "manager" ? "yellow" : "#ffffff"}
-            size="25px"
+            color={adminUser?.role === "manager" ? "yellow" : "#0078D4"}
+            size="22px"
           />
         </Flex>
-        <Box position="relative" left="8px" bottom="16px">
+        <Box position="relative" left="0.5rem" bottom="1rem">
           <Text
-            color="#ffffff"
+            color="#1F2937"
             fontWeight={700}
             position="relative"
-            top="17px"
+            top="1rem"
             padding="2px"
           >
             {adminUser?.firstName} {adminUser?.lastName}
           </Text>
-          <Text color="#A9B4C2">{adminUser?.email}</Text>
+          <Text color="#1F2937">{adminUser?.email}</Text>
         </Box>
         <Box position="relative" bottom="7px" width="20px">
           <Menu>
@@ -160,7 +163,7 @@ const EmployeeNavBar = () => {
               position="relative"
               right="20px"
               background="transparent"
-              color="#ffffff"
+              color="#374151"
               _hover={{ bg: "transparent" }}
               as={Button}
               rightIcon={<IoIosArrowDown size="18px" />}

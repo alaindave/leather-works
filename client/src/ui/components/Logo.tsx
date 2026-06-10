@@ -17,15 +17,15 @@ const Logo = ({ text }: Props) => {
         </Link>
       </Box>
       <Box marginLeft="8px">
-        <Text color="#F2B705" fontSize="25px" fontWeight="700">
+        <Text color="#1F2937" fontSize="25px" fontWeight="700">
           AFRITAN
         </Text>
         <Text
           position="relative"
-          bottom="25px"
-          fontSize="16px"
+          bottom="1.5rem"
+          fontSize="1rem"
           fontWeight="500"
-          color="#ffffff"
+          color="#1F2937"
         >
           {text}
         </Text>

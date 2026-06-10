@@ -8,7 +8,7 @@ function App() {
     <Flex
       margin="0"
       minHeight="100vh"
-      bgGradient="radial(#47370b, #061962)"
+      bgGradient="linear(to-br, #1E3A5F, #0078D4)"
       direction="column"
       align="center"
       justify="center"

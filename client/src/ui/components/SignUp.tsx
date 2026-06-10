@@ -57,6 +57,31 @@ const schema = z
 
 type UserData = z.infer<typeof schema>;
 
+const inputStyle = {
+  bg: "#F9FAFB",
+  color: "#1F2937",
+  border: "1px solid",
+  borderColor: "#B8C2CC",
+  borderRadius: "6px",
+  h: "48px",
+  width: "20rem",
+  _placeholder: {
+    color: "#6B7280",
+  },
+  _hover: {
+    borderColor: "#0078D4",
+  },
+  _focus: {
+    borderColor: "#0078D4",
+    boxShadow: "0 0 0 1px #0078D4",
+  },
+};
+
+const labelColor = "#374151";
+const secondaryText = "#6B7280";
+const primaryBlue = "#0078D4";
+const errorColor = "#D13438";
+
 const SignUp = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
@@ -103,26 +128,37 @@ const SignUp = () => {
   return (
     <>
       <Button
-        background="rgba(3, 8, 21, 0.95)"
-        color="#F2B705"
+        variant="outline"
+        borderColor="#0078D4"
+        color="#0078D4"
         size="md"
+        fontWeight="600"
         onClick={onOpen}
         _hover={{
-          background: "rgba(3, 8, 21, 0.95)",
-          color: "#F2B705",
-          transform: "scale(1.05)",
+          bg: "#F3F9FF",
+          borderColor: "#106EBE",
+          color: "#106EBE",
         }}
       >
-        <Text fontSize="17px">Créer un compte</Text>
+        <Text mt="0.8rem" fontSize="1rem">
+          Créer un compte
+        </Text>
       </Button>
       <Modal size="3xl" isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay backdropFilter="auto" backdropBlur="30px" />
-        <ModalContent bg="#08162b">
+        <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
+        <ModalContent
+          bg="#FFFFFF"
+          border="1px solid"
+          borderColor="#D1D9E0"
+          borderRadius="12px"
+          boxShadow="0 12px 40px rgba(0,0,0,0.15)"
+        >
+          {" "}
           <form noValidate onSubmit={handleSubmit(onSubmit)}>
-            <ModalHeader color="#ffffff">
+            <ModalHeader color="#1F2937">
               <HStack position="relative" left="130px">
                 <Box position="relative" right="20px">
-                  <Image src={logo} boxSize="65px" borderRadius="20px" />
+                  <Image src={logo} boxSize="4.8rem" borderRadius="20px" />
                 </Box>
                 <VStack position="relative" top="10px" left="18px">
                   <Text position="relative" top="8px" fontSize="1.5rem">
@@ -130,7 +166,7 @@ const SignUp = () => {
                     Créer un compte admin
                   </Text>
                   <Text
-                    color="#C7D2FE"
+                    color="#6B7280"
                     fontSize="15px"
                     position="relative"
                     right="15px"
@@ -141,7 +177,7 @@ const SignUp = () => {
                 </VStack>
               </HStack>
             </ModalHeader>
-            <ModalCloseButton color="#ffffff" />
+            <ModalCloseButton color="#6B7280" _hover={{ bg: "#F3F4F6" }} />{" "}
             <ModalBody>
               <FormControl>
                 <VStack
@@ -156,17 +192,18 @@ const SignUp = () => {
                       <Box marginBottom="10px">
                         <MdPerson2 color="#F2B705" size="1.3rem" />
                       </Box>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color={labelColor}
+                        fontWeight="600"
+                        marginBottom="10px"
+                      >
+                        {" "}
                         Nom
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
 
                     <Input
-                      color="#e6ebfe"
-                      width="20rem"
+                      {...inputStyle}
                       type="text"
                       {...register("lastName")}
                       marginBottom="3px"
@@ -175,7 +212,7 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="sm"
+                        fontSize="0.9rem"
                       >
                         {errors.lastName?.message}
                       </Text>
@@ -187,16 +224,17 @@ const SignUp = () => {
                       <Box marginBottom="10px">
                         <MdPerson2 color="#F2B705" size="1.3rem" />
                       </Box>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color={labelColor}
+                        fontWeight="600"
+                        marginBottom="10px"
+                      >
+                        {" "}
                         Prenom
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
-                      color="#e6ebfe"
-                      width="20rem"
+                      {...inputStyle}
                       type="text"
                       {...register("firstName")}
                       marginBottom="3px"
@@ -205,7 +243,7 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="sm"
+                        fontSize="0.9rem"
                       >
                         {errors.firstName?.message}
                       </Text>
@@ -217,16 +255,17 @@ const SignUp = () => {
                       <Box marginBottom="10px">
                         <MdAlternateEmail color="#F2B705" size="1.3rem" />
                       </Box>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color={labelColor}
+                        fontWeight="600"
+                        marginBottom="10px"
+                      >
+                        {" "}
                         Email
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
-                      color="#e6ebfe"
-                      width="20rem"
+                      {...inputStyle}
                       type="email"
                       {...register("email")}
                       marginBottom="3px"
@@ -235,7 +274,7 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="sm"
+                        fontSize="0.9rem"
                       >
                         {errors.email?.message}
                       </Text>
@@ -247,23 +286,19 @@ const SignUp = () => {
                       <Box marginBottom="10px">
                         <RiLockPasswordFill color="#F2B705" size="1.3rem" />
                       </Box>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color={labelColor}
+                        fontWeight="600"
+                        marginBottom="10px"
+                      >
+                        {" "}
                         Mot de passe
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
-                      color="#e6ebfe"
-                      width="20rem"
+                      {...inputStyle}
                       type="password"
                       placeholder="Min. 8 car. avec 1 chiffre et 1 lettre maj"
-                      _placeholder={{
-                        opacity: 1,
-                        color: "#e6ebfe",
-                        fontSize: "1rem",
-                      }}
                       {...register("password")}
                       marginBottom="3px"
                     />
@@ -271,7 +306,7 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="sm"
+                        fontSize="0.9rem"
                       >
                         {errors.password?.message}
                       </Text>
@@ -283,23 +318,19 @@ const SignUp = () => {
                       <Box marginBottom="10px">
                         <RiLockPasswordFill color="#F2B705" size="1.3rem" />
                       </Box>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color={labelColor}
+                        fontWeight="600"
+                        marginBottom="10px"
+                      >
+                        {" "}
                         Confirmez le mot de passe
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
-                      color="#e6ebfe"
-                      width="20rem"
+                      {...inputStyle}
                       type="password"
                       placeholder="Min. 8 car. avec 1 chiffre et 1 lettre maj"
-                      _placeholder={{
-                        opacity: 1,
-                        color: "#e6ebfe",
-                        fontSize: "1rem",
-                      }}
                       {...register("confirmPassword")}
                       marginBottom="3px"
                     />
@@ -313,14 +344,14 @@ const SignUp = () => {
                       </Text>
                     </Box>
                   </Box>
-                  <Text fontSize="1rem" color="red.300">
+                  <Text fontSize="1.1rem" fontWeight="600" color="red.600">
                     {errorMessage}
                   </Text>
                 </VStack>
               </FormControl>
             </ModalBody>
-
-            <ModalFooter bg="#08162b">
+            <ModalFooter bg="#FFFFFF">
+              {" "}
               <HStack position="relative" bottom="10px" right="12rem">
                 <Button
                   borderColor="#ffffff"

@@ -94,14 +94,14 @@ const EmployeeAdminPage = () => {
   }, [notes]);
 
   //useEffect to fetch live announcements from manager
-  useEffect(() => {
-    const unsubscribe = window.electron.announcements.onNew((data) => {
-      setLiveAnnouncement(data);
-      console.log("Live announcement fetched: ", data.message);
-    });
+  // useEffect(() => {
+  //   const unsubscribe = window.electron.announcements.onNew((data) => {
+  //     setLiveAnnouncement(data);
+  //     console.log("Live announcement fetched: ", data.message);
+  //   });
 
-    return () => unsubscribe();
-  }, []);
+  //   return () => unsubscribe();
+  // }, []);
 
   //Submit personal notes
   const handleNotesSubmission = () => {
@@ -117,32 +117,31 @@ const EmployeeAdminPage = () => {
   };
 
   //Send announcements from manager
-  const handleAnnouncementSend = async () => {
-    console.log("Announcement to be sent to Main: ", announcement);
-    try {
-      const sendAnnouncement =
-        await window.electron.announcements.createAnnouncement({
-          message: announcement,
-          createdBy: `${adminUser?.firstName} ${adminUser?.lastName}`,
-        });
-      console.log("Announcement post results from Main: ", sendAnnouncement);
-    } catch (error) {
-      console.error("An error occured while creating announcement: ", error);
-    }
-  };
+  // const handleAnnouncementSend = async () => {
+  //   console.log("Announcement to be sent to Main: ", announcement);
+  //   try {
+  //     const sendAnnouncement =
+  //       await window.electron.announcements.createAnnouncement({
+  //         message: announcement,
+  //         createdBy: `${adminUser?.firstName} ${adminUser?.lastName}`,
+  //       });
+  //     console.log("Announcement post results from Main: ", sendAnnouncement);
+  //   } catch (error) {
+  //     console.error("An error occured while creating announcement: ", error);
+  //   }
+  // };
 
   return (
     <Flex
       direction="column"
       ml="0.3rem"
-      mt="0.5rem"
+      mt="0.63rem"
       mr="0.3rem"
       w="100%"
       h="98vh"
-      bg="#03143B"
-      border="1px solid rgba(255,255,255,0.12)"
-      boxShadow="0 8px 32px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.08)"
-      borderRadius={{ base: "0", md: "24px" }}
+      bg="#F8F9FB"
+      border="1px solid"
+      borderColor="#D1D9E0"
       overflow="hidden"
       p={{ base: 3, md: 6 }}
     >
@@ -153,19 +152,16 @@ const EmployeeAdminPage = () => {
         flexDir={{ base: "column", md: "row" }}
         gap={3}
       >
-        <Box>
-          <Text
-            fontSize={{ base: "20px", md: "27px" }}
-            fontWeight="700"
-            color="white"
-          >
+        <Box position="relative" bottom="1.2rem">
+          <Text fontSize="1.6rem" fontWeight="700" color="#1F2937">
             Tableau de bord
           </Text>
           <Text
-            fontSize={{ base: "13px", md: "15px" }}
-            color="whiteAlpha.800"
+            fontSize="1rem"
+            fontWeight="600"
+            color="#1F2937"
             position="relative"
-            bottom="1rem"
+            bottom="1.4rem"
           >
             Vue d'ensemble de votre gestion de personnel
           </Text>
@@ -173,8 +169,10 @@ const EmployeeAdminPage = () => {
 
         {/* DATE / TIME */}
         <Flex
-          border="1px solid rgba(255,255,255,0.12)"
-          borderRadius="10px"
+          bg="#FFFFFF"
+          border="1px solid"
+          borderColor="#D1D9E0"
+          borderRadius="8px"
           overflow="hidden"
           align="center"
           flexWrap="wrap"
@@ -182,9 +180,10 @@ const EmployeeAdminPage = () => {
           bottom="1rem"
         >
           <Flex px={3} py={2} align="center" gap={2}>
-            <CiCalendarDate color="#F2B705" size={22} />
+            <CiCalendarDate color="#0078D4" size={22} />
+
             <Text
-              color="gray.200"
+              color="#374151"
               fontSize="md"
               position="relative"
               top="0.5rem"
@@ -194,9 +193,9 @@ const EmployeeAdminPage = () => {
           </Flex>
 
           <Flex px={3} py={2} align="center" gap={2}>
-            <CiClock2 color="#F2B705" size={22} />
+            <CiClock2 color="#0078D4" size={22} />
             <Text
-              color="gray.200"
+              color="#374151"
               fontSize="md"
               position="relative"
               top="0.5rem"
@@ -228,17 +227,18 @@ const EmployeeAdminPage = () => {
       >
         {/* NOTES */}
         <Box
-          bg="#091735"
-          border="1px solid rgba(255,255,255,0.08)"
-          borderRadius="20px"
+          bg="#FFFFFF"
+          border="1px solid #D1D9E0"
+          borderRadius="10px"
+          boxShadow="0 2px 8px rgba(0,0,0,0.05)"
           p={5}
           display="flex"
           flexDir="column"
         >
           <Flex align="center" gap={2} mb={3}>
-            <Icon as={FaRegNoteSticky} color="yellow.400" fontSize="lg" />
+            <Icon as={FaRegNoteSticky} color="#0078D4" />{" "}
             <Text
-              color="white"
+              color="#1F2937"
               fontSize="1.3rem"
               fontWeight="600"
               position="relative"
@@ -254,31 +254,39 @@ const EmployeeAdminPage = () => {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             resize="none"
-            bg="#091735"
-            border="1px solid rgba(255,255,255,0.1)"
-            color="#ffffff"
-            fontSize="1.3rem"
-            fontFamily="revert-layer"
-            _focus={{
-              borderColor: "yellow.400",
-              boxShadow: "0 0 0 1px #F4C20D",
+            bg="#F9FAFB"
+            border="1px solid"
+            borderColor="#B8C2CC"
+            color="#1F2937"
+            fontSize="15px"
+            fontFamily="Segoe UI"
+            _placeholder={{
+              color: "#6B7280",
             }}
-            _hover={{ borderColor: "yellow.300" }}
+            _hover={{
+              borderColor: "#0078D4",
+            }}
+            _focus={{
+              borderColor: "#0078D4",
+              boxShadow: "0 0 0 1px #0078D4",
+            }}
           />
         </Box>
 
         {/* ANNOUNCEMENTS */}
         {adminUser?.role === "manager" ? (
           <Box
-            bg="#091735"
-            border="1px solid rgba(255,255,255,0.08)"
-            borderRadius="20px"
+            bg="#FFFFFF"
+            border="1px solid"
+            borderColor="#D1D9E0"
+            borderRadius="12px"
+            boxShadow="0 2px 8px rgba(0,0,0,0.05)"
             p={5}
             display="flex"
             flexDir="column"
           >
             <Flex align="center" gap={2} mb={3}>
-              <Icon as={TfiAnnouncement} color="yellow.300" />
+              <Icon as={TfiAnnouncement} color="#0078D4" />
               <Text
                 color="gray.200"
                 fontSize="lg"
@@ -311,7 +319,7 @@ const EmployeeAdminPage = () => {
               alignSelf="flex-end"
               bg="#F2B705"
               color="black"
-              onClick={handleAnnouncementSend}
+              // onClick={handleAnnouncementSend}
             >
               <FaSave style={{ marginRight: 8 }} />
               Envoyer
@@ -319,19 +327,25 @@ const EmployeeAdminPage = () => {
           </Box>
         ) : (
           <Box
-            bg="#091735"
-            border="1px solid rgba(255,255,255,0.08)"
-            borderRadius="20px"
+            bg="#FFFFFF"
+            border="1px solid #B8C2CC"
+            borderRadius="10px"
             p={5}
           >
             <Flex align="center" gap={2} mb={3}>
-              <Icon as={TfiAnnouncement} color="yellow.300" fontSize="lg" />
+              <Icon as={TfiAnnouncement} color="yellow.500" fontSize="1.8rem" />
               <Text
-                color="white"
+                color="#1F2937"
                 fontSize="1.3rem"
                 fontWeight="600"
                 position="relative"
-                top="0.5rem"
+                top="0.3rem"
+                left="0.5rem "
+                _hover={{ borderColor: "yellow.300" }}
+                _focus={{
+                  borderColor: "yellow.400",
+                  boxShadow: "0 0 0 1px #F4C20D",
+                }}
               >
                 Messages de la direction
               </Text>
