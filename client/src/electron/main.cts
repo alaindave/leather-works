@@ -4,9 +4,11 @@ import { BrowserWindow, Menu, app, dialog, ipcMain } from "electron";
 import fs from "fs";
 import path from "path";
 import { clearToken, getToken, saveToken } from "./auth.cjs";
-import { getPreloadPath } from "./pathResolver.cjs";
+import { getPreloadPath } from "./util/pathResolver.cjs";
 import { createSocket } from "./socket.cjs";
-import { isDev } from "./util.cjs";
+import { isDev } from "./util/env-util.cjs";
+import { initializeDatabase } from "./database/initializeDatabase";
+import { registerEmployeeIPC } from "./ipc/employeeIPC";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged
@@ -93,17 +95,19 @@ const createMainWindow = async () => {
 
 app.disableHardwareAcceleration();
 
-app
-  .whenReady()
-  .then(() => {
-    createSplashWindow();
-    createMainWindow();
-    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-    Menu.setApplicationMenu(mainMenu);
-  })
-  .catch((error) =>
-    console.error("An error occured while creating windows...", error)
-  );
+async function bootstrap() {
+  await app.whenReady();
+  await initializeDatabase();
+  registerEmployeeIPC();
+  createSplashWindow();
+  await createMainWindow();
+  const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+  Menu.setApplicationMenu(mainMenu);
+}
+
+bootstrap().catch((error) => {
+  console.error("Startup error:", error);
+});
 
 // Create menu template
 const mainMenuTemplate = [
