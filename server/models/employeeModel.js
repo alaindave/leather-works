@@ -17,7 +17,7 @@ const employeeSchema = new mongoose.Schema({
   emergencyContact: { type: String, required: true },
   relationship: { type: String, required: true },
   contactPhone: { type: String, required: true },
-  salary: { type: Number, required: true },
+  salary: { type: String, required: true },
   status: {
     type: String,
     enum: ["actif", "inactif"],
