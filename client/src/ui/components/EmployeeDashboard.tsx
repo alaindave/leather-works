@@ -1,5 +1,7 @@
 import { Box, Card, Divider, Flex, HStack, Text } from "@chakra-ui/react";
 import { BsFillPeopleFill } from "react-icons/bs";
+import { CiCalendarDate, CiClock2 } from "react-icons/ci";
+
 import { MdCoPresent } from "react-icons/md";
 import { FaRegClock } from "react-icons/fa6";
 
@@ -17,7 +19,7 @@ const EmployeeDashboard = ({
   leaveCount,
 }: Props) => {
   return (
-    <Flex>
+    <Flex justify="space-evenly">
       <Box
         bg="linear-gradient(
           135deg,
@@ -26,9 +28,8 @@ const EmployeeDashboard = ({
         )"
         border="1px solid rgba(255,255,255,0.12)"
         boxShadow="
-          0 8px 32px rgba(0,0,0,0.35),
-          inset 0 1px 1px rgba(255,255,255,0.08)
-        "
+        0 8px 20px rgba(0,0,0,0.12),
+        0 0 20px rgba(242, 183, 5, 0.35)"
         borderRadius="24px"
         width="250px"
         height="150px"
@@ -47,7 +48,7 @@ const EmployeeDashboard = ({
           </Box>
 
           <Text
-            color="#A9B4C2"
+            color="gray.700"
             fontSize="22px"
             fontWeight="700"
             marginLeft="15px"
@@ -57,11 +58,11 @@ const EmployeeDashboard = ({
         </HStack>
 
         <Text
-          color="#F5F7FA"
+          color="black"
+          fontSize="1.5rem"
           position="relative"
           left="95px"
           top="30px"
-          fontSize="30px"
           fontWeight="700"
         >
           {employeeCount}
@@ -74,6 +75,9 @@ const EmployeeDashboard = ({
         rgba(255,255,255,0.08),
         rgba(255,255,255,0.03)
       )"
+        boxShadow="
+      0 8px 20px rgba(0,0,0,0.12),
+      0 0 20px rgba(242, 183, 5, 0.35)"
         padding="32px"
         borderRadius="24px"
         width="250px"
@@ -91,7 +95,7 @@ const EmployeeDashboard = ({
             <MdCoPresent color="#ffffff" size="33px" />
           </Box>
           <Text
-            color="#A9B4C2"
+            color="gray.700"
             fontSize="22px"
             fontWeight="700"
             marginLeft="15px"
@@ -100,10 +104,10 @@ const EmployeeDashboard = ({
           </Text>
         </HStack>
         <Text
-          color="#F5F7FA"
+          color="black"
+          fontSize="1.5rem"
           position="relative"
           left="100px"
-          fontSize="30px"
           fontWeight="700"
         >
           {attendanceCount}
@@ -115,6 +119,9 @@ const EmployeeDashboard = ({
           rgba(255,255,255,0.08),
           rgba(255,255,255,0.03)
         )"
+        boxShadow="
+        0 8px 20px rgba(0,0,0,0.12),
+        0 0 20px rgba(242, 183, 5, 0.35)"
         padding="30px"
         borderRadius="20px"
         width="250px"
@@ -125,14 +132,14 @@ const EmployeeDashboard = ({
           <Box
             width="53px"
             height="53px"
-            backgroundColor="#FACC15"
+            backgroundColor="red.500"
             borderRadius="10px"
             padding="8px"
           >
             <FaRegClock color="#ffffff" size="33px" />
           </Box>
           <Text
-            color="#A9B4C2"
+            color="gray.700"
             fontWeight="700"
             fontSize="22px"
             marginLeft="15px"
@@ -141,10 +148,10 @@ const EmployeeDashboard = ({
           </Text>
         </HStack>
         <Text
-          color="#F5F7FA"
+          color="black"
+          fontSize="1.5rem"
           position="relative"
           left="100px"
-          fontSize="30px"
           fontWeight="700"
         >
           {lateCount}
@@ -156,6 +163,9 @@ const EmployeeDashboard = ({
           rgba(255,255,255,0.08),
           rgba(255,255,255,0.03)
         )"
+        boxShadow="
+        0 8px 20px rgba(0,0,0,0.12),
+        0 0 20px rgba(242, 183, 5, 0.35)"
         padding="30px"
         borderRadius="20px"
         width="250px"
@@ -165,14 +175,14 @@ const EmployeeDashboard = ({
           <Box
             width="53px"
             height="53px"
-            backgroundColor="#FACC15"
+            backgroundColor="blue.500"
             borderRadius="10px"
             padding="8px"
           >
-            <FaRegClock color="#ffffff" size="33px" />
+            <CiCalendarDate color="#ffffff" size="33px" />
           </Box>
           <Text
-            color="#A9B4C2"
+            color="gray.700"
             fontWeight="700"
             fontSize="22px"
             marginLeft="15px"
@@ -181,10 +191,10 @@ const EmployeeDashboard = ({
           </Text>
         </HStack>
         <Text
-          color="#F5F7FA"
+          color="black"
+          fontSize="1.5rem"
           position="relative"
           left="100px"
-          fontSize="30px"
           fontWeight="700"
         >
           {leaveCount}

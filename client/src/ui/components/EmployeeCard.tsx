@@ -123,11 +123,11 @@ const EmployeeCard = ({ employee }: Props) => {
 
   return (
     <HStack
-      bg="#0A1F57"
+      bg="#ffffff"
       height="80px"
-      width="70vw"
+      width="100%"
       padding="10px"
-      borderRadius="10px"
+      borderRadius="8px"
       position="relative"
       right="20px"
       spacing={5}
@@ -143,7 +143,7 @@ const EmployeeCard = ({ employee }: Props) => {
       </Box>
       <Box position="relative" top="10px">
         <Text
-          color="gray.200"
+          color="gray.900"
           fontWeight="500"
           fontSize="23px"
           fontFamily="revert-layer"
@@ -154,13 +154,13 @@ const EmployeeCard = ({ employee }: Props) => {
         </Text>
 
         <HStack position="relative" left="30px" bottom="12px">
-          <Text color="#A9B4D0" fontSize="16px" fontWeight="500">
+          <Text color="gray.700" fontSize="16px" fontWeight="500">
             {employee.role}
           </Text>{" "}
           <Box color="green" fontSize="14px" position="relative" bottom="7px">
             <GoDotFill />
           </Box>
-          <Text color="#8ECDF8" fontWeight="500">
+          <Text color="gray.800" fontWeight="500">
             {employee.department}
           </Text>
         </HStack>
@@ -197,7 +197,7 @@ const EmployeeCard = ({ employee }: Props) => {
             top="20px"
             right="60px"
           >
-            <CiClock2 color="#F2B705" size="22px" />
+            <CiClock2 color="#967103" size="22px" />
           </Box>
 
           <Text
@@ -206,7 +206,7 @@ const EmployeeCard = ({ employee }: Props) => {
             position="absolute"
             top="18px"
             right="0.1px"
-            color="gray.300"
+            color="gray.900"
             fontSize="17px"
           >
             {attendance?.clockIn &&
@@ -225,7 +225,7 @@ const EmployeeCard = ({ employee }: Props) => {
               position="absolute"
               top="18px"
               right="10px"
-              color="#F2B705"
+              color="#c89704"
               backgroundColor="transparent"
               _hover={{ bg: "transparent" }}
               onClick={handleToggleClockInEdit}
@@ -247,7 +247,7 @@ const EmployeeCard = ({ employee }: Props) => {
                 onSubmit={handleClockInSubmit}
               >
                 <EditablePreview
-                  color="yellow"
+                  color="red.600"
                   fontSize="18px"
                   animation="pulse 1.7s infinite"
                   _focus={{
@@ -267,7 +267,7 @@ const EmployeeCard = ({ employee }: Props) => {
                     },
                   }}
                 />
-                <EditableInput color="#ffffff" />
+                <EditableInput color="gray.700" />
               </Editable>
             </Box>
           )}

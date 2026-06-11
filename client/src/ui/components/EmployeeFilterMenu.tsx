@@ -26,16 +26,16 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
   return (
     <Menu>
       <MenuButton
-        bg="#08162b"
+        bg="#FFFFFF"
         width="300px"
         as={Button}
-        rightIcon={<FaChevronCircleDown color="#ffffff" />}
+        rightIcon={<FaChevronCircleDown color="black" />}
         borderWidth="0.5px"
-        borderRadius="15px"
+        borderRadius="5px"
         borderColor="gray.600"
         _hover={{ bg: "transparent" }}
       >
-        <Text color="gray.400" position="relative" top="8px">
+        <Text color="gray.800" position="relative" top="8px">
           {filter || "Trier par département"}
         </Text>
       </MenuButton>

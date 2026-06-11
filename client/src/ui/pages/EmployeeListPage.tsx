@@ -81,21 +81,23 @@ const EmployeeListPage = () => {
       {/* HEADER */}
       <Flex
         direction="column"
-        bg="#03143B"
+        bg="#FFFFFF"
         height="10rem"
-        borderRadius={{ base: "12px", md: "20px" }}
         p={{ base: 3, md: 5 }}
+        position="relative"
+        bottom="0.3rem"
       >
         <Flex>
-          <Box position="relative" bottom="0.8rem">
-            <Text color="white" fontSize="1.6rem" fontWeight="700">
+          <Box position="relative" bottom="1.2rem">
+            <Text color="#1F2937" fontSize="1.6rem" fontWeight="700">
               Employés
             </Text>
             <Text
-              color="whiteAlpha.800"
-              fontSize="1rem"
+              color="gray.900"
+              fontSize="1.1rem"
+              fontWeight="500"
               position="relative"
-              bottom="1rem"
+              bottom="1.5rem"
             >
               Gérez les informations de vos employés
             </Text>
@@ -124,14 +126,15 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} mt="0.3rem">
+          <Flex wrap="wrap" gap={2} mt="0.12rem">
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
           <Flex
             wrap="wrap"
-            gap={2}
             justify={{ base: "stretch", md: "flex-end" }}
+            position="relative"
+            bottom="0.2rem"
           >
             <SearchBar onSearch={handleOnSearch} />
           </Flex>
@@ -139,13 +142,7 @@ const EmployeeListPage = () => {
       </Flex>
 
       {/* LIST AREA */}
-      <Flex
-        mt={4}
-        flex="1"
-        overflow="hidden"
-        borderRadius={{ base: "12px", md: "20px" }}
-        bg="transparent"
-      >
+      <Flex mt={4} flex="1" overflow="hidden" bg="transparent">
         <Box w="100%" h="100%" overflowY="auto" borderRadius="inherit">
           {loading ? (
             <VStack spacing={0}>
@@ -153,11 +150,12 @@ const EmployeeListPage = () => {
                 <Flex
                   key={index}
                   w="100%"
-                  bg="#0A1F57"
+                  bg="#ffffff"
                   borderBottom="1px solid #1E355A"
                   p={4}
                   align="center"
                   gap={4}
+                  mb={1}
                 >
                   <SkeletonCircle size="12" />
 
@@ -183,7 +181,7 @@ const EmployeeListPage = () => {
               ))}
             </VStack>
           ) : (
-            <List spacing={0} position="relative" right="1.5rem">
+            <List position="relative" right="1.5rem">
               {employees
                 .filter((employee) => !filter || employee.department === filter)
                 .filter((employee) =>
@@ -194,8 +192,9 @@ const EmployeeListPage = () => {
                 .map((employee) => (
                   <ListItem
                     key={employee._id}
-                    bg="#0A1F57"
+                    bg="#ffffff"
                     borderBottom="1px solid #1E355A"
+                    mb="1"
                   >
                     <EmployeeCard employee={employee} />
                   </ListItem>
@@ -206,7 +205,7 @@ const EmployeeListPage = () => {
       </Flex>
 
       {/* FOOTER SPACER  */}
-      <Box h="50px" bg="#03143B" borderRadius="10px"></Box>
+      <Box h="50px" bg="black" borderRadius="10px"></Box>
     </Flex>
   );
 };

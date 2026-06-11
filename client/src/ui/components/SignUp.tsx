@@ -145,13 +145,15 @@ const SignUp = () => {
         </Text>
       </Button>
       <Modal size="3xl" isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
+        <ModalOverlay backdropFilter="auto" backdropBlur="1rem" />
         <ModalContent
           bg="#FFFFFF"
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="12px"
           boxShadow="0 12px 40px rgba(0,0,0,0.15)"
+          position="relative"
+          bottom="1rem"
         >
           {" "}
           <form noValidate onSubmit={handleSubmit(onSubmit)}>

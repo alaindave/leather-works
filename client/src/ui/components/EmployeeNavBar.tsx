@@ -117,37 +117,38 @@ const EmployeeNavBar = () => {
       </Box>
       {/* Admin user  */}
       <Flex
-        borderWidth="0.2px"
-        borderColor="gray"
+        borderWidth="2px"
+        borderColor="gray.900"
         borderRadius="15px"
         position="absolute"
         left="0.1rem"
         bottom="0.1rem"
         height="60px"
-        width="277px"
+        width="17.3rem"
         right="7px"
         justify="space-evenly"
       >
         <Flex
           height="40px"
           width="40px"
-          borderWidth="0.5px"
+          borderWidth="2px"
           borderRadius="20px"
-          bg="#E5F1FB"
-          borderColor="#0078D4"
+          bg="#ffffff"
+          borderColor="blue"
           position="relative"
           top="8px"
           justifyContent="center"
           alignItems="center"
         >
           <MdPersonOutline
-            color={adminUser?.role === "manager" ? "yellow" : "#0078D4"}
-            size="22px"
+            color={adminUser?.role === "manager" ? "blue" : "#0078D4"}
+            size="2rem"
           />
         </Flex>
         <Box position="relative" left="0.5rem" bottom="1rem">
           <Text
-            color="#1F2937"
+            color="gray.800"
+            fontSize="1rem"
             fontWeight={700}
             position="relative"
             top="1rem"
@@ -155,7 +156,9 @@ const EmployeeNavBar = () => {
           >
             {adminUser?.firstName} {adminUser?.lastName}
           </Text>
-          <Text color="#1F2937">{adminUser?.email}</Text>
+          <Text color="gray.700" fontWeight="500">
+            {adminUser?.email}
+          </Text>
         </Box>
         <Box position="relative" bottom="7px" width="20px">
           <Menu>

@@ -93,15 +93,15 @@ const EmployeeAdminPage = () => {
     return () => clearTimeout(timeout);
   }, [notes]);
 
-  //useEffect to fetch live announcements from manager
-  // useEffect(() => {
-  //   const unsubscribe = window.electron.announcements.onNew((data) => {
-  //     setLiveAnnouncement(data);
-  //     console.log("Live announcement fetched: ", data.message);
-  //   });
+  // useEffect to fetch live announcements from manager
+  useEffect(() => {
+    const unsubscribe = window.electron.announcements.onNew((data) => {
+      setLiveAnnouncement(data);
+      console.log("Live announcement fetched: ", data.message);
+    });
 
-  //   return () => unsubscribe();
-  // }, []);
+    return () => unsubscribe();
+  }, []);
 
   //Submit personal notes
   const handleNotesSubmission = () => {
@@ -117,19 +117,19 @@ const EmployeeAdminPage = () => {
   };
 
   //Send announcements from manager
-  // const handleAnnouncementSend = async () => {
-  //   console.log("Announcement to be sent to Main: ", announcement);
-  //   try {
-  //     const sendAnnouncement =
-  //       await window.electron.announcements.createAnnouncement({
-  //         message: announcement,
-  //         createdBy: `${adminUser?.firstName} ${adminUser?.lastName}`,
-  //       });
-  //     console.log("Announcement post results from Main: ", sendAnnouncement);
-  //   } catch (error) {
-  //     console.error("An error occured while creating announcement: ", error);
-  //   }
-  // };
+  const handleAnnouncementSend = async () => {
+    console.log("Announcement to be sent to Main: ", announcement);
+    try {
+      const sendAnnouncement =
+        await window.electron.announcements.createAnnouncement({
+          message: announcement,
+          createdBy: `${adminUser?.firstName} ${adminUser?.lastName}`,
+        });
+      console.log("Announcement post results from Main: ", sendAnnouncement);
+    } catch (error) {
+      console.error("An error occured while creating announcement: ", error);
+    }
+  };
 
   return (
     <Flex
@@ -173,6 +173,7 @@ const EmployeeAdminPage = () => {
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="8px"
+          boxShadow="0 2px 8px rgba(0,0,0,0.5)"
           overflow="hidden"
           align="center"
           flexWrap="wrap"
@@ -183,7 +184,7 @@ const EmployeeAdminPage = () => {
             <CiCalendarDate color="#0078D4" size={22} />
 
             <Text
-              color="#374151"
+              color="gray.900"
               fontSize="md"
               position="relative"
               top="0.5rem"
@@ -195,7 +196,7 @@ const EmployeeAdminPage = () => {
           <Flex px={3} py={2} align="center" gap={2}>
             <CiClock2 color="#0078D4" size={22} />
             <Text
-              color="#374151"
+              color="gray.900"
               fontSize="md"
               position="relative"
               top="0.5rem"
@@ -227,16 +228,16 @@ const EmployeeAdminPage = () => {
       >
         {/* NOTES */}
         <Box
+          border="1px solid"
+          borderColor="#D1D9E0"
+          borderRadius="12px"
+          boxShadow="0 2px 8px rgba(1,0,1,1)"
           bg="#FFFFFF"
-          border="1px solid #D1D9E0"
-          borderRadius="10px"
-          boxShadow="0 2px 8px rgba(0,0,0,0.05)"
           p={5}
           display="flex"
           flexDir="column"
         >
           <Flex align="center" gap={2} mb={3}>
-            <Icon as={FaRegNoteSticky} color="#0078D4" />{" "}
             <Text
               color="#1F2937"
               fontSize="1.3rem"
@@ -253,22 +254,19 @@ const EmployeeAdminPage = () => {
             placeholder="Écrivez vos notes ici..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            resize="none"
-            bg="#F9FAFB"
-            border="1px solid"
-            borderColor="#B8C2CC"
-            color="#1F2937"
-            fontSize="15px"
-            fontFamily="Segoe UI"
+            bg="#091735"
+            border="1px solid rgba(255,255,255,0.1)"
+            _hover={{ borderColor: "yellow.300" }}
+            _focus={{
+              borderColor: "yellow.400",
+              boxShadow: "0 0 0 1px #F4C20D",
+            }}
+            color="#ffffff"
+            fontSize="1.3rem"
+            fontWeight="700"
+            fontFamily="system-ui"
             _placeholder={{
               color: "#6B7280",
-            }}
-            _hover={{
-              borderColor: "#0078D4",
-            }}
-            _focus={{
-              borderColor: "#0078D4",
-              boxShadow: "0 0 0 1px #0078D4",
             }}
           />
         </Box>
@@ -280,19 +278,18 @@ const EmployeeAdminPage = () => {
             border="1px solid"
             borderColor="#D1D9E0"
             borderRadius="12px"
-            boxShadow="0 2px 8px rgba(0,0,0,0.05)"
+            boxShadow="0 2px 8px rgba(1,0,1,1)"
             p={5}
             display="flex"
             flexDir="column"
           >
             <Flex align="center" gap={2} mb={3}>
-              <Icon as={TfiAnnouncement} color="#0078D4" />
               <Text
-                color="gray.200"
-                fontSize="lg"
+                fontSize="1.3rem"
                 fontWeight="600"
                 position="relative"
                 top="0.4rem"
+                color="#1F2937"
               >
                 Envoyer une annonce
               </Text>
@@ -307,6 +304,8 @@ const EmployeeAdminPage = () => {
               bg="#091735"
               border="1px solid rgba(255,255,255,0.1)"
               color="#ffffff"
+              fontSize="1.2rem"
+              fontWeight="600"
               _hover={{ borderColor: "yellow.300" }}
               _focus={{
                 borderColor: "yellow.400",
@@ -319,7 +318,7 @@ const EmployeeAdminPage = () => {
               alignSelf="flex-end"
               bg="#F2B705"
               color="black"
-              // onClick={handleAnnouncementSend}
+              onClick={handleAnnouncementSend}
             >
               <FaSave style={{ marginRight: 8 }} />
               Envoyer

@@ -8,7 +8,7 @@ const EmployeeAdminLayout = () => {
       margin="0"
       height="100vh"
       width="100%"
-      bgGradient="radial(#47370b, #061962)"
+      bg="gray.800"
       overflowY="hidden"
       overflowX="hidden"
     >

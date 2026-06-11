@@ -34,156 +34,153 @@ const AdminPage = () => {
         position="relative"
         bottom="2rem"
       >
-        {" "}
-        <Card
+        <VStack
           bg="#FFFFFF"
           height="380px"
           width="380px"
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="12px"
-          boxShadow="0 4px 12px rgba(0,0,0,0.08)"
+          boxShadow="
+          0 8px 20px rgba(0,0,0,0.12),
+          0 0 20px rgba(242, 183, 5, 0.35)"
           transition="all 0.2s ease"
-          _hover={{
-            transform: "translateY(-2px)",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
-          }}
         >
-          <VStack>
-            <Box
+          <Box
+            position="relative"
+            top="2.5rem"
+            borderWidth="2px"
+            padding="20px"
+            borderRadius="60px"
+            borderColor="#0078D4"
+          >
+            <BsFillPeopleFill color="#0078D4" size="3.5rem" />
+          </Box>
+          <Box position="relative" top="3.3rem" left="35px">
+            <Text color="#1F2937" fontSize="1.5rem" fontWeight="600">
+              Module personnel
+            </Text>
+            <Text
+              color="#6B7280"
+              fontSize="1.2rem"
               position="relative"
-              top="40px"
-              borderWidth="2px"
-              padding="20px"
-              borderRadius="60px"
-              borderColor="#0078D4"
+              right="1.2rem"
             >
-              <BsFillPeopleFill color="#0078D4" size="72px" />
-            </Box>
-            <Box position="relative" top="3rem" left="1.1rem">
-              <Text color="#1F2937" fontSize="1.5rem" fontWeight="600">
-                Module personnel
-              </Text>
-              <Text color="#6B7280" fontSize="1.2rem">
-                Gérez vos employés, présences,
-              </Text>
+              Gérez vos employés, présences,
+            </Text>
+            <Text
+              color="#6B7280"
+              fontSize="1.2rem"
+              position="relative"
+              left="0.5rem"
+              bottom="0.8rem"
+            >
+              congés et fiches de paye
+            </Text>
+          </Box>
+          <Link to="/employees_admin">
+            <Button
+              bg="#0078D4"
+              color="white"
+              fontSize="1rem"
+              height="52px"
+              width="280px"
+              fontWeight="600"
+              position="relative"
+              top="2rem"
+              borderRadius="6px"
+              _hover={{
+                bg: "#106EBE",
+              }}
+              _active={{
+                bg: "#005A9E",
+              }}
+            >
               <Text
-                color="#6B7280"
-                fontSize="1.2rem"
                 position="relative"
-                left="0.5rem"
-                bottom="1rem"
+                top="0.5rem"
+                marginRight="1.2rem"
+                fontSize="1.1rem"
               >
-                congés et fiches de paye
+                Acceder au module
               </Text>
-            </Box>
-            <Link to="/employees_admin">
-              <Button
-                bg="#0078D4"
-                color="white"
-                fontSize="16px"
-                fontWeight="600"
-                height="52px"
-                width="280px"
-                position="relative"
-                top="1.5rem"
-                borderRadius="6px"
-                _hover={{
-                  bg: "#106EBE",
-                }}
-                _active={{
-                  bg: "#005A9E",
-                }}
-              >
-                <Text
-                  position="relative"
-                  top="7px"
-                  marginRight="20px"
-                  fontSize="1.1rem"
-                >
-                  Acceder au module
-                </Text>
-                <FaRegArrowAltCircleRight />
-              </Button>
-            </Link>
-          </VStack>
-        </Card>
-        <Card
+              <FaRegArrowAltCircleRight />
+            </Button>
+          </Link>
+        </VStack>
+
+        <VStack
           bg="#FFFFFF"
           height="380px"
           width="380px"
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="12px"
-          boxShadow="0 4px 12px rgba(0,0,0,0.08)"
+          boxShadow="
+          0 8px 20px rgba(0,0,0,0.12),
+          0 0 20px rgba(242, 183, 5, 0.35)"
           transition="all 0.2s ease"
-          _hover={{
-            transform: "translateY(-2px)",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
-          }}
         >
-          <VStack>
-            <Box
+          <Box
+            position="relative"
+            top="2.5rem"
+            borderWidth="1px"
+            padding="20px"
+            borderRadius="60px"
+            borderColor="#107C10"
+          >
+            <BsBoxSeamFill color="#107C10" size="4rem" />{" "}
+          </Box>
+          <Box position="relative" top="3.3rem" left="35px">
+            <Text color="#1F2937" fontSize="24px" fontWeight="600">
+              Module stock
+            </Text>
+            <Text
+              color="#6B7280"
+              fontSize="1.2rem"
               position="relative"
-              top="40px"
-              borderWidth="1px"
-              padding="20px"
-              borderRadius="60px"
-              borderColor="#107C10"
+              right="1.2rem"
+              bottom="0.5rem"
             >
-              <BsBoxSeamFill color="#107C10" size="72px" />{" "}
-            </Box>
-            <Box position="relative" top="3.3rem" left="35px">
-              <Text color="#1F2937" fontSize="24px" fontWeight="600">
-                Module stock
-              </Text>
+              Gérez vos produits,entrées,
+            </Text>
+            <Text
+              color="#6B7280"
+              fontSize="1.2rem"
+              position="relative"
+              right="1rem"
+              bottom="1.3rem"
+            >
+              sorties,stock et inventaires
+            </Text>
+          </Box>
+          <Link to="/admin">
+            <Button
+              bg="#107C10"
+              color="white"
+              fontSize="16px"
+              fontWeight="600"
+              height="52px"
+              width="280px"
+              position="relative"
+              top="1.5rem"
+              borderRadius="6px"
+              _hover={{
+                bg: "#0E6E0E",
+              }}
+            >
               <Text
-                color="#6B7280"
-                fontSize="1.2rem"
                 position="relative"
-                right="20px"
-                bottom="0.5rem"
+                top="0.5rem"
+                marginRight="1.2rem"
+                fontSize="1.1rem"
               >
-                Gérez vos produits,entrées,
-              </Text>
-              <Text
-                color="#6B7280"
-                fontSize="1.2rem"
-                position="relative"
-                right="1rem"
-                bottom="1.3rem"
-              >
-                sorties,stock et inventaires
-              </Text>
-            </Box>
-            <Link to="/admin">
-              <Button
-                bg="#107C10"
-                color="white"
-                fontSize="16px"
-                fontWeight="600"
-                height="52px"
-                width="280px"
-                position="relative"
-                top="1.5rem"
-                borderRadius="6px"
-                _hover={{
-                  bg: "#0E6E0E",
-                }}
-              >
-                <Text
-                  position="relative"
-                  top="7px"
-                  marginRight="20px"
-                  fontSize="1.1rem"
-                >
-                  Acceder au module
-                </Text>{" "}
-                <FaRegArrowAltCircleRight />
-              </Button>
-            </Link>
-          </VStack>
-        </Card>
+                Acceder au module
+              </Text>{" "}
+              <FaRegArrowAltCircleRight />
+            </Button>
+          </Link>
+        </VStack>
       </HStack>
     </Flex>
   );
