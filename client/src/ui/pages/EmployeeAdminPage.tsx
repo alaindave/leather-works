@@ -281,7 +281,7 @@ const EmployeeAdminPage = () => {
               <Icon as={TfiAnnouncement} color="yellow.300" />
               <Text
                 color="gray.200"
-                fontSize="lg"
+                fontSize="1.2rem"
                 fontWeight="600"
                 position="relative"
                 top="0.4rem"
@@ -299,6 +299,9 @@ const EmployeeAdminPage = () => {
               bg="#091735"
               border="1px solid rgba(255,255,255,0.1)"
               color="#ffffff"
+              fontSize="1.3rem"
+              fontFamily="revert-layer"
+              _placeholder={{ fontSize: "1rem" }}
               _hover={{ borderColor: "yellow.300" }}
               _focus={{
                 borderColor: "yellow.400",

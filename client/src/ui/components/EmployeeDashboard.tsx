@@ -17,7 +17,7 @@ const EmployeeDashboard = ({
   leaveCount,
 }: Props) => {
   return (
-    <Flex>
+    <Flex justify="space-evenly">
       <Box
         bg="linear-gradient(
           135deg,
