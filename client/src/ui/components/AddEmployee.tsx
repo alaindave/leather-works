@@ -60,24 +60,18 @@ const schema = z.object({
   firstName: z.string().min(1, { message: errorMessage }),
   lastName: z.string().min(1, { message: errorMessage }),
   employeeID: z.string().min(1, { message: errorMessage }),
-  dateBirth: z.date({ message: errorMessage }),
+  dateBirth: z.string().min(1, { message: errorMessage }),
   role: z.string().min(1, { message: errorMessage }),
   department: z.string().min(1, { message: errorMessage }),
-  dateHired: z.date({ message: errorMessage }),
-  telephone: z
-    .string()
-    .min(1, "Le numéro de téléphone est obligatoire")
-    .regex(/^\+?[0-9]{8,15}$/, "Numéro de téléphone invalide"),
+  dateHired: z.string().min(1, { message: errorMessage }),
+  telephone: z.string().min(1, "Le numéro de téléphone est obligatoire"),
   address: z.string().min(1, { message: errorMessage }),
   emergencyContact: z.string().min(1, { message: errorMessage }),
   relationship: z.string().min(1, { message: errorMessage }),
   contactPhone: z.string().min(1, { message: errorMessage }),
-  salary: z
-    .number({
-      invalid_type_error: "Le salaire doit être un nombre",
-    })
-    .min(0, "Le salaire ne peut pas être négatif")
-    .optional(),
+  salary: z.coerce.number({
+    required_error: errorMessage,
+  }),
 });
 
 type EmployeeData = z.infer<typeof schema>;
@@ -86,7 +80,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const {
     register,
@@ -95,13 +89,14 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
     formState: { errors },
   } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = async (data: FieldValues) => {
+  const onSubmit = async (formData: EmployeeData) => {
     setIsSaving(true);
-    console.log("Form to be submitted:", data);
+    console.log("Form to be submitted:", formData);
     try {
-      const res = await axios.post(`${API_URL}/employees`, data);
-      console.log("Employee successfully saved", res.data);
-      onAddEmployee(res.data);
+      // const res = await axios.post(`${API_URL}/employees`, data);
+      const employee = await window.electron.employees.create(formData);
+      console.log("Employee successfully saved", employee);
+      onAddEmployee(employee);
       onClose();
     } catch (error) {
       console.error("An error occured while adding employee: ", error);
@@ -117,14 +112,14 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
     <>
       <Button
         borderColor="black"
-        bg="#0a2142"
-        borderRadius="18px"
+        bg="#03143B"
+        borderRadius="8px"
         borderWidth="1px"
-        color="#F2B705"
+        color="yellow.400"
         onClick={onOpen}
         _hover={{
           bg: "brown",
-          color: "#e6e6e6",
+          color: "#ffffff",
           transform: "scale(1.05)",
         }}
         isLoading={isSaving}
@@ -132,8 +127,13 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
         spinnerPlacement="start"
         isDisabled={isSaving}
       >
-        <IoPersonAdd />{" "}
-        <Text fontSize="15px" marginLeft="10px" marginTop="15px">
+        <IoPersonAdd fontSize="1.3rem" />
+        <Text
+          fontSize="1rem"
+          color="yellow.400"
+          marginLeft="10px"
+          marginTop="15px"
+        >
           Ajouter un employé
         </Text>
       </Button>
@@ -249,7 +249,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     )}
                   </Box>
                 </HStack>
-                <HStack spacing="12px" marginBottom="10px">
+                <HStack spacing="0.8rem" alignItems="flex-start">
                   {/* Date of birth input */}
                   <Box>
                     <HStack>
@@ -268,8 +268,12 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                       name="dateBirth"
                       render={({ field }) => (
                         <DatePicker
-                          selected={field.value}
-                          onChange={(date: Date | null) => field.onChange(date)}
+                          selected={field.value ? new Date(field.value) : null}
+                          onChange={(date: any) => {
+                            field.onChange(
+                              date ? date.toISOString().split("T")[0] : ""
+                            );
+                          }}
                           locale="fr"
                           dateFormat="dd/MM/yyyy"
                           showYearDropdown
@@ -287,6 +291,9 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                         />
                       )}
                     />
+                    {errors.dateBirth && (
+                      <p className="text-danger">{errors.dateBirth.message}</p>
+                    )}
                   </Box>
                   {/* Role input */}
                   <Box>
@@ -366,7 +373,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     )}
                   </Box>
                 </HStack>
-                <HStack spacing="12px" marginBottom="10px">
+                <HStack spacing="0.8rem" alignItems="flex-start">
                   {/* Hire date input */}
                   <Box>
                     <HStack>
@@ -387,8 +394,12 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                       name="dateHired"
                       render={({ field }) => (
                         <DatePicker
-                          selected={field.value}
-                          onChange={(date: Date | null) => field.onChange(date)}
+                          selected={field.value ? new Date(field.value) : null}
+                          onChange={(date: any) => {
+                            field.onChange(
+                              date ? date.toISOString().split("T")[0] : ""
+                            );
+                          }}
                           locale="fr"
                           dateFormat="dd/MM/yyyy"
                           showYearDropdown
@@ -429,8 +440,8 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     <Input
                       color="#e6ebfe"
                       width="300px"
-                      type="text"
-                      {...register("salary")}
+                      type="number"
+                      {...register("salary", { valueAsNumber: true })}
                     />
                     {errors.salary && (
                       <p className="text-danger">{errors.salary.message}</p>
@@ -461,7 +472,11 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                   </Box>
                 </HStack>
                 {/* Emergency contact */}
-                <HStack spacing="12px" marginBottom="10px">
+                <HStack
+                  spacing="0.8rem"
+                  marginBottom="0.7rem"
+                  alignItems="flex-start"
+                >
                   <Box>
                     <HStack>
                       <Box marginBottom="10px">
@@ -567,7 +582,8 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
               <HStack position="relative" right="2rem">
                 <Text
                   position="relative"
-                  right="20px"
+                  top="0.6rem"
+                  right="2rem"
                   fontSize="1.1rem"
                   fontWeight="600"
                   color="red.300"

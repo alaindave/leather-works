@@ -7,10 +7,12 @@ import {
   updateEmployee,
   deleteEmployee,
   searchEmployees,
-} from "../database/repositories/employee.repository";
+} from "../database/repositories/employee.repository.cjs";
 
 export function registerEmployeeIPC() {
+  console.log("REGISTERING EMPLOYEE IPC");
   ipcMain.handle("employees:create", async (_, employee) => {
+    console.log("EMPLOYEE CREATE IPC RECEIVED");
     return createEmployee(employee);
   });
 

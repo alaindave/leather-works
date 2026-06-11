@@ -1,7 +1,8 @@
 const { contextBridge, ipcRenderer } = require("electron");
 import type Employee from "../shared/types/Employee";
 
-console.log(" Preload loaded!");
+console.log("PRELOAD LOADED!!!");
+console.log("EMPLOYEES API EXPOSED!!!");
 
 contextBridge.exposeInMainWorld("electron", {
   file: { save: (data: string) => ipcRenderer.invoke("save-file", data) },

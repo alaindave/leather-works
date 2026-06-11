@@ -47,10 +47,14 @@ declare global {
       };
 
       employees: {
+        create: (employee: Partial<Employee>) => Promise<Employee>;
         getAll: () => Promise<Employee[]>;
-        getById: (_id: string) => Promise<Employee>;
-        create: (data: Partial<Employee>) => Promise<Employee>;
-        update: (_id: string, data: Partial<Employee>) => Promise<Employee>;
+        getById: (_id: string) => Promise<Employee | null>;
+        search: (searchTerm: string) => Promise<Employee[]>;
+        update: (
+          _id: string,
+          data: Partial<Employee>
+        ) => Promise<Employee | null>;
         delete: (_id: string) => Promise<void>;
       };
     };

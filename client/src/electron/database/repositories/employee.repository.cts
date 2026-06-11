@@ -1,4 +1,4 @@
-import { run, get, all } from "../db";
+import { run, get, all } from "../db.cjs";
 import { randomUUID } from "crypto";
 import Employee from "@shared/types/Employee";
 
@@ -119,6 +119,12 @@ export function searchEmployees(searchTerm: string) {
 }
 
 export async function updateEmployee(_id: string, data: Partial<Employee>) {
+  const existing = await getEmployeeById(_id);
+
+  if (!existing) {
+    throw new Error("Employee not found");
+  }
+
   await run(
     `
     UPDATE employees
@@ -143,21 +149,21 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
     WHERE _id=?
     `,
     [
-      data.firstName,
-      data.lastName,
-      data.employeeID,
-      data.dateBirth,
-      data.role,
-      data.dateHired,
-      data.department,
-      data.telephone,
-      data.address,
-      data.emergencyContact,
-      data.relationship,
-      data.contactPhone,
-      data.salary,
-      data.status,
-      data.remainingLeave,
+      data.firstName ?? existing.firstName,
+      data.lastName ?? existing.lastName,
+      data.employeeID ?? existing.employeeID,
+      data.dateBirth ?? existing.dateBirth,
+      data.role ?? existing.role,
+      data.dateHired ?? existing.dateHired,
+      data.department ?? existing.department,
+      data.telephone ?? existing.telephone,
+      data.address ?? existing.address,
+      data.emergencyContact ?? existing.emergencyContact,
+      data.relationship ?? existing.relationship,
+      data.contactPhone ?? existing.contactPhone,
+      data.salary ?? existing.salary,
+      data.status ?? existing.status,
+      data.remainingLeave ?? existing.remainingLeave,
       _id,
     ]
   );

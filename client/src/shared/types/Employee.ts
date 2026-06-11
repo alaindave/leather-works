@@ -3,10 +3,10 @@ export default interface Employee {
   firstName: string;
   lastName: string;
   employeeID: string;
-  dateBirth: Date;
+  dateBirth: string;
   role: string;
   department: string;
-  dateHired: Date;
+  dateHired: string;
   salary: number;
   status: "actif" | "inactif";
   telephone: string;

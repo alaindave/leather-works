@@ -1,14 +1,14 @@
 import axios from "axios";
 import "dotenv/config";
-import { BrowserWindow, Menu, app, dialog, ipcMain } from "electron";
+import { BrowserWindow, app, dialog, ipcMain } from "electron";
 import fs from "fs";
 import path from "path";
 import { clearToken, getToken, saveToken } from "./auth.cjs";
-import { getPreloadPath } from "./util/pathResolver.cjs";
+import { getPreloadPath } from "./pathResolver.cjs";
 import { createSocket } from "./socket.cjs";
 import { isDev } from "./util/env-util.cjs";
-import { initializeDatabase } from "./database/initializeDatabase";
-import { registerEmployeeIPC } from "./ipc/employeeIPC";
+import { initializeDatabase } from "./database/initializeDatabase.cjs";
+import { registerEmployeeIPC } from "./ipc/employeeIPC.cjs";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged
@@ -93,35 +93,38 @@ const createMainWindow = async () => {
   }
 };
 
-app.disableHardwareAcceleration();
-
 async function bootstrap() {
   await app.whenReady();
+  console.log("Before DB init");
   await initializeDatabase();
+  console.log("After DB init");
   registerEmployeeIPC();
+  console.log("After IPC registration");
   createSplashWindow();
   await createMainWindow();
-  const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-  Menu.setApplicationMenu(mainMenu);
+  // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+  // Menu.setApplicationMenu(mainMenu);
 }
 
 bootstrap().catch((error) => {
   console.error("Startup error:", error);
 });
 
-// Create menu template
-const mainMenuTemplate = [
-  {
-    label: "Fichier",
-    submenu: [
-      {
-        label: "Quitter",
-        click: () => app.quit(),
-        accelerator: "CmdOrCtrl+w",
-      },
-    ],
-  },
-];
+app.disableHardwareAcceleration();
+
+// // Create menu template
+// const mainMenuTemplate = [
+//   {
+//     label: "Fichier",
+//     submenu: [
+//       {
+//         label: "Quitter",
+//         click: () => app.quit(),
+//         accelerator: "CmdOrCtrl+w",
+//       },
+//     ],
+//   },
+// ];
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {

@@ -33,7 +33,7 @@ import ComponentErrorFallback from "./ComponentErrorFallback";
 import NotAuthorized from "../components/NotAuthorized";
 
 const EmployeeDetailsPage = () => {
-  const [employee, setEmployee] = useState<Employee>({} as Employee);
+  const [employee, setEmployee] = useState<Employee | null>({} as Employee);
   const [isDeleting, setIsDeleting] = useState(false);
   const { _id } = useParams();
   const navigate = useNavigate();
@@ -43,21 +43,34 @@ const EmployeeDetailsPage = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
-    axios
-      .get<Employee>(`${API_URL}/employees/${_id}`)
-      .then((res) => setEmployee(res.data))
-      .catch((error) => console.error("Error while fetching employee:", error));
-  }, []);
+    if (!_id) return;
+    window.electron.employees
+      .getById(_id)
+      .then((employee) => {
+        setEmployee(employee);
+        console.log("Employee fetched: ", employee);
+      })
+      .catch((error) => {
+        console.error("Error fetching employee:", error);
+      });
+  }, [_id]);
 
   const refreshEmployee = async () => {
-    const res = await axios.get<Employee>(`${API_URL}/employees/${_id}`);
-    setEmployee(res.data);
+    try {
+      if (!_id) return;
+      const updatedEmployee = await window.electron.employees.getById(_id);
+      setEmployee(updatedEmployee);
+      console.log("Fetched updated employee:", updatedEmployee);
+    } catch (error) {
+      console.error("An error occured while refreshing employee data", error);
+    }
   };
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await axios.delete(`${API_URL}/employees/${_id}`);
+      if (!_id) return;
+      await window.electron.employees.delete(_id);
       navigate("/employees_admin/employees_list");
     } catch (error) {
       console.error("Unable to delete employee:", error);
