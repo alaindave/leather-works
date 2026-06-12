@@ -57,6 +57,25 @@ declare global {
         ) => Promise<Employee | null>;
         delete: (_id: string) => Promise<void>;
       };
+
+      attendance: {
+        create: (employeeID: string, clockIn: string) => Promise<Attendance>;
+        getAll: () => Promise<Attendance[]>;
+        getById: (_id: string) => Promise<Attendance | undefined>;
+        getByEmployee: (employeeId: string) => Promise<Attendance[]>;
+        getByDate: (date: string) => Promise<Attendance[]>;
+        getAttendanceRecord: (
+          employeeId: string,
+          date: string
+        ) => Promise<Attendance>;
+        updateClockIn: (_id: string, clockIn: string) => Promise<Attendance>;
+        updateClockOut: (_id: string, clockOut: string) => Promise<Attendance>;
+        delete: (_id: string) => Promise<boolean>;
+        clockOut: (
+          _id: string,
+          clockOut: string
+        ) => Promise<Attendance | undefined>;
+      };
     };
   }
 }

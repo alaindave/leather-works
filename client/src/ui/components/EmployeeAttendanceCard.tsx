@@ -8,16 +8,14 @@ import {
   HStack,
   Text,
 } from "@chakra-ui/react";
-
-import axios from "axios";
 import { memo, useMemo, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
 import ClockInNotesPopover from "../components/ClockInNotesPopover";
-import type Attendance from "../../shared/types/Attendance";
+import { AttendanceWithEmployee } from "../../shared/AttendanceWithEmployee";
 
 interface Props {
-  attendance: Attendance;
+  attendance: AttendanceWithEmployee;
   onDelete: () => void;
   gridTemplate: string;
 }
@@ -37,12 +35,8 @@ const EmployeeAttendanceCard = ({
   onDelete,
   gridTemplate,
 }: Props) => {
-  if (!attendance?.employee) return null;
-  const {
-    _id,
-    employee: { firstName, lastName, employeeID, role, department },
-  } = attendance;
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  if (!attendance) return null;
+  const { _id, firstName, lastName, employeeID, role, department } = attendance;
   const [localAttendance, setLocalAttendance] = useState(attendance);
   const [clockOutMode, setClockOutMode] = useState<ClockOutMode>("idle");
 
@@ -69,10 +63,15 @@ const EmployeeAttendanceCard = ({
     clockInDate.setHours(hours, minutes, 0, 0);
     console.log("Time edit to update: ", clockInDate);
     try {
-      const response = await axios.put(`${API_URL}/attendances/${_id}`, {
-        clockIn: clockInDate,
-      });
-      setLocalAttendance(response.data);
+      // const response = await axios.put(`${API_URL}/attendances/${_id}`, {
+      //   clockIn: clockInDate,
+      // });
+
+      const updatedAttendance = await window.electron.attendance.updateClockIn(
+        _id,
+        clockInDate.toISOString()
+      );
+      setLocalAttendance(updatedAttendance);
       return true;
     } catch (error) {
       console.error("Error editing clock in:", error);
@@ -113,17 +112,16 @@ const EmployeeAttendanceCard = ({
       // Optimistic update
       setLocalAttendance((prev) => ({
         ...prev,
-        clockOut: clockOutDate,
+        clockOut: clockOutDate.toISOString(),
       }));
 
-      const response = await axios.put<Attendance>(
-        `${API_URL}/attendances/${_id}`,
-        {
-          clockOut: clockOutDate,
-        }
-      );
+      const attendance: AttendanceWithEmployee =
+        await window.electron.attendance.clockOut(
+          _id,
+          clockOutDate.toISOString()
+        );
 
-      setLocalAttendance(response.data);
+      setLocalAttendance(attendance);
       setClockOutMode("completed");
     } catch (error) {
       console.error("Error clocking out:", error);
@@ -171,11 +169,11 @@ const EmployeeAttendanceCard = ({
 
       {/* Clock In */}
 
-      {localAttendance.lateMinutes > 0 ? (
+      {(localAttendance?.lateMinutes ?? 0) > 0 ? (
         <Box ml="0.3rem">
           <ClockInNotesPopover
             clockInTime={clockInValue}
-            lateMinutes={localAttendance.lateMinutes}
+            lateMinutes={localAttendance?.lateMinutes ?? 0}
             notes={localAttendance?.lateNotes}
             onTimeEdit={handleEditClockIn}
           />
@@ -236,17 +234,23 @@ const EmployeeAttendanceCard = ({
                 // Optimistic UI update
                 setLocalAttendance((prev) => ({
                   ...prev,
-                  clockOut: updatedClockOut,
+                  clockOut: updatedClockOut.toISOString(),
                 }));
 
-                const response = await axios.put<Attendance>(
-                  `${API_URL}/attendances/${_id}`,
-                  {
-                    clockOut: updatedClockOut,
-                  }
-                );
+                // const response = await axios.put<Attendance>(
+                //   `${API_URL}/attendances/${_id}`,
+                //   {
+                //     clockOut: updatedClockOut,
+                //   }
+                // );
 
-                setLocalAttendance(response.data);
+                const updatedAttendance =
+                  await window.electron.attendance.updateClockOut(
+                    _id,
+                    updatedClockOut.toISOString()
+                  );
+
+                setLocalAttendance(updatedAttendance);
               } catch (error) {
                 console.error("Error editing clock out:", error);
               }

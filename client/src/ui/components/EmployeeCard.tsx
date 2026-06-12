@@ -39,12 +39,11 @@ const EmployeeCard = ({ employee }: Props) => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
-    axios
-      .get<Attendance>(`${API_URL}/attendances/${employee._id}`)
-
-      .then((res) => {
-        setAttendance(res.data);
-        console.log("Attendance fetched: ", res.data);
+    window.electron.attendance
+      .getAttendanceRecord(employee._id, new Date().toISOString().split("T")[0])
+      .then((attendance) => {
+        setAttendance(attendance);
+        console.log("Attendance fetched: ", attendance);
       })
 
       .catch((error) => {
@@ -74,14 +73,12 @@ const EmployeeCard = ({ employee }: Props) => {
     const [hours, minutes] = _clockIn.split(":").map(Number);
     const clockIn = new Date();
     clockIn.setHours(hours, minutes, 0, 0);
-
-    await axios
-      .post<Attendance>(`${API_URL}/attendances/${employee._id}`, {
-        clockIn,
-      })
-      .then((response) => {
-        console.log("Attendance success:", response.data);
-        setAttendance(response.data);
+    console.log("clock In to submit", clockIn.toISOString());
+    await window.electron.attendance
+      .create(employee._id, clockIn.toISOString())
+      .then((attendance) => {
+        console.log("Attendance creation success:", attendance);
+        setAttendance(attendance);
         setDisplayClock(false);
         setShowEditable(false);
       })
@@ -223,8 +220,8 @@ const EmployeeCard = ({ employee }: Props) => {
           {!attendance && displayClock ? (
             <Button
               position="absolute"
-              top="18px"
-              right="10px"
+              top="1rem"
+              right="0.8rem"
               color="#F2B705"
               backgroundColor="transparent"
               _hover={{ bg: "transparent" }}

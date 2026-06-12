@@ -16,7 +16,7 @@ import { useState } from "react";
 interface Props {
   clockInTime: string;
   lateMinutes: number;
-  notes: string;
+  notes?: string;
   onTimeEdit: (time: string) => Promise<boolean>;
 }
 

@@ -46,4 +46,33 @@ contextBridge.exposeInMainWorld("electron", {
     search: (searchTerm: string) =>
       ipcRenderer.invoke("employees:search", searchTerm),
   },
+
+  attendance: {
+    create: (employeeId: string, clockIn: string) =>
+      ipcRenderer.invoke("attendance:create", employeeId, clockIn),
+
+    getAll: () => ipcRenderer.invoke("attendance:getAll"),
+
+    getById: (_id: string) => ipcRenderer.invoke("attendance:getById", _id),
+
+    getByEmployee: (employeeId: string) =>
+      ipcRenderer.invoke("attendance:getByEmployee", employeeId),
+
+    getByDate: (date: string) =>
+      ipcRenderer.invoke("attendance:getByDate", date),
+
+    getAttendanceRecord: (employeeId: string, date: string) =>
+      ipcRenderer.invoke("attendance:getAttendanceRecord", employeeId, date),
+
+    updateClockIn: (_id: string, clockIn: string) =>
+      ipcRenderer.invoke("attendance:updateClockIn", _id, clockIn),
+
+    updateClockOut: (_id: string, clockOut: string) =>
+      ipcRenderer.invoke("attendance:updateClockOut", _id, clockOut),
+
+    delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
+
+    clockOut: (_id: string, clockOut: string) =>
+      ipcRenderer.invoke("attendance:clockOut", _id, clockOut),
+  },
 }) satisfies Window["electron"];

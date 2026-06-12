@@ -9,6 +9,7 @@ import { createSocket } from "./socket.cjs";
 import { isDev } from "./util/env-util.cjs";
 import { initializeDatabase } from "./database/initializeDatabase.cjs";
 import { registerEmployeeIPC } from "./ipc/employeeIPC.cjs";
+import { registerAttendanceIPC } from "./ipc/attendanceIPC.cjs";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged
@@ -99,6 +100,7 @@ async function bootstrap() {
   await initializeDatabase();
   console.log("After DB init");
   registerEmployeeIPC();
+  registerAttendanceIPC();
   console.log("After IPC registration");
   createSplashWindow();
   await createMainWindow();
