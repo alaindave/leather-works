@@ -151,6 +151,7 @@ const EmployeeAttendanceCard = ({
       setErrorMessage("Heure invalide");
       return false;
     }
+    setClockInValue(formattedClockIn);
     const [hours, minutes] = formattedClockIn.split(":").map(Number);
     const clockInDate = new Date(localAttendance?.clockIn!);
     clockInDate.setHours(hours, minutes, 0, 0);
@@ -310,9 +311,6 @@ const EmployeeAttendanceCard = ({
           width="80px"
           selectAllOnFocus
           onSubmit={handleEditClockIn}
-          onFocus={() => {
-            setErrorMessage("");
-          }}
         >
           <Tooltip
             label={errorMessage}
@@ -336,7 +334,15 @@ const EmployeeAttendanceCard = ({
             />
           </Tooltip>
 
-          <EditableInput color="white" fontSize="1.1rem" width="80px" />
+          <EditableInput
+            color="white"
+            fontSize="1.1rem"
+            width="80px"
+            onFocus={() => {
+              setErrorMessage("");
+              setClockInValue(formatTime(localAttendance?.clockIn));
+            }}
+          />
         </Editable>
       )}
 
