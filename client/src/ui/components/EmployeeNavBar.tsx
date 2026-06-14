@@ -2,14 +2,12 @@ import {
   Box,
   Flex,
   HStack,
-  VStack,
   Text,
   MenuButton,
   MenuList,
   MenuItem,
   Menu,
   Button,
-  background,
   List,
   ListItem,
 } from "@chakra-ui/react";
@@ -21,11 +19,13 @@ import { IoIosArrowDown } from "react-icons/io";
 import { FaUserAlt } from "react-icons/fa";
 import { IoSettings } from "react-icons/io5";
 import { FaSignOutAlt } from "react-icons/fa";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 // @ts-ignore
 import "../styles/App.css";
 import Logo from "./Logo";
 import useAdminUser from "../../store/authStore";
+import ComponentErrorFallback from "../pages/ComponentErrorFallback";
+import { ErrorBoundary } from "react-error-boundary";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
@@ -88,9 +88,14 @@ const EmployeeNavBar = () => {
           <ListItem marginBottom="40px">
             <HStack position="relative" right="30px">
               <FaRegClock size="1.8rem" color="#C7D2FE" />
-              <NavLink className="nav-button" to="/employees_admin/attendances">
-                Présence
-              </NavLink>
+              <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
+                <NavLink
+                  className="nav-button"
+                  to="/employees_admin/attendances"
+                >
+                  Présence
+                </NavLink>
+              </ErrorBoundary>
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">

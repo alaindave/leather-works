@@ -9,7 +9,7 @@ const attendances = require("./routes/attendanceRoute.js");
 const leaves = require("./routes/leaveRoute.js");
 const adminUser = require("./routes/adminUserRoute.js");
 const auth = require("./routes/authenticate.js");
-const announcements = require("./routes/announcementsRoute.js");
+const tasks = require("./routes/taskRoute.js");
 
 const requiredEnvVars = [
   { key: "JWT_PRIVATE_KEY", name: "JWT Private Key" },
@@ -57,7 +57,7 @@ app.use("/employees", employees);
 app.use("/attendances", attendances);
 app.use("/leaves", leaves);
 app.use("/adminUsers", adminUser);
-app.use("/announcements", announcements);
+app.use("/tasks", tasks);
 app.use("/auth", auth);
 
 const PORT = process.env.PORT || 5000;

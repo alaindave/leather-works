@@ -7,6 +7,7 @@ import {
   Grid,
   HStack,
   Text,
+  Tooltip,
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
@@ -15,19 +16,105 @@ import ClockInNotesPopover from "../components/ClockInNotesPopover";
 import { AttendanceWithEmployee } from "../../shared/AttendanceWithEmployee";
 
 interface Props {
-  attendance: AttendanceWithEmployee;
+  attendance: AttendanceWithEmployee | undefined;
   onDelete: () => void;
   gridTemplate: string;
 }
 
 type ClockOutMode = "idle" | "editing" | "submitting" | "completed";
 
-const formatTime = (date?: string | Date | null) => {
-  if (!date) return "--:--";
+// const formatTime = (date?: string | Date | null) => {
+//   if (!date) return "--:--";
 
-  return `${String(new Date(date).getHours()).padStart(2, "0")}:${String(
-    new Date(date).getMinutes()
-  ).padStart(2, "0")}`;
+//   return `${String(new Date(date).getHours()).padStart(2, "0")}:${String(
+//     new Date(date).getMinutes()
+//   ).padStart(2, "0")}`;
+// };
+
+const formatTime = (input?: string | Date | null) => {
+  if (!input) return null;
+
+  const raw = String(input).trim();
+
+  // =========================
+  // 1. ISO STRING SUPPORT
+  // =========================
+  const iso = new Date(raw);
+  if (!Number.isNaN(iso.getTime()) && raw.includes("T")) {
+    return `${String(iso.getHours()).padStart(2, "0")}:${String(
+      iso.getMinutes()
+    ).padStart(2, "0")}`;
+  }
+
+  const cleaned = raw.replace(/[hH]/g, ":");
+
+  // =========================
+  // 2. HHMM (e.g. 1830)
+  // =========================
+  if (/^\d{4}$/.test(cleaned)) {
+    const hours = Number(cleaned.slice(0, 2));
+    const minutes = Number(cleaned.slice(2, 4));
+
+    if (
+      Number.isNaN(hours) ||
+      Number.isNaN(minutes) ||
+      hours > 23 ||
+      minutes > 59
+    ) {
+      return null;
+    }
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}`;
+  }
+
+  // =========================
+  // 3. HMM (e.g. 930 → 09:30)
+  // =========================
+  if (/^\d{3}$/.test(cleaned)) {
+    const hours = Number(cleaned.slice(0, 1));
+    const minutes = Number(cleaned.slice(1, 3));
+
+    if (
+      Number.isNaN(hours) ||
+      Number.isNaN(minutes) ||
+      hours > 23 ||
+      minutes > 59
+    ) {
+      return null;
+    }
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}`;
+  }
+
+  // =========================
+  // 4. HH:MM or H:MM
+  // =========================
+  const match = cleaned.match(/^(\d{1,2}):(\d{1,2})$/);
+
+  if (!match) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours > 23 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0"
+  )}`;
 };
 
 const EmployeeAttendanceCard = ({
@@ -37,36 +124,38 @@ const EmployeeAttendanceCard = ({
 }: Props) => {
   if (!attendance) return null;
   const { _id, firstName, lastName, employeeID, role, department } = attendance;
-  const [localAttendance, setLocalAttendance] = useState(attendance);
+  const [localAttendance, setLocalAttendance] = useState<
+    AttendanceWithEmployee | undefined
+  >(attendance);
+  const [errorMessage, setErrorMessage] = useState("");
   const [clockOutMode, setClockOutMode] = useState<ClockOutMode>("idle");
 
-  const formattedClockIn = useMemo(
-    () => formatTime(localAttendance.clockIn),
-    [localAttendance.clockIn]
-  );
+  const formattedClockIn = useMemo(() => {
+    return formatTime(localAttendance?.clockIn);
+  }, [localAttendance?.clockIn]);
 
   const [clockInValue, setClockInValue] = useState(formattedClockIn);
 
-  const formattedClockOut = useMemo(
-    () => formatTime(localAttendance.clockOut),
-    [localAttendance.clockOut]
-  );
+  const formattedClockOut = useMemo(() => {
+    return formatTime(localAttendance?.clockOut);
+  }, [localAttendance?.clockOut]);
 
   const [clockOutValue, setClockOutValue] = useState(formattedClockOut);
 
   // =========================
   // Edit Clock In
   // =========================
-  const handleEditClockIn = async (newTime: string): Promise<boolean> => {
-    const [hours, minutes] = newTime.split(":").map(Number);
-    const clockInDate = new Date(localAttendance.clockIn);
+  const handleEditClockIn = async (): Promise<boolean> => {
+    const formattedClockIn = formatTime(clockInValue);
+    if (!formattedClockIn) {
+      setErrorMessage("Heure invalide");
+      return false;
+    }
+    const [hours, minutes] = formattedClockIn.split(":").map(Number);
+    const clockInDate = new Date(localAttendance?.clockIn!);
     clockInDate.setHours(hours, minutes, 0, 0);
-    console.log("Time edit to update: ", clockInDate);
+    console.log("New time to update: ", clockInDate);
     try {
-      // const response = await axios.put(`${API_URL}/attendances/${_id}`, {
-      //   clockIn: clockInDate,
-      // });
-
       const updatedAttendance = await window.electron.attendance.updateClockIn(
         _id,
         clockInDate.toISOString()
@@ -103,19 +192,24 @@ const EmployeeAttendanceCard = ({
   // =========================
 
   const handleSubmitClockOut = async () => {
+    const formattedClockOut = formatTime(clockOutValue);
+    if (!formattedClockOut) return;
     try {
       setClockOutMode("submitting");
-      const [hours, minutes] = clockOutValue.split(":").map(Number);
+      const [hours, minutes] = formattedClockOut.split(":").map(Number);
       const clockOutDate = new Date();
       clockOutDate.setHours(hours, minutes, 0, 0);
 
       // Optimistic update
-      setLocalAttendance((prev) => ({
-        ...prev,
-        clockOut: clockOutDate.toISOString(),
-      }));
+      setLocalAttendance((prev) => {
+        if (!prev) return undefined;
 
-      const attendance: AttendanceWithEmployee =
+        return {
+          ...prev,
+          clockOut: clockOutDate.toISOString(),
+        };
+      });
+      const attendance: AttendanceWithEmployee | undefined =
         await window.electron.attendance.clockOut(
           _id,
           clockOutDate.toISOString()
@@ -126,6 +220,33 @@ const EmployeeAttendanceCard = ({
     } catch (error) {
       console.error("Error clocking out:", error);
       setClockOutMode("editing");
+    }
+  };
+
+  const handleEditClockOut = async () => {
+    const formattedClockOut = formatTime(clockOutValue);
+    if (!formattedClockOut) return;
+    try {
+      const [hours, minutes] = formattedClockOut.split(":").map(Number);
+      const updatedClockOut = new Date(localAttendance?.clockOut!);
+      updatedClockOut.setHours(hours, minutes, 0, 0);
+      // Optimistic UI update
+      setLocalAttendance((prev) => {
+        if (!prev) return undefined;
+        return {
+          ...prev,
+          clockOut: updatedClockOut.toISOString(),
+        };
+      });
+
+      const updatedAttendance = await window.electron.attendance.updateClockOut(
+        _id,
+        updatedClockOut.toISOString()
+      );
+
+      setLocalAttendance(updatedAttendance);
+    } catch (error) {
+      console.error("Error editing clock out:", error);
     }
   };
 
@@ -172,7 +293,7 @@ const EmployeeAttendanceCard = ({
       {(localAttendance?.lateMinutes ?? 0) > 0 ? (
         <Box ml="0.3rem">
           <ClockInNotesPopover
-            clockInTime={clockInValue}
+            clockInTime={clockInValue!}
             lateMinutes={localAttendance?.lateMinutes ?? 0}
             notes={localAttendance?.lateNotes}
             onTimeEdit={handleEditClockIn}
@@ -183,25 +304,37 @@ const EmployeeAttendanceCard = ({
           position="relative"
           right="0.5rem"
           bottom="0.5rem"
-          value={clockInValue}
+          value={clockInValue!}
           onChange={setClockInValue}
           submitOnBlur={false}
           width="80px"
           selectAllOnFocus
           onSubmit={handleEditClockIn}
+          onFocus={() => {
+            setErrorMessage("");
+          }}
         >
-          <EditablePreview
-            color="#63E6BE"
-            fontSize="18px"
-            fontWeight="500"
-            px={2}
-            borderRadius="6px"
-            transition="0.2s"
-            _hover={{
-              bg: "rgba(255,255,255,0.05)",
-              cursor: "pointer",
-            }}
-          />
+          <Tooltip
+            label={errorMessage}
+            bg="red.600"
+            color="white"
+            hasArrow
+            placement="top"
+            isOpen={!!errorMessage}
+          >
+            <EditablePreview
+              color="#63E6BE"
+              fontSize="18px"
+              fontWeight="500"
+              px={2}
+              borderRadius="6px"
+              transition="0.2s"
+              _hover={{
+                bg: "rgba(255,255,255,0.05)",
+                cursor: "pointer",
+              }}
+            />
+          </Tooltip>
 
           <EditableInput color="white" fontSize="1.1rem" width="80px" />
         </Editable>
@@ -215,46 +348,17 @@ const EmployeeAttendanceCard = ({
         alignItems="center"
         justifyContent="flex-start"
       >
-        {localAttendance.clockOut ? (
+        {localAttendance?.clockOut ? (
           <Editable
             position="relative"
             right="0.5rem"
             bottom="0.5rem"
-            value={clockOutValue}
+            value={clockOutValue ?? "--:--"}
             onChange={setClockOutValue}
             submitOnBlur={false}
             selectAllOnFocus
             width="80px"
-            onSubmit={async (newTime) => {
-              try {
-                const [hours, minutes] = newTime.split(":").map(Number);
-                const updatedClockOut = new Date(localAttendance.clockOut!);
-                updatedClockOut.setHours(hours, minutes, 0, 0);
-
-                // Optimistic UI update
-                setLocalAttendance((prev) => ({
-                  ...prev,
-                  clockOut: updatedClockOut.toISOString(),
-                }));
-
-                // const response = await axios.put<Attendance>(
-                //   `${API_URL}/attendances/${_id}`,
-                //   {
-                //     clockOut: updatedClockOut,
-                //   }
-                // );
-
-                const updatedAttendance =
-                  await window.electron.attendance.updateClockOut(
-                    _id,
-                    updatedClockOut.toISOString()
-                  );
-
-                setLocalAttendance(updatedAttendance);
-              } catch (error) {
-                console.error("Error editing clock out:", error);
-              }
-            }}
+            onSubmit={handleEditClockOut}
           >
             <EditablePreview
               color="#B197FC"
@@ -273,7 +377,7 @@ const EmployeeAttendanceCard = ({
           </Editable>
         ) : clockOutMode === "editing" || clockOutMode === "submitting" ? (
           <Editable
-            value={clockOutValue}
+            value={clockOutValue ?? "--:--"}
             onChange={setClockOutValue}
             onSubmit={handleSubmitClockOut}
             submitOnBlur={false}
@@ -310,7 +414,7 @@ const EmployeeAttendanceCard = ({
 
       {/* Actions */}
       <HStack spacing={1} position="relative" bottom="0.5rem" right="0.6rem">
-        {!localAttendance.clockOut && (
+        {!localAttendance?.clockOut && (
           <Button
             bg="transparent"
             _hover={{

@@ -1,31 +1,52 @@
 const { contextBridge, ipcRenderer } = require("electron");
+import OfflineUser from "@shared/types/OfflineUser";
 import type Employee from "../shared/types/Employee";
 
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
 console.log("PRELOAD LOADED!!!");
-console.log("EMPLOYEES API EXPOSED!!!");
 
 contextBridge.exposeInMainWorld("electron", {
   file: { save: (data: string) => ipcRenderer.invoke("save-file", data) },
   auth: {
-    login: (credentials: any) => ipcRenderer.invoke("auth:login", credentials),
+    login: (credentials: LoginCredentials) =>
+      ipcRenderer.invoke("auth:login", credentials),
     logout: () => ipcRenderer.invoke("auth:logout"),
   },
 
-  announcements: {
-    createAnnouncement: (data: string) =>
-      ipcRenderer.invoke("announcements:create", data),
+  offlineUsers: {
+    save: (user: OfflineUser) => ipcRenderer.invoke("offline-users:save", user),
 
-    getAnnouncements: () => ipcRenderer.invoke("announcements:get"),
+    login: (credentials: LoginCredentials) =>
+      ipcRenderer.invoke("offline-users:login", credentials),
+
+    getById: (_id: string) => ipcRenderer.invoke("offline-users:getById", _id),
+
+    getByEmail: (email: string) =>
+      ipcRenderer.invoke("offline-users:getByEmail", email),
+
+    getAll: () => ipcRenderer.invoke("offline-users:getAll"),
+
+    delete: (_id: string) => ipcRenderer.invoke("offline-users:delete", _id),
+  },
+
+  tasks: {
+    createTasks: (data: string) => ipcRenderer.invoke("tasks:create", data),
+
+    getTasks: () => ipcRenderer.invoke("tasks:get"),
 
     onNew: (callback: (data: any) => void) => {
       const handler = (_: any, data: any) => {
         callback(data);
       };
 
-      ipcRenderer.on("announcement:new", handler);
+      ipcRenderer.on("task:new", handler);
 
       return () => {
-        ipcRenderer.removeListener("announcement:new", handler);
+        ipcRenderer.removeListener("task:new", handler);
       };
     },
   },
@@ -70,9 +91,48 @@ contextBridge.exposeInMainWorld("electron", {
     updateClockOut: (_id: string, clockOut: string) =>
       ipcRenderer.invoke("attendance:updateClockOut", _id, clockOut),
 
+    submitLateNotes: (_id: string, lateNotes: string | undefined) =>
+      ipcRenderer.invoke("attendance:submitLateNotes", _id, lateNotes),
+
     delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
 
     clockOut: (_id: string, clockOut: string) =>
       ipcRenderer.invoke("attendance:clockOut", _id, clockOut),
+  },
+
+  leave: {
+    create: (
+      employeeId: string,
+      startDate: string,
+      endDate: string,
+      subject: string,
+      notes: string
+    ) =>
+      ipcRenderer.invoke(
+        "leave:create",
+        employeeId,
+        startDate,
+        endDate,
+        subject,
+        notes
+      ),
+    getLeaveById: (_id: string) =>
+      ipcRenderer.invoke("leave:getLeaveById", _id),
+
+    getLeaveByMonth: (month: string) =>
+      ipcRenderer.invoke("leave:getLeaveByMonth", month),
+
+    updateLeave: (
+      _id: string,
+      updates: {
+        subject?: string;
+        notes?: string;
+        startDate?: string;
+        endDate?: string;
+        status?: string;
+      }
+    ) => ipcRenderer.invoke("leave:update", _id, updates),
+
+    deleteLeave: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
   },
 }) satisfies Window["electron"];

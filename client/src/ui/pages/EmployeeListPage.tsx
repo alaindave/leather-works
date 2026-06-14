@@ -113,11 +113,19 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} mt="0.3rem">
+          <Flex
+            wrap="wrap"
+            gap={2}
+            position="relative"
+            top="0.3rem"
+            right="1.1rem"
+          >
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
           <Flex
+            position="relative"
+            left="1.1rem"
             wrap="wrap"
             gap={2}
             justify={{ base: "stretch", md: "flex-end" }}

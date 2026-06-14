@@ -120,6 +120,7 @@ const EmployeeAttendancePage = () => {
         isOpen={isOpen}
         leastDestructiveRef={cancelRef}
         onClose={onClose}
+        returnFocusOnClose={false}
       >
         <AlertDialogOverlay backdropFilter="auto" backdropBlur="0.5rem">
           <AlertDialogContent

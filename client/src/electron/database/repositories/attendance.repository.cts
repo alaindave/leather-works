@@ -135,16 +135,50 @@ export async function updateClockIn(_id: string, clockIn: string) {
     throw new Error("Attendance record not found");
   }
 
+  const clockInDate = new Date(clockIn);
+  const scheduledHour = 8;
+  const scheduledMinute = 0;
+  const expectedMinutes = scheduledHour * 60 + scheduledMinute;
+  const actualMinutes = clockInDate.getHours() * 60 + clockInDate.getMinutes();
+  const lateMinutes = Math.max(0, actualMinutes - expectedMinutes);
+  const status = lateMinutes > 0 ? "retard" : "ponctuel";
+
   await run(
     `
     UPDATE attendance
     SET
       clockIn=?,
+      lateMinutes=?,
+      status=?,
       synced=0,
       updatedAt=datetime('now')
     WHERE _id=?
     `,
-    [clockIn, _id]
+    [clockIn, lateMinutes, status, _id]
+  );
+
+  return getAttendanceById(_id);
+}
+
+export async function submitLateNotes(
+  _id: string,
+  lateNotes: string | undefined
+) {
+  const existing = await getAttendanceById(_id);
+
+  if (!existing) {
+    throw new Error("Attendance record not found");
+  }
+  await run(
+    `
+    UPDATE attendance
+    SET
+      lateNotes=?,
+      synced=0,
+      updatedAt=datetime('now')
+    WHERE _id=?
+    `,
+    [lateNotes, _id]
   );
 
   return getAttendanceById(_id);

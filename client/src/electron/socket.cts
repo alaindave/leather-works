@@ -1,6 +1,6 @@
 import { BrowserWindow } from "electron";
 import { io, Socket } from "socket.io-client";
-import { Announcement } from "../shared/types/Announcement";
+import { Task } from "../shared/types/Task";
 import { getToken } from "./auth.cjs";
 
 let socket: Socket | null = null;
@@ -32,10 +32,10 @@ export async function createSocket(
       console.log("Socket disconnected");
     });
 
-    // Announcements event
-    socket.on("new-announcement", (data: Announcement) => {
-      console.log("Live Announcement received from server:", data);
-      mainWindow.webContents.send("announcement:new", data);
+    // Tasks event
+    socket.on("new-task", (data: Task) => {
+      console.log("Live task received from server:", data);
+      mainWindow.webContents.send("task:new", data);
     });
 
     return socket;

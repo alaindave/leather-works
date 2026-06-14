@@ -15,7 +15,6 @@ import {
   VStack,
   useDisclosure,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { FaArrowLeftLong } from "react-icons/fa6";
@@ -40,7 +39,7 @@ const EmployeeDetailsPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const adminUser = useAdminUser((store) => store.adminUser);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (!_id) return;

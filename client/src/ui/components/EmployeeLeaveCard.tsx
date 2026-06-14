@@ -8,29 +8,31 @@ import {
   MenuList,
   Text,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useState } from "react";
 import useAdminUser from "../../store/authStore";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { PiDotsThreeOutlineVerticalDuotone } from "react-icons/pi";
 import { TiDeleteOutline } from "react-icons/ti";
-import Employee from "../../shared/types/Employee";
-import Leave from "../../shared/types/Leave";
+
 import LeaveNotesPopover from "./LeaveNotesPopover";
 import LeaveEdit from "./LeaveEdit";
+import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
 
 interface Props {
-  leave: Leave;
+  leave: LeaveWithEmployee;
   onDelete: () => void;
   gridTemplate: string;
 }
 
 const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
-  const [localLeave, setLocalLeave] = useState<Leave>(leave);
+  const [localLeave, setLocalLeave] = useState<LeaveWithEmployee>(leave);
   const {
     _id,
-    employee: { firstName, lastName, remainingLeave },
+    firstName,
+    lastName,
+    employeeId,
+    remainingLeave,
     startDate,
     endDate,
     subject,
@@ -41,7 +43,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  //Handle leave approval
+  // //Handle leave approval
   const handleApprove = () => {
     const _startDate: Date = new Date(startDate);
     const _endDate: Date = new Date(endDate);
@@ -57,22 +59,21 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
     if (updatedRemainingLeave <= 0) {
       updatedRemainingLeave = 0;
     }
-    console.log("Employee ID to leave:", leave.employee._id);
+    console.log("Employee ID to leave:", employeeId);
     console.log("updatedRemainingLeave:", updatedRemainingLeave);
 
-    axios
-      .put<Employee>(`${API_URL}/employees/${leave.employee._id}`, {
-        remainingLeave: updatedRemainingLeave,
-      })
-      .then((res) => {
-        console.log("Updated employee: ", res.data);
-        return axios.put<Leave>(`${API_URL}/leaves/${_id}`, {
+    window.electron.employees
+      .update(employeeId, { remainingLeave: updatedRemainingLeave })
+      .then((employee) => {
+        console.log("Updated employee: ", employee);
+        console.log("ID of leave to update:", leave._id);
+        return window.electron.leave.updateLeave(leave._id, {
           status: "Approuvé",
         });
       })
-      .then((res) => {
-        console.log("Updated leave: ", res.data);
-        setLocalLeave(res.data);
+      .then((leave) => {
+        console.log("Updated leave: ", leave);
+        setLocalLeave(leave);
       })
       .catch((error) =>
         console.error("An error occured while approving the leave", error)
@@ -80,21 +81,40 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   };
   //Handle leave denial
   const handleDeny = () => {
-    axios
-      .put<Leave>(`${API_URL}/leaves/${_id}`, { status: "Refusé" })
-      .then((res) => {
-        console.log("Denied leave: ", res.data);
-        setLocalLeave(res.data);
+    window.electron.leave
+      .updateLeave(leave._id, {
+        status: "Refusé",
+      })
+
+      .then((leave) => {
+        console.log("Denied leave: ", leave);
+        setLocalLeave(leave);
       })
       .catch((error) =>
         console.error("An error occured while denying the leave", error)
       );
   };
 
-  //Leave refresh
+  // Handle cancel
+  const handleCancel = () => {
+    window.electron.leave
+      .updateLeave(leave._id, {
+        status: "Annulé",
+      })
+
+      .then((leave) => {
+        console.log("Cancelled leave: ", leave);
+        setLocalLeave(leave);
+      })
+      .catch((error) =>
+        console.error("An error occured while cancelling the leave", error)
+      );
+  };
+
+  // //Leave refresh
   const refreshLeave = async () => {
-    const res = await axios.get<Leave>(`${API_URL}/leaves/${_id}`);
-    setLocalLeave(res.data);
+    const freshLeave = await window.electron.leave.getLeaveById(_id);
+    setLocalLeave(freshLeave);
   };
 
   return (
@@ -144,7 +164,13 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           </Text>
         ) : (
           <Text
-            color={status === "Approuvé" ? "#68D391" : "#FC8181"}
+            color={
+              status === "Approuvé"
+                ? "#68D391"
+                : status === "Refusé"
+                ? "#FC8181"
+                : "yellow.500"
+            }
             fontWeight="600"
             fontSize="1.05rem"
           >
@@ -193,7 +219,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 p="6px"
                 boxShadow="0 8px 30px rgba(0,0,0,0.35)"
               >
-                {status === "En attente d'approbation" && (
+                {status === "En attente d'approbation" ? (
                   <>
                     <MenuItem
                       mb={2}
@@ -226,23 +252,25 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       Refuser
                     </MenuItem>
                   </>
+                ) : (
+                  <MenuItem
+                    height="20px"
+                    mb={2}
+                    pt={3}
+                    icon={
+                      <MdOutlineDeleteForever color="red.300" size="20px" />
+                    }
+                    bg="transparent"
+                    color="red.300"
+                    borderRadius="10px"
+                    _hover={{
+                      bg: "rgba(255,0,0,0.08)",
+                    }}
+                    onClick={handleCancel}
+                  >
+                    Annuler
+                  </MenuItem>
                 )}
-
-                <MenuItem
-                  height="20px"
-                  mb={2}
-                  pt={3}
-                  icon={<MdOutlineDeleteForever color="red.300" size="20px" />}
-                  bg="transparent"
-                  color="red.300"
-                  borderRadius="10px"
-                  _hover={{
-                    bg: "rgba(255,0,0,0.08)",
-                  }}
-                  onClick={() => onDelete()}
-                >
-                  Annuler
-                </MenuItem>
               </MenuList>
             </Menu>
           </Text>

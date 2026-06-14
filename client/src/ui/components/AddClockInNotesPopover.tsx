@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Badge,
   Popover,
@@ -14,7 +14,7 @@ import {
 
 interface Props {
   onSubmit: (notes: string | undefined) => Promise<boolean>;
-  existingNotes?: string;
+  existingNotes?: string | undefined;
 }
 
 const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
@@ -22,6 +22,10 @@ const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [lateNote, setLateNote] = useState(existingNotes);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setLateNote(existingNotes);
+  }, [existingNotes]);
 
   const handleSave = async () => {
     setIsSubmitting(true);
@@ -61,7 +65,7 @@ const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
         <PopoverBody>
           <Textarea
             ref={textareaRef}
-            value={lateNote}
+            value={lateNote ?? ""}
             onChange={(e) => setLateNote(e.target.value)}
             placeholder="Raison du retard..."
             bg="#08162b"

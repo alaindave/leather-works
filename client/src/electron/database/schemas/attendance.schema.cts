@@ -17,10 +17,9 @@ export async function createAttendanceTable() {
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       FOREIGN KEY (employeeId)
-        REFERENCES employees(_id),
-      UNIQUE(employeeId, date)
+        REFERENCES employees(_id)
     )
   `);
 
-  console.log("Attendance table initialized");
+  console.log("ATTENDANCE TABLE INITIALIZED");
 }

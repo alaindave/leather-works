@@ -27,5 +27,5 @@ export async function createEmployeeTable() {
     )
   `);
 
-  console.log("Employees table initialized");
+  console.log("EMPLOYEES TABLE INITIALIZED");
 }

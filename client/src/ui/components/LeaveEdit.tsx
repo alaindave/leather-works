@@ -26,12 +26,13 @@ import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
 import Leave from "../../shared/types/Leave";
 import axios from "axios";
+import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
 
 const errorMessage = "Ce champ est obligatoire";
 
 const schema = z.object({
-  startDate: z.date({ message: errorMessage }),
-  endDate: z.date({ message: errorMessage }),
+  startDate: z.string().min(1, { message: errorMessage }),
+  endDate: z.string().min(1, { message: errorMessage }),
   subject: z.string().min(1, { message: errorMessage }),
   notes: z.string().min(1, { message: errorMessage }),
 });
@@ -39,7 +40,7 @@ const schema = z.object({
 type LeaveData = z.infer<typeof schema>;
 
 interface Props {
-  leave: Leave;
+  leave: LeaveWithEmployee;
   onUpdated?: () => void;
 }
 
@@ -56,7 +57,10 @@ const LeaveEdit = ({ leave, onUpdated }: Props) => {
   }
   const {
     _id,
-    employee: { firstName, lastName, department, role },
+    firstName,
+    lastName,
+    department,
+    role,
     startDate,
     endDate,
     subject,
@@ -68,8 +72,11 @@ const LeaveEdit = ({ leave, onUpdated }: Props) => {
     setIsUpdating(true);
     try {
       console.log("Info to update:", data);
-      const response = await axios.put<Leave>(`${API_URL}/leaves/${_id}`, data);
-      console.log("Updated leave:", response.data);
+      const updatedLeave = await window.electron.leave.updateLeave(
+        leave._id,
+        data
+      );
+      console.log("Updated leave:", updatedLeave);
       onUpdated?.();
       onClose();
     } catch (error) {
@@ -91,8 +98,8 @@ const LeaveEdit = ({ leave, onUpdated }: Props) => {
   } = useForm<LeaveData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: startDate,
+      endDate: endDate,
       subject: subject,
       notes: notes,
     },
@@ -219,10 +226,14 @@ const LeaveEdit = ({ leave, onUpdated }: Props) => {
                         name="startDate"
                         render={({ field }) => (
                           <DatePicker
-                            selected={field.value}
-                            onChange={(date: Date | null) =>
-                              field.onChange(date)
+                            selected={
+                              field.value ? new Date(field.value) : null
                             }
+                            onChange={(date: any) => {
+                              field.onChange(
+                                date ? date.toISOString().split("T")[0] : ""
+                              );
+                            }}
                             locale="fr"
                             dateFormat="dd/MM/yyyy"
                             showYearDropdown
@@ -263,10 +274,14 @@ const LeaveEdit = ({ leave, onUpdated }: Props) => {
                         name="endDate"
                         render={({ field }) => (
                           <DatePicker
-                            selected={field.value}
-                            onChange={(date: Date | null) =>
-                              field.onChange(date)
+                            selected={
+                              field.value ? new Date(field.value) : null
                             }
+                            onChange={(date: any) => {
+                              field.onChange(
+                                date ? date.toISOString().split("T")[0] : ""
+                              );
+                            }}
                             locale="fr"
                             dateFormat="dd/MM/yyyy"
                             showYearDropdown

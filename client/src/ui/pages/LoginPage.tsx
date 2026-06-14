@@ -11,7 +11,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-// @ts-ignore
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -46,8 +45,19 @@ const LoginPage = () => {
     const credentials = { email: data.email, password: data.password };
     try {
       const adminUser = await window.electron.auth.login(credentials);
-      console.log("Result from main process login request:", adminUser);
+
       if (adminUser) {
+        const offlineUser = await window.electron.offlineUsers.save({
+          _id: adminUser._id,
+          email: adminUser.email,
+          password: data.password,
+          firstName: adminUser.firstName,
+          lastName: adminUser.lastName,
+          role: adminUser.role,
+        });
+
+        console.log("Offline user successfully saved: ", offlineUser);
+
         setLogIn(
           adminUser._id,
           adminUser.firstName,
@@ -55,13 +65,36 @@ const LoginPage = () => {
           adminUser.email,
           adminUser.role
         );
-        navigate("/admin", {
-          replace: true,
-        });
+
+        navigate("/admin", { replace: true });
       }
     } catch (error) {
-      console.error("An error occured while logging in:", error);
-      setErrorMessage("Email et/ou mot de passe incorrect.");
+      try {
+        const offlineUser = await window.electron.offlineUsers.login({
+          email: data.email,
+          password: data.password,
+        });
+
+        if (offlineUser) {
+          console.log("Offline logging successful for user: ", offlineUser);
+          setLogIn(
+            offlineUser._id,
+            offlineUser.firstName,
+            offlineUser.lastName,
+            offlineUser.email,
+            offlineUser.role
+          );
+
+          navigate("/admin", {
+            replace: true,
+          });
+
+          return;
+        }
+      } catch (error) {
+        setErrorMessage("Email et/ou mot de passe incorrect.");
+        console.log("Online and offline login unsuccessful: ", error);
+      }
     } finally {
       setIsLoggingIn(false);
     }

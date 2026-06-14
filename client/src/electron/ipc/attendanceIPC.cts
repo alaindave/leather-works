@@ -11,6 +11,7 @@ import {
   getAttendanceRecord,
   updateClockIn,
   updateClockOut,
+  submitLateNotes,
 } from "../database/repositories/attendance.repository.cjs";
 
 export function registerAttendanceIPC() {
@@ -56,6 +57,13 @@ export function registerAttendanceIPC() {
     "attendance:updateClockOut",
     async (_, _id: string, clockOut: string) => {
       return updateClockOut(_id, clockOut);
+    }
+  );
+
+  ipcMain.handle(
+    "attendance:submitLateNotes",
+    async (_, _id: string, lateNotes: string) => {
+      return submitLateNotes(_id, lateNotes);
     }
   );
 

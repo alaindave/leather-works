@@ -10,14 +10,13 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
-import axios from "axios";
 import { CiClock2 } from "react-icons/ci";
 import { GiClockwork } from "react-icons/gi";
 import { GoDotFill } from "react-icons/go";
 import { Link } from "react-router-dom";
-import source from "../assets/employee_photos/Jeanne.jpeg";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
+import source from "../assets/employee_photos/Jeanne.jpeg";
 // @ts-ignore
 import { useEffect, useState } from "react";
 import "../styles/App.css";
@@ -27,16 +26,60 @@ interface Props {
   employee: Employee;
 }
 
+function formatClockInTime(input: string): string | null {
+  const cleaned = input.trim().replace(/[hH]/g, ":");
+
+  // Handle 0830
+  if (/^\d{4}$/.test(cleaned)) {
+    const hours = Number(cleaned.slice(0, 2));
+    const minutes = Number(cleaned.slice(2, 4));
+
+    if (
+      Number.isNaN(hours) ||
+      Number.isNaN(minutes) ||
+      hours > 23 ||
+      minutes > 59
+    ) {
+      return null;
+    }
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}`;
+  }
+
+  // Handle 08:30, 8:30, 08H30, 08h30
+  const match = cleaned.match(/^(\d{1,2}):(\d{1,2})$/);
+
+  if (!match) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours > 23 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0"
+  )}`;
+}
+
 const EmployeeCard = ({ employee }: Props) => {
   const [attendance, setAttendance] = useState<Attendance | null>(null);
   const [_clockIn, setClockIn] = useState("");
   const [isClockingIn, setIsClockingIn] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(false);
   const [displayClock, setDisplayClock] = useState(true);
   const [showEditable, setShowEditable] = useState(false);
   const [loadingAttendance, setLoadingAttendance] = useState(true);
-  const [notesSuccess, setNotesSuccess] = useState(false);
-
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     window.electron.attendance
@@ -53,7 +96,7 @@ const EmployeeCard = ({ employee }: Props) => {
   }, []);
 
   const handleToggleClockInEdit = () => {
-    console.log("isClockingIn value", isClockingIn);
+    setErrorMessage(false);
     if (isClockingIn) {
       setClockIn("");
       setShowEditable(false);
@@ -70,7 +113,12 @@ const EmployeeCard = ({ employee }: Props) => {
   };
 
   const handleClockInSubmit = async () => {
-    const [hours, minutes] = _clockIn.split(":").map(Number);
+    const formatted = formatClockInTime(_clockIn);
+    if (!formatted) {
+      setErrorMessage(true);
+      return;
+    }
+    const [hours, minutes] = formatted.split(":").map(Number);
     const clockIn = new Date();
     clockIn.setHours(hours, minutes, 0, 0);
     console.log("clock In to submit", clockIn.toISOString());
@@ -89,11 +137,16 @@ const EmployeeCard = ({ employee }: Props) => {
     lateNotes: string | undefined
   ): Promise<boolean> => {
     try {
-      const response = await axios.put(
-        `${API_URL}/attendances/${attendance?._id}`,
-        { lateNotes }
-      );
-      setAttendance(response.data);
+      if (!attendance?._id) {
+        throw new Error("Attendance record not found");
+      }
+
+      const updatedAttendance =
+        await window.electron.attendance.submitLateNotes(
+          attendance._id,
+          lateNotes
+        );
+      setAttendance(updatedAttendance);
       return true;
     } catch (error) {
       console.error("An error occured while submitting late notes: ", error);
@@ -127,7 +180,7 @@ const EmployeeCard = ({ employee }: Props) => {
       borderRadius="10px"
       position="relative"
       right="20px"
-      spacing={5}
+      spacing={4}
     >
       <Box ml="0.5rem">
         <Link
@@ -161,6 +214,13 @@ const EmployeeCard = ({ employee }: Props) => {
             {employee.department}
           </Text>
         </HStack>
+      </Box>
+      <Box position="relative" left="10rem" top="0.3rem">
+        {errorMessage && (
+          <Text color="red.400" fontSize="1rem" fontWeight="500">
+            Veuillez entrer une heure valide (ex: 07:30){" "}
+          </Text>
+        )}
       </Box>
       <Box>
         <Box>
@@ -240,11 +300,12 @@ const EmployeeCard = ({ employee }: Props) => {
                 bottom="1.5rem"
                 defaultValue={_clockIn}
                 onChange={(clockIn) => setClockIn(clockIn)}
+                onFocus={() => setErrorMessage(false)}
                 submitOnBlur={false}
                 onSubmit={handleClockInSubmit}
               >
                 <EditablePreview
-                  color="yellow"
+                  color="red.500"
                   fontSize="18px"
                   animation="pulse 1.7s infinite"
                   _focus={{
