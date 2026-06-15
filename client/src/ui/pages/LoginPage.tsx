@@ -76,7 +76,7 @@ const LoginPage = () => {
         });
 
         if (offlineUser) {
-          console.log("Offline logging successful for user: ", offlineUser);
+          console.log("Offline login successful for user: ", offlineUser);
           setLogIn(
             offlineUser._id,
             offlineUser.firstName,

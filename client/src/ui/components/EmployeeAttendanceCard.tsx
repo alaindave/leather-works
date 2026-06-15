@@ -9,10 +9,10 @@ import {
   Text,
   Tooltip,
 } from "@chakra-ui/react";
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
-import ClockInNotesPopover from "../components/ClockInNotesPopover";
+import ClockIn from "./ClockIn";
 import { AttendanceWithEmployee } from "../../shared/AttendanceWithEmployee";
 
 interface Props {
@@ -22,14 +22,6 @@ interface Props {
 }
 
 type ClockOutMode = "idle" | "editing" | "submitting" | "completed";
-
-// const formatTime = (date?: string | Date | null) => {
-//   if (!date) return "--:--";
-
-//   return `${String(new Date(date).getHours()).padStart(2, "0")}:${String(
-//     new Date(date).getMinutes()
-//   ).padStart(2, "0")}`;
-// };
 
 const formatTime = (input?: string | Date | null) => {
   if (!input) return null;
@@ -130,44 +122,23 @@ const EmployeeAttendanceCard = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [clockOutMode, setClockOutMode] = useState<ClockOutMode>("idle");
 
-  const formattedClockIn = useMemo(() => {
-    return formatTime(localAttendance?.clockIn);
-  }, [localAttendance?.clockIn]);
-
-  const [clockInValue, setClockInValue] = useState(formattedClockIn);
-
   const formattedClockOut = useMemo(() => {
     return formatTime(localAttendance?.clockOut);
   }, [localAttendance?.clockOut]);
 
   const [clockOutValue, setClockOutValue] = useState(formattedClockOut);
+  const [draftClockOut, setDraftClockOut] = useState(formatTime(clockOutValue));
 
-  // =========================
-  // Edit Clock In
-  // =========================
-  const handleEditClockIn = async (): Promise<boolean> => {
-    const formattedClockIn = formatTime(clockInValue);
-    if (!formattedClockIn) {
-      setErrorMessage("Heure invalide");
-      return false;
-    }
-    setClockInValue(formattedClockIn);
-    const [hours, minutes] = formattedClockIn.split(":").map(Number);
-    const clockInDate = new Date(localAttendance?.clockIn!);
-    clockInDate.setHours(hours, minutes, 0, 0);
-    console.log("New time to update: ", clockInDate);
-    try {
-      const updatedAttendance = await window.electron.attendance.updateClockIn(
-        _id,
-        clockInDate.toISOString()
-      );
-      setLocalAttendance(updatedAttendance);
-      return true;
-    } catch (error) {
-      console.error("Error editing clock in:", error);
-      return false;
-    }
-  };
+  useEffect(() => {
+    if (!errorMessage) return;
+
+    const timeout = setTimeout(() => {
+      setErrorMessage("");
+      setDraftClockOut(formatTime(clockOutValue));
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [errorMessage]);
 
   // =========================
   // Toggle Clock Out
@@ -175,7 +146,7 @@ const EmployeeAttendanceCard = ({
 
   const handleToggleClockOut = () => {
     if (clockOutMode === "editing") {
-      setClockOutValue("");
+      setDraftClockOut("");
       setClockOutMode("idle");
       return;
     }
@@ -184,17 +155,22 @@ const EmployeeAttendanceCard = ({
       now.getMinutes()
     ).padStart(2, "0")}`;
 
-    setClockOutValue(currentTime);
+    setDraftClockOut(currentTime);
     setClockOutMode("editing");
   };
 
   // =========================
   // Submit Clock Out
   // =========================
-
   const handleSubmitClockOut = async () => {
-    const formattedClockOut = formatTime(clockOutValue);
-    if (!formattedClockOut) return;
+    const formattedClockOut = formatTime(draftClockOut);
+    if (!formattedClockOut) {
+      setErrorMessage("Heure invalide");
+      return false;
+    }
+    setDraftClockOut(formattedClockOut);
+    setClockOutValue(formattedClockOut);
+    setDraftClockOut(formattedClockOut);
     try {
       setClockOutMode("submitting");
       const [hours, minutes] = formattedClockOut.split(":").map(Number);
@@ -203,7 +179,7 @@ const EmployeeAttendanceCard = ({
 
       // Optimistic update
       setLocalAttendance((prev) => {
-        if (!prev) return undefined;
+        if (!prev) return;
 
         return {
           ...prev,
@@ -218,6 +194,7 @@ const EmployeeAttendanceCard = ({
 
       setLocalAttendance(attendance);
       setClockOutMode("completed");
+      return;
     } catch (error) {
       console.error("Error clocking out:", error);
       setClockOutMode("editing");
@@ -225,9 +202,15 @@ const EmployeeAttendanceCard = ({
   };
 
   const handleEditClockOut = async () => {
-    const formattedClockOut = formatTime(clockOutValue);
-    if (!formattedClockOut) return;
+    const formattedClockOut = formatTime(draftClockOut);
+    if (!formattedClockOut) {
+      setErrorMessage("Heure invalide");
+      return false;
+    }
+
     try {
+      setDraftClockOut(formattedClockOut);
+      setClockOutValue(formattedClockOut);
       const [hours, minutes] = formattedClockOut.split(":").map(Number);
       const updatedClockOut = new Date(localAttendance?.clockOut!);
       updatedClockOut.setHours(hours, minutes, 0, 0);
@@ -246,9 +229,20 @@ const EmployeeAttendanceCard = ({
       );
 
       setLocalAttendance(updatedAttendance);
+      return;
     } catch (error) {
       console.error("Error editing clock out:", error);
+      return;
     }
+  };
+
+  const refreshAttendance = async () => {
+    if (!localAttendance?._id) return;
+    const attendance = await window.electron.attendance.getById(
+      localAttendance?._id
+    );
+    setLocalAttendance(attendance);
+    return;
   };
 
   return (
@@ -290,61 +284,9 @@ const EmployeeAttendanceCard = ({
       </Text>
 
       {/* Clock In */}
-
-      {(localAttendance?.lateMinutes ?? 0) > 0 ? (
-        <Box ml="0.3rem">
-          <ClockInNotesPopover
-            clockInTime={clockInValue!}
-            lateMinutes={localAttendance?.lateMinutes ?? 0}
-            notes={localAttendance?.lateNotes}
-            onTimeEdit={handleEditClockIn}
-          />
-        </Box>
-      ) : (
-        <Editable
-          position="relative"
-          right="0.5rem"
-          bottom="0.5rem"
-          value={clockInValue!}
-          onChange={setClockInValue}
-          submitOnBlur={false}
-          width="80px"
-          selectAllOnFocus
-          onSubmit={handleEditClockIn}
-        >
-          <Tooltip
-            label={errorMessage}
-            bg="red.600"
-            color="white"
-            hasArrow
-            placement="top"
-            isOpen={!!errorMessage}
-          >
-            <EditablePreview
-              color="#63E6BE"
-              fontSize="18px"
-              fontWeight="500"
-              px={2}
-              borderRadius="6px"
-              transition="0.2s"
-              _hover={{
-                bg: "rgba(255,255,255,0.05)",
-                cursor: "pointer",
-              }}
-            />
-          </Tooltip>
-
-          <EditableInput
-            color="white"
-            fontSize="1.1rem"
-            width="80px"
-            onFocus={() => {
-              setErrorMessage("");
-              setClockInValue(formatTime(localAttendance?.clockIn));
-            }}
-          />
-        </Editable>
-      )}
+      <Box ml="0.3rem">
+        <ClockIn attendance={localAttendance} onRefresh={refreshAttendance} />
+      </Box>
 
       {/* Clock Out */}
       <Box
@@ -355,62 +297,106 @@ const EmployeeAttendanceCard = ({
         justifyContent="flex-start"
       >
         {localAttendance?.clockOut ? (
-          <Editable
-            position="relative"
-            right="0.5rem"
-            bottom="0.5rem"
-            value={clockOutValue ?? "--:--"}
-            onChange={setClockOutValue}
-            submitOnBlur={false}
-            selectAllOnFocus
-            width="80px"
-            onSubmit={handleEditClockOut}
+          <Tooltip
+            label={errorMessage}
+            bg="red.600"
+            color="white"
+            hasArrow
+            placement="top"
+            isOpen={!!errorMessage}
           >
-            <EditablePreview
-              color="#B197FC"
-              fontSize="18px"
-              fontWeight="500"
-              px={2}
-              borderRadius="6px"
-              transition="0.2s"
-              _hover={{
-                bg: "rgba(255,255,255,0.05)",
-                cursor: "pointer",
-              }}
-            />
-
-            <EditableInput color="white" fontSize="18px" width="80px" />
-          </Editable>
-        ) : clockOutMode === "editing" || clockOutMode === "submitting" ? (
-          <Editable
-            value={clockOutValue ?? "--:--"}
-            onChange={setClockOutValue}
-            onSubmit={handleSubmitClockOut}
-            submitOnBlur={false}
-            selectAllOnFocus
-            width="80px"
-            position="relative"
-            bottom="0.5rem"
-          >
-            <EditablePreview
-              color="red.500"
-              fontSize="18px"
-              px={2}
+            <Editable
+              position="relative"
+              right="0.5rem"
+              bottom="0.5rem"
+              value={draftClockOut!}
+              onChange={setDraftClockOut}
+              submitOnBlur={false}
+              selectAllOnFocus
               width="80px"
-              animation={
-                clockOutMode === "submitting" ? "none" : "pulse 1.7s infinite"
-              }
-              sx={{
-                "@keyframes pulse": {
-                  "0%": { opacity: 1 },
-                  "50%": { opacity: 0.3 },
-                  "100%": { opacity: 1 },
-                },
-              }}
-            />
-
-            <EditableInput color="white" fontSize="18px" width="80px" />
-          </Editable>
+              onSubmit={handleEditClockOut}
+            >
+              <EditablePreview
+                color="#B197FC"
+                fontSize="18px"
+                fontWeight="500"
+                px={2}
+                borderRadius="6px"
+                transition="0.2s"
+                _hover={{
+                  bg: "rgba(255,255,255,0.05)",
+                  cursor: "pointer",
+                }}
+              />
+              <EditableInput
+                color="white"
+                fontSize="18px"
+                width="80px"
+                onFocus={() => {
+                  setErrorMessage("");
+                  setDraftClockOut(formatTime(clockOutValue));
+                }}
+                onBlur={() => {
+                  if (!formatTime(draftClockOut)) {
+                    setErrorMessage("");
+                    setDraftClockOut(formatTime(clockOutValue));
+                  }
+                }}
+              />{" "}
+            </Editable>
+          </Tooltip>
+        ) : clockOutMode === "editing" || clockOutMode === "submitting" ? (
+          <Tooltip
+            label={errorMessage}
+            bg="red.600"
+            color="white"
+            hasArrow
+            placement="top"
+            isOpen={!!errorMessage}
+          >
+            <Editable
+              value={draftClockOut ?? "--:--"}
+              onChange={setDraftClockOut}
+              onSubmit={handleSubmitClockOut}
+              submitOnBlur={false}
+              selectAllOnFocus
+              width="80px"
+              position="relative"
+              bottom="0.5rem"
+            >
+              <EditablePreview
+                color="red.500"
+                fontSize="18px"
+                px={2}
+                width="80px"
+                animation={
+                  clockOutMode === "submitting" ? "none" : "pulse 1.7s infinite"
+                }
+                sx={{
+                  "@keyframes pulse": {
+                    "0%": { opacity: 1 },
+                    "50%": { opacity: 0.3 },
+                    "100%": { opacity: 1 },
+                  },
+                }}
+              />
+              <EditableInput
+                color="white"
+                fontSize="18px"
+                width="80px"
+                onFocus={() => {
+                  setErrorMessage("");
+                  setDraftClockOut(formatTime(clockOutValue));
+                }}
+                onBlur={() => {
+                  if (!formatTime(draftClockOut)) {
+                    setErrorMessage("");
+                    setDraftClockOut(formatTime(clockOutValue));
+                  }
+                }}
+              />{" "}
+            </Editable>
+          </Tooltip>
         ) : (
           <Text color="gray.400" width="80px" fontSize="18px" px={2}>
             --:--

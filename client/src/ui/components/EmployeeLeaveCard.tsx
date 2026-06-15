@@ -7,6 +7,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import useAdminUser from "../../store/authStore";
@@ -14,7 +15,7 @@ import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { PiDotsThreeOutlineVerticalDuotone } from "react-icons/pi";
 import { TiDeleteOutline } from "react-icons/ti";
-
+import { FaRegEdit } from "react-icons/fa";
 import LeaveNotesPopover from "./LeaveNotesPopover";
 import LeaveEdit from "./LeaveEdit";
 import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
@@ -27,6 +28,8 @@ interface Props {
 
 const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   const [localLeave, setLocalLeave] = useState<LeaveWithEmployee>(leave);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const {
     _id,
     firstName,
@@ -222,6 +225,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 {status === "En attente d'approbation" ? (
                   <>
                     <MenuItem
+                      fontWeight="600"
                       mb={2}
                       icon={
                         <IoIosCheckmarkCircleOutline
@@ -240,6 +244,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                     </MenuItem>
 
                     <MenuItem
+                      fontWeight="600"
                       icon={<TiDeleteOutline color="orange.300" size="20px" />}
                       bg="transparent"
                       borderBottom="1px solid #2A3D70"
@@ -250,6 +255,22 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       mb={2}
                     >
                       Refuser
+                    </MenuItem>
+
+                    <MenuItem
+                      icon={<FaRegEdit color="orange.300" size="20px" />}
+                      bg="transparent"
+                      color="white"
+                      borderRadius="10px"
+                      _hover={{ bg: "#1D326B" }}
+                      onClick={onOpen}
+                    >
+                      <LeaveEdit
+                        leave={leave}
+                        isOpen={isOpen}
+                        onClose={onClose}
+                        onUpdated={refreshLeave}
+                      />
                     </MenuItem>
                   </>
                 ) : (
@@ -308,13 +329,22 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 {status === "En attente d'approbation" ? (
                   <>
                     <MenuItem
+                      icon={<FaRegEdit color="orange.300" size="1rem" />}
                       bg="transparent"
                       color="white"
                       borderRadius="10px"
                       _hover={{ bg: "#1D326B" }}
+                      onClick={onOpen}
+                      fontSize="1.1rem"
                     >
-                      <LeaveEdit leave={leave} onUpdated={refreshLeave} />
+                      Modifier la demande
                     </MenuItem>
+                    <LeaveEdit
+                      leave={leave}
+                      onUpdated={refreshLeave}
+                      isOpen={isOpen}
+                      onClose={onClose}
+                    />
                     <MenuItem
                       bg="transparent"
                       borderTop="1px solid #2A3D70"
@@ -322,8 +352,16 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       borderRadius="10px"
                       _hover={{ bg: "#1D326B" }}
                       onClick={() => onDelete()}
+                      icon={
+                        <MdOutlineDeleteForever color="red.300" size="1.2rem" />
+                      }
                     >
-                      <Text ml="1.5rem" fontWeight="600" fontSize="1rem">
+                      <Text
+                        position="relative"
+                        top="0.5rem"
+                        fontWeight="600"
+                        fontSize="1.1rem"
+                      >
                         Annuler
                       </Text>
                     </MenuItem>
