@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import type Employee from "../../shared/types/Employee";
 
@@ -49,7 +48,7 @@ const errorMessage = "Ce champ est obligatoire";
 const schema = z.object({
   firstName: z.string().min(1, { message: errorMessage }),
   lastName: z.string().min(1, { message: errorMessage }),
-  employeeID: z.string().min(1, { message: errorMessage }),
+  matricule: z.string().min(1, { message: errorMessage }),
   dateBirth: z.string().min(1, { message: errorMessage }),
   role: z.string().min(1, { message: errorMessage }),
   department: z.string().min(1, { message: errorMessage }),
@@ -72,14 +71,13 @@ type EmployeeData = z.infer<typeof schema>;
 const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const [isUpdating, setIsUpdating] = useState(false);
 
   if (!employee) return;
   const {
     firstName,
     lastName,
-    employeeID,
+    matricule,
     dateBirth,
     role,
     department,
@@ -103,7 +101,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
     defaultValues: {
       firstName,
       lastName,
-      employeeID,
+      matricule,
       dateBirth,
       role,
       department,
@@ -122,7 +120,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
       reset({
         firstName: employee.firstName,
         lastName: employee.lastName,
-        employeeID: employee.employeeID,
+        matricule: employee.matricule,
         role: employee.role,
         department: employee.department,
         salary: employee.salary,
@@ -341,7 +339,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                 alignItems="flex-start"
               >
                 {/* Employee ID */}
-                <FormControl isInvalid={!!errors.employeeID}>
+                <FormControl isInvalid={!!errors.matricule}>
                   <HStack>
                     <Box marginBottom="10px">
                       <MdOutlineNumbers color="#F2B705" size="1.3rem" />
@@ -354,11 +352,11 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                   <Input
                     type="text"
                     color="gray.300"
-                    {...register("employeeID")}
+                    {...register("matricule")}
                   />
                   <Box minH="24px">
                     <FormErrorMessage>
-                      {errors.employeeID?.message}
+                      {errors.matricule?.message}
                     </FormErrorMessage>
                   </Box>
                 </FormControl>

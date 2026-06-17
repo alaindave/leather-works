@@ -11,6 +11,7 @@ import { registerLeaveIPC } from "./ipc/leaveIPC.cjs";
 import { registerOfflineUsersIPC } from "./ipc/offlineUsersIPC.cjs";
 import { registerAuthIPC } from "./ipc/authIPC.cjs";
 import { registerAttendanceExportIPC } from "./ipc/attendanceExportIPC.cjs";
+import { registerSyncIPC } from "./ipc/syncIPC.cjs";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged
@@ -106,6 +107,7 @@ async function bootstrap() {
   registerAttendanceIPC();
   registerAttendanceExportIPC();
   registerLeaveIPC();
+  registerSyncIPC();
   console.log("After IPC registration");
   createSplashWindow();
   await createMainWindow();

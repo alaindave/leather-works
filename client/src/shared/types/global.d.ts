@@ -71,7 +71,7 @@ declare global {
       attendance: {
         create: (employeeID: string, clockIn: string) => Promise<Attendance>;
         getAll: () => Promise<Attendance[]>;
-        getById: (_id: string) => Promise<AttendanceWithEmployee | undefined>;
+        getById: (_id: string) => Promise<AttendanceWithEmployee | null>;
         getByEmployee: (
           employeeId: string
         ) => Promise<AttendanceWithEmployee[]>;
@@ -125,6 +125,11 @@ declare global {
 
         deleteLeave: (_id: string) => Promise<Leave>;
       };
+
+      sync: () => Promise<{
+        success: boolean;
+        message?: string;
+      }>;
     };
   }
 }

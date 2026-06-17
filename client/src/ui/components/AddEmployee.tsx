@@ -6,8 +6,6 @@ import {
   FormLabel,
   HStack,
   Input,
-  InputGroup,
-  InputRightElement,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -16,39 +14,28 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
-  Stack,
   Text,
   VStack,
   useDisclosure,
 } from "@chakra-ui/react";
-import { registerLocale } from "react-datepicker";
-registerLocale("fr", fr);
-import { Controller } from "react-hook-form";
-import DatePicker from "react-datepicker";
-import { fr } from "date-fns/locale";
-import "react-datepicker/dist/react-datepicker.css";
-import { IoPersonAdd } from "react-icons/io5";
-import { GiRelationshipBounds } from "react-icons/gi";
-import { BsPersonFillAdd } from "react-icons/bs";
-import { RxCrossCircled } from "react-icons/rx";
-import { FaSave } from "react-icons/fa";
-import { MdPerson2 } from "react-icons/md";
-import { MdOutlineNumbers } from "react-icons/md";
-import { IoCalendarNumberSharp } from "react-icons/io5";
-import { MdWork } from "react-icons/md";
-import { MdFactory } from "react-icons/md";
-import { FaCalendarDays } from "react-icons/fa6";
-import { LuCircleDollarSign } from "react-icons/lu";
-import { GiRotaryPhone } from "react-icons/gi";
-import { IoHome } from "react-icons/io5";
-import { IoCalendarNumber } from "react-icons/io5";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
+import { fr } from "date-fns/locale";
 import { useState } from "react";
-import { useForm, type FieldValues } from "react-hook-form";
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { Controller, useForm } from "react-hook-form";
+import { BsPersonFillAdd } from "react-icons/bs";
+import { FaSave } from "react-icons/fa";
+import { FaCalendarDays } from "react-icons/fa6";
+import { GiRelationshipBounds, GiRotaryPhone } from "react-icons/gi";
+import { IoCalendarNumberSharp, IoHome, IoPersonAdd } from "react-icons/io5";
+import { LuCircleDollarSign } from "react-icons/lu";
+import { MdFactory, MdOutlineNumbers, MdPerson2, MdWork } from "react-icons/md";
+import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
 import type Employee from "../../shared/types/Employee";
 import "../styles/App.css";
+registerLocale("fr", fr);
 
 interface Props {
   onAddEmployee: (employee: Employee) => void;
@@ -59,7 +46,7 @@ const errorMessage = "Ce champ est obligatoire";
 const schema = z.object({
   firstName: z.string().min(1, { message: errorMessage }),
   lastName: z.string().min(1, { message: errorMessage }),
-  employeeID: z.string().min(1, { message: errorMessage }),
+  matricule: z.string().min(1, { message: errorMessage }),
   dateBirth: z.string().min(1, { message: errorMessage }),
   role: z.string().min(1, { message: errorMessage }),
   department: z.string().min(1, { message: errorMessage }),
@@ -93,7 +80,6 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
     setIsSaving(true);
     console.log("Form to be submitted:", formData);
     try {
-      // const res = await axios.post(`${API_URL}/employees`, data);
       const employee = await window.electron.employees.create(formData);
       console.log("Employee successfully saved", employee);
       onAddEmployee(employee);
@@ -177,7 +163,11 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
             <ModalCloseButton color="#ffffff" />
             <ModalBody>
               <FormControl>
-                <HStack spacing="12px" marginBottom="10px">
+                <HStack
+                  spacing="12px"
+                  marginBottom="10px"
+                  alignItems="flex-start"
+                >
                   {/* Last name input */}
                   <Box>
                     <HStack>
@@ -242,10 +232,10 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                       color="#e6ebfe"
                       width="300px"
                       type="text"
-                      {...register("employeeID")}
+                      {...register("matricule")}
                     />
-                    {errors.employeeID && (
-                      <p className="text-danger">{errors.employeeID.message}</p>
+                    {errors.matricule && (
+                      <p className="text-danger">{errors.matricule.message}</p>
                     )}
                   </Box>
                 </HStack>

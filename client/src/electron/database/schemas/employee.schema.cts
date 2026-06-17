@@ -6,7 +6,7 @@ export async function createEmployeeTable() {
       _id TEXT PRIMARY KEY,
       firstName TEXT NOT NULL,
       lastName TEXT NOT NULL,
-      employeeID TEXT NOT NULL UNIQUE,
+      matricule TEXT NOT NULL UNIQUE,
       dateBirth TEXT NOT NULL,
       role TEXT NOT NULL,
       dateHired TEXT NOT NULL,

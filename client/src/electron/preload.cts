@@ -135,4 +135,6 @@ contextBridge.exposeInMainWorld("electron", {
 
     deleteLeave: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
   },
+
+  sync: () => ipcRenderer.invoke("sync:run"),
 }) satisfies Window["electron"];

@@ -2,7 +2,7 @@ export default interface Employee {
   _id: string;
   firstName: string;
   lastName: string;
-  employeeID: string;
+  matricule: string;
   dateBirth: string;
   role: string;
   department: string;
@@ -16,6 +16,8 @@ export default interface Employee {
   contactPhone: string;
   remainingLeave: number;
   synced: number;
+  isDeleted: number;
   createdAt?: string;
   updatedAt?: string;
+  lastSyncedAt?: string;
 }

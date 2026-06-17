@@ -20,6 +20,7 @@ import { FaUserAlt } from "react-icons/fa";
 import { IoSettings } from "react-icons/io5";
 import { FaSignOutAlt } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
+import SyncButton from "./SyncButton";
 // @ts-ignore
 import "../styles/App.css";
 import Logo from "./Logo";
@@ -59,15 +60,22 @@ const EmployeeNavBar = () => {
       padding="8px"
       background="#03143B"
       height="97vh"
-      width="17.5rem"
+      width="18rem"
     >
-      <Box padding="10px" position="relative" right="13px">
-        <Logo text="Gestion de personnel" />
-      </Box>
-      <Box className="nav-list">
+      <Flex position="relative" left="0.3rem">
+        <Box padding="10px" position="relative" right="0.8rem">
+          <Logo text="Gestion de personnel" />
+        </Box>
+
+        <Box position="relative" left="0.5rem" bottom="0.2rem">
+          <SyncButton />
+        </Box>
+      </Flex>
+
+      <Box className="nav-list" position="relative" top="1rem">
         <List>
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
+            <HStack position="relative" right="10px">
               <FaHome size="1.8rem" color="#C7D2FE" />
               <NavLink className="nav-button" end to="/employees_admin">
                 Tableau de bord
@@ -75,7 +83,7 @@ const EmployeeNavBar = () => {
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
+            <HStack position="relative" right="0.5rem">
               <IoPeopleSharp size="1.8rem" color="#C7D2FE" />
               <NavLink
                 className="nav-button"
@@ -86,7 +94,7 @@ const EmployeeNavBar = () => {
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
+            <HStack position="relative" right="0.5rem">
               <FaRegClock size="1.8rem" color="#C7D2FE" />
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <NavLink
@@ -99,7 +107,7 @@ const EmployeeNavBar = () => {
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
+            <HStack position="relative" right="0.5rem">
               <FaRegCalendarAlt size="1.8rem" color="#C7D2FE" />
               <NavLink className="nav-button" to="/employees_admin/leaves">
                 Congés
@@ -108,7 +116,7 @@ const EmployeeNavBar = () => {
           </ListItem>
 
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
+            <HStack position="relative" right="0.5rem">
               <FaFileSignature size="1.8rem" color="#C7D2FE" />
               <NavLink className="nav-button" to="/admin">
                 Fiches de paye
@@ -126,28 +134,29 @@ const EmployeeNavBar = () => {
         left="0.1rem"
         bottom="0.1rem"
         height="60px"
-        width="277px"
+        width="17.8rem"
         right="7px"
         justify="space-evenly"
       >
         <Flex
-          height="40px"
-          width="40px"
+          height="50px"
+          width="50px"
           borderWidth="0.5px"
-          borderRadius="20px"
+          borderRadius="25px"
           bg="#0b1e3a"
           borderColor="#A9B4C2"
           position="relative"
-          top="8px"
+          top="0.3rem"
+          right="0.2rem"
           justifyContent="center"
           alignItems="center"
         >
           <MdPersonOutline
             color={adminUser?.role === "manager" ? "yellow" : "#ffffff"}
-            size="25px"
+            size="1.5rem"
           />
         </Flex>
-        <Box position="relative" left="8px" bottom="16px">
+        <Box position="relative" bottom="12px">
           <Text
             color="#ffffff"
             fontWeight={700}

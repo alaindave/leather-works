@@ -8,6 +8,7 @@ const employees = require("./routes/employeeRoute.js");
 const attendances = require("./routes/attendanceRoute.js");
 const leaves = require("./routes/leaveRoute.js");
 const adminUser = require("./routes/adminUserRoute.js");
+const sync = require("./routes/syncRoute.js");
 const auth = require("./routes/authenticate.js");
 const tasks = require("./routes/taskRoute.js");
 
@@ -59,6 +60,7 @@ app.use("/leaves", leaves);
 app.use("/adminUsers", adminUser);
 app.use("/tasks", tasks);
 app.use("/auth", auth);
+app.use("/sync", sync);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}...`));

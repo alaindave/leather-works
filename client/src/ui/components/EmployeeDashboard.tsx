@@ -2,6 +2,7 @@ import { Box, Card, Divider, Flex, HStack, Text } from "@chakra-ui/react";
 import { BsFillPeopleFill } from "react-icons/bs";
 import { MdCoPresent } from "react-icons/md";
 import { FaRegClock } from "react-icons/fa6";
+import { CiCalendarDate, CiClock2 } from "react-icons/ci";
 
 interface Props {
   employeeCount: number;
@@ -165,11 +166,11 @@ const EmployeeDashboard = ({
           <Box
             width="53px"
             height="53px"
-            backgroundColor="#FACC15"
+            backgroundColor="green.400"
             borderRadius="10px"
             padding="8px"
           >
-            <FaRegClock color="#ffffff" size="33px" />
+            <CiCalendarDate color="#ffffff" size="33px" />
           </Box>
           <Text
             color="#A9B4C2"

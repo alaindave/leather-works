@@ -249,7 +249,7 @@ const EmployeeDetailsPage = () => {
                 <Box textAlign="center">
                   <Text color="#C7D2FE">Matricule</Text>
                   <Text color="#F2B705" fontWeight="700">
-                    {employee?.employeeID}
+                    {employee?.matricule}
                   </Text>
                 </Box>
                 {adminUser?.role === "manager" ? (

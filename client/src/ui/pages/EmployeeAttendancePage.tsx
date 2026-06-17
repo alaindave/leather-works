@@ -106,7 +106,7 @@ const EmployeeAttendancePage = () => {
     const csv = attendances
       .map(
         (a) =>
-          `${a.firstName} ${a.lastName},${a.employeeID},${a.clockIn},${a.date}`
+          `${a.firstName} ${a.lastName},${a.matricule},${a.clockIn},${a.date}`
       )
       .join("\n");
 

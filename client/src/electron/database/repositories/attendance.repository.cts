@@ -98,7 +98,7 @@ export async function getAttendanceByDate(date: string) {
       a.status,
       a.lateMinutes,
       a.lateNotes,
-      e.employeeID,
+      e.matricule,
       e.firstName,
       e.lastName,
       e.role,

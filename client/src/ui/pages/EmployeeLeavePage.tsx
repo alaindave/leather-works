@@ -31,7 +31,6 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import { Controller, useForm } from "react-hook-form";
@@ -40,7 +39,6 @@ import { FaCirclePlus } from "react-icons/fa6";
 import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
 import type Employee from "../../shared/types/Employee";
-import type Leave from "../../shared/types/Leave";
 import EmployeeLeaveCard from "../components/EmployeeLeaveCard";
 import MonthDropDown from "../components/MonthDropDown";
 import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
@@ -105,8 +103,6 @@ const EmployeeLeavePage = () => {
     control,
     formState: { errors },
   } = useForm<LeaveData>({ resolver: zodResolver(schema) });
-
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     window.electron.employees
@@ -427,7 +423,7 @@ const EmployeeLeavePage = () => {
           mb="1.2rem"
           ml="0.3rem"
           maxHeight="6rem"
-          width="79.5vw"
+          width="78.5vw"
           borderRadius="16px"
           justify="space-between"
         >
@@ -520,7 +516,7 @@ const EmployeeLeavePage = () => {
                               fontSize="18px"
                               position="relative"
                             >
-                              #{employee.employeeID}
+                              #{employee.matricule}
                             </Text>
                           </HStack>
                         ) : (

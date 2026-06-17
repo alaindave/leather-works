@@ -115,7 +115,7 @@ const EmployeeAttendanceCard = ({
   gridTemplate,
 }: Props) => {
   if (!attendance) return null;
-  const { _id, firstName, lastName, employeeID, role, department } = attendance;
+  const { _id, firstName, lastName, matricule, role, department } = attendance;
   const [localAttendance, setLocalAttendance] = useState<
     AttendanceWithEmployee | undefined
   >(attendance);
@@ -170,7 +170,6 @@ const EmployeeAttendanceCard = ({
     }
     setDraftClockOut(formattedClockOut);
     setClockOutValue(formattedClockOut);
-    setDraftClockOut(formattedClockOut);
     try {
       setClockOutMode("submitting");
       const [hours, minutes] = formattedClockOut.split(":").map(Number);
@@ -198,6 +197,7 @@ const EmployeeAttendanceCard = ({
     } catch (error) {
       console.error("Error clocking out:", error);
       setClockOutMode("editing");
+      return;
     }
   };
 
@@ -270,7 +270,7 @@ const EmployeeAttendanceCard = ({
 
       {/* Employee ID */}
       <Text color="gray.200" fontSize="18px">
-        {employeeID}
+        {matricule}
       </Text>
 
       {/* Role */}
@@ -338,8 +338,7 @@ const EmployeeAttendanceCard = ({
                 }}
                 onBlur={() => {
                   if (!formatTime(draftClockOut)) {
-                    setErrorMessage("");
-                    setDraftClockOut(formatTime(clockOutValue));
+                    setErrorMessage("Heure invalide");
                   }
                 }}
               />{" "}
@@ -386,12 +385,11 @@ const EmployeeAttendanceCard = ({
                 width="80px"
                 onFocus={() => {
                   setErrorMessage("");
-                  setDraftClockOut(formatTime(clockOutValue));
+                  setDraftClockOut(formatTime(draftClockOut));
                 }}
                 onBlur={() => {
                   if (!formatTime(draftClockOut)) {
-                    setErrorMessage("");
-                    setDraftClockOut(formatTime(clockOutValue));
+                    setErrorMessage("Heure invalide");
                   }
                 }}
               />{" "}

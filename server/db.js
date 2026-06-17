@@ -380,9 +380,9 @@ const saveTask = async ({ author, recipient, message, createdAt }) => {
   });
 
   try {
-    return await announcement.save();
+    return await task.save();
   } catch (error) {
-    console.error("Error while saving announcement: ", error);
+    console.error("Error while saving task: ", error);
     throw error;
   }
 };
@@ -390,9 +390,9 @@ const saveTask = async ({ author, recipient, message, createdAt }) => {
 //Get all announcements
 const getTasks = async () => {
   try {
-    return await Announcement.find().sort({ createdAt: -1 });
+    return await Task.find().sort({ createdAt: -1 });
   } catch (error) {
-    console.error("Error while fetching announcements: ", error);
+    console.error("Error while fetching tasks: ", error);
     throw error;
   }
 };
