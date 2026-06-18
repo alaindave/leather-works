@@ -31,7 +31,6 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import { Controller, useForm } from "react-hook-form";
@@ -40,9 +39,9 @@ import { FaCirclePlus } from "react-icons/fa6";
 import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
 import type Employee from "../../shared/types/Employee";
-import type Leave from "../../shared/types/Leave";
 import EmployeeLeaveCard from "../components/EmployeeLeaveCard";
 import MonthDropDown from "../components/MonthDropDown";
+import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
 
 const shimmerKeyframes = `
 @keyframes shimmer {
@@ -65,8 +64,8 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
 const errorMessage = "Ce champ est obligatoire";
 
 const schema = z.object({
-  startDate: z.date({ message: errorMessage }),
-  endDate: z.date({ message: errorMessage }),
+  startDate: z.string().min(1, { message: errorMessage }),
+  endDate: z.string().min(1, { message: errorMessage }),
   subject: z.string().min(1, { message: errorMessage }),
   notes: z.string().min(1, { message: errorMessage }),
 });
@@ -86,8 +85,8 @@ const EmployeeLeavePage = () => {
   } = useDisclosure();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [leaves, setLeaves] = useState<Leave[]>([]);
-  const [leave, setLeave] = useState<Leave | null>(null);
+  const [leaves, setLeaves] = useState<LeaveWithEmployee[]>([]);
+  const [leave, setLeave] = useState<LeaveWithEmployee | null>(null);
   const [employee, setEmployee] = useState<Employee | null>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -105,21 +104,30 @@ const EmployeeLeavePage = () => {
     formState: { errors },
   } = useForm<LeaveData>({ resolver: zodResolver(schema) });
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  useEffect(() => {
+    window.electron.employees
+      .getAll()
+      .then((employees) => {
+        setEmployees(employees);
+        console.log("Fetched employees:", employees);
+      })
+      .catch((error) => {
+        console.error("Error while fetching employees: ", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
-    const year = submissionMonth.slice(0, 4);
-    const month = submissionMonth.slice(5, 7);
-    axios
-      .get<Leave[]>(`${API_URL}/leaves`, {
-        params: { month, year },
-      })
-      .then((res) => {
-        setLeaves(res.data);
-        return axios.get<Employee[]>(`${API_URL}/employees`);
-      })
-      .then((res) => {
-        setEmployees(res.data);
+    console.log("Selected month: ", submissionMonth);
+    window.electron.leave
+      .getLeaveByMonth(submissionMonth)
+      .then((leaves) => {
+        setLeaves(leaves);
+        console.log(
+          `Fetched leaves for the month of ${submissionMonth}:${leaves}`
+        );
       })
       .catch((error) => {
         console.error("Error while fetching leaves: ", error);
@@ -136,20 +144,15 @@ const EmployeeLeavePage = () => {
       console.error("No employee selected");
       return;
     }
-
-    const leaveData = {
-      startDate: data.startDate,
-      endDate: data.endDate,
-      subject: data.subject,
-      notes: data.notes,
-    };
-
     try {
-      const response = await axios.post(
-        `${API_URL}/leaves/${employee._id}`,
-        leaveData
+      const leave = await window.electron.leave.create(
+        employee._id,
+        data.startDate,
+        data.endDate,
+        data.subject,
+        data.notes
       );
-      setLeaves((prevLeaves) => [response.data, ...prevLeaves]);
+      setLeaves((prevLeaves) => [leave, ...prevLeaves]);
       onClose();
       reset();
       setEmployee(null);
@@ -180,14 +183,15 @@ const EmployeeLeavePage = () => {
   const handleLeaveDelete = async () => {
     console.log("Leave to delete: ", leave);
     console.log("Leave ID to delete: ", leave?._id);
-
-    onConfirmationClose();
-    await axios
-      .delete(`${API_URL}/leaves/${leave?._id}`)
-      .then((res) => {
-        console.log("Deleted leave: ", res.data);
+    if (!leave?._id) return;
+    await window.electron.leave
+      .delete(leave?._id)
+      .then((leave) => {
+        console.log("Deleted leave: ", leave);
         const updatedLeaves = leaves.filter((l) => l._id !== leave?._id);
         setLeaves(updatedLeaves);
+        setSubmissionMonth(submissionMonth);
+        onConfirmationClose();
       })
       .catch((error) =>
         console.error("An error occured while deleting attendance: ", error)
@@ -195,7 +199,7 @@ const EmployeeLeavePage = () => {
   };
 
   //Handle delete button confirmation dialog
-  const handleDeleteConfirmation = (leave: Leave) => {
+  const handleDeleteConfirmation = (leave: LeaveWithEmployee) => {
     onConfirmationOpen();
     setLeave(leave);
   };
@@ -510,7 +514,7 @@ const EmployeeLeavePage = () => {
                               fontSize="18px"
                               position="relative"
                             >
-                              #{employee.employeeID}
+                              #{employee.matricule}
                             </Text>
                           </HStack>
                         ) : (
@@ -640,10 +644,26 @@ const EmployeeLeavePage = () => {
                           name="startDate"
                           render={({ field }) => (
                             <DatePicker
-                              selected={field.value}
-                              onChange={(date: Date | null) =>
-                                field.onChange(date)
+                              selected={
+                                field.value ? new Date(field.value) : null
                               }
+                              onChange={(date: Date | null) => {
+                                if (!date) {
+                                  field.onChange("");
+                                  return;
+                                }
+
+                                const year = date.getFullYear();
+                                const month = String(
+                                  date.getMonth() + 1
+                                ).padStart(2, "0");
+                                const day = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
+
+                                field.onChange(`${year}-${month}-${day}`);
+                              }}
                               locale="fr"
                               dateFormat="dd/MM/yyyy"
                               showYearDropdown
@@ -683,10 +703,26 @@ const EmployeeLeavePage = () => {
                           name="endDate"
                           render={({ field }) => (
                             <DatePicker
-                              selected={field.value}
-                              onChange={(date: Date | null) =>
-                                field.onChange(date)
+                              selected={
+                                field.value ? new Date(field.value) : null
                               }
+                              onChange={(date: Date | null) => {
+                                if (!date) {
+                                  field.onChange("");
+                                  return;
+                                }
+
+                                const year = date.getFullYear();
+                                const month = String(
+                                  date.getMonth() + 1
+                                ).padStart(2, "0");
+                                const day = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
+
+                                field.onChange(`${year}-${month}-${day}`);
+                              }}
                               locale="fr"
                               dateFormat="dd/MM/yyyy"
                               showYearDropdown

@@ -3,9 +3,7 @@ import {
   Button,
   Flex,
   Grid,
-  HStack,
   Icon,
-  StackDivider,
   Text,
   Textarea,
 } from "@chakra-ui/react";
@@ -16,7 +14,7 @@ import { FaSave } from "react-icons/fa";
 import { FaRegNoteSticky } from "react-icons/fa6";
 import { TfiAnnouncement } from "react-icons/tfi";
 import useAdminUser from "../../store/authStore";
-import { Announcement } from "../../shared/types/Announcement";
+import { Task } from "../../shared/types/Task";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
 import type Leave from "../../shared/types/Leave";
@@ -29,11 +27,9 @@ const EmployeeAdminPage = () => {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [time, setTime] = useState<Date>(new Date());
   const [notes, setNotes] = useState("");
-  const [announcement, setAnnouncement] = useState("");
-  const [liveAnnouncement, setLiveAnnouncement] = useState<Announcement | null>(
-    null
-  );
-  const [oldAnnouncements, setOldAnnouncements] = useState<Announcement[]>([]);
+  const [task, setTask] = useState("");
+  const [liveTask, setLiveTask] = useState<Task | null>(null);
+  const [oldTasks, setOldTasks] = useState<Task[]>([]);
   const adminUser = useAdminUser((store) => store.adminUser);
 
   const lateCount = attendances.filter(
@@ -67,12 +63,12 @@ const EmployeeAdminPage = () => {
       .then((res) => {
         console.log("Retrieved admin user: ", res.data);
         setNotes(res.data.notes);
-        return axios.get<Announcement[]>(`${API_URL}/announcements`);
+        return axios.get<Task[]>(`${API_URL}/tasks`);
       })
 
       .then((res) => {
-        console.log("Retrieved old announcements: ", res.data);
-        setOldAnnouncements(res.data);
+        console.log("Retrieved old tasks: ", res.data);
+        setOldTasks(res.data);
       })
 
       .catch((error) => {
@@ -93,10 +89,10 @@ const EmployeeAdminPage = () => {
     return () => clearTimeout(timeout);
   }, [notes]);
 
-  // useEffect to fetch live announcements from manager
+  //useEffect to fetch live tasks from manager
   useEffect(() => {
     const unsubscribe = window.electron.tasks.onNew((data) => {
-      setLiveAnnouncement(data);
+      setLiveTask(data);
       console.log("Live announcement fetched: ", data.message);
     });
 
@@ -118,16 +114,15 @@ const EmployeeAdminPage = () => {
 
   //Send announcements from manager
   const handleAnnouncementSend = async () => {
-    console.log("Announcement to be sent to Main: ", announcement);
+    console.log("Announcement to be sent to Main: ", task);
     try {
-      const sendAnnouncement =
-        await window.electron.announcements.createAnnouncement({
-          message: announcement,
-          createdBy: `${adminUser?.firstName} ${adminUser?.lastName}`,
-        });
-      console.log("Announcement post results from Main: ", sendAnnouncement);
+      const sendTask = await window.electron.tasks.createTask({
+        author: `${adminUser?.firstName} ${adminUser?.lastName}`,
+        message: task,
+      });
+      console.log("Task post results from Main: ", sendTask);
     } catch (error) {
-      console.error("An error occured while creating announcement: ", error);
+      console.error("An error occured while creating task: ", error);
     }
   };
 
@@ -285,7 +280,8 @@ const EmployeeAdminPage = () => {
           >
             <Flex align="center" gap={2} mb={3}>
               <Text
-                fontSize="1.3rem"
+                color="gray.200"
+                fontSize="lg"
                 fontWeight="600"
                 position="relative"
                 top="0.4rem"
@@ -298,14 +294,12 @@ const EmployeeAdminPage = () => {
             <Textarea
               flex="1"
               placeholder="Faites vos annonces ici..."
-              value={announcement}
-              onChange={(e) => setAnnouncement(e.target.value)}
+              value={task}
+              onChange={(e) => setTask(e.target.value)}
               resize="none"
               bg="#091735"
               border="1px solid rgba(255,255,255,0.1)"
               color="#ffffff"
-              fontSize="1.2rem"
-              fontWeight="600"
               _hover={{ borderColor: "yellow.300" }}
               _focus={{
                 borderColor: "yellow.400",
@@ -351,7 +345,7 @@ const EmployeeAdminPage = () => {
             </Flex>
 
             <Text color="#ffffff" fontSize="1.2rem">
-              {liveAnnouncement?.message || oldAnnouncements[0]?.message}
+              {liveTask?.message || oldTasks[0]?.message}
             </Text>
           </Box>
         )}

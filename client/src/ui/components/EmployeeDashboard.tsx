@@ -4,6 +4,7 @@ import { CiCalendarDate, CiClock2 } from "react-icons/ci";
 
 import { MdCoPresent } from "react-icons/md";
 import { FaRegClock } from "react-icons/fa6";
+import { CiCalendarDate, CiClock2 } from "react-icons/ci";
 
 interface Props {
   employeeCount: number;
@@ -19,6 +20,7 @@ const EmployeeDashboard = ({
   leaveCount,
 }: Props) => {
   return (
+    <Flex justify="space-evenly">
     <Flex justify="space-evenly">
       <Box
         bg="linear-gradient(
@@ -171,6 +173,7 @@ const EmployeeDashboard = ({
             borderRadius="10px"
             padding="8px"
           >
+            <CiCalendarDate color="#ffffff" size="33px" />
             <CiCalendarDate color="#ffffff" size="33px" />
           </Box>
           <Text

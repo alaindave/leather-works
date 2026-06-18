@@ -11,7 +11,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-// @ts-ignore
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -52,6 +51,17 @@ const LoginPage = () => {
       });
 
       if (adminUser) {
+        const offlineUser = await window.electron.offlineUsers.save({
+          _id: adminUser._id,
+          email: adminUser.email,
+          password: data.password,
+          firstName: adminUser.firstName,
+          lastName: adminUser.lastName,
+          role: adminUser.role,
+        });
+
+        console.log("Offline user successfully saved: ", offlineUser);
+
         setLogIn(
           adminUser._id,
           adminUser.firstName,

@@ -7,30 +7,35 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useState } from "react";
 import useAdminUser from "../../store/authStore";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { PiDotsThreeOutlineVerticalDuotone } from "react-icons/pi";
 import { TiDeleteOutline } from "react-icons/ti";
-import Employee from "../../shared/types/Employee";
-import Leave from "../../shared/types/Leave";
+import { FaRegEdit } from "react-icons/fa";
 import LeaveNotesPopover from "./LeaveNotesPopover";
 import LeaveEdit from "./LeaveEdit";
+import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
 
 interface Props {
-  leave: Leave;
+  leave: LeaveWithEmployee;
   onDelete: () => void;
   gridTemplate: string;
 }
 
 const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
-  const [localLeave, setLocalLeave] = useState<Leave>(leave);
+  const [localLeave, setLocalLeave] = useState<LeaveWithEmployee>(leave);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const {
     _id,
-    employee: { firstName, lastName, remainingLeave },
+    firstName,
+    lastName,
+    employeeId,
+    remainingLeave,
     startDate,
     endDate,
     subject,
@@ -39,9 +44,9 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   } = localLeave;
 
   const adminUser = useAdminUser((store) => store.adminUser);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  //Handle leave approval
+  // //Handle leave approval
   const handleApprove = () => {
     const _startDate: Date = new Date(startDate);
     const _endDate: Date = new Date(endDate);
@@ -57,22 +62,21 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
     if (updatedRemainingLeave <= 0) {
       updatedRemainingLeave = 0;
     }
-    console.log("Employee ID to leave:", leave.employee._id);
+    console.log("Employee ID to leave:", employeeId);
     console.log("updatedRemainingLeave:", updatedRemainingLeave);
 
-    axios
-      .put<Employee>(`${API_URL}/employees/${leave.employee._id}`, {
-        remainingLeave: updatedRemainingLeave,
-      })
-      .then((res) => {
-        console.log("Updated employee: ", res.data);
-        return axios.put<Leave>(`${API_URL}/leaves/${_id}`, {
+    window.electron.employees
+      .update(employeeId, { remainingLeave: updatedRemainingLeave })
+      .then((employee) => {
+        console.log("Updated employee: ", employee);
+        console.log("ID of leave to update:", leave._id);
+        return window.electron.leave.update(leave._id, {
           status: "Approuvé",
         });
       })
-      .then((res) => {
-        console.log("Updated leave: ", res.data);
-        setLocalLeave(res.data);
+      .then((leave) => {
+        console.log("Updated leave: ", leave);
+        setLocalLeave(leave);
       })
       .catch((error) =>
         console.error("An error occured while approving the leave", error)
@@ -80,21 +84,53 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   };
   //Handle leave denial
   const handleDeny = () => {
-    axios
-      .put<Leave>(`${API_URL}/leaves/${_id}`, { status: "Refusé" })
-      .then((res) => {
-        console.log("Denied leave: ", res.data);
-        setLocalLeave(res.data);
+    window.electron.leave
+      .update(leave._id, {
+        status: "Refusé",
+      })
+
+      .then((leave) => {
+        console.log("Denied leave: ", leave);
+        setLocalLeave(leave);
       })
       .catch((error) =>
         console.error("An error occured while denying the leave", error)
       );
   };
 
-  //Leave refresh
+  // Handle cancel
+  // const handleCancel = () => {
+  //   window.electron.leave
+  //     .update(leave._id, {
+  //       status: "Annulé",
+  //     })
+
+  //     .then((leave) => {
+  //       console.log("Cancelled leave: ", leave);
+  //       setLocalLeave(leave);
+  //     })
+  //     .catch((error) =>
+  //       console.error("An error occured while cancelling the leave", error)
+  //     );
+  // };
+
+  // Handle delete
+  // const handleDelete = () => {
+  //   window.electron.leave
+  //     .delete(leave._id)
+  //     .then((leave) => {
+  //       console.log("Deleted leave: ", leave);
+
+  //     })
+  //     .catch((error) =>
+  //       console.error("An error occured while cancelling the leave", error)
+  //     );
+  // };
+
+  // //Leave refresh
   const refreshLeave = async () => {
-    const res = await axios.get<Leave>(`${API_URL}/leaves/${_id}`);
-    setLocalLeave(res.data);
+    const freshLeave = await window.electron.leave.getLeaveById(_id);
+    setLocalLeave(freshLeave);
   };
 
   return (
@@ -105,66 +141,74 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       px={4}
       py={4}
       bg="#0E1E47"
+      minH="80px"
       borderRadius="18px"
       border="1px solid #22345F"
-      height="78px"
       width="78.5vw"
       marginBottom="0.8px"
     >
-      <Box ml="11px" mb={14}>
+      <Box ml="11px">
         <Text
           color="gray.200"
           fontSize="1.1rem"
           whiteSpace="normal"
           wordBreak="break-word"
           maxW="8rem"
+          noOfLines={2}
         >
           {firstName} {lastName}
         </Text>
       </Box>
-      <Box ml="12px" mb={14}>
+      <Box ml="12px">
         <Text color="gray.200" fontSize="1.1rem">
           {new Date(startDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
-      <Box mb={14}>
+      <Box>
         <Text color="gray.200" fontSize="1.1rem">
           {new Date(endDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
-      <Box mb={14}>
-        <Text color="gray.200" fontSize="1.1rem">
-          <LeaveNotesPopover subject={subject} notes={notes} />
-        </Text>
+      <Box>
+        <LeaveNotesPopover subject={subject} notes={notes} />
       </Box>
-      <Box mb={14} width="7rem">
+      <Box width="7rem">
         {status === "En attente d'approbation" ? (
-          <Text color="#F6E05E" fontWeight="600" fontSize="1.05rem">
+          <Text
+            color="#F6E05E"
+            fontWeight="600"
+            fontSize="1.05rem"
+            whiteSpace="normal"
+            wordBreak="break-word"
+          >
             En attente{"\n"}d'approbation
           </Text>
         ) : (
           <Text
-            color={status === "Approuvé" ? "#68D391" : "#FC8181"}
+            color={
+              status === "Approuvé"
+                ? "#68D391"
+                : status === "Refusé"
+                ? "#FC8181"
+                : "yellow.500"
+            }
             fontWeight="600"
             fontSize="1.05rem"
+            whiteSpace="normal"
+            wordBreak="break-word"
           >
             {status}
           </Text>
         )}
       </Box>
-      <Box mb={12}>
-        <Text
-          color="gray.200"
-          fontSize="1.1rem"
-          position="relative"
-          bottom="8px"
-          ml="1rem"
-        >
+      <Box>
+        <Text color="gray.200" fontSize="1.1rem" ml="1rem">
           {remainingLeave}
         </Text>
       </Box>
       {adminUser?.role === "manager" ? (
-        <Box mb={6} position="relative" left="40px">
+        // Manager area
+        <Box position="relative" left="40px">
           <Text color="gray.200" fontSize="1.1rem">
             <Menu placement="bottom-end">
               <MenuButton
@@ -183,6 +227,8 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                   bg: "#1D326B",
                 }}
                 aria-label="Actions"
+                position="relative"
+                top="1rem"
               />
 
               <MenuList
@@ -193,9 +239,10 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 p="6px"
                 boxShadow="0 8px 30px rgba(0,0,0,0.35)"
               >
-                {status === "En attente d'approbation" && (
+                {status === "En attente d'approbation" ? (
                   <>
                     <MenuItem
+                      fontWeight="600"
                       mb={2}
                       icon={
                         <IoIosCheckmarkCircleOutline
@@ -214,6 +261,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                     </MenuItem>
 
                     <MenuItem
+                      fontWeight="600"
                       icon={<TiDeleteOutline color="orange.300" size="20px" />}
                       bg="transparent"
                       borderBottom="1px solid #2A3D70"
@@ -225,30 +273,52 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                     >
                       Refuser
                     </MenuItem>
-                  </>
-                )}
 
-                <MenuItem
-                  height="20px"
-                  mb={2}
-                  pt={3}
-                  icon={<MdOutlineDeleteForever color="red.300" size="20px" />}
-                  bg="transparent"
-                  color="red.300"
-                  borderRadius="10px"
-                  _hover={{
-                    bg: "rgba(255,0,0,0.08)",
-                  }}
-                  onClick={() => onDelete()}
-                >
-                  Annuler
-                </MenuItem>
+                    <MenuItem
+                      icon={<FaRegEdit color="orange.300" size="20px" />}
+                      bg="transparent"
+                      color="white"
+                      borderRadius="10px"
+                      _hover={{ bg: "#1D326B" }}
+                      onClick={onOpen}
+                    >
+                      <Text fontWeight="600" position="relative" top="8px">
+                        Modifier
+                      </Text>
+                      <LeaveEdit
+                        leave={leave}
+                        isOpen={isOpen}
+                        onClose={onClose}
+                        onUpdated={refreshLeave}
+                      />
+                    </MenuItem>
+                  </>
+                ) : (
+                  <MenuItem
+                    height="20px"
+                    mb={2}
+                    pt={3}
+                    icon={
+                      <MdOutlineDeleteForever color="red.300" size="20px" />
+                    }
+                    bg="transparent"
+                    color="red.300"
+                    borderRadius="10px"
+                    _hover={{
+                      bg: "rgba(255,0,0,0.08)",
+                    }}
+                    onClick={() => onDelete()}
+                  >
+                    Supprimer
+                  </MenuItem>
+                )}
               </MenuList>
             </Menu>
           </Text>
         </Box>
       ) : (
-        <Box mb={6} position="relative" left="40px">
+        // Admin area
+        <Box position="relative" left="40px">
           <Text color="gray.200" fontSize="1.1rem">
             <Menu placement="bottom-end">
               <MenuButton
@@ -267,6 +337,8 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                   bg: "#1D326B",
                 }}
                 aria-label="Actions"
+                position="relative"
+                top="1rem"
               />
 
               <MenuList
@@ -280,13 +352,22 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 {status === "En attente d'approbation" ? (
                   <>
                     <MenuItem
+                      icon={<FaRegEdit color="orange.300" size="1rem" />}
                       bg="transparent"
                       color="white"
                       borderRadius="10px"
                       _hover={{ bg: "#1D326B" }}
+                      onClick={onOpen}
+                      fontSize="1.1rem"
                     >
-                      <LeaveEdit leave={leave} onUpdated={refreshLeave} />
+                      Modifier la demande
                     </MenuItem>
+                    <LeaveEdit
+                      leave={leave}
+                      onUpdated={refreshLeave}
+                      isOpen={isOpen}
+                      onClose={onClose}
+                    />
                     <MenuItem
                       bg="transparent"
                       borderTop="1px solid #2A3D70"
@@ -294,8 +375,16 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       borderRadius="10px"
                       _hover={{ bg: "#1D326B" }}
                       onClick={() => onDelete()}
+                      icon={
+                        <MdOutlineDeleteForever color="red.300" size="1.2rem" />
+                      }
                     >
-                      <Text ml="1.5rem" fontWeight="600" fontSize="1rem">
+                      <Text
+                        position="relative"
+                        top="0.5rem"
+                        fontWeight="600"
+                        fontSize="1.1rem"
+                      >
                         Annuler
                       </Text>
                     </MenuItem>

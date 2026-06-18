@@ -1,7 +1,7 @@
 {
   "name": "leather-works",
   "private": true,
-  "version": "2.0.2",
+  "version": "1.0.0",
   "type": "module",
   "main": "dist-electron/electron/main.cjs",
   "repository": {
@@ -40,8 +40,9 @@
   "scripts": {
     "clean": "rimraf dist dist-app dist-electron",
     "start": "vite",
-    "dev": "npm-run-all --parallel dev:react dev:electron",
+    "dev": "npm run build:electron && concurrently -k \"npm:dev:react\" \"npm:watch:electron\" \"npm:dev:electron\"",
     "dev:react": "vite --host",
+    "watch:electron": "tsc -p src/electron/tsconfig.json --watch",
     "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
     "build:renderer": "vite build",
     "build:electron": "tsc -p src/electron/tsconfig.json",
@@ -60,6 +61,7 @@
     "@tanstack/react-query": "4.28",
     "@tanstack/react-query-devtools": "4.28",
     "axios": "^1.15.0",
+    "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.8",
     "date-fns": "^4.3.0",
     "dotenv": "^17.4.2",
@@ -68,6 +70,7 @@
     "os-utils": "^0.0.14",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.10",
+    "react-clock": "^6.0.0",
     "react-datepicker": "^9.1.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^6.1.2",
@@ -76,6 +79,7 @@
     "react-refresh": "^0.18.0",
     "react-router-dom": "^6.10.0",
     "react-select": "^5.10.2",
+    "react-time-picker": "^8.0.3",
     "simple-zustand-devtools": "^1.1.0",
     "socket.io-client": "^4.8.3",
     "sqlite3": "^6.0.1",
@@ -83,6 +87,7 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^25.9.1",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",

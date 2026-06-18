@@ -2,7 +2,7 @@ const Employee = require("./models/employeeModel.js");
 const Attendance = require("./models/attendanceModel.js");
 const Leave = require("./models/leaveModel.js");
 const { AdminUser } = require("./models/adminUserModel.js");
-const Announcement = require("./models/announcementModel.js");
+const Task = require("./models/taskModel.js");
 
 //Employee operations
 //Add an employee
@@ -370,28 +370,29 @@ const updateAdminUser = async (id, data) => {
   }
 };
 
-//Save new announcement
-const saveAnnouncement = async ({ message, createdAt }) => {
-  const announcement = new Announcement({
-    // title,
+//Save new task
+const saveTask = async ({ author, recipient, message, createdAt }) => {
+  const task = new Task({
+    author,
+    recipient,
     message,
     createdAt,
   });
 
   try {
-    return await announcement.save();
+    return await task.save();
   } catch (error) {
-    console.error("Error while saving announcement: ", error);
+    console.error("Error while saving task: ", error);
     throw error;
   }
 };
 
 //Get all announcements
-const getAnnouncements = async () => {
+const getTasks = async () => {
   try {
-    return await Announcement.find().sort({ createdAt: -1 });
+    return await Task.find().sort({ createdAt: -1 });
   } catch (error) {
-    console.error("Error while fetching announcements: ", error);
+    console.error("Error while fetching tasks: ", error);
     throw error;
   }
 };
@@ -419,6 +420,6 @@ module.exports = {
   getAdminUserByID,
   getAdminUserByEmail,
   updateAdminUser,
-  saveAnnouncement,
-  getAnnouncements,
+  saveTask,
+  getTasks,
 };

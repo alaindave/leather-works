@@ -42,7 +42,13 @@ const LeaveNotesPopover = ({ subject, notes }: Props) => {
         <PopoverArrow bg="#08162b" />
 
         <PopoverBody>
-          <Text>
+          <Text
+            color="gray.200"
+            fontSize="1.1rem"
+            whiteSpace="normal"
+            wordBreak="break-word"
+            noOfLines={2}
+          >
             <strong>Notes:</strong> {notes}
           </Text>
         </PopoverBody>

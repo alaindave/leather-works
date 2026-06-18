@@ -1,37 +1,25 @@
 import {
-  Alert,
-  AlertIcon,
   Box,
-  Button,
   Flex,
-  HStack,
-  Icon,
   List,
   ListItem,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverContent,
-  PopoverTrigger,
   Skeleton,
   SkeletonCircle,
   SkeletonText,
   Spacer,
   Text,
-  Tooltip,
   VStack,
   useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useEffect, useState } from "react";
-import type Employee from "../../shared/types/Employee";
-import AddEmployee from "../components/AddEmployee";
-import useAdminUser from "../../store/authStore";
-import EmployeeCard from "../components/EmployeeCard";
-import SearchBar from "../components/SearchBar";
-import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import { FaAddressBook } from "react-icons/fa6";
+import type Employee from "../../shared/types/Employee";
+import useAdminUser from "../../store/authStore";
+import AddEmployee from "../components/AddEmployee";
+import EmployeeCard from "../components/EmployeeCard";
+import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import NotAuthorized from "../components/NotAuthorized";
+import SearchBar from "../components/SearchBar";
 
 const EmployeeListPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -39,19 +27,20 @@ const EmployeeListPage = () => {
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const adminUser = useAdminUser((store) => store.adminUser);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-  const toast = useToast();
 
   useEffect(() => {
-    axios
-      .get<Employee[]>(`${API_URL}/employees`)
-      .then((res) => {
-        setEmployees(res.data);
-        console.log("Employees received: ", res.data);
+    window.electron.employees
+      .getAll()
+      .then((employees) => {
+        setEmployees(employees);
+        console.log("Employees fetched: ", employees);
       })
-      .catch((error) => {
-        console.error("Error while fetching employees: ", error);
-      })
+      .catch((error) =>
+        console.error(
+          "An error occured while fetching employees from sqlite DB",
+          error
+        )
+      )
       .finally(() => {
         setLoading(false);
       });
@@ -126,11 +115,13 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} mt="1.35rem" ml="0.1rem">
+          <Flex wrap="wrap" gap={2} mt="0.3rem">
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
           <Flex
+            position="relative"
+            left="1.1rem"
             wrap="wrap"
             justify={{ base: "stretch", md: "flex-end" }}
             mt="1.1rem"

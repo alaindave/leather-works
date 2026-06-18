@@ -2,14 +2,12 @@ import {
   Box,
   Flex,
   HStack,
-  VStack,
   Text,
   MenuButton,
   MenuList,
   MenuItem,
   Menu,
   Button,
-  background,
   List,
   ListItem,
 } from "@chakra-ui/react";
@@ -21,11 +19,14 @@ import { IoIosArrowDown } from "react-icons/io";
 import { FaUserAlt } from "react-icons/fa";
 import { IoSettings } from "react-icons/io5";
 import { FaSignOutAlt } from "react-icons/fa";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import SyncButton from "./SyncButton";
 // @ts-ignore
 import "../styles/App.css";
 import Logo from "./Logo";
 import useAdminUser from "../../store/authStore";
+import ComponentErrorFallback from "../pages/ComponentErrorFallback";
+import { ErrorBoundary } from "react-error-boundary";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
@@ -136,7 +137,8 @@ const EmployeeNavBar = () => {
           bg="#ffffff"
           borderColor="blue"
           position="relative"
-          top="8px"
+          top="0.3rem"
+          right="0.2rem"
           justifyContent="center"
           alignItems="center"
         >

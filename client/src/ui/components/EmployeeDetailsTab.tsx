@@ -99,7 +99,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
 
             <EmployeeDetailsCard
               property="Matricule"
-              value={employee?.employeeID || "N.D."}
+              value={employee?.matricule || "N.D."}
               icon={FaHashtag}
             />
             <EmployeeDetailsCard

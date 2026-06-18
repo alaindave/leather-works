@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import type Employee from "../../shared/types/Employee";
 
@@ -41,7 +40,7 @@ registerLocale("fr", fr);
 
 interface Props {
   _id: string | undefined;
-  employee: Employee;
+  employee: Employee | null;
   onUpdated?: () => void;
 }
 const errorMessage = "Ce champ est obligatoire";
@@ -49,11 +48,11 @@ const errorMessage = "Ce champ est obligatoire";
 const schema = z.object({
   firstName: z.string().min(1, { message: errorMessage }),
   lastName: z.string().min(1, { message: errorMessage }),
-  employeeID: z.string().min(1, { message: errorMessage }),
-  dateBirth: z.date().optional().nullable(),
+  matricule: z.string().min(1, { message: errorMessage }),
+  dateBirth: z.string().min(1, { message: errorMessage }),
   role: z.string().min(1, { message: errorMessage }),
   department: z.string().min(1, { message: errorMessage }),
-  dateHired: z.date().optional().nullable(),
+  dateHired: z.string().min(1, { message: errorMessage }),
   telephone: z
     .string()
     .min(1, "Le numéro de téléphone est obligatoire")
@@ -70,13 +69,13 @@ type EmployeeData = z.infer<typeof schema>;
 const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const [isUpdating, setIsUpdating] = useState(false);
 
+  if (!employee) return;
   const {
     firstName,
     lastName,
-    employeeID,
+    matricule,
     dateBirth,
     role,
     department,
@@ -100,7 +99,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
     defaultValues: {
       firstName,
       lastName,
-      employeeID,
+      matricule,
       dateBirth,
       role,
       department,
@@ -119,7 +118,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
       reset({
         firstName: employee.firstName,
         lastName: employee.lastName,
-        employeeID: employee.employeeID,
+        matricule: employee.matricule,
         role: employee.role,
         department: employee.department,
         salary: employee.salary,
@@ -128,8 +127,8 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
         relationship: employee.relationship,
         contactPhone: employee.contactPhone,
         address: employee.address,
-        dateHired: employee.dateHired ? new Date(employee.dateHired) : null,
-        dateBirth: employee.dateBirth ? new Date(employee.dateBirth) : null,
+        dateHired: employee.dateHired,
+        dateBirth: employee.dateBirth,
       });
     }
   }, [employee, reset]);
@@ -139,11 +138,9 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
     setIsUpdating(true);
     try {
       console.log("Info to update:", data);
-      const response = await axios.put<Employee>(
-        `${API_URL}/employees/${_id}`,
-        data
-      );
-      console.log("Updated employee:", response.data);
+      if (!_id) return;
+      const updatedEmployee = await window.electron.employees.update(_id, data);
+      console.log("Updated employee:", updatedEmployee);
       onUpdated?.();
       onClose();
     } catch (error) {
@@ -297,10 +294,10 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     name="dateBirth"
                     render={({ field }) => (
                       <DatePicker
-                        selected={field.value ?? null}
-                        onChange={(date: Date | null) => {
+                        selected={field.value ? new Date(field.value) : null}
+                        onChange={(date: any) => {
                           field.onChange(
-                            date && !isNaN(date.getTime()) ? date : null
+                            date ? date.toISOString().split("T")[0] : ""
                           );
                         }}
                         locale="fr"
@@ -337,7 +334,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                 alignItems="flex-start"
               >
                 {/* Employee ID */}
-                <FormControl isInvalid={!!errors.employeeID}>
+                <FormControl isInvalid={!!errors.matricule}>
                   <HStack>
                     <Box marginBottom="10px">
                       <MdOutlineNumbers color="#F2B705" size="1.3rem" />
@@ -350,11 +347,11 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                   <Input
                     type="text"
                     color="gray.300"
-                    {...register("employeeID")}
+                    {...register("matricule")}
                   />
                   <Box minH="24px">
                     <FormErrorMessage>
-                      {errors.employeeID?.message}
+                      {errors.matricule?.message}
                     </FormErrorMessage>
                   </Box>
                 </FormControl>
@@ -497,10 +494,10 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     name="dateHired"
                     render={({ field }) => (
                       <DatePicker
-                        selected={field.value ?? null}
-                        onChange={(date: Date | null) => {
+                        selected={field.value ? new Date(field.value) : null}
+                        onChange={(date: any) => {
                           field.onChange(
-                            date && !isNaN(date.getTime()) ? date : null
+                            date ? date.toISOString().split("T")[0] : ""
                           );
                         }}
                         locale="fr"

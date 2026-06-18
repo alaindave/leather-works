@@ -1,4 +1,4 @@
-import { Box, Flex, Image, VStack, Text } from "@chakra-ui/react";
+import { Box, Flex, Image, Text } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 // @ts-ignore
 import logo from "../assets/afritan_logo.png";

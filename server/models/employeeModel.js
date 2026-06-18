@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 
 const employeeSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
-  employeeID: { type: String, required: true },
+  matricule: { type: String, required: true },
   dateBirth: { type: Date, required: true },
   role: { type: String, required: true },
   dateHired: { type: Date, required: true },
@@ -25,6 +26,9 @@ const employeeSchema = new mongoose.Schema({
     required: true,
   },
   remainingLeave: { type: Number, default: 20, required: true },
+  isDeleted: { type: Boolean, default: false, required: true },
+  createdAt: { type: Date, required: true },
+  updatedAt: { type: Date, required: true },
 });
 
 const Employee = mongoose.model("Employees", employeeSchema);

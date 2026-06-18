@@ -5,9 +5,14 @@ export default interface Employee {
   employeeID: string;
   idNum: string;
   dateBirth: Date;
+  matricule: string;
+  dateBirth: string;
   role: string;
   dateHired: Date;
   department: string;
+  dateHired: string;
+  salary: number;
+  status: "actif" | "inactif";
   telephone: string;
   address: string;
   emergencyContact: string;
@@ -16,9 +21,9 @@ export default interface Employee {
   salary: string;
   status: string;
   remainingLeave: number;
-  synced: boolean;
-  isDeleted: boolean;
-  createdAt: string;
-  updatedAt: string;
-  lastSyncedAt?: string | null;
+  synced: number;
+  isDeleted: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
 }

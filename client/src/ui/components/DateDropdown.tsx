@@ -9,14 +9,14 @@ function getLast7Days() {
     const date = new Date();
     date.setDate(date.getDate() - i);
 
-    const dayOfWeek = date.getDay();
+    // const dayOfWeek = date.getDay();
     // Skip weekend
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      days.push({
-        label: formatDate(date),
-        value: date.toISOString().split("T")[0],
-      });
-    }
+    // if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+    days.push({
+      label: formatDate(date),
+      value: date.toISOString().split("T")[0],
+    });
+    // }
 
     i++;
   }

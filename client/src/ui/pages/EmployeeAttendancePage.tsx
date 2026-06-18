@@ -15,17 +15,15 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { HiOutlineDownload } from "react-icons/hi";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
-
-import type Attendance from "../../shared/types/Attendance";
 import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
 import DateDropdown from "../components/DateDropdown";
+import { AttendanceWithEmployee } from "../../shared/AttendanceWithEmployee";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -46,8 +44,10 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
 );
 
 const EmployeeAttendancePage = () => {
-  const [attendances, setAttendances] = useState<Attendance[]>([]);
-  const [attendance, setAttendance] = useState<Attendance | null>(null);
+  const [attendances, setAttendances] = useState<AttendanceWithEmployee[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceWithEmployee | null>(
+    null
+  );
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -57,7 +57,6 @@ const EmployeeAttendancePage = () => {
   const [loading, setLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const gridTemplate = `
   1.5fr 1.5fr 1.3fr 1.3fr 1fr 1fr 1fr
 `;
@@ -71,20 +70,28 @@ const EmployeeAttendancePage = () => {
   /* ================= FETCH ================= */
   useEffect(() => {
     setLoading(true);
-
     console.log("Selected date:", selectedDate);
-    axios
-      .get<Attendance[]>(`${API_URL}/attendances`, {
-        params: { date: selectedDate },
+    window.electron.attendance
+      .getByDate(selectedDate)
+      .then((attendances: AttendanceWithEmployee[]) => {
+        console.log(`Fetched attendances for ${selectedDate}`, attendances);
+        setAttendances(attendances);
       })
-      .then((res) => setAttendances(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .catch((error) => {
+        console.error(
+          `An error occurred while fetching for ${selectedDate}`,
+          error
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [selectedDate]);
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/attendances/${attendance?._id}`);
+      if (attendance?._id)
+        await window.electron.attendance.delete(attendance?._id);
       setAttendances((prev) =>
         prev.filter((att) => att._id !== attendance?._id)
       );
@@ -98,7 +105,7 @@ const EmployeeAttendancePage = () => {
     const csv = attendances
       .map(
         (a) =>
-          `${a.employee.firstName} ${a.employee.lastName},${a.employee.employeeID},${a.clockIn},${a.date}`
+          `${a.firstName} ${a.lastName},${a.matricule},${a.clockIn},${a.date}`
       )
       .join("\n");
 
@@ -112,6 +119,7 @@ const EmployeeAttendancePage = () => {
         isOpen={isOpen}
         leastDestructiveRef={cancelRef}
         onClose={onClose}
+        returnFocusOnClose={false}
       >
         <AlertDialogOverlay backdropFilter="auto" backdropBlur="0.5rem">
           <AlertDialogContent
@@ -128,11 +136,11 @@ const EmployeeAttendancePage = () => {
               Etes vous sur de vouloir supprimer{" "}
               <span style={{ color: "#F2B705", fontWeight: "bold" }}>
                 {" "}
-                {attendance?.employee?.firstName}{" "}
+                {attendance?.firstName}{" "}
               </span>
               <span style={{ color: "#F2B705", fontWeight: "bold" }}>
                 {" "}
-                {attendance?.employee?.lastName}{" "}
+                {attendance?.lastName}{" "}
               </span>
               de la liste de présence?
             </AlertDialogBody>
@@ -290,9 +298,9 @@ const EmployeeAttendancePage = () => {
           </Text>
         ) : (
           attendances
-            .filter((a) => !filter || a.employee.department === filter)
+            .filter((a) => !filter || a.department === filter)
             .filter((a) =>
-              `${a.employee?.firstName} ${a.employee?.lastName}`
+              `${a.firstName} ${a.lastName}`
                 .toLowerCase()
                 .includes(searchText.toLowerCase())
             )

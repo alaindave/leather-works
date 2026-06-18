@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require("electron");
+import OfflineUser from "@shared/types/OfflineUser";
 import type Employee from "../shared/types/Employee";
 
 interface LoginCredentials {
@@ -15,6 +16,23 @@ contextBridge.exposeInMainWorld("electron", {
       ipcRenderer.invoke("auth:login", credentials),
     logout: () => ipcRenderer.invoke("auth:logout"),
   },
+
+  offlineUsers: {
+    save: (user: OfflineUser) => ipcRenderer.invoke("offline-users:save", user),
+
+    login: (credentials: LoginCredentials) =>
+      ipcRenderer.invoke("offline-users:login", credentials),
+
+    getById: (_id: string) => ipcRenderer.invoke("offline-users:getById", _id),
+
+    getByEmail: (email: string) =>
+      ipcRenderer.invoke("offline-users:getByEmail", email),
+
+    getAll: () => ipcRenderer.invoke("offline-users:getAll"),
+
+    delete: (_id: string) => ipcRenderer.invoke("offline-users:delete", _id),
+  },
+
   tasks: {
     createTasks: (data: string) => ipcRenderer.invoke("tasks:create", data),
 
@@ -117,4 +135,6 @@ contextBridge.exposeInMainWorld("electron", {
 
     delete: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
   },
+
+  sync: () => ipcRenderer.invoke("sync:run"),
 }) satisfies Window["electron"];
