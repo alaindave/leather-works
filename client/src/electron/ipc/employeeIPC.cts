@@ -7,7 +7,7 @@ import {
   updateEmployee,
   deleteEmployee,
   searchEmployees,
-} from "../database/repositories/employee.repository";
+} from "../database/repositories/employee.repository.cjs";
 
 export function registerEmployeeIPC() {
   ipcMain.handle("employees:create", async (_, employee) => {

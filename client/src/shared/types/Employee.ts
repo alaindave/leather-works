@@ -3,6 +3,7 @@ export default interface Employee {
   firstName: string;
   lastName: string;
   employeeID: string;
+  idNum: string;
   dateBirth: Date;
   role: string;
   dateHired: Date;

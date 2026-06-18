@@ -163,11 +163,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
   return (
     <>
       <Button
-        bg="#0a2142"
-        borderColor="black"
-        borderRadius="18px"
-        borderWidth="1px"
-        color="#F2B705"
+        colorScheme="red"
         padding="16px"
         _hover={{
           bg: "brown",
@@ -175,6 +171,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
           transform: "scale(1.05)",
         }}
         onClick={onOpen}
+        mr="1rem"
       >
         <FaEdit color="#ffffff" size="16px" />
         <Text position="relative" top="8px" left="5px" fontSize="1.2rem">

@@ -70,41 +70,41 @@ const EmployeeListPage = () => {
   };
 
   return (
-    <Flex
-      direction="column"
-      w="100%"
-      h="100vh"
-      bg="transparent"
-      px={{ base: 2, md: 4 }}
-      py={4}
-    >
+    <Flex direction="column" h="100vh" bg="transparent">
       {/* HEADER */}
       <Flex
         direction="column"
-        bg="#FFFFFF"
+        w="79.3vw"
+        bg="#F8F9FB"
         height="10rem"
-        p={{ base: 3, md: 5 }}
-        position="relative"
-        bottom="0.3rem"
+        mt="0.7rem"
+        ml="0.3rem"
       >
         <Flex>
-          <Box position="relative" bottom="1.2rem">
-            <Text color="#1F2937" fontSize="1.6rem" fontWeight="700">
+          <Box>
+            <Text
+              color="#1F2937"
+              fontSize="1.6rem"
+              fontWeight="700"
+              ml="0.4rem"
+              mt="0.2rem"
+            >
               Employés
             </Text>
             <Text
               color="gray.900"
-              fontSize="1.1rem"
+              fontSize="1rem"
               fontWeight="500"
               position="relative"
-              bottom="1.5rem"
+              left="0.5rem"
+              bottom="1.3rem"
             >
               Gérez les informations de vos employés
             </Text>
           </Box>
           <Spacer />
           {adminUser?.role === "manager" ? (
-            <Box position="relative" left="0.5rem" bottom="0.6rem">
+            <Box mt="0.1rem" mr="0.2rem">
               <AddEmployee onAddEmployee={handleAddEmployee} />
             </Box>
           ) : (
@@ -126,15 +126,15 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} mt="0.12rem">
+          <Flex wrap="wrap" gap={2} mt="1.35rem" ml="0.1rem">
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
           <Flex
             wrap="wrap"
             justify={{ base: "stretch", md: "flex-end" }}
-            position="relative"
-            bottom="0.2rem"
+            mt="1.1rem"
+            mr="0.1rem"
           >
             <SearchBar onSearch={handleOnSearch} />
           </Flex>
@@ -142,7 +142,7 @@ const EmployeeListPage = () => {
       </Flex>
 
       {/* LIST AREA */}
-      <Flex mt={4} flex="1" overflow="hidden" bg="transparent">
+      <Flex flex="1" overflow="hidden" bg="transparent" mt="0.3rem" ml="0.3rem">
         <Box w="100%" h="100%" overflowY="auto" borderRadius="inherit">
           {loading ? (
             <VStack spacing={0}>
@@ -181,7 +181,7 @@ const EmployeeListPage = () => {
               ))}
             </VStack>
           ) : (
-            <List position="relative" right="1.5rem">
+            <List position="relative" bottom="0.2rem" right="2rem">
               {employees
                 .filter((employee) => !filter || employee.department === filter)
                 .filter((employee) =>
@@ -194,7 +194,7 @@ const EmployeeListPage = () => {
                     key={employee._id}
                     bg="#ffffff"
                     borderBottom="1px solid #1E355A"
-                    mb="1"
+                    margin="0.1rem"
                   >
                     <EmployeeCard employee={employee} />
                   </ListItem>

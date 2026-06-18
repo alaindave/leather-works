@@ -1,30 +1,34 @@
 const { contextBridge, ipcRenderer } = require("electron");
 import type Employee from "../shared/types/Employee";
 
-console.log(" Preload loaded!");
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+console.log("PRELOAD LOADED!!!");
 
 contextBridge.exposeInMainWorld("electron", {
   file: { save: (data: string) => ipcRenderer.invoke("save-file", data) },
   auth: {
-    login: (credentials: any) => ipcRenderer.invoke("auth:login", credentials),
+    login: (credentials: LoginCredentials) =>
+      ipcRenderer.invoke("auth:login", credentials),
     logout: () => ipcRenderer.invoke("auth:logout"),
   },
+  tasks: {
+    createTasks: (data: string) => ipcRenderer.invoke("tasks:create", data),
 
-  announcements: {
-    createAnnouncement: (data: string) =>
-      ipcRenderer.invoke("announcements:create", data),
-
-    getAnnouncements: () => ipcRenderer.invoke("announcements:get"),
+    getTasks: () => ipcRenderer.invoke("tasks:get"),
 
     onNew: (callback: (data: any) => void) => {
       const handler = (_: any, data: any) => {
         callback(data);
       };
 
-      ipcRenderer.on("announcement:new", handler);
+      ipcRenderer.on("task:new", handler);
 
       return () => {
-        ipcRenderer.removeListener("announcement:new", handler);
+        ipcRenderer.removeListener("task:new", handler);
       };
     },
   },
@@ -44,5 +48,73 @@ contextBridge.exposeInMainWorld("electron", {
 
     search: (searchTerm: string) =>
       ipcRenderer.invoke("employees:search", searchTerm),
+  },
+
+  attendance: {
+    create: (employeeId: string, clockIn: string) =>
+      ipcRenderer.invoke("attendance:create", employeeId, clockIn),
+
+    getAll: () => ipcRenderer.invoke("attendance:getAll"),
+
+    getById: (_id: string) => ipcRenderer.invoke("attendance:getById", _id),
+
+    getByEmployee: (employeeId: string) =>
+      ipcRenderer.invoke("attendance:getByEmployee", employeeId),
+
+    getByDate: (date: string) =>
+      ipcRenderer.invoke("attendance:getByDate", date),
+
+    getAttendanceRecord: (employeeId: string, date: string) =>
+      ipcRenderer.invoke("attendance:getAttendanceRecord", employeeId, date),
+
+    updateClockIn: (_id: string, clockIn: string) =>
+      ipcRenderer.invoke("attendance:updateClockIn", _id, clockIn),
+
+    updateClockOut: (_id: string, clockOut: string) =>
+      ipcRenderer.invoke("attendance:updateClockOut", _id, clockOut),
+
+    submitLateNotes: (_id: string, lateNotes: string | undefined) =>
+      ipcRenderer.invoke("attendance:submitLateNotes", _id, lateNotes),
+
+    delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
+
+    clockOut: (_id: string, clockOut: string) =>
+      ipcRenderer.invoke("attendance:clockOut", _id, clockOut),
+  },
+
+  leave: {
+    create: (
+      employeeId: string,
+      startDate: string,
+      endDate: string,
+      subject: string,
+      notes: string
+    ) =>
+      ipcRenderer.invoke(
+        "leave:create",
+        employeeId,
+        startDate,
+        endDate,
+        subject,
+        notes
+      ),
+    getLeaveById: (_id: string) =>
+      ipcRenderer.invoke("leave:getLeaveById", _id),
+
+    getLeaveByMonth: (month: string) =>
+      ipcRenderer.invoke("leave:getLeaveByMonth", month),
+
+    update: (
+      _id: string,
+      updates: {
+        subject?: string;
+        notes?: string;
+        startDate?: string;
+        endDate?: string;
+        status?: string;
+      }
+    ) => ipcRenderer.invoke("leave:update", _id, updates),
+
+    delete: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
   },
 }) satisfies Window["electron"];

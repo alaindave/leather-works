@@ -282,32 +282,31 @@ const EmployeeLeavePage = () => {
     <>
       <Flex direction="column" justify="space-between">
         <Box
-          mt="0.5rem"
+          mt="0.7rem"
           ml="0.3rem"
           mr="1.5rem"
-          bg="#03143B"
+          bg="#F8F9FB"
           height="10rem"
           width="78.5vw"
-          borderRadius="1.2rem"
         >
           <Flex>
             <Box>
               <Text
-                color="#ffffff"
+                color="#1F2937"
                 fontSize="1.6rem"
                 fontWeight="700"
-                ml="1rem"
-                mt="0.8rem"
+                ml="0.5rem"
+                mt="0.5rem"
               >
                 Congés
               </Text>
               <Text
-                color="whiteAlpha.800"
+                color="#1F2937"
                 fontSize="1rem"
                 fontWeight="500"
                 position="relative"
-                bottom="1.1rem"
-                ml="1rem"
+                bottom="1.5rem"
+                ml="0.5rem"
               >
                 Gérez les demandes de congés
               </Text>
@@ -415,13 +414,12 @@ const EmployeeLeavePage = () => {
         )}
 
         <Flex
-          bg="#08162b"
-          mb="1.2rem"
+          mb="0.5rem"
           ml="0.3rem"
-          maxHeight="6rem"
-          width="79.5vw"
-          borderRadius="16px"
+          height="4rem"
+          width="79.3vw"
           justify="space-between"
+          bg="gray.300"
         >
           <Box
             mt="1rem"
@@ -434,7 +432,7 @@ const EmployeeLeavePage = () => {
           </Box>
 
           <Box
-            color="#F2B705"
+            color="gray.800"
             fontSize="24px"
             fontWeight="600"
             mt="1rem"

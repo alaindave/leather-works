@@ -3,22 +3,23 @@ import AdminPage from "./pages/AdminPage";
 import App from "./App";
 import EmployeeAdminPage from "./pages/EmployeeAdminPage";
 import EmployeeListPage from "./pages/EmployeeListPage";
-import EmployeeDetails from "./pages/EmployeeDetailsPage";
+import EmployeeDetailsPage from "./pages/EmployeeDetailsPage";
 import EmployeeAdminLayout from "./components/EmployeeAdminLayout";
-import ErrorPage from "./pages/ErrorPage";
 import EmployeeLeavePage from "./pages/EmployeeLeavePage";
 import EmployeeAttendancePage from "./pages/EmployeeAttendancePage";
+import PageErrorFallback from "./pages/PageErrorFallback";
 
 const router = createHashRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <ErrorPage />,
+    errorElement: <PageErrorFallback />,
   },
 
   {
     path: "/admin",
     element: <AdminPage />,
+    errorElement: <PageErrorFallback/>,
   },
 
   {
@@ -28,24 +29,29 @@ const router = createHashRouter([
       {
         path: "",
         element: <EmployeeAdminPage />,
+        errorElement: <PageErrorFallback />,
       },
 
       {
         path: "employees_list",
         element: <EmployeeListPage />,
+        errorElement: <PageErrorFallback />,
       },
       {
         path: "employees_list/:_id",
-        element: <EmployeeDetails />,
+        element: <EmployeeDetailsPage />,
+        errorElement: <PageErrorFallback />,
       },
       {
         path: "attendances",
         element: <EmployeeAttendancePage />,
+        errorElement: <PageErrorFallback/>,
       },
 
       {
         path: "leaves",
         element: <EmployeeLeavePage />,
+        errorElement: <PageErrorFallback />,
       },
     ],
   },

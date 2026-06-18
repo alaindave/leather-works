@@ -17,16 +17,16 @@ export const run = (sql: string, params: any[] = []) =>
       else resolve();
     });
   });
-
-export const get = <T>(sql: string, params: any[] = []) =>
+// prettier-ignore
+export const get = <T,>(sql: string, params: any[] = []) =>
   new Promise<T | null>((resolve, reject) => {
     db.get(sql, params, (err, row) => {
       if (err) reject(err);
       else resolve(row as T);
     });
   });
-
-export const all = <T>(sql: string, params: any[] = []) =>
+// prettier-ignore
+export const all = <T,>(sql: string, params: any[] = []) =>
   new Promise<T[]>((resolve, reject) => {
     db.all(sql, params, (err, rows) => {
       if (err) reject(err);

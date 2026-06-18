@@ -14,7 +14,7 @@ interface Props {
 
 const EmployeeDetailsTab = ({ employee }: Props) => {
   return (
-    <Box h="100%" w="100%">
+    <Box h="100%" w="50vw">
       <Tabs variant="enclosed" h="100%" display="flex" flexDirection="column">
         <TabList
           borderBottomColor="rgba(255,255,255,0.08)"
@@ -30,7 +30,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
         >
           <Tab
             flexShrink={0}
-            color="gray.200"
+            color="gray.600"
             fontSize={{ base: "sm", md: "md", lg: "lg" }}
             fontWeight="600"
             px={{ base: 3, md: 5 }}
@@ -48,7 +48,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
 
           <Tab
             flexShrink={0}
-            color="gray.200"
+            color="gray.600"
             fontSize={{ base: "sm", md: "md", lg: "lg" }}
             fontWeight="600"
             px={{ base: 3, md: 5 }}
@@ -66,7 +66,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
 
           <Tab
             flexShrink={0}
-            color="gray.200"
+            color="gray.600"
             fontSize={{ base: "sm", md: "md", lg: "lg" }}
             fontWeight="600"
             px={{ base: 3, md: 5 }}
@@ -100,6 +100,11 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             <EmployeeDetailsCard
               property="Matricule"
               value={employee?.employeeID || "N.D."}
+              icon={FaHashtag}
+            />
+            <EmployeeDetailsCard
+              property="No carte d'identité"
+              value={employee?.idNum || "N.D."}
               icon={FaHashtag}
             />
 

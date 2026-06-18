@@ -40,8 +40,7 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
     borderRadius="6px"
     height={height}
     width={width}
-    background="linear-gradient(90deg, #0A1F57 25%, #132C68 37%, #0A1F57 63%)"
-    backgroundSize="400% 100%"
+    bg="gray.300"
     animation="shimmer 1.4s ease infinite"
   />
 );
@@ -187,17 +186,11 @@ const EmployeeAttendancePage = () => {
       </AlertDialog>
 
       {/* ================= HEADER ================= */}
-      <Flex
-        direction="column"
-        mt="0.5rem"
-        bg="#03143B"
-        height="10rem"
-        borderRadius="20px"
-      >
+      <Flex direction="column" mt="0.7rem" bg="#F8F9FB" height="10rem">
         <Flex>
           <Box>
             <Text
-              color="#ffffff"
+              color="#1F2937"
               fontSize="1.6rem"
               fontWeight="700"
               ml="0.5rem"
@@ -206,11 +199,11 @@ const EmployeeAttendancePage = () => {
               Présences
             </Text>
             <Text
-              color="whiteAlpha.800"
+              color="#1F2937"
               fontSize="1rem"
               fontWeight="500"
               position="relative"
-              bottom="1.2rem"
+              bottom="1.5rem"
               ml="0.5rem"
             >
               Gérez la liste de présence
@@ -241,34 +234,34 @@ const EmployeeAttendancePage = () => {
         templateColumns={gridTemplate}
         px={10}
         fontWeight="600"
-        background="#08162b"
+        bg="#F8F9FB"
         mt="0.3rem"
         mb="0.3rem"
         height="4.7rem"
-        ml="0.3rem"
-        width="78.5vw"
+        ml="0.1rem"
+        width="79vw"
         overflowY="hidden"
         overflowX="hidden"
       >
-        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
           Employé
         </Text>
-        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
           ID
         </Text>
-        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
           Poste
         </Text>
-        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
           Departement
         </Text>
-        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
           Arrivée
         </Text>
-        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
           Départ
         </Text>
-        <Text color="#d6b65c" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
           Actions
         </Text>
       </Grid>
@@ -318,13 +311,7 @@ const EmployeeAttendancePage = () => {
       </Box>
 
       {/* ================= FOOTER  ================= */}
-      <Flex
-        bg="#08162b"
-        mb="1.2rem"
-        height="6rem"
-        borderRadius="16px"
-        justify="space-between"
-      >
+      <Flex bg="gray.300" mb="0.4rem" height="6rem" justify="space-between">
         <Box
           mt="1rem"
           ml="1rem"
@@ -336,7 +323,7 @@ const EmployeeAttendancePage = () => {
         </Box>
 
         <Box
-          color="#F2B705"
+          color="gray.800"
           fontSize="24px"
           fontWeight="600"
           mt="1rem"

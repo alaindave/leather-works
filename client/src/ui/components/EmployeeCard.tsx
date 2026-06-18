@@ -125,11 +125,9 @@ const EmployeeCard = ({ employee }: Props) => {
     <HStack
       bg="#ffffff"
       height="80px"
-      width="100%"
+      width="79.1vw"
       padding="10px"
       borderRadius="8px"
-      position="relative"
-      right="20px"
       spacing={5}
     >
       <Box ml="0.5rem">
@@ -224,7 +222,7 @@ const EmployeeCard = ({ employee }: Props) => {
             <Button
               position="absolute"
               top="18px"
-              right="10px"
+              right="1.5rem"
               color="#c89704"
               backgroundColor="transparent"
               _hover={{ bg: "transparent" }}

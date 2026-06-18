@@ -42,6 +42,8 @@ const EmployeeDetailsPage = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+  console.log("Employee ID:", _id);
+
   useEffect(() => {
     axios
       .get<Employee>(`${API_URL}/employees/${_id}`)
@@ -121,16 +123,16 @@ const EmployeeDetailsPage = () => {
 
       {/* PAGE CONTAINER */}
       <Box
-        bg="#03143B"
-        borderRadius="20px"
+        position="relative"
+        marginTop="10px"
+        bg="#F8F9FB"
         w="100%"
         maxW="1400px"
         mx="auto"
         ml="0.3rem"
         mr="0.3rem"
         mb="1rem"
-        mt={{ base: 1, md: 3 }}
-        p={{ base: 3, md: 6 }}
+        height="98vh"
       >
         <VStack spacing={4} align="stretch">
           {/* HEADER */}
@@ -146,26 +148,23 @@ const EmployeeDetailsPage = () => {
                   p={2}
                   border="1px solid #14376b"
                   borderRadius="10px"
-                  position="relative"
-                  bottom="0.8rem"
+                  ml="0.2rem"
+                  mb="1.3rem"
                 >
-                  <FaArrowLeftLong color="white" />
+                  <FaArrowLeftLong color="black" />
                 </Box>
               </Link>
 
-              <Box>
-                <Text
-                  fontSize={{ base: "lg", md: "xl" }}
-                  fontWeight="700"
-                  color="white"
-                >
+              <Box mt="0.3rem">
+                <Text fontSize="1.4rem" fontWeight="600" color="#1F2937">
                   Détails de l'employé
                 </Text>
                 <Text
-                  fontSize="md"
-                  color="#C7D2FE"
+                  fontSize="1rem"
+                  fontWeight="500"
+                  color="#1F2937"
                   position="relative"
-                  bottom="1rem"
+                  bottom="1.4rem"
                 >
                   Consultez et gérez les informations de l'employé
                 </Text>
@@ -173,11 +172,13 @@ const EmployeeDetailsPage = () => {
             </HStack>
             {adminUser?.role === "manager" ? (
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
-                <UpdateEmployee
-                  _id={_id}
-                  employee={employee}
-                  onUpdated={refreshEmployee}
-                />
+                <Box position="relative" bottom="1rem">
+                  <UpdateEmployee
+                    _id={_id}
+                    employee={employee}
+                    onUpdated={refreshEmployee}
+                  />
+                </Box>
               </ErrorBoundary>
             ) : (
               <NotAuthorized
@@ -194,19 +195,22 @@ const EmployeeDetailsPage = () => {
           <Stack direction={{ base: "column", lg: "row" }} spacing={4}>
             {/* LEFT PANEL */}
             <Box
-              bg="#0E1E47"
-              borderRadius="18px"
-              p={5}
-              flex={{ base: "1", lg: "0.35" }}
-              minW={0}
+              bg="#F8F9FB"
+              border="1px solid"
+              borderColor="#D1D9E0"
+              borderRadius="12px"
+              boxShadow="0 2px 8px rgba(1,0,1,1)"
+              width="27vw"
               maxH="70vh"
+              ml="0.3rem"
             >
-              <VStack spacing={3}>
+              <VStack spacing={3} mt="0.rem">
                 <Image
                   src={source}
-                  boxSize="120px"
+                  boxSize="7rem"
                   borderRadius="full"
                   objectFit="cover"
+                  mt="0.5rem"
                 />
 
                 <Text
@@ -223,9 +227,9 @@ const EmployeeDetailsPage = () => {
                 <HStack bg="#08162b" px={3} py={1} borderRadius="full">
                   <GoDotFill color="green" />
                   <Text
-                    color="green.400"
+                    color="green.300"
                     position="relative"
-                    top="0.3rem"
+                    top="0.4rem"
                     right="0.3rem"
                   >
                     Actif
@@ -235,8 +239,10 @@ const EmployeeDetailsPage = () => {
                 <Divider />
 
                 <Box textAlign="center">
-                  <Text color="#C7D2FE">Matricule</Text>
-                  <Text color="#F2B705" fontWeight="700">
+                  <Text color="gray.800" fontSize="1.1rem">
+                    Matricule
+                  </Text>
+                  <Text color="gray.800" fontWeight="700">
                     {employee?.employeeID}
                   </Text>
                 </Box>
@@ -264,11 +270,11 @@ const EmployeeDetailsPage = () => {
 
             {/* RIGHT PANEL */}
             <Box
-              bg="#03143B"
-              borderRadius="18px"
-              flex={1}
-              minW={0}
-              h={{ base: "auto", lg: "74vh" }}
+              bg="#F8F9FB"
+              border="1px solid"
+              borderColor="#D1D9E0"
+              borderRadius="12px"
+              boxShadow="0 2px 8px rgba(1,0,1,1)"
               overflowY="auto"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>

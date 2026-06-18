@@ -95,7 +95,7 @@ const EmployeeAdminPage = () => {
 
   // useEffect to fetch live announcements from manager
   useEffect(() => {
-    const unsubscribe = window.electron.announcements.onNew((data) => {
+    const unsubscribe = window.electron.tasks.onNew((data) => {
       setLiveAnnouncement(data);
       console.log("Live announcement fetched: ", data.message);
     });
@@ -169,7 +169,7 @@ const EmployeeAdminPage = () => {
 
         {/* DATE / TIME */}
         <Flex
-          bg="#FFFFFF"
+          bg="#F8F9FB"
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="8px"
@@ -274,7 +274,7 @@ const EmployeeAdminPage = () => {
         {/* ANNOUNCEMENTS */}
         {adminUser?.role === "manager" ? (
           <Box
-            bg="#FFFFFF"
+            bg="#F8F9FB"
             border="1px solid"
             borderColor="#D1D9E0"
             borderRadius="12px"

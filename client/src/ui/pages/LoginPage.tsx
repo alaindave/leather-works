@@ -96,7 +96,7 @@ const LoginPage = () => {
             <Image
               src={logo}
               h="90px"
-              boxSize="6.9rem"
+              boxSize="7.3rem"
               objectFit="contain"
               mx="auto"
             />

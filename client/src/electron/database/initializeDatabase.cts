@@ -1,4 +1,4 @@
-import { run } from "./db";
+import { run } from "./db.cjs";
 
 export async function initializeDatabase() {
   await run(`

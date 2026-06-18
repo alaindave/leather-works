@@ -52,8 +52,8 @@ const EmployeeNavBar = () => {
     <Flex
       position="relative"
       direction="column"
-      marginTop="10px"
-      marginLeft="2px"
+      mt="0.7rem"
+      ml="0.2rem"
       padding="8px"
       height="98vh"
       width="17.5rem"

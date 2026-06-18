@@ -1,4 +1,4 @@
-import { run, get, all } from "../db";
+import { run, get, all } from "../db.cjs";
 import { randomUUID } from "crypto";
 import Employee from "@shared/types/Employee";
 
