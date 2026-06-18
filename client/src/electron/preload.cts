@@ -122,7 +122,7 @@ contextBridge.exposeInMainWorld("electron", {
     getLeaveByMonth: (month: string) =>
       ipcRenderer.invoke("leave:getLeaveByMonth", month),
 
-    updateLeave: (
+    update: (
       _id: string,
       updates: {
         subject?: string;
@@ -133,7 +133,7 @@ contextBridge.exposeInMainWorld("electron", {
       }
     ) => ipcRenderer.invoke("leave:update", _id, updates),
 
-    deleteLeave: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
+    delete: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
   },
 
   sync: () => ipcRenderer.invoke("sync:run"),

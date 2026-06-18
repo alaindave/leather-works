@@ -183,15 +183,15 @@ const EmployeeLeavePage = () => {
   const handleLeaveDelete = async () => {
     console.log("Leave to delete: ", leave);
     console.log("Leave ID to delete: ", leave?._id);
-    onConfirmationClose();
     if (!leave?._id) return;
     await window.electron.leave
-      .deleteLeave(leave?._id)
+      .delete(leave?._id)
       .then((leave) => {
         console.log("Deleted leave: ", leave);
         const updatedLeaves = leaves.filter((l) => l._id !== leave?._id);
         setLeaves(updatedLeaves);
         setSubmissionMonth(submissionMonth);
+        onConfirmationClose();
       })
       .catch((error) =>
         console.error("An error occured while deleting attendance: ", error)
@@ -649,10 +649,22 @@ const EmployeeLeavePage = () => {
                               selected={
                                 field.value ? new Date(field.value) : null
                               }
-                              onChange={(date: any) => {
-                                field.onChange(
-                                  date ? date.toISOString().split("T")[0] : ""
+                              onChange={(date: Date | null) => {
+                                if (!date) {
+                                  field.onChange("");
+                                  return;
+                                }
+
+                                const year = date.getFullYear();
+                                const month = String(
+                                  date.getMonth() + 1
+                                ).padStart(2, "0");
+                                const day = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
                                 );
+
+                                field.onChange(`${year}-${month}-${day}`);
                               }}
                               locale="fr"
                               dateFormat="dd/MM/yyyy"
@@ -696,10 +708,22 @@ const EmployeeLeavePage = () => {
                               selected={
                                 field.value ? new Date(field.value) : null
                               }
-                              onChange={(date: any) => {
-                                field.onChange(
-                                  date ? date.toISOString().split("T")[0] : ""
+                              onChange={(date: Date | null) => {
+                                if (!date) {
+                                  field.onChange("");
+                                  return;
+                                }
+
+                                const year = date.getFullYear();
+                                const month = String(
+                                  date.getMonth() + 1
+                                ).padStart(2, "0");
+                                const day = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
                                 );
+
+                                field.onChange(`${year}-${month}-${day}`);
                               }}
                               locale="fr"
                               dateFormat="dd/MM/yyyy"

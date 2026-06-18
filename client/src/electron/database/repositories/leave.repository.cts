@@ -74,6 +74,8 @@ export async function getLeaveById(
       l.status,
       e.firstName,
       e.lastName,
+      e.department,
+      e.role,
       e.remainingLeave
     FROM leave l
     JOIN employees e
@@ -124,6 +126,8 @@ export async function getLeaveByMonth(month: string) {
       l.status,
       e.firstName,
       e.lastName,
+      e.department,
+      e.role,
       e.remainingLeave
     FROM leave l
     JOIN employees e

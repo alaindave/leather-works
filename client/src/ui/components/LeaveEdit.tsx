@@ -15,7 +15,6 @@ import {
   Text,
   Textarea,
   VStack,
-  useDisclosure,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -24,8 +23,6 @@ import { Controller, useForm } from "react-hook-form";
 import { FaSave } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
-import Leave from "../../shared/types/Leave";
-import axios from "axios";
 import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
 
 const errorMessage = "Ce champ est obligatoire";
@@ -48,7 +45,7 @@ interface Props {
 
 const LeaveEdit = ({ leave, onUpdated, isOpen, onClose }: Props) => {
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const [isUpdating, setIsUpdating] = useState(false);
 
   console.log("LeaveEdit received:", leave);
@@ -57,7 +54,6 @@ const LeaveEdit = ({ leave, onUpdated, isOpen, onClose }: Props) => {
     return null;
   }
   const {
-    _id,
     firstName,
     lastName,
     department,
@@ -73,10 +69,7 @@ const LeaveEdit = ({ leave, onUpdated, isOpen, onClose }: Props) => {
     setIsUpdating(true);
     try {
       console.log("Info to update:", data);
-      const updatedLeave = await window.electron.leave.updateLeave(
-        leave._id,
-        data
-      );
+      const updatedLeave = await window.electron.leave.update(leave._id, data);
       console.log("Updated leave:", updatedLeave);
       onUpdated?.();
       onClose();

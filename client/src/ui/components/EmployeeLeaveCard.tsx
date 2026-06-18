@@ -44,7 +44,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   } = localLeave;
 
   const adminUser = useAdminUser((store) => store.adminUser);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   // //Handle leave approval
   const handleApprove = () => {
@@ -70,7 +70,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       .then((employee) => {
         console.log("Updated employee: ", employee);
         console.log("ID of leave to update:", leave._id);
-        return window.electron.leave.updateLeave(leave._id, {
+        return window.electron.leave.update(leave._id, {
           status: "Approuvé",
         });
       })
@@ -85,7 +85,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   //Handle leave denial
   const handleDeny = () => {
     window.electron.leave
-      .updateLeave(leave._id, {
+      .update(leave._id, {
         status: "Refusé",
       })
 
@@ -99,20 +99,33 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   };
 
   // Handle cancel
-  const handleCancel = () => {
-    window.electron.leave
-      .updateLeave(leave._id, {
-        status: "Annulé",
-      })
+  // const handleCancel = () => {
+  //   window.electron.leave
+  //     .update(leave._id, {
+  //       status: "Annulé",
+  //     })
 
-      .then((leave) => {
-        console.log("Cancelled leave: ", leave);
-        setLocalLeave(leave);
-      })
-      .catch((error) =>
-        console.error("An error occured while cancelling the leave", error)
-      );
-  };
+  //     .then((leave) => {
+  //       console.log("Cancelled leave: ", leave);
+  //       setLocalLeave(leave);
+  //     })
+  //     .catch((error) =>
+  //       console.error("An error occured while cancelling the leave", error)
+  //     );
+  // };
+
+  // Handle delete
+  // const handleDelete = () => {
+  //   window.electron.leave
+  //     .delete(leave._id)
+  //     .then((leave) => {
+  //       console.log("Deleted leave: ", leave);
+
+  //     })
+  //     .catch((error) =>
+  //       console.error("An error occured while cancelling the leave", error)
+  //     );
+  // };
 
   // //Leave refresh
   const refreshLeave = async () => {
@@ -128,41 +141,46 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       px={4}
       py={4}
       bg="#0E1E47"
+      minH="80px"
       borderRadius="18px"
       border="1px solid #22345F"
-      height="78px"
       width="78.5vw"
       marginBottom="0.8px"
     >
-      <Box ml="11px" mb={14}>
+      <Box ml="11px">
         <Text
           color="gray.200"
           fontSize="1.1rem"
           whiteSpace="normal"
           wordBreak="break-word"
           maxW="8rem"
+          noOfLines={2}
         >
           {firstName} {lastName}
         </Text>
       </Box>
-      <Box ml="12px" mb={14}>
+      <Box ml="12px">
         <Text color="gray.200" fontSize="1.1rem">
           {new Date(startDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
-      <Box mb={14}>
+      <Box>
         <Text color="gray.200" fontSize="1.1rem">
           {new Date(endDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
-      <Box mb={14}>
-        <Text color="gray.200" fontSize="1.1rem">
-          <LeaveNotesPopover subject={subject} notes={notes} />
-        </Text>
+      <Box>
+        <LeaveNotesPopover subject={subject} notes={notes} />
       </Box>
-      <Box mb={14} width="7rem">
+      <Box width="7rem">
         {status === "En attente d'approbation" ? (
-          <Text color="#F6E05E" fontWeight="600" fontSize="1.05rem">
+          <Text
+            color="#F6E05E"
+            fontWeight="600"
+            fontSize="1.05rem"
+            whiteSpace="normal"
+            wordBreak="break-word"
+          >
             En attente{"\n"}d'approbation
           </Text>
         ) : (
@@ -176,24 +194,21 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
             }
             fontWeight="600"
             fontSize="1.05rem"
+            whiteSpace="normal"
+            wordBreak="break-word"
           >
             {status}
           </Text>
         )}
       </Box>
-      <Box mb={12}>
-        <Text
-          color="gray.200"
-          fontSize="1.1rem"
-          position="relative"
-          bottom="8px"
-          ml="1rem"
-        >
+      <Box>
+        <Text color="gray.200" fontSize="1.1rem" ml="1rem">
           {remainingLeave}
         </Text>
       </Box>
       {adminUser?.role === "manager" ? (
-        <Box mb={6} position="relative" left="40px">
+        // Manager area
+        <Box position="relative" left="40px">
           <Text color="gray.200" fontSize="1.1rem">
             <Menu placement="bottom-end">
               <MenuButton
@@ -212,6 +227,8 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                   bg: "#1D326B",
                 }}
                 aria-label="Actions"
+                position="relative"
+                top="1rem"
               />
 
               <MenuList
@@ -265,6 +282,9 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       _hover={{ bg: "#1D326B" }}
                       onClick={onOpen}
                     >
+                      <Text fontWeight="600" position="relative" top="8px">
+                        Modifier
+                      </Text>
                       <LeaveEdit
                         leave={leave}
                         isOpen={isOpen}
@@ -287,9 +307,9 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                     _hover={{
                       bg: "rgba(255,0,0,0.08)",
                     }}
-                    onClick={handleCancel}
+                    onClick={() => onDelete()}
                   >
-                    Annuler
+                    Supprimer
                   </MenuItem>
                 )}
               </MenuList>
@@ -297,7 +317,8 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           </Text>
         </Box>
       ) : (
-        <Box mb={6} position="relative" left="40px">
+        // Admin area
+        <Box position="relative" left="40px">
           <Text color="gray.200" fontSize="1.1rem">
             <Menu placement="bottom-end">
               <MenuButton
@@ -316,6 +337,8 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                   bg: "#1D326B",
                 }}
                 aria-label="Actions"
+                position="relative"
+                top="1rem"
               />
 
               <MenuList

@@ -112,7 +112,7 @@ declare global {
 
         getLeaveByMonth: (month: string) => Promise<LeaveWithEmployee[]>;
 
-        updateLeave: (
+        update: (
           _id: string,
           updates: {
             subject?: string;
@@ -123,7 +123,7 @@ declare global {
           }
         ) => Promise<LeaveWithEmployee>;
 
-        deleteLeave: (_id: string) => Promise<Leave>;
+        delete: (_id: string) => Promise<Leave>;
       };
 
       sync: () => Promise<{
