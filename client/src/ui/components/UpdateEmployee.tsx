@@ -61,7 +61,7 @@ const schema = z.object({
   emergencyContact: z.string().min(1, { message: errorMessage }),
   relationship: z.string().min(1, { message: errorMessage }),
   contactPhone: z.string().min(1, { message: errorMessage }),
-  salary: z.string().min(1, { message: errorMessage }),
+  salary: z.number().min(1, { message: errorMessage }),
 });
 
 type EmployeeData = z.infer<typeof schema>;

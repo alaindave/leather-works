@@ -47,6 +47,7 @@ const schema = z.object({
   firstName: z.string().min(1, { message: errorMessage }),
   lastName: z.string().min(1, { message: errorMessage }),
   matricule: z.string().min(1, { message: errorMessage }),
+  idNum: z.string().min(1, { message: errorMessage }),
   dateBirth: z.string().min(1, { message: errorMessage }),
   role: z.string().min(1, { message: errorMessage }),
   department: z.string().min(1, { message: errorMessage }),
@@ -208,31 +209,6 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                       <p className="text-danger">{errors.firstName.message}</p>
                     )}
                   </Box>
-                  {/* Employee ID input */}
-                  <Box>
-                    <HStack>
-                      <Box marginBottom="10px">
-                        <MdOutlineNumbers color="#F2B705" size="1.3rem" />
-                      </Box>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
-                        Matricule
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
-                      </FormLabel>
-                    </HStack>
-                    <Input
-                      color="#e6ebfe"
-                      width="300px"
-                      type="text"
-                      {...register("matricule")}
-                    />
-                    {errors.matricule && (
-                      <p className="text-danger">{errors.matricule.message}</p>
-                    )}
-                  </Box>
-                </HStack>
-                <HStack spacing="0.8rem" alignItems="flex-start">
                   {/* Date of birth input */}
                   <Box>
                     <HStack>
@@ -278,7 +254,106 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                       <p className="text-danger">{errors.dateBirth.message}</p>
                     )}
                   </Box>
-                  {/* Role input */}
+                </HStack>
+                <HStack spacing="0.8rem" alignItems="flex-start">
+                  {/* Employee ID input */}
+                  <Box>
+                    <HStack>
+                      <Box marginBottom="10px">
+                        <MdOutlineNumbers color="#F2B705" size="1.3rem" />
+                      </Box>
+                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                        Matricule
+                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
+                          *
+                        </span>
+                      </FormLabel>
+                    </HStack>
+                    <Input
+                      color="#e6ebfe"
+                      width="300px"
+                      type="text"
+                      {...register("matricule")}
+                    />
+                    {errors.matricule && (
+                      <p className="text-danger">{errors.matricule.message}</p>
+                    )}
+                  </Box>
+                  {/* National ID input */}
+                  <Box>
+                    <HStack>
+                      <Box marginBottom="10px">
+                        <MdOutlineNumbers color="#F2B705" size="1.3rem" />
+                      </Box>
+                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                        No de carte d'identite
+                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
+                          *
+                        </span>
+                      </FormLabel>
+                    </HStack>
+                    <Input
+                      color="#e6ebfe"
+                      width="300px"
+                      type="text"
+                      {...register("idNum")}
+                    />
+                    {errors.idNum && (
+                      <p className="text-danger">{errors.idNum.message}</p>
+                    )}
+                  </Box>
+                  {/* Hire date input */}
+                  <Box>
+                    <HStack>
+                      <Box marginBottom="10px">
+                        <FaCalendarDays color="#F2B705" size="1.3rem" />
+                      </Box>
+                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                        Date d'engagement
+                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
+                          *
+                        </span>
+                      </FormLabel>
+                    </HStack>
+                    {/* <InputGroup> */}
+
+                    <Controller
+                      control={control}
+                      name="dateHired"
+                      render={({ field }) => (
+                        <DatePicker
+                          selected={field.value ? new Date(field.value) : null}
+                          onChange={(date: any) => {
+                            field.onChange(
+                              date ? date.toISOString().split("T")[0] : ""
+                            );
+                          }}
+                          locale="fr"
+                          dateFormat="dd/MM/yyyy"
+                          showYearDropdown
+                          scrollableYearDropdown
+                          yearDropdownItemNumber={80}
+                          minDate={new Date(1990, 0, 1)}
+                          maxDate={new Date()}
+                          customInput={
+                            <Input
+                              color="#e6ebfe"
+                              width="300px"
+                              bg="#08162b"
+                              borderColor="#ffffff"
+                              borderWidth="1px"
+                            />
+                          }
+                        />
+                      )}
+                    />
+
+                    {errors.dateHired && (
+                      <p className="text-danger">{errors.dateHired.message}</p>
+                    )}
+                  </Box>
+                </HStack>
+                <HStack spacing="0.8rem" alignItems="flex-start">
                   <Box>
                     <HStack>
                       <Box marginBottom="10px">
@@ -301,6 +376,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                       <p className="text-danger">{errors.role.message}</p>
                     )}
                   </Box>
+
                   {/* Department input */}
                   {/* Department dropdown */}
                   <Box>
@@ -355,58 +431,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                       <p className="text-danger">{errors.department.message}</p>
                     )}
                   </Box>
-                </HStack>
-                <HStack spacing="0.8rem" alignItems="flex-start">
-                  {/* Hire date input */}
-                  <Box>
-                    <HStack>
-                      <Box marginBottom="10px">
-                        <FaCalendarDays color="#F2B705" size="1.3rem" />
-                      </Box>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
-                        Date d'engagement
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
-                      </FormLabel>
-                    </HStack>
-                    {/* <InputGroup> */}
 
-                    <Controller
-                      control={control}
-                      name="dateHired"
-                      render={({ field }) => (
-                        <DatePicker
-                          selected={field.value ? new Date(field.value) : null}
-                          onChange={(date: any) => {
-                            field.onChange(
-                              date ? date.toISOString().split("T")[0] : ""
-                            );
-                          }}
-                          locale="fr"
-                          dateFormat="dd/MM/yyyy"
-                          showYearDropdown
-                          scrollableYearDropdown
-                          yearDropdownItemNumber={80}
-                          minDate={new Date(1990, 0, 1)}
-                          maxDate={new Date()}
-                          customInput={
-                            <Input
-                              color="#e6ebfe"
-                              width="300px"
-                              bg="#08162b"
-                              borderColor="#ffffff"
-                              borderWidth="1px"
-                            />
-                          }
-                        />
-                      )}
-                    />
-
-                    {errors.dateHired && (
-                      <p className="text-danger">{errors.dateHired.message}</p>
-                    )}
-                  </Box>
                   {/* Salary input */}
                   <Box>
                     <HStack>
@@ -430,6 +455,8 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                       <p className="text-danger">{errors.salary.message}</p>
                     )}
                   </Box>
+                </HStack>
+                <HStack>
                   {/* Telephone input */}
                   <Box>
                     <HStack>
@@ -451,6 +478,31 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     />
                     {errors.telephone && (
                       <p className="text-danger">{errors.telephone.message}</p>
+                    )}
+                  </Box>
+
+                  {/* Addresse */}
+                  <Box>
+                    <HStack>
+                      <Box marginBottom="10px">
+                        <IoHome color="#F2B705" size="1.3rem" />
+                      </Box>
+                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                        Addresse
+                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
+                          *
+                        </span>
+                      </FormLabel>
+                    </HStack>
+                    <Input
+                      color="#e6ebfe"
+                      marginBottom="10px"
+                      width="38.5rem"
+                      type="text"
+                      {...register("address")}
+                    />
+                    {errors.address && (
+                      <p className="text-danger">{errors.address.message}</p>
                     )}
                   </Box>
                 </HStack>
@@ -536,28 +588,6 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
                     )}
                   </Box>
                 </HStack>
-
-                <HStack>
-                  <Box marginBottom="10px">
-                    <IoHome color="#F2B705" size="1.3rem" />
-                  </Box>
-                  <FormLabel color="#C7D2FE" marginBottom="10px">
-                    Addresse
-                    <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                      *
-                    </span>
-                  </FormLabel>
-                </HStack>
-                <Input
-                  color="#e6ebfe"
-                  marginBottom="10px"
-                  width="58rem"
-                  type="text"
-                  {...register("address")}
-                />
-                {errors.address && (
-                  <p className="text-danger">{errors.address.message}</p>
-                )}
               </FormControl>
             </ModalBody>
 
