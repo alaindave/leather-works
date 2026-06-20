@@ -1,4 +1,4 @@
-import type Attendance from "./types/Attendance";
+import type Attendance from "./Attendance.js";
 
 export interface AttendanceWithEmployee extends Attendance {
   firstName: string;

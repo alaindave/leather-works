@@ -3,9 +3,9 @@ import { app } from "electron";
 import {
   getSetting,
   setSetting,
-} from "../database/repositories/settings.repository.cjs";
-import { upsertEmployee } from "../database/repositories/employee.repository.cjs";
-import Employee from "@shared/types/Employee";
+} from "../database/repositories/settings.repository.js";
+import { upsertEmployee } from "../database/repositories/employee.repository.js";
+import Employee from "../../shared/types/Employee.js";
 // import { upsertAttendance } from "../repositories/attendanceRepository";
 // import { upsertLeave } from "../repositories/leaveRepository";
 

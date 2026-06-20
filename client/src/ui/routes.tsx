@@ -4,7 +4,6 @@ import App from "./App";
 import EmployeeAdminPage from "./pages/EmployeeAdminPage";
 import EmployeeListPage from "./pages/EmployeeListPage";
 import EmployeeDetailsPage from "./pages/EmployeeDetailsPage";
-import EmployeeDetailsPage from "./pages/EmployeeDetailsPage";
 import EmployeeAdminLayout from "./components/EmployeeAdminLayout";
 import EmployeeLeavePage from "./pages/EmployeeLeavePage";
 import EmployeeAttendancePage from "./pages/EmployeeAttendancePage";

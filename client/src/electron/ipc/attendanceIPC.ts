@@ -12,7 +12,7 @@ import {
   updateClockIn,
   updateClockOut,
   submitLateNotes,
-} from "../database/repositories/attendance.repository.cjs";
+} from "../database/repositories/attendance.repository.js";
 
 export function registerAttendanceIPC() {
   console.log("REGISTERING ATTENDANCE IPC");

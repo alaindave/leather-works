@@ -1,47 +1,22 @@
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   Box,
   Button,
   Flex,
-  FormControl,
-  FormLabel,
   Grid,
   HStack,
-  Input,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Spacer,
   Text,
-  Textarea,
   VStack,
   useDisclosure,
 } from "@chakra-ui/react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
-import DatePicker from "react-datepicker";
-import { Controller, useForm } from "react-hook-form";
-import { FaSave } from "react-icons/fa";
 import { FaCirclePlus } from "react-icons/fa6";
-import { RxCrossCircled } from "react-icons/rx";
-import { z } from "zod";
 import type Employee from "../../shared/types/Employee";
+import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
 import EmployeeLeaveCard from "../components/EmployeeLeaveCard";
 import MonthDropDown from "../components/MonthDropDown";
-import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
+import LeaveSubmissionModal from "../components/LeaveSubmissionModal";
+import DeletionDialog from "../components/DeletionDialog";
 
 const shimmerKeyframes = `
 @keyframes shimmer {
@@ -61,17 +36,6 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
   />
 );
 
-const errorMessage = "Ce champ est obligatoire";
-
-const schema = z.object({
-  startDate: z.string().min(1, { message: errorMessage }),
-  endDate: z.string().min(1, { message: errorMessage }),
-  subject: z.string().min(1, { message: errorMessage }),
-  notes: z.string().min(1, { message: errorMessage }),
-});
-
-type LeaveData = z.infer<typeof schema>;
-
 const gridTemplate = `
 1.5fr 1.5fr 1.5fr 1.4fr 1.4fr 1.1fr 1.1fr
 `;
@@ -83,26 +47,15 @@ const EmployeeLeavePage = () => {
     onOpen: onConfirmationOpen,
     onClose: onConfirmationClose,
   } = useDisclosure();
-
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [leaves, setLeaves] = useState<LeaveWithEmployee[]>([]);
   const [leave, setLeave] = useState<LeaveWithEmployee | null>(null);
-  const [employee, setEmployee] = useState<Employee | null>(null);
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+
   const [submissionMonth, setSubmissionMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    formState: { errors },
-  } = useForm<LeaveData>({ resolver: zodResolver(schema) });
 
   useEffect(() => {
     window.electron.employees
@@ -134,50 +87,9 @@ const EmployeeLeavePage = () => {
       })
       .finally(() => {
         setLoading(false);
+        setRefresh(false);
       });
-  }, [submissionMonth]);
-
-  //Handle leave submission
-  const onSubmit = async (data: LeaveData) => {
-    setIsSubmitting(true);
-    if (!employee?._id) {
-      console.error("No employee selected");
-      return;
-    }
-    try {
-      const leave = await window.electron.leave.create(
-        employee._id,
-        data.startDate,
-        data.endDate,
-        data.subject,
-        data.notes
-      );
-      setLeaves((prevLeaves) => [leave, ...prevLeaves]);
-      onClose();
-      reset();
-      setEmployee(null);
-      setErrorMessage("");
-    } catch (error: any) {
-      console.error("Unable to save leave:", error.message);
-      console.error("Unable to save leave:error status", error.status);
-      if (error.status == "400")
-        setErrorMessage("Une demande de congé existe deja pour cet employé");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleMenuClick = (employee: Employee) => {
-    console.log("Employee selected: ", employee);
-    setEmployee(employee);
-  };
-
-  const handleFormClose = () => {
-    setEmployee(null);
-    reset();
-    onClose();
-    setErrorMessage("");
-  };
+  }, [submissionMonth, refresh]);
 
   //Submit leave delete request
   const handleLeaveDelete = async () => {
@@ -190,6 +102,7 @@ const EmployeeLeavePage = () => {
         console.log("Deleted leave: ", leave);
         const updatedLeaves = leaves.filter((l) => l._id !== leave?._id);
         setLeaves(updatedLeaves);
+        setRefresh(true);
         setSubmissionMonth(submissionMonth);
         onConfirmationClose();
       })
@@ -286,12 +199,12 @@ const EmployeeLeavePage = () => {
     <>
       <Flex direction="column" justify="space-between">
         <Box
-          mt="0.7rem"
+          mt="0.5rem"
           ml="0.3rem"
           mr="1.5rem"
           bg="#F8F9FB"
           height="10rem"
-          width="78.5vw"
+          width="78vw"
         >
           <Flex>
             <Box>
@@ -317,10 +230,7 @@ const EmployeeLeavePage = () => {
             </Box>
             <Spacer />
             <Button
-              borderColor="black"
               backgroundColor="#F2B705"
-              borderRadius="1rem"
-              borderWidth="0.3rem"
               color="black"
               size="md"
               onClick={onOpen}
@@ -359,37 +269,38 @@ const EmployeeLeavePage = () => {
             <Grid
               templateColumns={gridTemplate}
               fontWeight="600"
-              background="#08162b"
-              margin="0.3rem"
+              bg="#F8F9FB"
               height="5rem"
-              width="78.5vw"
-              borderRadius="12px"
+              mt="0.2rem"
+              ml="0.3rem"
+              mb="0.2rem"
+              width="78vw"
               overflowY="hidden"
               overflowX="hidden"
             >
-              <Text fontSize="18px" color="#d6b65c" ml={8} mt={4}>
+              <Text color="gray.800" fontSize="1.1rem" ml={8} mt={4}>
                 Employé
               </Text>
-              <Text fontSize="18px" color="#d6b65c" mt={4}>
+              <Text color="gray.800" fontSize="1.1rem" mt={4}>
                 Debut de congé
               </Text>
-              <Text fontSize="18px" color="#d6b65c" mt={4}>
+              <Text color="gray.800" fontSize="1.1rem" mt={4}>
                 Fin de congé
               </Text>
-              <Text fontSize="18px" color="#d6b65c" mt={4}>
+              <Text mt={4} color="gray.800" fontSize="1.1rem">
                 Motif
               </Text>
-              <Text fontSize="18px" color="#d6b65c" mt={4}>
+              <Text color="gray.800" fontSize="1.1rem" mt={4}>
                 Statut
               </Text>
 
               <Box mt="0.4rem" position="relative" right="1rem">
-                <Text fontSize="18px" color="#d6b65c">
+                <Text color="gray.800" fontSize="1.1rem">
                   Congés
                 </Text>
                 <Text
-                  fontSize="18px"
-                  color="#d6b65c"
+                  color="gray.800"
+                  fontSize="1.1rem"
                   position="relative"
                   bottom="1.4rem"
                 >
@@ -397,7 +308,7 @@ const EmployeeLeavePage = () => {
                 </Text>
               </Box>
 
-              <Text fontSize="18px" color="#d6b65c" mt={4}>
+              <Text color="gray.800" fontSize="1.1rem" mt={4}>
                 Actions
               </Text>
             </Grid>
@@ -418,16 +329,16 @@ const EmployeeLeavePage = () => {
         )}
 
         <Flex
-          mb="0.5rem"
+          mb="1.1rem"
           ml="0.3rem"
-          height="4rem"
-          width="79.3vw"
+          height="3.5rem"
+          width="78vw"
           justify="space-between"
-          bg="gray.300"
+          bg="#F8F9FB"
         >
           <Box
-            mt="1rem"
-            ml="2rem"
+            mt="0.47rem"
+            ml="1rem"
             fontSize="1.2rem"
             fontFamily="monospace"
             fontWeight="600"
@@ -439,435 +350,26 @@ const EmployeeLeavePage = () => {
             color="gray.800"
             fontSize="24px"
             fontWeight="600"
-            mt="1rem"
+            mt="0.5rem"
             mr="2rem"
           >
             <Text>{new Date().toLocaleDateString("fr-FR")}</Text>
           </Box>
         </Flex>
       </Flex>
-
-      {/* Leave deletion confirmation dialog */}
-      <AlertDialog
+      <LeaveSubmissionModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onRefresh={() => setRefresh(true)}
+        employees={employees}
+      />
+      <DeletionDialog
         isOpen={isConfirmationOpen}
-        leastDestructiveRef={cancelRef}
         onClose={onConfirmationClose}
-      >
-        <AlertDialogOverlay backdropFilter="auto" backdropBlur="10px">
-          <AlertDialogContent bg="#08162b">
-            <AlertDialogHeader fontSize="lg" fontWeight="bold" color="#ffffff">
-              Annuler la demande
-            </AlertDialogHeader>
-
-            <AlertDialogBody color="#ffffff">
-              Etes vous sur de vouloir annuler cette demande?
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onConfirmationClose}>
-                Non
-              </Button>
-              <Button colorScheme="red" onClick={handleLeaveDelete} ml={3}>
-                Oui
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-      {/* Leave submission modal */}
-      <Box>
-        <Modal size="5xl" isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
-          <ModalContent bg="#08162b">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <ModalHeader color="#ffffff" position="relative" left="120px">
-                <HStack>
-                  <Box position="relative" left="120px">
-                    <p
-                      style={{
-                        color: "#ffffff",
-                        fontSize: "21px",
-                        fontWeight: "600",
-                      }}
-                    >
-                      Demande de congé
-                    </p>
-                  </Box>
-                  <Box position="relative" left="150px">
-                    <Menu>
-                      <MenuButton
-                        backgroundColor="transparent"
-                        as={Button}
-                        _hover={{ bg: "transparent" }}
-                      >
-                        {employee?._id ? (
-                          <HStack spacing={2}>
-                            <Text
-                              color="#ffffff"
-                              fontSize="22px"
-                              position="relative"
-                            >
-                              {employee?.firstName} {employee?.lastName}
-                            </Text>
-                            <Text
-                              color="#ffffff"
-                              fontSize="18px"
-                              position="relative"
-                            >
-                              #{employee.matricule}
-                            </Text>
-                          </HStack>
-                        ) : (
-                          <p style={{ color: "#ffffff", fontSize: "16px" }}>
-                            Choisissez un employé
-                          </p>
-                        )}
-                      </MenuButton>
-                      <MenuList maxH="450px" overflowY="auto">
-                        {employees.map((employee) => (
-                          <MenuItem
-                            key={employee._id}
-                            onClick={() => handleMenuClick(employee)}
-                            color="black"
-                            _hover={{
-                              backgroundColor: "#08162b",
-                              color: "#ffffff",
-                            }}
-                          >
-                            <Text>
-                              {employee.firstName} {employee.lastName}
-                            </Text>
-                          </MenuItem>
-                        ))}
-                      </MenuList>
-                    </Menu>
-                  </Box>
-                </HStack>
-              </ModalHeader>
-              <ModalCloseButton onClick={handleFormClose} />
-              <ModalBody bg="#08162b">
-                <FormControl>
-                  <VStack spacing="10px">
-                    <HStack>
-                      <Box>
-                        <HStack>
-                          <FormLabel color="#C7D2FE" marginBottom="10px">
-                            Nom
-                            <span
-                              style={{ color: "#F2B705", fontSize: "1rem" }}
-                            >
-                              *
-                            </span>
-                          </FormLabel>
-                        </HStack>
-                        <Input
-                          type="text"
-                          color="#e6ebfe"
-                          width="250px"
-                          value={employee?.lastName || ""}
-                          isReadOnly
-                        />
-                      </Box>
-                      <Box>
-                        <HStack>
-                          <FormLabel color="#C7D2FE" marginBottom="10px">
-                            Prenom
-                            <span
-                              style={{ color: "#F2B705", fontSize: "1rem" }}
-                            >
-                              *
-                            </span>
-                          </FormLabel>
-                        </HStack>
-                        <Input
-                          type="text"
-                          color="#e6ebfe"
-                          width="250px"
-                          value={employee?.firstName || ""}
-                          isReadOnly
-                        />
-                      </Box>
-                      <Box>
-                        <HStack>
-                          <FormLabel color="#C7D2FE" marginBottom="10px">
-                            Poste
-                            <span
-                              style={{ color: "#F2B705", fontSize: "1rem" }}
-                            >
-                              *
-                            </span>
-                          </FormLabel>
-                        </HStack>
-                        <Input
-                          type="text"
-                          color="#e6ebfe"
-                          width="250px"
-                          value={employee?.role || ""}
-                          isReadOnly
-                        />
-                      </Box>
-                    </HStack>
-
-                    <HStack>
-                      <Box>
-                        <HStack>
-                          <FormLabel color="#C7D2FE" marginBottom="10px">
-                            Departement
-                            <span
-                              style={{ color: "#F2B705", fontSize: "1rem" }}
-                            >
-                              *
-                            </span>
-                          </FormLabel>
-                        </HStack>
-                        <Input
-                          type="text"
-                          color="#e6ebfe"
-                          width="250px"
-                          value={employee?.department || ""}
-                          isReadOnly
-                        />
-                      </Box>
-                      <Box>
-                        <HStack>
-                          <FormLabel color="#C7D2FE" marginBottom="10px">
-                            Date de début de congé
-                            <span
-                              style={{ color: "#F2B705", fontSize: "1rem" }}
-                            >
-                              *
-                            </span>
-                          </FormLabel>
-                        </HStack>
-                        <Controller
-                          control={control}
-                          name="startDate"
-                          render={({ field }) => (
-                            <DatePicker
-                              selected={
-                                field.value ? new Date(field.value) : null
-                              }
-                              onChange={(date: Date | null) => {
-                                if (!date) {
-                                  field.onChange("");
-                                  return;
-                                }
-
-                                const year = date.getFullYear();
-                                const month = String(
-                                  date.getMonth() + 1
-                                ).padStart(2, "0");
-                                const day = String(date.getDate()).padStart(
-                                  2,
-                                  "0"
-                                );
-
-                                field.onChange(`${year}-${month}-${day}`);
-                              }}
-                              locale="fr"
-                              dateFormat="dd/MM/yyyy"
-                              showYearDropdown
-                              scrollableYearDropdown
-                              yearDropdownItemNumber={100}
-                              customInput={
-                                <Input
-                                  color="#e6ebfe"
-                                  width="300px"
-                                  bg="#08162b"
-                                  borderColor="#ffffff"
-                                  borderWidth="1px"
-                                />
-                              }
-                            />
-                          )}
-                        />
-                        {errors.startDate && (
-                          <Text className="text-danger">
-                            {errors.startDate.message}
-                          </Text>
-                        )}
-                      </Box>
-                      <Box>
-                        <HStack>
-                          <FormLabel color="#C7D2FE" marginBottom="10px">
-                            Date de fin de congé
-                            <span
-                              style={{ color: "#F2B705", fontSize: "1rem" }}
-                            >
-                              *
-                            </span>
-                          </FormLabel>
-                        </HStack>
-                        <Controller
-                          control={control}
-                          name="endDate"
-                          render={({ field }) => (
-                            <DatePicker
-                              selected={
-                                field.value ? new Date(field.value) : null
-                              }
-                              onChange={(date: Date | null) => {
-                                if (!date) {
-                                  field.onChange("");
-                                  return;
-                                }
-
-                                const year = date.getFullYear();
-                                const month = String(
-                                  date.getMonth() + 1
-                                ).padStart(2, "0");
-                                const day = String(date.getDate()).padStart(
-                                  2,
-                                  "0"
-                                );
-
-                                field.onChange(`${year}-${month}-${day}`);
-                              }}
-                              locale="fr"
-                              dateFormat="dd/MM/yyyy"
-                              showYearDropdown
-                              scrollableYearDropdown
-                              yearDropdownItemNumber={100}
-                              customInput={
-                                <Input
-                                  color="#e6ebfe"
-                                  width="300px"
-                                  bg="#08162b"
-                                  borderColor="#ffffff"
-                                  borderWidth="1px"
-                                />
-                              }
-                            />
-                          )}
-                        />
-                        {errors.endDate && (
-                          <Text className="text-danger">
-                            {errors.endDate.message}
-                          </Text>
-                        )}
-                      </Box>
-                    </HStack>
-                    <VStack>
-                      <Box>
-                        <HStack>
-                          <FormLabel color="#C7D2FE" marginBottom="10px">
-                            Sujet
-                            <span
-                              style={{ color: "#F2B705", fontSize: "1rem" }}
-                            >
-                              *
-                            </span>
-                          </FormLabel>
-                        </HStack>
-                        <Input
-                          color="#e6ebfe"
-                          width="300px"
-                          height="40px"
-                          {...register("subject")}
-                        />
-                        {errors.subject && (
-                          <Text className="text-danger">
-                            {errors.subject.message}
-                          </Text>
-                        )}
-                      </Box>
-                      <Box>
-                        <HStack>
-                          <FormLabel color="#C7D2FE" marginBottom="10px">
-                            Motif
-                            <span
-                              style={{ color: "#F2B705", fontSize: "1rem" }}
-                            >
-                              *
-                            </span>
-                          </FormLabel>
-                        </HStack>
-                        <Textarea
-                          color="#e6ebfe"
-                          height="300px"
-                          width="350px"
-                          resize="none"
-                          placeholder="Decrivez brievement le motif de votre demande..."
-                          _placeholder={{ opacity: 1, color: "gray.500" }}
-                          {...register("notes")}
-                        />
-                        {errors.notes && (
-                          <Text className="text-danger">
-                            {errors.notes.message}
-                          </Text>
-                        )}
-                      </Box>
-                    </VStack>
-                  </VStack>
-                </FormControl>
-              </ModalBody>
-
-              <ModalFooter bg="#08162b">
-                <HStack position="relative" right="2rem">
-                  <Text
-                    fontWeight="500"
-                    fontSize="1.1rem"
-                    position="relative"
-                    top="10px"
-                    right="20px"
-                    color="red.300"
-                  >
-                    {errorMessage}
-                  </Text>
-                  <Button
-                    borderRadius="10px"
-                    borderColor="black"
-                    bg="#F2B705"
-                    borderWidth="0.5px"
-                    colorScheme=" #320b01"
-                    color="black"
-                    mr={3}
-                    type="submit"
-                    isLoading={isSubmitting}
-                    loadingText="Patientez..."
-                    spinnerPlacement="start"
-                    isDisabled={isSubmitting}
-                  >
-                    <HStack>
-                      <Box>
-                        <FaSave />
-                      </Box>
-                      <Text position="relative" top="8px" fontSize="1rem">
-                        {" "}
-                        Soumettre
-                      </Text>
-                    </HStack>
-                  </Button>
-                  <Button
-                    borderColor="#ffffff"
-                    borderRadius="10px"
-                    bg="#08162b"
-                    borderWidth="0.5px"
-                    colorScheme=" #320b01"
-                    color="#1a000d"
-                    mr={3}
-                    onClick={handleFormClose}
-                  >
-                    <HStack>
-                      <Box>
-                        <RxCrossCircled color="#ffffff" size="18px" />
-                      </Box>
-                      <Text
-                        color="#ffffff"
-                        position="relative"
-                        top="8px"
-                        fontSize="1rem"
-                      >
-                        Annuler
-                      </Text>
-                    </HStack>
-                  </Button>
-                </HStack>
-              </ModalFooter>
-            </form>
-          </ModalContent>
-        </Modal>
-      </Box>
+        onConfirmation={handleLeaveDelete}
+        header="Supprimer"
+        body="Etes vous sur de vouloir supprimer cette demande?"
+      />
     </>
   );
 };

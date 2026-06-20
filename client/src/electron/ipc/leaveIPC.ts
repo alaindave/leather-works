@@ -4,9 +4,10 @@ import {
   createLeave,
   getLeaveById,
   getLeaveByMonth,
+  getOngoingLeaves,
   updateLeave,
   deleteLeave,
-} from "../database/repositories/leave.repository.cjs";
+} from "../database/repositories/leave.repository.js";
 
 export function registerLeaveIPC() {
   console.log("REGISTERING LEAVE IPC");
@@ -27,6 +28,10 @@ export function registerLeaveIPC() {
 
   ipcMain.handle("leave:getLeaveById", async (_, _id: string) => {
     return getLeaveById(_id);
+  });
+
+  ipcMain.handle("leave:getOnGoing", async () => {
+    return getOngoingLeaves();
   });
 
   ipcMain.handle("leave:getLeaveByMonth", async (_, month: string) => {

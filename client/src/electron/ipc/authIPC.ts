@@ -1,6 +1,6 @@
 import { ipcMain, app } from "electron";
 import axios from "axios";
-import { clearToken, saveToken } from "../auth.cjs";
+import { clearToken, saveToken } from "../auth.js";
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"
   : process.env.VITE_API_URL;

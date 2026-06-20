@@ -7,7 +7,7 @@ import {
   updateEmployee,
   deleteEmployee,
   searchEmployees,
-} from "../database/repositories/employee.repository.cjs";
+} from "../database/repositories/employee.repository.js";
 
 export function registerEmployeeIPC() {
   console.log("REGISTERING EMPLOYEE IPC");

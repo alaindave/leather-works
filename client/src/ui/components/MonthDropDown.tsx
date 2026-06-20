@@ -57,6 +57,16 @@ export default function MonthDropDown({ onChange }: Props) {
       onChange={handleChange}
       isSearchable={false}
       menuPlacement="top"
+      styles={{
+        control: (base, state) => ({
+          ...base,
+          borderColor: state.isFocused ? "#3b82f6" : "#374151",
+          boxShadow: state.isFocused ? "0 0 0 2px #3b82f6" : "none",
+          "&:hover": {
+            borderColor: "#3b82f6",
+          },
+        }),
+      }}
     />
   );
 }

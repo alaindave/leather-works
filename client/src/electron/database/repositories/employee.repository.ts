@@ -1,7 +1,7 @@
-import { run, get, all } from "../db.cjs";
+import { run, get, all } from "../db.js";
 import { randomUUID } from "crypto";
-import Employee from "@shared/types/Employee";
-import { addToSyncQueue } from "./sync.repository.cjs";
+import Employee from "../../../shared/types/Employee.js";
+import { addToSyncQueue } from "./sync.repository.js";
 
 export async function createEmployee(
   employee: Omit<
@@ -251,6 +251,9 @@ export async function markEmployeeSynced(_id: string) {
 }
 
 export async function upsertEmployee(employee: Employee) {
+  console.log("BEFORE UPSERT");
+  console.log("EMPLOYEE:", employee);
+  console.log("MATRICULE:", employee.matricule);
   const local = await getEmployeeById(employee._id);
 
   if (local && new Date(local.updatedAt!) > new Date(employee.updatedAt!)) {

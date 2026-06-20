@@ -15,7 +15,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { AttendanceWithEmployee } from "../../shared/AttendanceWithEmployee";
+import { AttendanceWithEmployee } from "../../shared/types/AttendanceWithEmployee";
 
 interface Props {
   attendance?: AttendanceWithEmployee;
@@ -200,7 +200,7 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
                   onSubmit={handleEditClockIn}
                 >
                   <EditablePreview
-                    color="#FF8787"
+                    color="red.600"
                     fontSize="18px"
                     fontWeight="500"
                     px={2}
@@ -213,7 +213,7 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
                   />
 
                   <EditableInput
-                    color="white"
+                    color="brown"
                     fontSize="18px"
                     width="80px"
                     onFocus={() => {
@@ -282,7 +282,7 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
             isOpen={!!errorMessage}
           >
             <EditablePreview
-              color="#63E6BE"
+              color="green.700"
               fontSize="18px"
               fontWeight="500"
               px={2}
@@ -296,7 +296,7 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
           </Tooltip>
 
           <EditableInput
-            color="white"
+            color="brown"
             fontSize="1.1rem"
             width="80px"
             onFocus={() => {

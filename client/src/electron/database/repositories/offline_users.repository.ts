@@ -1,5 +1,5 @@
-import type OfflineUser from "../../../shared/types/OfflineUser";
-import { get, all, run } from "../db.cjs";
+import type OfflineUser from "../../../shared/types/OfflineUser.js";
+import { get, all, run } from "../db.js";
 
 export async function createOrUpdateOfflineUser(user: OfflineUser) {
   await run(

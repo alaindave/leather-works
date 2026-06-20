@@ -1,4 +1,4 @@
-import { get, run } from "../db.cjs";
+import { get, run } from "../db.js";
 
 type Setting = {
   value: string;

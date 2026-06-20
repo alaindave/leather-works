@@ -4,7 +4,7 @@ import { app } from "electron";
 import {
   getUnsyncedItems,
   markManySynced,
-} from "../database/repositories/sync.repository.cjs";
+} from "../database/repositories/sync.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"

@@ -35,7 +35,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             fontWeight="600"
             px={{ base: 3, md: 5 }}
             _selected={{
-              color: "#F2B705",
+              color: "#e68a00",
               borderColor: "#F2B705",
               bg: "rgba(242,183,5,0.08)",
             }}
@@ -53,7 +53,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             fontWeight="600"
             px={{ base: 3, md: 5 }}
             _selected={{
-              color: "#F2B705",
+              color: "#e68a00",
               borderColor: "#F2B705",
               bg: "rgba(242,183,5,0.08)",
             }}
@@ -71,7 +71,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             fontWeight="600"
             px={{ base: 3, md: 5 }}
             _selected={{
-              color: "#F2B705",
+              color: "#e68a00",
               borderColor: "#F2B705",
               bg: "rgba(242,183,5,0.08)",
             }}

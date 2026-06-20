@@ -24,9 +24,9 @@ export default function SyncButton() {
       bg="transparent"
       onClick={handleSync}
       isLoading={loading}
-      color="#ffffff"
+      color="gray.800"
       _hover={{ bg: "transparent" }}
-      fontSize="1rem"
+      fontSize="1.1rem"
     >
       <FaSyncAlt />
     </Button>

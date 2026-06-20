@@ -1,13 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-interface AdminUserData {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: "manager" | "admin";
-}
+import { AdminUserData } from "../shared/types/AdminUser";
 
 interface AdminUserStore {
   adminUser: AdminUserData | null;

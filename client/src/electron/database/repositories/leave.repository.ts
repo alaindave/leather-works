@@ -1,7 +1,7 @@
-import type Leave from "@shared/types/Leave";
+import type Leave from "../../../shared/types/Leave.js";
 import { randomUUID } from "crypto";
-import { all, get, run } from "../db.cjs";
-import { getEmployeeById } from "../repositories/employee.repository.cjs";
+import { all, get, run } from "../db.js";
+import { getEmployeeById } from "./employee.repository.js";
 
 export async function createLeave(
   employeeId: string,
@@ -108,6 +108,18 @@ export async function getLeaveByEmployee(employeeId: string) {
     ORDER BY date DESC
     `,
     [employeeId]
+  );
+}
+
+export async function getOngoingLeaves() {
+  return all(
+    `
+SELECT * 
+FROM leaves 
+WHERE startDate <= date('now') 
+  AND endDate >= date('now');
+
+    `
   );
 }
 

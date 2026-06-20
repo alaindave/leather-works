@@ -6,12 +6,12 @@ const router = express.Router();
 const { saveTask, getTasks } = require("../db.js");
 
 //Tasks by the manager
-router.post("/", authorize, verifyRole("manager"), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const io = req.app.get("io");
     const task = {
       author: req.body.author,
-      recipient: req.body.recipient,
+      recipients: req.body.recipients,
       message: req.body.message,
       createdAt: new Date(),
     };

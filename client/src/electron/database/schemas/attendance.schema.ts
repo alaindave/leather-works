@@ -1,4 +1,4 @@
-import { run } from "../db.cjs";
+import { run } from "../db.js";
 
 export async function createAttendanceTable() {
   await run(`

@@ -27,6 +27,7 @@ import Logo from "./Logo";
 import useAdminUser from "../../store/authStore";
 import ComponentErrorFallback from "../pages/ComponentErrorFallback";
 import { ErrorBoundary } from "react-error-boundary";
+import PageErrorFallback from "../pages/PageErrorFallback";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
@@ -53,26 +54,32 @@ const EmployeeNavBar = () => {
     <Flex
       position="relative"
       direction="column"
-      mt="0.7rem"
+      mt="0.5rem"
       ml="0.2rem"
       padding="8px"
-      height="98vh"
-      width="17.5rem"
+      height="97vh"
+      width="18.5rem"
       bg="#FFFFFF"
       borderRight="1px solid"
       borderColor="#D1D9E0"
       boxShadow="2px 0 8px rgba(0,0,0,0.04)"
       borderRadius="0"
     >
-      <Box borderBottom="1px solid" borderColor="#D1D9E0" pb="0.1rem" mb={4}>
-        <Logo text="Gestion de personnel" />
-      </Box>
-      <Box position="relative" top="2rem">
+      <Flex position="relative" left="0.4rem">
+        <Box padding="10px" position="relative" bottom="0.8rem" right="0.5rem">
+          <Logo text="Gestion de personnel" />
+        </Box>
+
+        <Box position="relative" left="0.4rem" top="0.7rem">
+          <SyncButton />
+        </Box>
+      </Flex>
+      <Box position="relative" top="2rem" left="0.5rem">
         <List>
           <ListItem marginBottom="40px">
             <HStack position="relative" right="1.5rem">
               {" "}
-              <FaHome size="1.5rem" color="#0078D4" />
+              <FaHome size="1.5rem" />
               <NavLink className="nav-button" end to="/employees_admin">
                 Tableau de bord
               </NavLink>
@@ -80,52 +87,63 @@ const EmployeeNavBar = () => {
           </ListItem>
           <ListItem marginBottom="40px">
             <HStack position="relative" right="1.5rem">
-              <IoPeopleSharp size="1.5rem" color="#0078D4" />
-              <NavLink
-                className="nav-button"
-                to="/employees_admin/employees_list"
-              >
-                Employés
-              </NavLink>
+              <IoPeopleSharp size="1.5rem" />
+              <ErrorBoundary FallbackComponent={PageErrorFallback}>
+                <NavLink
+                  to="/employees_admin/employees_list"
+                  className="nav-button"
+                >
+                  Employés
+                </NavLink>
+              </ErrorBoundary>
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">
             <HStack position="relative" right="1.5rem">
-              <FaRegClock size="1.5rem" color="#0078D4" />
-              <NavLink className="nav-button" to="/employees_admin/attendances">
-                Présence
-              </NavLink>
+              <FaRegClock size="1.5rem" />
+              <ErrorBoundary FallbackComponent={PageErrorFallback}>
+                <NavLink
+                  className="nav-button"
+                  to="/employees_admin/attendances"
+                >
+                  Présence
+                </NavLink>
+              </ErrorBoundary>
             </HStack>
           </ListItem>
           <ListItem marginBottom="40px">
             <HStack position="relative" right="1.5rem">
-              <FaRegCalendarAlt size="1.5rem" color="#0078D4" />
-              <NavLink className="nav-button" to="/employees_admin/leaves">
-                Congés
-              </NavLink>
+              <FaRegCalendarAlt size="1.5rem" />
+              <ErrorBoundary FallbackComponent={PageErrorFallback}>
+                <NavLink className="nav-button" to="/employees_admin/leaves">
+                  Congés
+                </NavLink>
+              </ErrorBoundary>
             </HStack>
           </ListItem>
 
           <ListItem marginBottom="40px">
-            <HStack position="relative" right="30px">
-              <FaFileSignature size="1.5rem" color="#0078D4" />
-              <NavLink className="nav-button" to="/admin">
-                Fiches de paye
-              </NavLink>
+            <HStack position="relative" right="1.4rem">
+              <FaFileSignature size="1.5rem" />
+              <ErrorBoundary FallbackComponent={PageErrorFallback}>
+                <NavLink className="nav-button" to="/admin">
+                  Fiches de paye
+                </NavLink>
+              </ErrorBoundary>
             </HStack>
           </ListItem>
         </List>
       </Box>
       {/* Admin user  */}
       <Flex
-        borderWidth="2px"
+        borderWidth="2.5px"
         borderColor="gray.900"
-        borderRadius="15px"
+        borderRadius="0.3rem"
         position="absolute"
-        left="0.1rem"
-        bottom="0.1rem"
+        left="0.01rem"
+        bottom="0.01rem"
         height="60px"
-        width="17.3rem"
+        width="18.45rem"
         right="7px"
         justify="space-evenly"
       >
@@ -137,7 +155,7 @@ const EmployeeNavBar = () => {
           bg="#ffffff"
           borderColor="blue"
           position="relative"
-          top="0.3rem"
+          top="0.4rem"
           right="0.2rem"
           justifyContent="center"
           alignItems="center"

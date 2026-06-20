@@ -5,6 +5,7 @@ const employeeSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   matricule: { type: String, required: true },
+  idNum: { type: String, required: true, default: "BDI/11/222" },
   dateBirth: { type: Date, required: true },
   role: { type: String, required: true },
   dateHired: { type: Date, required: true },

@@ -1,7 +1,7 @@
-import type Attendance from "@shared/types/Attendance";
+import type Attendance from "../../../shared/types/Attendance.js";
 import { randomUUID } from "crypto";
-import { all, get, run } from "../db.cjs";
-import { getEmployeeById } from "../repositories/employee.repository.cjs";
+import { all, get, run } from "../db.js";
+import { getEmployeeById } from "./employee.repository.js";
 
 export async function createAttendance(employeeId: string, clockIn: string) {
   const employee = await getEmployeeById(employeeId);

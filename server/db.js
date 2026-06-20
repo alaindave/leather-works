@@ -340,6 +340,16 @@ const createAdminUser = async ({ firstName, lastName, email, password }) => {
   }
 };
 
+//Retrieve all admin users
+const getAllAdmins = async () => {
+  try {
+    return await AdminUser.find();
+  } catch (error) {
+    console.error("Error while fetching admin users: ", error);
+    throw error;
+  }
+};
+
 //Retrieve admin user by ID
 const getAdminUserByID = async (_id) => {
   try {
@@ -418,6 +428,7 @@ module.exports = {
   deleteLeave,
   createAdminUser,
   getAdminUserByID,
+  getAllAdmins,
   getAdminUserByEmail,
   updateAdminUser,
   saveTask,

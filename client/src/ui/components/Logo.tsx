@@ -16,16 +16,18 @@ const Logo = ({ text }: Props) => {
           <Image src={logo} boxSize="70px" borderRadius="30px" />
         </Link>
       </Box>
-      <Box marginLeft="8px">
+      <Box position="relative" left="0.4rem" top="0.3rem">
         <Text color="#1F2937" fontSize="25px" fontWeight="700">
           AFRITAN
         </Text>
         <Text
           position="relative"
+          left="0.1rem"
           bottom="1.5rem"
-          fontSize="1rem"
+          fontSize="0.92rem"
+          color="gray.900"
           fontWeight="500"
-          color="#1F2937"
+          whiteSpace="nowrap"
         >
           {text}
         </Text>

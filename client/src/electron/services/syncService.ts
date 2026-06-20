@@ -1,5 +1,5 @@
-import { pushPendingChanges } from "./pushService.cjs";
-import { pullLatestChanges } from "./pullService.cjs";
+import { pushPendingChanges } from "./pushService.js";
+import { pullLatestChanges } from "./pullService.js";
 
 let syncing = false;
 

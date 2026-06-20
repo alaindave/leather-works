@@ -17,18 +17,35 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
       w="100%"
       minH="4rem"
       maxH="6rem"
-      bg="#0E1E47"
+      bg="#F8F9FB"
       borderRadius="12px"
-      borderWidth="1px"
+      borderWidth="2px"
       borderColor="gray.600"
     >
-      <Box p={3} borderRadius="full" bg="rgba(242,183,5,0.08)" flexShrink={0}>
-        <ChakraIcon as={icon} color="#F2B705" boxSize={{ base: 5, md: 6 }} />
+      <Box
+        p={3}
+        borderWidth="2px"
+        borderRadius="full"
+        borderColor="gray.500"
+        bg="rgba(242,183,5,0.08)"
+        flexShrink={0}
+        height="2.2rem"
+        width="2.2rem"
+        position="relative"
+      >
+        <ChakraIcon
+          as={icon}
+          color="gray.600"
+          fontSize="1.3rem"
+          position="relative"
+          bottom="0.6rem"
+          right="0.4rem"
+        />
       </Box>
 
       <Box flex="1" minW={0} ml="0.3rem" mt="1.5rem">
         <Text
-          color="#C7D2FE"
+          color="gray.700"
           fontWeight="700"
           fontSize={{ base: "md", md: "lg", lg: "lg" }}
         >
@@ -36,7 +53,7 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
         </Text>
 
         <Text
-          color="gray.300"
+          color="gray.600"
           fontSize={{ base: "md", md: "lg" }}
           wordBreak="break-word"
           position="relative"

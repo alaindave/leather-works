@@ -1,4 +1,4 @@
-import type Leave from "./Leave";
+import type Leave from "./Leave.js";
 
 export interface LeaveWithEmployee extends Leave {
   firstName: string;

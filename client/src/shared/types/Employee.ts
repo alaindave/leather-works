@@ -2,13 +2,10 @@ export default interface Employee {
   _id: string;
   firstName: string;
   lastName: string;
-  employeeID: string;
-  idNum: string;
-  dateBirth: Date;
   matricule: string;
+  idNum: string;
   dateBirth: string;
   role: string;
-  dateHired: Date;
   department: string;
   dateHired: string;
   salary: number;
@@ -18,8 +15,6 @@ export default interface Employee {
   emergencyContact: string;
   relationship: string;
   contactPhone: string;
-  salary: string;
-  status: string;
   remainingLeave: number;
   synced: number;
   isDeleted: number;

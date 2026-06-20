@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
-import OfflineUser from "@shared/types/OfflineUser";
-import type Employee from "../shared/types/Employee";
+type OfflineUser = import("../shared/types/OfflineUser", { with: { "resolution-mode": "require" } }).default;
+type Employee = import("../shared/types/Employee", { with: { "resolution-mode": "require" } }).default;
+type Task = import("../shared/types/Task", { with: { "resolution-mode": "require" } }).default;
 
 interface LoginCredentials {
   email: string;
@@ -34,9 +35,9 @@ contextBridge.exposeInMainWorld("electron", {
   },
 
   tasks: {
-    createTasks: (data: string) => ipcRenderer.invoke("tasks:create", data),
+    create: (task: Task) => ipcRenderer.invoke("tasks:create", task),
 
-    getTasks: () => ipcRenderer.invoke("tasks:get"),
+    getAll: () => ipcRenderer.invoke("tasks:getAll"),
 
     onNew: (callback: (data: any) => void) => {
       const handler = (_: any, data: any) => {
@@ -49,6 +50,10 @@ contextBridge.exposeInMainWorld("electron", {
         ipcRenderer.removeListener("task:new", handler);
       };
     },
+  },
+
+  adminUsers: {
+    getAll: () => ipcRenderer.invoke("admin:getAll"),
   },
 
   employees: {
@@ -118,6 +123,8 @@ contextBridge.exposeInMainWorld("electron", {
       ),
     getLeaveById: (_id: string) =>
       ipcRenderer.invoke("leave:getLeaveById", _id),
+
+    getOngoingLeaves:()=>ipcRenderer.invoke("leave:getOnGoing"),
 
     getLeaveByMonth: (month: string) =>
       ipcRenderer.invoke("leave:getLeaveByMonth", month),

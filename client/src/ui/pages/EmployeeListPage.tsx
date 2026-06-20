@@ -63,11 +63,11 @@ const EmployeeListPage = () => {
       {/* HEADER */}
       <Flex
         direction="column"
-        w="79.3vw"
+        w="77.8vw"
         bg="#F8F9FB"
         height="10rem"
-        mt="0.7rem"
-        ml="0.3rem"
+        mt="0.5rem"
+        ml="0.2rem"
       >
         <Flex>
           <Box>
@@ -76,24 +76,24 @@ const EmployeeListPage = () => {
               fontSize="1.6rem"
               fontWeight="700"
               ml="0.4rem"
-              mt="0.2rem"
+              mt="0.3rem"
             >
               Employés
             </Text>
             <Text
               color="gray.900"
-              fontSize="1rem"
+              fontSize="0.92rem"
               fontWeight="500"
               position="relative"
-              left="0.5rem"
-              bottom="1.3rem"
+              left="0.45rem"
+              bottom="1.5rem"
             >
               Gérez les informations de vos employés
             </Text>
           </Box>
           <Spacer />
           {adminUser?.role === "manager" ? (
-            <Box mt="0.1rem" mr="0.2rem">
+            <Box mt="0.4rem" mr="0.2rem">
               <AddEmployee onAddEmployee={handleAddEmployee} />
             </Box>
           ) : (
@@ -115,7 +115,7 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} mt="0.3rem">
+          <Flex wrap="wrap" gap={2} mt="1.35rem" ml="0.1rem">
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
@@ -123,9 +123,8 @@ const EmployeeListPage = () => {
             position="relative"
             left="1.1rem"
             wrap="wrap"
-            justify={{ base: "stretch", md: "flex-end" }}
             mt="1.1rem"
-            mr="0.1rem"
+            mr="1.2rem"
           >
             <SearchBar onSearch={handleOnSearch} />
           </Flex>
@@ -172,7 +171,7 @@ const EmployeeListPage = () => {
               ))}
             </VStack>
           ) : (
-            <List position="relative" bottom="0.2rem" right="2rem">
+            <List position="relative" bottom="0.2rem" right="2.2rem">
               {employees
                 .filter((employee) => !filter || employee.department === filter)
                 .filter((employee) =>
@@ -196,7 +195,13 @@ const EmployeeListPage = () => {
       </Flex>
 
       {/* FOOTER SPACER  */}
-      <Box h="50px" bg="black" borderRadius="10px"></Box>
+      <Box
+        h="2.5rem"
+        bg="black"
+        borderRadius="12px"
+        ml="0.2rem"
+        mb="0.5rem"
+      ></Box>
     </Flex>
   );
 };

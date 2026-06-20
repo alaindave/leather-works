@@ -13,7 +13,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
 import ClockIn from "./ClockIn";
-import { AttendanceWithEmployee } from "../../shared/AttendanceWithEmployee";
+import { AttendanceWithEmployee } from "../../shared/types/AttendanceWithEmployee";
 
 interface Props {
   attendance: AttendanceWithEmployee | undefined;
@@ -251,15 +251,16 @@ const EmployeeAttendanceCard = ({
       alignItems="center"
       px={4}
       py={5}
-      bg="#0E1E47"
-      borderRadius="18px"
+      bg="#F8F9FB"
       border="1px solid #22345F"
-      w="78.5vw"
+      width="78.3vw"
       height="6.3rem"
+      mb="0.1rem"
     >
       {/* Employee Name */}
       <Text
-        color="gray.200"
+        color="gray.800"
+        fontWeight="500"
         fontSize="18px"
         whiteSpace="normal"
         wordBreak="break-word"
@@ -269,17 +270,17 @@ const EmployeeAttendanceCard = ({
       </Text>
 
       {/* Employee ID */}
-      <Text color="gray.200" fontSize="18px">
+      <Text color="gray.800" fontWeight="500" fontSize="18px">
         {matricule}
       </Text>
 
       {/* Role */}
-      <Text color="gray.200" fontSize="18px">
+      <Text color="gray.800" fontWeight="500" fontSize="18px">
         {role}
       </Text>
 
       {/* Department */}
-      <Text color="gray.200" fontSize="1.1rem">
+      <Text color="gray.800" fontWeight="500" fontSize="1.1rem">
         {department}
       </Text>
 
@@ -317,7 +318,7 @@ const EmployeeAttendanceCard = ({
               onSubmit={handleEditClockOut}
             >
               <EditablePreview
-                color="#B197FC"
+                color="purple.700"
                 fontSize="18px"
                 fontWeight="500"
                 px={2}
@@ -329,7 +330,7 @@ const EmployeeAttendanceCard = ({
                 }}
               />
               <EditableInput
-                color="white"
+                color="brown"
                 fontSize="18px"
                 width="80px"
                 onFocus={() => {
@@ -380,7 +381,7 @@ const EmployeeAttendanceCard = ({
                 }}
               />
               <EditableInput
-                color="white"
+                color="brown"
                 fontSize="18px"
                 width="80px"
                 onFocus={() => {
@@ -410,7 +411,7 @@ const EmployeeAttendanceCard = ({
             _hover={{
               bg: "transparent",
             }}
-            color={clockOutMode === "editing" ? "red.300" : "#F2B705"}
+            color={clockOutMode === "editing" ? "red.300" : "yellow.600"}
             onClick={handleToggleClockOut}
           >
             <GiClockwork size="1.8rem" />

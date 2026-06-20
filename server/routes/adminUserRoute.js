@@ -6,6 +6,7 @@ const {
   createAdminUser,
   updateAdminUser,
   getAdminUserByID,
+  getAllAdmins,
   getAdminUserByEmail,
 } = require("../db");
 const _ = require("lodash");
@@ -37,6 +38,21 @@ router.post("/", async (req, res) => {
     .set("Access-Control-Expose-Headers", "X-auth-token")
     .header("x-auth-token", token)
     .send(_.pick(adminUser, ["_id", "firstName", "lastName", "email"]));
+});
+
+//Fetch all admins
+router.get("/", async (req, res) => {
+  try {
+    const admins = await getAllAdmins();
+    if (!admins) {
+      return res.status(404).send("No admins found.");
+    }
+    console.log("Fetched admins: ", admins);
+    res.status(200).send(admins);
+  } catch (error) {
+    console.error("An error occured while fetching admin users: ", error);
+    res.status(500).send(error);
+  }
 });
 
 //Fetch admin user info

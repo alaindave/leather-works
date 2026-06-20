@@ -1,5 +1,5 @@
-import type SyncQueueItem from "../../../shared/types/SyncQueueItem";
-import { all, run } from "../db.cjs";
+import type SyncQueueItem from "../../../shared/types/SyncQueueItem.js";
+import { all, run } from "../db.js";
 
 export async function addToSyncQueue(
   item: Omit<SyncQueueItem, "_id" | "synced" | "createdAt">

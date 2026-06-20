@@ -5,18 +5,14 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "target": "ES2022",
-    "module": "CommonJS",
+    "module": "node16",
     "outDir": "../../dist-electron",
     "rootDir": "../",
-    "baseUrl": "../../",
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "skipLibCheck": true,
     "types": ["node"],
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "paths": {
-      "@shared/*": ["src/shared/*"]
-    }
+    "allowSyntheticDefaultImports": true
   },
 
   "include": [

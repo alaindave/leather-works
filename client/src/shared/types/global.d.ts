@@ -2,9 +2,10 @@ export {};
 import type Employee from "./Employee";
 import type Attendance from "./Attendance";
 import type Leave from "./Leave";
-import type AttendanceWithEmployee from "../AttendanceWithEmployee";
+import type AttendanceWithEmployee from "./AttendanceWithEmployee";
 import type LeaveWithEmployee from "./LeaveWithEmployee";
 import type Task from "./Task";
+import AdminUser from "./AdminUser";
 
 interface SaveFileResult {
   success: boolean;
@@ -49,11 +50,15 @@ declare global {
       };
 
       tasks: {
-        geTasks: () => Promise<Task[]>;
+        create: (data: Omit<Task, "_id" | "createdAt">) => Promise<Task>;
 
-        createTask: (data: Omit<Task, "_id" | "createdAt">) => Promise<Task>;
+        getAll: () => Promise<Task[]>;
 
         onNew: (callback: (data: Task) => void) => () => void;
+      };
+
+      adminUsers: {
+        getAll: () => Promise<AdminUser[]>;
       };
 
       employees: {
@@ -109,6 +114,8 @@ declare global {
         ) => Promise<LeaveWithEmployee>;
 
         getLeaveById: (_id: string) => Promise<LeaveWithEmployee>;
+
+        getOngoingLeaves: () => Promise<Leave[]>;
 
         getLeaveByMonth: (month: string) => Promise<LeaveWithEmployee[]>;
 

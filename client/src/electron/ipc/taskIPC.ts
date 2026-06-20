@@ -1,5 +1,5 @@
 import { ipcMain, app } from "electron";
-import { getToken } from "../auth.cjs";
+import { getToken } from "../auth.js";
 import axios from "axios";
 
 const API_URL = app.isPackaged
@@ -7,8 +7,8 @@ const API_URL = app.isPackaged
   : process.env.VITE_API_URL;
 console.log("API URL:", API_URL);
 
-export function registerAuthIPC() {
-  //Task post handler
+export function registerTaskIPC() {
+  console.log("REGISTERING TASK IPC");
   ipcMain.handle("tasks:create", async (_, task) => {
     console.log("Task received from Renderer: ", task);
     try {
@@ -31,7 +31,7 @@ export function registerAuthIPC() {
   });
 
   // //Get announcements
-  ipcMain.handle("tasks:get", async () => {
+  ipcMain.handle("tasks:getAll", async () => {
     try {
       const token = await getToken();
 

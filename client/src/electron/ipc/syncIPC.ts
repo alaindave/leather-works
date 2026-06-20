@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { sync } from "../services/syncService.cjs";
+import { sync } from "../services/syncService.js";
 
 export function registerSyncIPC() {
   console.log("REGISTERING SYNC IPC");

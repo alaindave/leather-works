@@ -98,36 +98,23 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       );
   };
 
-  // Handle cancel
-  // const handleCancel = () => {
-  //   window.electron.leave
-  //     .update(leave._id, {
-  //       status: "Annulé",
-  //     })
+  // // Handle cancel
+  const handleCancel = () => {
+    window.electron.leave
+      .update(leave._id, {
+        status: "Annulé",
+      })
 
-  //     .then((leave) => {
-  //       console.log("Cancelled leave: ", leave);
-  //       setLocalLeave(leave);
-  //     })
-  //     .catch((error) =>
-  //       console.error("An error occured while cancelling the leave", error)
-  //     );
-  // };
+      .then((leave) => {
+        console.log("Cancelled leave: ", leave);
+        setLocalLeave(leave);
+      })
+      .catch((error) =>
+        console.error("An error occured while cancelling the leave", error)
+      );
+  };
 
-  // Handle delete
-  // const handleDelete = () => {
-  //   window.electron.leave
-  //     .delete(leave._id)
-  //     .then((leave) => {
-  //       console.log("Deleted leave: ", leave);
-
-  //     })
-  //     .catch((error) =>
-  //       console.error("An error occured while cancelling the leave", error)
-  //     );
-  // };
-
-  // //Leave refresh
+  //Leave refresh
   const refreshLeave = async () => {
     const freshLeave = await window.electron.leave.getLeaveById(_id);
     setLocalLeave(freshLeave);
@@ -140,16 +127,16 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       ml="0.2rem"
       px={4}
       py={4}
-      bg="#0E1E47"
+      bg="#F8F9FB"
       minH="80px"
-      borderRadius="18px"
       border="1px solid #22345F"
-      width="78.5vw"
+      width="78.2vw"
       marginBottom="0.8px"
     >
       <Box ml="11px">
         <Text
-          color="gray.200"
+          color="gray.800"
+          fontWeight="500"
           fontSize="1.1rem"
           whiteSpace="normal"
           wordBreak="break-word"
@@ -160,12 +147,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         </Text>
       </Box>
       <Box ml="12px">
-        <Text color="gray.200" fontSize="1.1rem">
+        <Text fontSize="1.1rem" color="gray.800" fontWeight="500">
           {new Date(startDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
       <Box>
-        <Text color="gray.200" fontSize="1.1rem">
+        <Text fontSize="1.1rem" color="gray.800" fontWeight="500">
           {new Date(endDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
@@ -175,7 +162,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       <Box width="7rem">
         {status === "En attente d'approbation" ? (
           <Text
-            color="#F6E05E"
+            color="yellow.600"
             fontWeight="600"
             fontSize="1.05rem"
             whiteSpace="normal"
@@ -187,7 +174,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           <Text
             color={
               status === "Approuvé"
-                ? "#68D391"
+                ? "green.700"
                 : status === "Refusé"
                 ? "#FC8181"
                 : "yellow.500"
@@ -202,7 +189,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         )}
       </Box>
       <Box>
-        <Text color="gray.200" fontSize="1.1rem" ml="1rem">
+        <Text color="gray.800" fontSize="1.1rem" ml="1rem">
           {remainingLeave}
         </Text>
       </Box>
@@ -214,11 +201,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
               <MenuButton
                 mb={10}
                 as={IconButton}
-                icon={<PiDotsThreeOutlineVerticalDuotone size="18px" />}
+                icon={<PiDotsThreeOutlineVerticalDuotone size="1.5rem" />}
                 variant="ghost"
-                size="sm"
+                size="1rem"
                 borderRadius="full"
-                color="yellow.300"
+                fontWeight="600"
+                color="red.600"
                 _hover={{
                   bg: "#1D326B",
                   color: "white",
@@ -397,8 +385,9 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                     _hover={{ bg: "#1D326B" }}
                     fontSize="1rem"
                     fontWeight="600"
+                    onClick={handleCancel}
                   >
-                    Retirer la demande
+                    Annuler
                   </MenuItem>
                 )}
               </MenuList>

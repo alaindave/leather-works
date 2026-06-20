@@ -1,23 +1,27 @@
 import "dotenv/config";
 import { BrowserWindow, app } from "electron";
 import path from "path";
-import { getPreloadPath } from "./pathResolver.cjs";
-import { createSocket } from "./socket.cjs";
-import { isDev } from "./util/env-util.cjs";
-import { initializeDatabase } from "./database/initializeDatabase.cjs";
-import { registerEmployeeIPC } from "./ipc/employeeIPC.cjs";
-import { registerAttendanceIPC } from "./ipc/attendanceIPC.cjs";
-import { registerLeaveIPC } from "./ipc/leaveIPC.cjs";
-import { registerOfflineUsersIPC } from "./ipc/offlineUsersIPC.cjs";
-import { registerAuthIPC } from "./ipc/authIPC.cjs";
-import { registerAttendanceExportIPC } from "./ipc/attendanceExportIPC.cjs";
-import { registerSyncIPC } from "./ipc/syncIPC.cjs";
+import { getPreloadPath } from "./pathResolver.js";
+import { createSocket } from "./socket.js";
+import { isDev } from "./util/env-util.js";
+import { initializeDatabase } from "./database/initializeDatabase.js";
+import { registerEmployeeIPC } from "./ipc/employeeIPC.js";
+import { registerAttendanceIPC } from "./ipc/attendanceIPC.js";
+import { registerLeaveIPC } from "./ipc/leaveIPC.js";
+import { registerTaskIPC } from "./ipc/taskIPC.js";
+import { registerOfflineUsersIPC } from "./ipc/offlineUsersIPC.js";
+import { registerAuthIPC } from "./ipc/authIPC.js";
+import { registerAttendanceExportIPC } from "./ipc/attendanceExportIPC.js";
+import { registerSyncIPC } from "./ipc/syncIPC.js";
+import { fileURLToPath } from "url";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"
   : process.env.VITE_API_URL;
 console.log("API URL:", API_URL);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 //Create main and splash windows
 let mainWindow: BrowserWindow;
@@ -107,6 +111,7 @@ async function bootstrap() {
   registerAttendanceIPC();
   registerAttendanceExportIPC();
   registerLeaveIPC();
+  registerTaskIPC();
   registerSyncIPC();
   console.log("After IPC registration");
   createSplashWindow();

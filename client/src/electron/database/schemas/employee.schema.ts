@@ -1,4 +1,4 @@
-import { run } from "../db.cjs";
+import { run } from "../db.js";
 
 export async function createEmployeeTable() {
   await run(`
@@ -7,10 +7,12 @@ export async function createEmployeeTable() {
       firstName TEXT NOT NULL,
       lastName TEXT NOT NULL,
       matricule TEXT NOT NULL UNIQUE,
+      idNum TEXT NOT NULL,
       dateBirth TEXT NOT NULL,
       role TEXT NOT NULL,
       dateHired TEXT NOT NULL,
-      department TEXT NOT NULL,
+      department TEXT NOT NULL
+        CHECK(status IN ('Administration', 'Atelier', 'Usine', 'Magasin', 'Sentinelle')),
       telephone TEXT NOT NULL,
       address TEXT NOT NULL,
       emergencyContact TEXT NOT NULL,

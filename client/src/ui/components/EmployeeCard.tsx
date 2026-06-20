@@ -175,16 +175,14 @@ const EmployeeCard = ({ employee }: Props) => {
     <HStack
       bg="#ffffff"
       height="80px"
-      width="79.1vw"
+      w="77.8vw"
       padding="10px"
-      borderRadius="10px"
       position="relative"
       right="20px"
       spacing={4}
       borderRadius="8px"
-      spacing={5}
     >
-      <Box ml="0.5rem">
+      <Box ml="1.1rem">
         <Link
           to={{
             pathname: `/employees_admin/employees_list/${employee._id}`,
@@ -196,7 +194,7 @@ const EmployeeCard = ({ employee }: Props) => {
       <Box position="relative" top="10px">
         <Text
           color="gray.900"
-          fontWeight="500"
+          fontWeight="600"
           fontSize="23px"
           fontFamily="revert-layer"
           position="relative"
@@ -220,7 +218,7 @@ const EmployeeCard = ({ employee }: Props) => {
       <Box position="relative" left="10rem" top="0.3rem">
         {errorMessage && (
           <Text color="red.400" fontSize="1rem" fontWeight="500">
-            Veuillez entrer une heure valide (ex: 07:30){" "}
+            Veuillez entrer une heure valide!
           </Text>
         )}
       </Box>
@@ -236,7 +234,7 @@ const EmployeeCard = ({ employee }: Props) => {
             }
             position="absolute"
             top="15px"
-            right="150px"
+            right="12rem"
           >
             {!loadingAttendance && attendance?.status === "ponctuel" ? (
               <Badge bg="#123D2B" color="#5EF29B" fontSize="14px">
@@ -253,8 +251,8 @@ const EmployeeCard = ({ employee }: Props) => {
             opacity={attendance ? 1 : 0}
             pointerEvents={attendance ? "auto" : "none"}
             position="absolute"
-            top="20px"
-            right="60px"
+            top="1.2rem"
+            right="7rem"
           >
             <CiClock2 color="#967103" size="22px" />
           </Box>
@@ -264,9 +262,10 @@ const EmployeeCard = ({ employee }: Props) => {
             pointerEvents={attendance ? "auto" : "none"}
             position="absolute"
             top="18px"
-            right="0.1px"
+            right="1rem"
             color="gray.900"
             fontSize="17px"
+            fontWeight="500"
           >
             {attendance?.clockIn &&
               String(new Date(attendance.clockIn).getHours()).padStart(2, "0")}

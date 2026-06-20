@@ -167,7 +167,7 @@ const EmployeeDetailsPage = () => {
                 </Box>
               </Link>
 
-              <Box mt="0.3rem">
+              <Box mt="0.5rem">
                 <Text fontSize="1.4rem" fontWeight="600" color="#1F2937">
                   Détails de l'employé
                 </Text>
@@ -226,15 +226,17 @@ const EmployeeDetailsPage = () => {
                 />
 
                 <Text
-                  fontSize="lg"
+                  fontSize="1.2rem"
                   fontWeight="700"
-                  color="gray.200"
+                  color="gray.700"
                   textAlign="center"
                 >
                   {employee?.firstName} {employee?.lastName}
                 </Text>
 
-                <Text color="#C7D2FE">{employee?.role}</Text>
+                <Text fontSize="1rem" color="gray.600" fontWeight="600">
+                  {employee?.role}
+                </Text>
 
                 <HStack bg="#08162b" px={3} py={1} borderRadius="full">
                   <GoDotFill color="green" />
@@ -251,11 +253,11 @@ const EmployeeDetailsPage = () => {
                 <Divider />
 
                 <Box textAlign="center">
-                  <Text color="gray.800" fontSize="1.1rem">
+                  <Text color="gray.800" fontWeight="700" fontSize="1.1rem">
                     Matricule
                   </Text>
-                  <Text color="gray.800" fontWeight="700">
-                    {employee?.employeeID}
+                  <Text color="gray.800" fontWeight="500">
+                    #{employee?.matricule}
                   </Text>
                 </Box>
                 {adminUser?.role === "manager" ? (

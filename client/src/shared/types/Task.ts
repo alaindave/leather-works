@@ -1,8 +1,9 @@
-export interface Task {
+export default interface Task {
   _id: string;
-  subject: string;
   author: string;
-  recipient: string;
+  recipients: string[];
+  subject: string;
   message: string;
+  priority: "high" | "medium" | "low";
   createdAt: string;
 }

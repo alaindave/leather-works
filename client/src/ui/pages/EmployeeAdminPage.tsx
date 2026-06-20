@@ -3,34 +3,33 @@ import {
   Button,
   Flex,
   Grid,
-  Icon,
   Text,
   Textarea,
+  useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { CiCalendarDate, CiClock2 } from "react-icons/ci";
-import { FaSave } from "react-icons/fa";
-import { FaRegNoteSticky } from "react-icons/fa6";
-import { TfiAnnouncement } from "react-icons/tfi";
-import useAdminUser from "../../store/authStore";
-import { Task } from "../../shared/types/Task";
+import { AdminUser } from "../../shared/types/AdminUser";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
 import type Leave from "../../shared/types/Leave";
-import AdminUser from "../../shared/types/AdminUser";
+import type Task from "../../shared/types/Task";
+import useAdminUser from "../../store/authStore";
 import EmployeeDashboard from "../components/EmployeeDashboard";
+import TaskSubmissionModal from "../components/TaskSubmissionModal";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [leaves, setLeaves] = useState<Leave[]>([]);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [time, setTime] = useState<Date>(new Date());
   const [notes, setNotes] = useState("");
-  const [task, setTask] = useState("");
   const [liveTask, setLiveTask] = useState<Task | null>(null);
   const [oldTasks, setOldTasks] = useState<Task[]>([]);
   const adminUser = useAdminUser((store) => store.adminUser);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const lateCount = attendances.filter(
     (attendance) => attendance.status === "retard"
@@ -44,25 +43,25 @@ const EmployeeAdminPage = () => {
       setTime(new Date());
     }, 10000);
 
-    axios
-      .get<Employee[]>(`${API_URL}/employees`)
-      .then((res) => {
-        setEmployees(res.data);
-        return axios.get<Attendance[]>(`${API_URL}/attendances`, {
-          params: { date: new Date().toISOString().split("T")[0] },
-        });
+    window.electron.employees
+      .getAll()
+      .then((employees) => {
+        setEmployees(employees);
+        return window.electron.attendance.getByDate(
+          new Date().toISOString().split("T")[0]
+        );
       })
-      .then((res) => {
-        setAttendances(res.data);
-        return axios.get<Leave[]>(`${API_URL}/leaves/ongoing`);
+      .then((attendance) => {
+        setAttendances(attendance);
+        return window.electron.leave.getOngoingLeaves();
       })
-      .then((res) => {
-        setLeaves(res.data);
-        return axios.get<AdminUser>(`${API_URL}/adminUsers/${adminUser?._id}`);
+      .then((leaves) => {
+        setLeaves(leaves);
+        return window.electron.adminUsers.getAll();
       })
-      .then((res) => {
-        console.log("Retrieved admin user: ", res.data);
-        setNotes(res.data.notes);
+      .then((adminUsers) => {
+        console.log("Retrieved admin users: ", adminUsers);
+        setAdminUsers(adminUsers);
         return axios.get<Task[]>(`${API_URL}/tasks`);
       })
 
@@ -89,7 +88,7 @@ const EmployeeAdminPage = () => {
     return () => clearTimeout(timeout);
   }, [notes]);
 
-  //useEffect to fetch live tasks from manager
+  //useEffect to fetch live tasks
   useEffect(() => {
     const unsubscribe = window.electron.tasks.onNew((data) => {
       setLiveTask(data);
@@ -98,6 +97,17 @@ const EmployeeAdminPage = () => {
 
     return () => unsubscribe();
   }, []);
+
+  //refresh tasks
+  const handleTaskRefresh = async () => {
+    try {
+      const tasks = await window.electron.tasks.getAll();
+      console.log("Fetched tasks:", tasks);
+      setOldTasks(tasks);
+    } catch (e) {
+      console.log("An error occured while refreshing tasks:", e);
+    }
+  };
 
   //Submit personal notes
   const handleNotesSubmission = () => {
@@ -112,28 +122,14 @@ const EmployeeAdminPage = () => {
       );
   };
 
-  //Send announcements from manager
-  const handleAnnouncementSend = async () => {
-    console.log("Announcement to be sent to Main: ", task);
-    try {
-      const sendTask = await window.electron.tasks.createTask({
-        author: `${adminUser?.firstName} ${adminUser?.lastName}`,
-        message: task,
-      });
-      console.log("Task post results from Main: ", sendTask);
-    } catch (error) {
-      console.error("An error occured while creating task: ", error);
-    }
-  };
-
   return (
     <Flex
       direction="column"
       ml="0.3rem"
-      mt="0.63rem"
+      mt="0.5rem"
       mr="0.3rem"
       w="100%"
-      h="98vh"
+      h="97.3vh"
       bg="#F8F9FB"
       border="1px solid"
       borderColor="#D1D9E0"
@@ -173,7 +169,7 @@ const EmployeeAdminPage = () => {
           align="center"
           flexWrap="wrap"
           position="relative"
-          bottom="1rem"
+          bottom="1.8rem"
         >
           <Flex px={3} py={2} align="center" gap={2}>
             <CiCalendarDate color="#0078D4" size={22} />
@@ -204,7 +200,7 @@ const EmployeeAdminPage = () => {
       </Flex>
 
       {/* DASHBOARD */}
-      <Box mt={4}>
+      <Box>
         <EmployeeDashboard
           employeeCount={employees.length}
           attendanceCount={attendances.length}
@@ -235,7 +231,7 @@ const EmployeeAdminPage = () => {
           <Flex align="center" gap={2} mb={3}>
             <Text
               color="#1F2937"
-              fontSize="1.3rem"
+              fontSize="1.2rem"
               fontWeight="600"
               position="relative"
               top="0.4rem"
@@ -265,90 +261,16 @@ const EmployeeAdminPage = () => {
             }}
           />
         </Box>
-
-        {/* ANNOUNCEMENTS */}
-        {adminUser?.role === "manager" ? (
-          <Box
-            bg="#F8F9FB"
-            border="1px solid"
-            borderColor="#D1D9E0"
-            borderRadius="12px"
-            boxShadow="0 2px 8px rgba(1,0,1,1)"
-            p={5}
-            display="flex"
-            flexDir="column"
-          >
-            <Flex align="center" gap={2} mb={3}>
-              <Text
-                color="gray.200"
-                fontSize="lg"
-                fontWeight="600"
-                position="relative"
-                top="0.4rem"
-                color="#1F2937"
-              >
-                Envoyer une annonce
-              </Text>
-            </Flex>
-
-            <Textarea
-              flex="1"
-              placeholder="Faites vos annonces ici..."
-              value={task}
-              onChange={(e) => setTask(e.target.value)}
-              resize="none"
-              bg="#091735"
-              border="1px solid rgba(255,255,255,0.1)"
-              color="#ffffff"
-              _hover={{ borderColor: "yellow.300" }}
-              _focus={{
-                borderColor: "yellow.400",
-                boxShadow: "0 0 0 1px #F4C20D",
-              }}
-            />
-
-            <Button
-              mt={4}
-              alignSelf="flex-end"
-              bg="#F2B705"
-              color="black"
-              onClick={handleAnnouncementSend}
-            >
-              <FaSave style={{ marginRight: 8 }} />
-              Envoyer
-            </Button>
-          </Box>
-        ) : (
-          <Box
-            bg="#FFFFFF"
-            border="1px solid #B8C2CC"
-            borderRadius="10px"
-            p={5}
-          >
-            <Flex align="center" gap={2} mb={3}>
-              <Icon as={TfiAnnouncement} color="yellow.500" fontSize="1.8rem" />
-              <Text
-                color="#1F2937"
-                fontSize="1.3rem"
-                fontWeight="600"
-                position="relative"
-                top="0.3rem"
-                left="0.5rem "
-                _hover={{ borderColor: "yellow.300" }}
-                _focus={{
-                  borderColor: "yellow.400",
-                  boxShadow: "0 0 0 1px #F4C20D",
-                }}
-              >
-                Messages de la direction
-              </Text>
-            </Flex>
-
-            <Text color="#ffffff" fontSize="1.2rem">
-              {liveTask?.message || oldTasks[0]?.message}
-            </Text>
-          </Box>
-        )}
+        <Box>
+          <Button onClick={onOpen}>Creer une tache</Button>
+          <TaskSubmissionModal
+            isOpen={isOpen}
+            onClose={onClose}
+            onRefresh={handleTaskRefresh}
+            adminUsers={adminUsers}
+            author={adminUser!}
+          />
+        </Box>
       </Grid>
     </Flex>
   );

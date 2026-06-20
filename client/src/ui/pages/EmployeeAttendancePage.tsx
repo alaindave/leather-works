@@ -23,7 +23,7 @@ import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
 import DateDropdown from "../components/DateDropdown";
-import { AttendanceWithEmployee } from "../../shared/AttendanceWithEmployee";
+import { AttendanceWithEmployee } from "../../shared/types/AttendanceWithEmployee";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -60,7 +60,6 @@ const EmployeeAttendancePage = () => {
   const gridTemplate = `
   1.5fr 1.5fr 1.3fr 1.3fr 1fr 1fr 1fr
 `;
-
   /* ================= CLOCK ================= */
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -194,7 +193,13 @@ const EmployeeAttendancePage = () => {
       </AlertDialog>
 
       {/* ================= HEADER ================= */}
-      <Flex direction="column" mt="0.7rem" bg="#F8F9FB" height="10rem">
+      <Flex
+        direction="column"
+        mt="0.5rem"
+        bg="#F8F9FB"
+        height="10rem"
+        width="78.3vw"
+      >
         <Flex>
           <Box>
             <Text
@@ -243,33 +248,32 @@ const EmployeeAttendancePage = () => {
         px={10}
         fontWeight="600"
         bg="#F8F9FB"
-        mt="0.3rem"
-        mb="0.3rem"
+        mt="0.2rem"
+        mb="0.2rem"
         height="4.7rem"
-        ml="0.1rem"
-        width="79vw"
+        width="78.3vw"
         overflowY="hidden"
         overflowX="hidden"
       >
-        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.800" fontSize="1.1rem" mt="0.7rem">
           Employé
         </Text>
-        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.800" fontSize="1.1rem" mt="0.7rem">
           ID
         </Text>
-        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.800" fontSize="1.1rem" mt="0.7rem">
           Poste
         </Text>
-        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.800" fontSize="1.1rem" mt="0.7rem">
           Departement
         </Text>
-        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.800" fontSize="1.1rem" mt="0.7rem">
           Arrivée
         </Text>
-        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.800" fontSize="1.1rem" mt="0.7rem">
           Départ
         </Text>
-        <Text color="gray.600" fontSize="1.1rem" mt="0.7rem">
+        <Text color="gray.800" fontSize="1.1rem" mt="0.7rem">
           Actions
         </Text>
       </Grid>
@@ -319,9 +323,15 @@ const EmployeeAttendancePage = () => {
       </Box>
 
       {/* ================= FOOTER  ================= */}
-      <Flex bg="gray.300" mb="0.4rem" height="6rem" justify="space-between">
+      <Flex
+        bg="#F8F9FB"
+        mb="1rem"
+        height="5rem"
+        justify="space-between"
+        width="78.3vw"
+      >
         <Box
-          mt="1rem"
+          mt="0.6rem"
           ml="1rem"
           fontSize="1.2rem"
           fontFamily="monospace"
@@ -334,7 +344,7 @@ const EmployeeAttendancePage = () => {
           color="gray.800"
           fontSize="24px"
           fontWeight="600"
-          mt="1rem"
+          mt="0.6rem"
           mr="1.3rem"
         >
           {String(time.getHours()).padStart(2, "0")}:

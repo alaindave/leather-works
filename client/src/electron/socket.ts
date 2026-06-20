@@ -1,7 +1,7 @@
 import { BrowserWindow } from "electron";
 import { io, Socket } from "socket.io-client";
-import { Task } from "../shared/types/Task";
-import { getToken } from "./auth.cjs";
+import Task from "../shared/types/Task.js";
+import { getToken } from "./auth.js";
 
 let socket: Socket | null = null;
 

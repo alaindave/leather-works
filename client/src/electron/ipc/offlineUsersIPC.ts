@@ -7,7 +7,7 @@ import {
   getOfflineUserById,
   getAllOfflineUsers,
   deleteOfflineUser,
-} from "../../electron/database/repositories/offline_users.repository.cjs";
+} from "../database/repositories/offline_users.repository.js";
 
 export function registerOfflineUsersIPC() {
   console.log("REGISTERING OFFLINE USERS IPC");
