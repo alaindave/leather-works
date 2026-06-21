@@ -9,28 +9,17 @@ console.log("API URL:", API_URL);
 
 export function registerTaskIPC() {
   console.log("REGISTERING TASK IPC");
+  //Create tasks
   ipcMain.handle("tasks:create", async (_, task) => {
     console.log("Task received from Renderer: ", task);
     try {
-      const token = await getToken();
-      if (!token) {
-        throw new Error("No auth token found");
-      }
-
-      const res = await axios.post(`${API_URL}/tasks`, task, {
-        headers: {
-          "x-auth-token": token,
-        },
-      });
-      console.log("From Main: Task sent: ", res.data);
-      return res.data;
     } catch (error) {
       console.error("From Main: Error creating task: ", error);
       throw error;
     }
   });
 
-  // //Get announcements
+  //Get tasks
   ipcMain.handle("tasks:getAll", async () => {
     try {
       const token = await getToken();

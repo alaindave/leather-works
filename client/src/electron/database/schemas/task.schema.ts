@@ -1,16 +1,18 @@
 import { run } from "../db.js";
 
-export async function createTaskTable() {
+export async function createTaskTables() {
   await run(`
     CREATE TABLE IF NOT EXISTS tasks (
-      _id INTEGER PRIMARY KEY AUTOINCREMENT,
+      _id TEXT PRIMARY KEY,
       author TEXT NOT NULL,
       subject TEXT NOT NULL,
       message TEXT NOT NULL,
-      priority TEXT NOT NULL DEFAULT 'medium'
-        CHECK(priority IN ('high', 'medium', 'low')),
+      priority TEXT NOT NULL DEFAULT 'Moyenne'
+        CHECK(priority IN ('Haute', 'Moyenne', 'Basse')),
+      deadline TEXT NOT NULL,
       synced INTEGER DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (author) REFERENCES admin_users(_id)
     )
   `);

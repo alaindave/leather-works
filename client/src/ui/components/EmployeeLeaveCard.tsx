@@ -312,11 +312,10 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
               <MenuButton
                 mb={10}
                 as={IconButton}
-                icon={<PiDotsThreeOutlineVerticalDuotone size="18px" />}
+                icon={<PiDotsThreeOutlineVerticalDuotone size="1.6rem" />}
+                color="brown"
                 variant="ghost"
-                size="sm"
                 borderRadius="full"
-                color="yellow.300"
                 _hover={{
                   bg: "#1D326B",
                   color: "white",

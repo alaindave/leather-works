@@ -193,13 +193,15 @@ const EmployeeDetailsPage = () => {
                 </Box>
               </ErrorBoundary>
             ) : (
-              <NotAuthorized
-                buttonText="Modifier"
-                buttonColor="red"
-                icon={FaUserEdit}
-                placement="left"
-                width="13rem"
-              />
+              <Box position="relative" right="1rem" bottom="1.5rem">
+                <NotAuthorized
+                  buttonText="Modifier"
+                  buttonColor="red"
+                  icon={FaUserEdit}
+                  placement="left"
+                  width="13rem"
+                />
+              </Box>
             )}
           </Stack>
 

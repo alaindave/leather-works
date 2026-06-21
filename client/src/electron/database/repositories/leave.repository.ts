@@ -115,7 +115,7 @@ export async function getOngoingLeaves() {
   return all(
     `
 SELECT * 
-FROM leaves 
+FROM leave 
 WHERE startDate <= date('now') 
   AND endDate >= date('now');
 

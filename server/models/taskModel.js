@@ -21,7 +21,12 @@ const taskSchema = new mongoose.Schema({
   },
   subject: { type: String, required: true },
   message: { type: String, required: true },
-  priority: { type: String, required: true, enum: ["high", "medium", "low"] },
+  deadline: { type: Date, required: true },
+  priority: {
+    type: String,
+    required: true,
+    enum: ["Haute", "Moyenne", "Basse"],
+  },
   createdAt: { type: Date, required: true },
 });
 

@@ -17,15 +17,18 @@ import {
   ModalOverlay,
   Text,
   Textarea,
+  VStack,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
-
+import { IoIosCheckmarkCircle } from "react-icons/io";
 import { FaSave } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
+import { TiDelete } from "react-icons/ti";
 import { AdminUser, AdminUserData } from "../../shared/types/AdminUser";
+import DatePicker from "react-datepicker";
 
 interface Props {
   author: AdminUserData;
@@ -35,16 +38,19 @@ interface Props {
   adminUsers: AdminUser[];
 }
 
-const errorMessage = "Ce champ est obligatoire";
+const errorMessage = "Remplissez tous les champs!";
 
 const schema = z.object({
   subject: z.string().min(1, { message: errorMessage }),
   message: z.string().min(1, { message: errorMessage }),
   recipient: z.string().min(1, { message: errorMessage }),
+  deadline: z.string().min(1, { message: errorMessage }),
   priority: z.string().min(1, { message: errorMessage }),
 });
 
 type TaskData = z.infer<typeof schema>;
+
+type Priority = "Haute" | "Moyenne" | "Basse" | "";
 
 const TaskSubmissionModal = ({
   author,
@@ -53,27 +59,31 @@ const TaskSubmissionModal = ({
   onRefresh,
   adminUsers,
 }: Props) => {
-  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
+  const [adminUser, setAdminUser] = useState<AdminUserData>(
+    {} as AdminUserData
+  );
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [recipients, setRecipients] = useState([""]);
+  const [recipients, setRecipients] = useState<AdminUserData[]>([]);
+  const [priority, setPriority] = useState<Priority>("Moyenne");
+  const { register, handleSubmit, control, reset } = useForm<TaskData>({
+    resolver: zodResolver(schema),
+  });
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<TaskData>({ resolver: zodResolver(schema) });
-
-  const handleMenuClick = (adminUser: AdminUser) => {
-    console.log("Admin selected: ", adminUser);
+  const handleSelectRecipients = () => {
     console.log("Recipients: ", recipients);
-    setAdminUser(adminUser);
-    setRecipients([...recipients, adminUser._id]);
+    setRecipients([...recipients, adminUser]);
+  };
+
+  const handleRecipientDelete = (_id: string) => {
+    const updatedRecipient = recipients.filter((r) => r._id !== _id);
+    setRecipients(updatedRecipient);
   };
 
   const handleFormClose = () => {
-    setAdminUser(null);
+    setAdminUser({} as AdminUser);
+    setRecipients([]);
+    setPriority("");
     reset();
     onClose();
     setErrorMessage("");
@@ -88,19 +98,21 @@ const TaskSubmissionModal = ({
     }
     try {
       const result = await window.electron.tasks.create({
-        author: author._id,
+        author,
         subject: task.subject,
-        recipients,
         message: task.message,
-        priority: "high",
+        recipients,
+        deadline: task.deadline,
+        priority,
       });
       console.log("Task successfully created:", result);
-      setAdminUser(null);
+      setAdminUser({} as AdminUser);
       setErrorMessage("");
       onRefresh();
       reset();
       onClose();
     } catch (error: any) {
+      setErrorMessage("Une erreur est survenue. Veuillez contacter ADB Tech!");
       console.error("Unable to save task:", error.message);
       console.error("Unable to save task:error status", error.status);
     } finally {
@@ -113,54 +125,66 @@ const TaskSubmissionModal = ({
       <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
       <ModalContent bg="#F8F9FB">
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* <ModalHeader color="#ffffff" position="relative" left="120px">
-            <HStack>
-              <Box position="relative" left="120px">
-                <p
-                  style={{
-                    color: "#ffffff",
-                    fontSize: "21px",
-                    fontWeight: "600",
-                  }}
-                >
+          <ModalHeader color="#ffffff">
+            <Flex justify="space-between">
+              <Box>
+                <Text color="brown" fontSize="1.5rem">
                   Nouvelle tache
-                </p>
+                </Text>
               </Box>
-              <Box position="relative" left="150px">
+              <Box position="relative" left="3rem">
                 <Menu>
-                  <MenuButton
-                    backgroundColor="transparent"
-                    as={Button}
-                    _hover={{ bg: "transparent" }}
-                  >
-                    {adminUser?._id ? (
-                      <HStack spacing={2}>
-                        <Text
-                          color="#ffffff"
-                          fontSize="22px"
-                          position="relative"
-                        >
+                  <HStack>
+                    <MenuButton
+                      backgroundColor="transparent"
+                      as={Button}
+                      _hover={{ bg: "transparent" }}
+                      position="relative"
+                      top="0.4rem"
+                      right="5rem"
+                    >
+                      {adminUser?._id ? (
+                        <Text color="blue" fontSize="1.1rem">
                           {adminUser?.firstName} {adminUser?.lastName}
                         </Text>
-                      </HStack>
-                    ) : (
-                      <p style={{ color: "#ffffff", fontSize: "16px" }}>
-                        Destinataires
-                      </p>
+                      ) : (
+                        <Text
+                          color="gray.800"
+                          position="relative"
+                          top="0.4rem"
+                          right="1rem"
+                          fontSize="1rem"
+                        >
+                          Choisissez les destinataires
+                        </Text>
+                      )}
+                    </MenuButton>
+                    {adminUser?._id && (
+                      <Button
+                        position="relative"
+                        bottom="0.7rem"
+                        right="7.5rem"
+                        bg="transparent"
+                        onClick={handleSelectRecipients}
+                        _hover={{
+                          bg: "transparent",
+                        }}
+                      >
+                        <IoIosCheckmarkCircle size="1.2rem" color="green" />
+                      </Button>
                     )}
-                  </MenuButton>
+                  </HStack>
                   <MenuList maxH="450px" overflowY="auto">
                     {adminUsers.map((adminUser) => (
                       <MenuItem
                         key={adminUser._id}
-                        onClick={() => handleMenuClick(adminUser)}
+                        onClick={() => setAdminUser(adminUser)}
                         color="black"
                         _hover={{
-                          backgroundColor: "#08162b",
-                          color: "#ffffff",
+                          bg: "transparent",
                         }}
                       >
-                        <Text>
+                        <Text color="gray.800">
                           {adminUser.firstName} {adminUser.lastName}
                         </Text>
                       </MenuItem>
@@ -168,30 +192,100 @@ const TaskSubmissionModal = ({
                   </MenuList>
                 </Menu>
               </Box>
-            </HStack>
-          </ModalHeader> */}
+            </Flex>
+          </ModalHeader>
           <ModalCloseButton onClick={handleFormClose} />
-          <ModalBody
-            bg="#F8F9FB"
-            height="28rem"
-            border="1px solid"
-            borderColor="#D1D9E0"
-            borderRadius="12px"
-            boxShadow="0 2px 8px rgba(1,0,1,1)"
-          >
-            <Input
-              color="#e6ebfe"
-              width="300px"
-              height="40px"
-              {...register("subject")}
-            />
-            {errors.subject && (
-              <Text className="text-danger">{errors.subject.message}</Text>
-            )}
-
+          <ModalBody bg="#F8F9FB" height="25rem">
+            <HStack>
+              {/* Subject */}
+              <Input
+                color="gray.800"
+                fontWeight="600"
+                fontSize="1.2rem"
+                width="19rem"
+                height="40px"
+                border="2px solid gray"
+                position="relative"
+                {...register("subject")}
+                placeholder="Sujet"
+                _placeholder={{
+                  opacity: 1,
+                  color: "gray.500",
+                  fontWeight: "700",
+                  fontSize: "1.1rem",
+                }}
+              />
+              {/* Deadline */}
+              <Controller
+                control={control}
+                name="deadline"
+                render={({ field }) => (
+                  <DatePicker
+                    selected={field.value ? new Date(field.value) : null}
+                    onChange={(date: any) => {
+                      field.onChange(
+                        date ? date.toISOString().split("T")[0] : ""
+                      );
+                    }}
+                    locale="fr"
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Date limite"
+                    showYearDropdown
+                    scrollableYearDropdown
+                    yearDropdownItemNumber={80}
+                    customInput={
+                      <Input
+                        color="gray.900"
+                        fontWeight="600"
+                        width="17rem"
+                        bg="#ffffff"
+                        borderColor="gray.800"
+                        borderWidth="1.5px"
+                        _placeholder={{
+                          opacity: 1,
+                          color: "gray.500",
+                          fontWeight: "700",
+                          fontSize: "1.1rem",
+                        }}
+                      />
+                    }
+                  />
+                )}
+              />
+              {/* Priority */}
+              <Menu>
+                <MenuButton>
+                  <HStack>
+                    <Text position="relative" top="0.5rem" fontWeight="700">
+                      Priorite:
+                    </Text>
+                    <Text
+                      position="relative"
+                      top="0.5rem"
+                      right="0.4rem"
+                      fontWeight="500"
+                    >
+                      {priority}
+                    </Text>
+                  </HStack>
+                </MenuButton>
+                <MenuList>
+                  <MenuItem onClick={() => setPriority("Haute")}>
+                    Haute
+                  </MenuItem>
+                  <MenuItem onClick={() => setPriority("Moyenne")}>
+                    Moyenne
+                  </MenuItem>
+                  <MenuItem onClick={() => setPriority("Basse")}>
+                    Basse
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </HStack>
+            {/* Task text */}
             <Textarea
               flex="1"
-              height="18rem"
+              height="20rem"
               placeholder="Creer une tache ici..."
               resize="none"
               bg="#091735"
@@ -199,6 +293,8 @@ const TaskSubmissionModal = ({
               top="2rem"
               border="1px solid rgba(255,255,255,0.1)"
               color="#ffffff"
+              fontWeight="600"
+              fontSize="1.1rem"
               _hover={{ borderColor: "yellow.300" }}
               _focus={{
                 borderColor: "yellow.400",
@@ -206,13 +302,10 @@ const TaskSubmissionModal = ({
               }}
               {...register("message")}
             />
-            {errors.message && (
-              <Text className="text-danger">{errors.message.message}</Text>
-            )}
           </ModalBody>
 
-          {/* <ModalFooter bg="#F8F9FB">
-            <HStack position="relative" right="2rem">
+          <ModalFooter bg="#F8F9FB">
+            <VStack>
               <Text
                 fontWeight="500"
                 fontSize="1.1rem"
@@ -223,56 +316,77 @@ const TaskSubmissionModal = ({
               >
                 {errorMessage}
               </Text>
-              <Button
-                borderRadius="10px"
-                borderColor="black"
-                bg="#F2B705"
-                borderWidth="0.5px"
-                colorScheme=" #320b01"
-                color="black"
-                mr={3}
-                type="submit"
-                isLoading={isSubmitting}
-                loadingText="Patientez..."
-                spinnerPlacement="start"
-                isDisabled={isSubmitting}
-              >
-                <HStack>
-                  <Box>
-                    <FaSave />
+              <HStack>
+                {recipients?.map((recipient) => (
+                  <Box mr="0.8rem">
+                    <Button
+                      bg="transparent"
+                      _hover={{ bg: "transparent" }}
+                      position="relative"
+                      left="1.7rem"
+                      top="1rem"
+                      onClick={() => handleRecipientDelete(recipient._id)}
+                    >
+                      <TiDelete size="1.2rem" />
+                    </Button>
+                    <Text>{recipient.firstName}</Text>
+                    <Text position="relative" bottom="1.3rem">
+                      {recipient.lastName}
+                    </Text>
                   </Box>
-                  <Text position="relative" top="8px" fontSize="1rem">
-                    {" "}
-                    Créer
-                  </Text>
-                </HStack>
-              </Button>
-              <Button
-                borderColor="#ffffff"
-                borderRadius="10px"
-                bg="#08162b"
-                borderWidth="0.5px"
-                colorScheme=" #320b01"
-                color="#1a000d"
-                mr={3}
-                onClick={handleFormClose}
-              >
-                <HStack>
-                  <Box>
-                    <RxCrossCircled color="#ffffff" size="18px" />
-                  </Box>
-                  <Text
-                    color="#ffffff"
-                    position="relative"
-                    top="8px"
-                    fontSize="1rem"
-                  >
-                    Annuler
-                  </Text>
-                </HStack>
-              </Button>
-            </HStack>
-          </ModalFooter> */}
+                ))}
+
+                <Button
+                  borderRadius="10px"
+                  borderColor="black"
+                  bg="#F2B705"
+                  borderWidth="0.5px"
+                  colorScheme=" #320b01"
+                  color="black"
+                  mr={3}
+                  type="submit"
+                  isLoading={isSubmitting}
+                  loadingText="Patientez..."
+                  spinnerPlacement="start"
+                  isDisabled={isSubmitting}
+                >
+                  <HStack>
+                    <Box>
+                      <FaSave />
+                    </Box>
+                    <Text position="relative" top="8px" fontSize="1rem">
+                      {" "}
+                      Créer
+                    </Text>
+                  </HStack>
+                </Button>
+                <Button
+                  borderColor="#ffffff"
+                  borderRadius="10px"
+                  bg="#08162b"
+                  borderWidth="0.5px"
+                  colorScheme=" #320b01"
+                  color="#1a000d"
+                  mr={3}
+                  onClick={handleFormClose}
+                >
+                  <HStack>
+                    <Box>
+                      <RxCrossCircled color="#ffffff" size="18px" />
+                    </Box>
+                    <Text
+                      color="#ffffff"
+                      position="relative"
+                      top="8px"
+                      fontSize="1rem"
+                    >
+                      Annuler
+                    </Text>
+                  </HStack>
+                </Button>
+              </HStack>
+            </VStack>
+          </ModalFooter>
         </form>
       </ModalContent>
     </Modal>

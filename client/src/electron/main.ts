@@ -5,6 +5,7 @@ import { getPreloadPath } from "./pathResolver.js";
 import { createSocket } from "./socket.js";
 import { isDev } from "./util/env-util.js";
 import { initializeDatabase } from "./database/initializeDatabase.js";
+import { registerAdminIPC } from "./ipc/adminIPC.js";
 import { registerEmployeeIPC } from "./ipc/employeeIPC.js";
 import { registerAttendanceIPC } from "./ipc/attendanceIPC.js";
 import { registerLeaveIPC } from "./ipc/leaveIPC.js";
@@ -107,6 +108,7 @@ async function bootstrap() {
   console.log("After DB init");
   registerAuthIPC();
   registerOfflineUsersIPC();
+  registerAdminIPC();
   registerEmployeeIPC();
   registerAttendanceIPC();
   registerAttendanceExportIPC();

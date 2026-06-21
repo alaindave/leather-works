@@ -1,9 +1,13 @@
+import { AdminUserData } from "./AdminUser.js";
+type Priority = "Haute" | "Moyenne" | "Basse" | "";
+
 export default interface Task {
   _id: string;
-  author: string;
-  recipients: string[];
+  author: AdminUserData;
+  recipients: AdminUserData[];
   subject: string;
   message: string;
-  priority: "high" | "medium" | "low";
+  deadline: string;
+  priority: Priority;
   createdAt: string;
 }

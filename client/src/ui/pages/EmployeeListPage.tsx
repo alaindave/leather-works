@@ -97,7 +97,7 @@ const EmployeeListPage = () => {
               <AddEmployee onAddEmployee={handleAddEmployee} />
             </Box>
           ) : (
-            <Box position="relative" bottom="1.2rem">
+            <Box mt="0.2rem" mr="0.2rem">
               <NotAuthorized
                 buttonText="Ajouter un employé"
                 buttonColor="red"
