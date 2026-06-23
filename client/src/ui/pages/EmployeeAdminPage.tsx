@@ -10,7 +10,6 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { CiCalendarDate, CiClock2 } from "react-icons/ci";
-import { AdminUser } from "../../shared/types/AdminUser";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
 import type Leave from "../../shared/types/Leave";
@@ -18,12 +17,13 @@ import type Task from "../../shared/types/Task";
 import useAdminUser from "../../store/authStore";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 import TaskSubmissionModal from "../components/TaskSubmissionModal";
+import TaskRecipient from "../../shared/types/TaskRecipient";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [leaves, setLeaves] = useState<Leave[]>([]);
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [taskRecipients, setTaskRecipients] = useState<TaskRecipient[]>([]);
   const [time, setTime] = useState<Date>(new Date());
   const [notes, setNotes] = useState("");
   const [liveTask, setLiveTask] = useState<Task | null>(null);
@@ -57,11 +57,11 @@ const EmployeeAdminPage = () => {
       })
       .then((leaves) => {
         setLeaves(leaves);
-        return window.electron.adminUsers.getAll();
+        return window.electron.taskRecipients.getAll();
       })
-      .then((adminUsers) => {
-        console.log("Retrieved admin users: ", adminUsers);
-        setAdminUsers(adminUsers);
+      .then((taskRecipients) => {
+        console.log("Retrieved task recipients: ", taskRecipients);
+        setTaskRecipients(taskRecipients);
         return axios.get<Task[]>(`${API_URL}/tasks`);
       })
 
@@ -112,11 +112,15 @@ const EmployeeAdminPage = () => {
   //Submit personal notes
   const handleNotesSubmission = () => {
     console.log("Notes to submit:", notes);
+    window.electron.offlineUsers.save;
     axios
       .put(`${API_URL}/adminUsers/${adminUser?._id}`, {
         notes,
       })
-      .then((res) => console.log("Notes successfully saved: ", res.data))
+      .then((res) => {
+        console.log("Notes successfully saved: ", res.data);
+        setNotes(notes);
+      })
       .catch((error) =>
         console.error("An error occured while saving notes: ", error)
       );
@@ -267,7 +271,7 @@ const EmployeeAdminPage = () => {
             isOpen={isOpen}
             onClose={onClose}
             onRefresh={handleTaskRefresh}
-            adminUsers={adminUsers}
+            adminUserslist={taskRecipients}
             author={adminUser!}
           />
         </Box>

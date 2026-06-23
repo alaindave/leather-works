@@ -1,7 +1,10 @@
 const { contextBridge, ipcRenderer } = require("electron");
 type OfflineUser = import("../shared/types/OfflineUser", { with: { "resolution-mode": "require" } }).default;
 type Employee = import("../shared/types/Employee", { with: { "resolution-mode": "require" } }).default;
+type AttendanceWithEmployee = import("../shared/types/AttendanceWithEmployee", { with: { "resolution-mode": "require" } }).default;
+type Leave = import("../shared/types/Leave", { with: { "resolution-mode": "require" } }).default;
 type Task = import("../shared/types/Task", { with: { "resolution-mode": "require" } }).default;
+
 
 interface LoginCredentials {
   email: string;
@@ -20,6 +23,8 @@ contextBridge.exposeInMainWorld("electron", {
 
   offlineUsers: {
     save: (user: OfflineUser) => ipcRenderer.invoke("offline-users:save", user),
+
+    saveNotes:(_id: string,notes:string) => ipcRenderer.invoke("offline-users:saveNotes", _id,notes),
 
     login: (credentials: LoginCredentials) =>
       ipcRenderer.invoke("offline-users:login", credentials),
@@ -52,8 +57,8 @@ contextBridge.exposeInMainWorld("electron", {
     },
   },
 
-  adminUsers: {
-    getAll: () => ipcRenderer.invoke("admin:getAll"),
+  taskRecipients: {
+    getAll: () => ipcRenderer.invoke("taskRecipients:getAll"),
   },
 
   employees: {
@@ -64,8 +69,8 @@ contextBridge.exposeInMainWorld("electron", {
 
     getById: (_id: string) => ipcRenderer.invoke("employees:getById", _id),
 
-    update: (_id: string, data: Partial<Employee>) =>
-      ipcRenderer.invoke("employees:update", _id, data),
+    update: (_id: string, updates: Partial<Employee>) =>
+      ipcRenderer.invoke("employees:update", _id, updates),
 
     delete: (_id: string) => ipcRenderer.invoke("employees:delete", _id),
 
@@ -90,36 +95,28 @@ contextBridge.exposeInMainWorld("electron", {
     getAttendanceRecord: (employeeId: string, date: string) =>
       ipcRenderer.invoke("attendance:getAttendanceRecord", employeeId, date),
 
-    updateClockIn: (_id: string, clockIn: string) =>
-      ipcRenderer.invoke("attendance:updateClockIn", _id, clockIn),
+    update: (_id: string, updates: Partial<AttendanceWithEmployee>) =>
+      ipcRenderer.invoke("attendance:update", _id, updates),
 
-    updateClockOut: (_id: string, clockOut: string) =>
-      ipcRenderer.invoke("attendance:updateClockOut", _id, clockOut),
+    // updateClockOut: (_id: string, clockOut: string) =>
+    //   ipcRenderer.invoke("attendance:updateClockOut", _id, clockOut),
 
-    submitLateNotes: (_id: string, lateNotes: string | undefined) =>
-      ipcRenderer.invoke("attendance:submitLateNotes", _id, lateNotes),
+    // submitLateNotes: (_id: string, lateNotes: string | undefined) =>
+    //   ipcRenderer.invoke("attendance:submitLateNotes", _id, lateNotes),
 
-    delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
+    // delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
 
-    clockOut: (_id: string, clockOut: string) =>
-      ipcRenderer.invoke("attendance:clockOut", _id, clockOut),
+    // clockOut: (_id: string, clockOut: string) =>
+    //   ipcRenderer.invoke("attendance:clockOut", _id, clockOut),
   },
 
   leave: {
     create: (
-      employeeId: string,
-      startDate: string,
-      endDate: string,
-      subject: string,
-      notes: string
+   leave:Partial<Leave>
     ) =>
       ipcRenderer.invoke(
         "leave:create",
-        employeeId,
-        startDate,
-        endDate,
-        subject,
-        notes
+       leave
       ),
     getLeaveById: (_id: string) =>
       ipcRenderer.invoke("leave:getLeaveById", _id),
@@ -131,13 +128,7 @@ contextBridge.exposeInMainWorld("electron", {
 
     update: (
       _id: string,
-      updates: {
-        subject?: string;
-        notes?: string;
-        startDate?: string;
-        endDate?: string;
-        status?: string;
-      }
+      updates:Partial<Leave>
     ) => ipcRenderer.invoke("leave:update", _id, updates),
 
     delete: (_id: string) => ipcRenderer.invoke("leave:delete", _id),

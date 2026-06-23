@@ -8,23 +8,13 @@ import {
   updateLeave,
   deleteLeave,
 } from "../database/repositories/leave.repository.js";
+import Leave from "../../shared/types/Leave.js";
 
 export function registerLeaveIPC() {
   console.log("REGISTERING LEAVE IPC");
-
-  ipcMain.handle(
-    "leave:create",
-    async (
-      _,
-      employeeId: string,
-      startDate: string,
-      endDate: string,
-      subject: string,
-      notes: string
-    ) => {
-      return createLeave(employeeId, startDate, endDate, subject, notes);
-    }
-  );
+  ipcMain.handle("leave:create", async (_, leave: Partial<Leave>) => {
+    return createLeave(leave);
+  });
 
   ipcMain.handle("leave:getLeaveById", async (_, _id: string) => {
     return getLeaveById(_id);

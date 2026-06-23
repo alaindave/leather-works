@@ -1,8 +1,8 @@
 import { run } from "../db.js";
 
-export async function createAttendanceTable() {
+export async function createAttendancesTable() {
   await run(`
-    CREATE TABLE IF NOT EXISTS attendance (
+    CREATE TABLE IF NOT EXISTS attendances (
       _id TEXT PRIMARY KEY,
       employeeId TEXT NOT NULL,
       date TEXT NOT NULL,
@@ -16,10 +16,11 @@ export async function createAttendanceTable() {
       isDeleted INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
+      lastSyncedAt TEXT,
       FOREIGN KEY (employeeId)
         REFERENCES employees(_id)
     )
   `);
 
-  console.log("ATTENDANCE TABLE INITIALIZED");
+  console.log("ATTENDANCES TABLE INITIALIZED");
 }

@@ -35,6 +35,9 @@ const leaveSchema = new mongoose.Schema({
     enum: [`En attente d'approbation`, "Approuvé", "Refusé"],
     default: `En attente d'approbation`,
   },
+  isDeleted: { type: Boolean, default: false, required: true },
+  createdAt: { type: Date, required: true },
+  updatedAt: { type: Date, required: true },
 });
 
 const Leave = mongoose.model("Leave", leaveSchema);

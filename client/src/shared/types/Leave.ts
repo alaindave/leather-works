@@ -8,4 +8,9 @@ export default interface Leave {
   subject: string;
   notes: string;
   status: string;
+  synced: number;
+  isDeleted: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
 }

@@ -1,6 +1,6 @@
 import { run } from "../db.js";
 
-export async function createEmployeeTable() {
+export async function createEmployeesTable() {
   await run(`
     CREATE TABLE IF NOT EXISTS employees (
       _id TEXT PRIMARY KEY,

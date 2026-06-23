@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 
 import {
   createOrUpdateOfflineUser,
+  saveNotes,
   getOfflineUserByEmail,
   getOfflineUserById,
   getAllOfflineUsers,
@@ -41,6 +42,13 @@ export function registerOfflineUsersIPC() {
 
     return user;
   });
+
+  ipcMain.handle(
+    "offline-users:saveNotes",
+    async (_, _id: string, notes: string) => {
+      return saveNotes(_id, notes);
+    }
+  );
 
   ipcMain.handle("offline-users:getById", async (_, _id: string) => {
     return getOfflineUserById(_id);

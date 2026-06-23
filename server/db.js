@@ -330,6 +330,8 @@ const createAdminUser = async ({ firstName, lastName, email, password }) => {
     lastName,
     email,
     password,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   try {

@@ -6,13 +6,11 @@ import {
   getAllAttendance,
   getAttendanceByEmployee,
   getAttendanceByDate,
+  updateAttendance,
   deleteAttendance,
-  clockOutAttendance,
   getAttendanceRecord,
-  updateClockIn,
-  updateClockOut,
-  submitLateNotes,
 } from "../database/repositories/attendance.repository.js";
+import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee.js";
 
 export function registerAttendanceIPC() {
   console.log("REGISTERING ATTENDANCE IPC");
@@ -47,34 +45,12 @@ export function registerAttendanceIPC() {
   );
 
   ipcMain.handle(
-    "attendance:updateClockIn",
-    async (_, _id: string, clockIn: string) => {
-      return updateClockIn(_id, clockIn);
+    "attendance:update",
+    async (_, _id: string, updates: Partial<AttendanceWithEmployee>) => {
+      return updateAttendance(_id, updates);
     }
   );
-
-  ipcMain.handle(
-    "attendance:updateClockOut",
-    async (_, _id: string, clockOut: string) => {
-      return updateClockOut(_id, clockOut);
-    }
-  );
-
-  ipcMain.handle(
-    "attendance:submitLateNotes",
-    async (_, _id: string, lateNotes: string) => {
-      return submitLateNotes(_id, lateNotes);
-    }
-  );
-
   ipcMain.handle("attendance:delete", async (_, _id: string) => {
     return deleteAttendance(_id);
   });
-
-  ipcMain.handle(
-    "attendance:clockOut",
-    async (_, _id: string, clockOut: string) => {
-      return clockOutAttendance(_id, clockOut);
-    }
-  );
 }

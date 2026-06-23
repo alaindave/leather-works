@@ -2,32 +2,28 @@ import type Leave from "../../../shared/types/Leave.js";
 import { randomUUID } from "crypto";
 import { all, get, run } from "../db.js";
 import { getEmployeeById } from "./employee.repository.js";
+import { addToSyncQueue } from "./sync.repository.js";
 
-export async function createLeave(
-  employeeId: string,
-  startDate: string,
-  endDate: string,
-  subject: string,
-  notes: string
-) {
-  const employee = await getEmployeeById(employeeId);
+export async function createLeave(leave: Partial<Leave>) {
+  const employee = await getEmployeeById(leave.employeeId!);
   if (!employee) {
     throw new Error("No employee found with the given ID");
   }
   const today = new Date();
 
   const submittedAt = today.toISOString().split("T")[0];
+  const createdAt = today.toISOString();
 
   const month = String(today.getMonth() + 1).padStart(2, "0");
   const year = today.getFullYear();
 
   const submittedMonth = `${year}-${month}`;
 
-  const leaveId = randomUUID();
+  const _id = randomUUID();
 
   await run(
     `
-    INSERT INTO leave (
+    INSERT INTO leaves (
       _id,
       employeeId,
       submittedAt,
@@ -44,17 +40,29 @@ export async function createLeave(
     VALUES (?, ?, ?, ?,?, ?,?,?, 0, 0, datetime('now'), datetime('now'))
     `,
     [
-      leaveId,
-      employeeId,
+      _id,
+      leave.employeeId,
       submittedAt,
       submittedMonth,
-      startDate,
-      endDate,
-      subject,
-      notes,
+      leave.startDate,
+      leave.endDate,
+      leave.subject,
+      leave.notes,
     ]
   );
-  return getLeaveById(leaveId);
+
+  const savedLeave = { _id, ...leave, createdAt };
+
+  console.log("Leave to save to sync queue", savedLeave);
+
+  await addToSyncQueue({
+    entity: "leave",
+    entityId: _id,
+    operation: "create",
+    payload: JSON.stringify(savedLeave),
+  });
+
+  return getLeaveById(_id);
 }
 
 export async function getLeaveById(
@@ -77,7 +85,7 @@ export async function getLeaveById(
       e.department,
       e.role,
       e.remainingLeave
-    FROM leave l
+    FROM leaves l
     JOIN employees e
       ON l.employeeId = e._id
     WHERE l._id = ?
@@ -92,7 +100,7 @@ export async function getLeaveById(
 export async function getAllLeave() {
   return all(`
     SELECT *
-    FROM leave
+    FROM leaves
     WHERE isDeleted = 0
     ORDER BY date DESC
   `);
@@ -102,7 +110,7 @@ export async function getLeaveByEmployee(employeeId: string) {
   return all(
     `
     SELECT *
-    FROM leave
+    FROM leaves
     WHERE employeeId = ?
       AND isDeleted = 0
     ORDER BY date DESC
@@ -115,7 +123,7 @@ export async function getOngoingLeaves() {
   return all(
     `
 SELECT * 
-FROM leave 
+FROM leaves 
 WHERE startDate <= date('now') 
   AND endDate >= date('now');
 
@@ -141,7 +149,7 @@ export async function getLeaveByMonth(month: string) {
       e.department,
       e.role,
       e.remainingLeave
-    FROM leave l
+    FROM leaves l
     JOIN employees e
       ON l.employeeId = e._id
     WHERE l.submittedMonth = ?
@@ -157,7 +165,7 @@ export async function getLeaveRecord(employeeId: string) {
   return get(
     `
     SELECT *
-    FROM leave
+    FROM leaves
     WHERE employeeId = ?
       AND isDeleted = 0
     `,
@@ -220,7 +228,7 @@ export async function updateLeave(
 
   await run(
     `
-    UPDATE leave
+    UPDATE leaves
     SET ${fields.join(", ")}
     WHERE _id = ?
       AND isDeleted = 0
@@ -234,10 +242,94 @@ export async function updateLeave(
 export async function deleteLeave(_id: string) {
   await run(
     `
-    UPDATE leave
+    UPDATE leaves
     SET
       isDeleted = 1,
       synced = 0,
+      updatedAt = datetime('now')
+    WHERE _id = ?
+    `,
+    [_id]
+  );
+
+  return true;
+}
+
+export async function upsertLeave(leave: Leave) {
+  const local = await getLeaveById(leave._id);
+
+  // If local exists, apply conflict rule
+  if (local && local.updatedAt && leave.updatedAt) {
+    const localTime = new Date(local.updatedAt).getTime();
+    const remoteTime = new Date(leave.updatedAt).getTime();
+
+    // Keep newest local change
+    if (remoteTime < localTime) {
+      console.log(`Skipping leave update (local is newer): ${leave._id}`);
+      return local;
+    }
+  }
+
+  await run(
+    `
+    INSERT INTO leaves (
+      _id,
+      employeeId,
+      submittedAt,
+      submittedMonth,
+      startDate,
+      endDate,
+      subject,
+      notes,
+      status,
+      synced,
+      isDeleted,
+      createdAt,
+      updatedAt,
+      lastSyncedAt
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+    ON CONFLICT(_id)
+    DO UPDATE SET
+      employeeId = excluded.employeeId,
+      submittedAt = excluded.submittedAt,
+      submittedMonth = excluded.submittedMonth,
+      startDate = excluded.startDate,
+      endDate = excluded.endDate,
+      subject = excluded.subject,
+      notes = excluded.notes,
+      status = excluded.status,
+      isDeleted = excluded.isDeleted,
+      synced = 1,
+      updatedAt = excluded.updatedAt,
+      lastSyncedAt = excluded.lastSyncedAt
+    `,
+    [
+      leave._id,
+      leave.employeeId,
+      leave.submittedAt,
+      leave.submittedMonth,
+      leave.startDate,
+      leave.endDate,
+      leave.subject,
+      leave.notes,
+      leave.status,
+      leave.isDeleted ?? 0,
+      leave.createdAt ?? new Date().toISOString(),
+      leave.updatedAt ?? new Date().toISOString(),
+      new Date().toISOString(),
+    ]
+  );
+
+  return getLeaveById(leave._id);
+}
+
+export async function markLeaveSynced(_id: string) {
+  await run(
+    `
+    UPDATE leaves
+    SET
+      synced = 1,
       updatedAt = datetime('now')
     WHERE _id = ?
     `,

@@ -5,7 +5,7 @@ import { getPreloadPath } from "./pathResolver.js";
 import { createSocket } from "./socket.js";
 import { isDev } from "./util/env-util.js";
 import { initializeDatabase } from "./database/initializeDatabase.js";
-import { registerAdminIPC } from "./ipc/adminIPC.js";
+import { registerTaskRecipientIPC } from "./ipc/taskRecipientIPC.js";
 import { registerEmployeeIPC } from "./ipc/employeeIPC.js";
 import { registerAttendanceIPC } from "./ipc/attendanceIPC.js";
 import { registerLeaveIPC } from "./ipc/leaveIPC.js";
@@ -15,6 +15,7 @@ import { registerAuthIPC } from "./ipc/authIPC.js";
 import { registerAttendanceExportIPC } from "./ipc/attendanceExportIPC.js";
 import { registerSyncIPC } from "./ipc/syncIPC.js";
 import { fileURLToPath } from "url";
+import sync from "./services/syncService.js";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged
@@ -108,16 +109,17 @@ async function bootstrap() {
   console.log("After DB init");
   registerAuthIPC();
   registerOfflineUsersIPC();
-  registerAdminIPC();
   registerEmployeeIPC();
   registerAttendanceIPC();
   registerAttendanceExportIPC();
   registerLeaveIPC();
   registerTaskIPC();
+  registerTaskRecipientIPC();
   registerSyncIPC();
   console.log("After IPC registration");
-  createSplashWindow();
+  await createSplashWindow();
   await createMainWindow();
+  await sync();
   // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
   // Menu.setApplicationMenu(mainMenu);
 }

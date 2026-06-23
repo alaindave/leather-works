@@ -1,12 +1,9 @@
-export interface AdminUserData {
+export default interface AdminUser {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: "manager" | "admin";
-}
-
-export interface AdminUser extends AdminUserData {
   password: string;
+  role: "manager" | "admin";
   notes: string;
 }

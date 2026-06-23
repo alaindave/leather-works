@@ -9,6 +9,7 @@ export default interface Attendance {
   lateNotes?: string;
   synced: number;
   isDeleted: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
 }

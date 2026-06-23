@@ -1,10 +1,11 @@
-import { AdminUserData } from "./AdminUser.js";
+import AdminUser from "./AdminUser.js";
+import TaskRecipient from "./TaskRecipient.js";
 type Priority = "Haute" | "Moyenne" | "Basse" | "";
 
 export default interface Task {
   _id: string;
-  author: AdminUserData;
-  recipients: AdminUserData[];
+  author: Omit<AdminUser, "password" | "notes">;
+  recipients: TaskRecipient[];
   subject: string;
   message: string;
   deadline: string;

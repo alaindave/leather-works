@@ -15,10 +15,10 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { AttendanceWithEmployee } from "../../shared/types/AttendanceWithEmployee";
+import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
 
 interface Props {
-  attendance?: AttendanceWithEmployee;
+  attendance?: AttendanceWithEmployee | null;
   onRefresh?: () => void;
 }
 
@@ -153,9 +153,11 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
     clockInDate.setHours(hours, minutes, 0, 0);
     console.log("New time to update: ", clockInDate);
     try {
-      const updatedAttendance = await window.electron.attendance.updateClockIn(
+      const updatedAttendance = await window.electron.attendance.update(
         attendance._id,
-        clockInDate.toISOString()
+        {
+          clockIn: clockInDate.toISOString(),
+        }
       );
       console.log("Clock in updated successfully:", updatedAttendance);
       onRefresh?.();

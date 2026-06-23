@@ -77,11 +77,11 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
     formState: { errors },
   } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = async (formData: EmployeeData) => {
+  const onSubmit = async (employeeData: EmployeeData) => {
     setIsSaving(true);
-    console.log("Form to be submitted:", formData);
+    console.log("Form to be submitted:", employeeData);
     try {
-      const employee = await window.electron.employees.create(formData);
+      const employee = await window.electron.employees.create(employeeData);
       console.log("Employee successfully saved", employee);
       onAddEmployee(employee);
       onClose();

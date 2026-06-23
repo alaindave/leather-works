@@ -28,6 +28,9 @@ const AdminUserSchema = new mongoose.Schema({
   notes: {
     type: String,
   },
+  isDeleted: { type: Boolean, default: false, required: true },
+  createdAt: { type: Date, required: true },
+  updatedAt: { type: Date, required: true },
 });
 
 AdminUserSchema.methods.generateAuthToken = function () {
@@ -49,6 +52,6 @@ function validateAdminUser(adminUser) {
   return schema.validate(adminUser);
 }
 
-const AdminUserModel = mongoose.model("AdminUsers", AdminUserSchema);
-exports.AdminUser = AdminUserModel;
+const AdminUser = mongoose.model("AdminUsers", AdminUserSchema);
 exports.validate = validateAdminUser;
+exports.AdminUser = AdminUser;

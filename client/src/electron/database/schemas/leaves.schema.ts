@@ -1,8 +1,8 @@
 import { run } from "../db.js";
 
-export async function createLeaveTable() {
+export async function createLeavesTable() {
   await run(`
-    CREATE TABLE IF NOT EXISTS leave (
+    CREATE TABLE IF NOT EXISTS leaves (
       _id TEXT PRIMARY KEY,
       employeeId TEXT NOT NULL,
       submittedAt TEXT NOT NULL,
@@ -17,6 +17,7 @@ export async function createLeaveTable() {
       isDeleted INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
+      lastSyncedAt TEXT,
       FOREIGN KEY (employeeId)
         REFERENCES employees(_id)
     )

@@ -1,6 +1,6 @@
 import type Attendance from "./Attendance.js";
 
-export interface AttendanceWithEmployee extends Attendance {
+export default interface AttendanceWithEmployee extends Attendance {
   firstName: string;
   lastName: string;
   matricule: string;

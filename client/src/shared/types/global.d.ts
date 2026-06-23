@@ -5,7 +5,8 @@ import type Leave from "./Leave";
 import type AttendanceWithEmployee from "./AttendanceWithEmployee";
 import type LeaveWithEmployee from "./LeaveWithEmployee";
 import type Task from "./Task";
-import AdminUser from "./AdminUser";
+import type AdminUser from "./AdminUser";
+import type TaskRecipient from "./TaskRecipient";
 
 interface SaveFileResult {
   success: boolean;
@@ -23,6 +24,7 @@ interface LoggedUser {
   lastName: string;
   email: string;
   role: "manager" | "admin";
+  notes?: string;
 }
 
 declare global {
@@ -37,6 +39,8 @@ declare global {
 
       offlineUsers: {
         save: (user: OfflineUser) => Promise<LoggedUser>;
+
+        saveNotes: (_id: string, notes: string) => Promise<LoggedUser>;
 
         login: (credentials: LoginCredentials) => Promise<LoggedUser>;
 
@@ -57,8 +61,8 @@ declare global {
         onNew: (callback: (data: Task) => void) => () => void;
       };
 
-      adminUsers: {
-        getAll: () => Promise<AdminUser[]>;
+      taskRecipients: {
+        getAll: () => Promise<TaskRecipient[]>;
       };
 
       employees: {
@@ -77,41 +81,20 @@ declare global {
         create: (employeeID: string, clockIn: string) => Promise<Attendance>;
         getAll: () => Promise<Attendance[]>;
         getById: (_id: string) => Promise<AttendanceWithEmployee | null>;
-        getByEmployee: (
-          employeeId: string
-        ) => Promise<AttendanceWithEmployee[]>;
+        getByEmployee: (employeeId: string) => Promise<Attendance[]>;
         getByDate: (date: string) => Promise<AttendanceWithEmployee[]>;
         getAttendanceRecord: (
           employeeId: string,
           date: string
         ) => Promise<Attendance>;
-        updateClockIn: (
+        update: (
           _id: string,
-          clockIn: string
+          updates: Partial<AttendanceWithEmployee>
         ) => Promise<AttendanceWithEmployee>;
-        updateClockOut: (
-          _id: string,
-          clockOut: string
-        ) => Promise<AttendanceWithEmployee>;
-        submitLateNotes: (
-          _id: string,
-          lateNotes: string | undefined
-        ) => Promise<Attendance>;
-        delete: (_id: string) => Promise<boolean>;
-        clockOut: (
-          _id: string,
-          clockOut: string
-        ) => Promise<AttendanceWithEmployee | undefined>;
       };
 
       leave: {
-        create: (
-          employeeId: string,
-          startDate: string,
-          endDate: string,
-          subject: string,
-          notes: string
-        ) => Promise<LeaveWithEmployee>;
+        create: (leave: Partial<Leave>) => Promise<LeaveWithEmployee>;
 
         getLeaveById: (_id: string) => Promise<LeaveWithEmployee>;
 

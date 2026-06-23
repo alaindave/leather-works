@@ -5,5 +5,6 @@ export default interface OfflineUser {
   role: "admin" | "manager";
   firstName: string;
   lastName: string;
+  notes?: string;
   lastVerifiedAt: string;
 }

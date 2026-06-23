@@ -1,4 +1,5 @@
-import { AdminUser } from "./AdminUser.js";
+import AdminUser from "./AdminUser.js";
+type Priority = "Haute" | "Moyenne" | "Basse" | "";
 
 export interface PopulatedTask {
   _id: string;
@@ -6,6 +7,6 @@ export interface PopulatedTask {
   recipients: AdminUser[];
   subject: string;
   message: string;
-  priority: "high" | "medium" | "low";
+  priority: Priority;
   createdAt: string;
 }

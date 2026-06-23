@@ -24,6 +24,9 @@ const attendanceSchema = new mongoose.Schema({
 
   lateMinutes: { type: Number },
   lateNotes: { type: String },
+  isDeleted: { type: Boolean, default: false, required: true },
+  createdAt: { type: Date, required: true },
+  updatedAt: { type: Date, required: true },
 });
 
 attendanceSchema.index({ employee: 1, date: 1 }, { unique: true });

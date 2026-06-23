@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { AdminUserData } from "../shared/types/AdminUser";
+import AdminUser from "../shared/types/AdminUser";
 
 interface AdminUserStore {
-  adminUser: AdminUserData | null;
+  adminUser: Omit<AdminUser, "password" | "notes">;
   isAuthenticated: boolean;
   login: (
     _id: string,
@@ -18,7 +18,7 @@ interface AdminUserStore {
 const useAdminUser = create<AdminUserStore>()(
   persist(
     (set) => ({
-      adminUser: null,
+      adminUser: {} as AdminUser,
       isAuthenticated: false,
       login: (_id, firstName, lastName, email, role) => {
         set({
@@ -35,7 +35,7 @@ const useAdminUser = create<AdminUserStore>()(
 
       logout: () =>
         set(() => ({
-          adminUser: null,
+          adminUser: {} as AdminUser,
           isAuthenticated: false,
         })),
     }),

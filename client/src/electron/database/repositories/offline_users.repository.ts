@@ -66,6 +66,20 @@ export async function getOfflineUserByEmail(
   );
 }
 
+export async function saveNotes(userId: string, notes: string) {
+  return run(
+    `
+    INSERT INTO offline_users (_id, notes, updatedAt)
+    VALUES (?, ?, datetime('now'))
+    ON CONFLICT(_id)
+    DO UPDATE SET
+      notes = excluded.notes,
+      updatedAt = excluded.updatedAt
+    `,
+    [userId, notes]
+  );
+}
+
 export async function getAllOfflineUsers() {
   return all(`
       SELECT *

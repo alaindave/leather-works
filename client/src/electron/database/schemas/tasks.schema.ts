@@ -1,6 +1,6 @@
 import { run } from "../db.js";
 
-export async function createTaskTables() {
+export async function createTasksTables() {
   await run(`
     CREATE TABLE IF NOT EXISTS tasks (
       _id TEXT PRIMARY KEY,
@@ -18,12 +18,12 @@ export async function createTaskTables() {
   `);
 
   await run(`
-    CREATE TABLE IF NOT EXISTS task_recipients (
+    CREATE TABLE IF NOT EXISTS recipients (
       taskId INTEGER NOT NULL,
       recipient TEXT NOT NULL,
       PRIMARY KEY (taskId, recipient),
       FOREIGN KEY (taskId) REFERENCES tasks(_id) ON DELETE CASCADE,
-      FOREIGN KEY (recipient) REFERENCES admin_users(_id)
+      FOREIGN KEY (recipient) REFERENCES task_recipients(_id)
     )
   `);
 

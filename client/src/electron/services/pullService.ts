@@ -4,10 +4,14 @@ import {
   getSetting,
   setSetting,
 } from "../database/repositories/settings.repository.js";
+import { upsertTaskRecipient } from "../database/repositories/taskRecipients.repository.js";
 import { upsertEmployee } from "../database/repositories/employee.repository.js";
+import { upsertAttendance } from "../database/repositories/attendance.repository.js";
+import { upsertLeave } from "../database/repositories/leave.repository.js";
 import Employee from "../../shared/types/Employee.js";
-// import { upsertAttendance } from "../repositories/attendanceRepository";
-// import { upsertLeave } from "../repositories/leaveRepository";
+import Attendance from "../../shared/types/Attendance.js";
+import Leave from "../../shared/types/Leave.js";
+import TaskRecipient from "../../shared/types/TaskRecipient.js";
 
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"
@@ -24,27 +28,42 @@ export async function pullLatestChanges() {
       },
     });
 
-    const {
-      employees,
-      // attendances,
-      // leaves,
-      serverTime,
-    } = response.data;
+    const { employees, attendances, leaves, taskRecipients, serverTime } =
+      response.data;
+
+    console.log("Fetched employees to sync:", employees);
 
     await syncEmployees(employees);
-    // await syncAttendances(attendances);
-    // await syncLeaves(leaves);
-
+    await syncAttendances(attendances);
+    await syncLeaves(leaves);
+    await syncTaskRecipients(taskRecipients);
     await setSetting("lastSync", serverTime);
-
-    console.log("PULL RESULT:", response);
+    return response;
   } catch (error) {
-    console.error("Pull sync failed:", error);
+    throw error;
   }
 }
 
 async function syncEmployees(employees: Employee[]) {
   for (const employee of employees) {
     await upsertEmployee(employee);
+  }
+}
+
+async function syncAttendances(attendances: Attendance[]) {
+  for (const attendance of attendances) {
+    await upsertAttendance(attendance);
+  }
+}
+
+async function syncLeaves(leaves: Leave[]) {
+  for (const leave of leaves) {
+    await upsertLeave(leave);
+  }
+}
+
+async function syncTaskRecipients(taskRecipients: TaskRecipient[]) {
+  for (const taskRecipient of taskRecipients) {
+    await upsertTaskRecipient(taskRecipient);
   }
 }

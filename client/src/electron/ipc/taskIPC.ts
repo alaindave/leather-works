@@ -1,6 +1,7 @@
 import { ipcMain, app } from "electron";
 import { getToken } from "../auth.js";
 import axios from "axios";
+import { createTask } from "../database/repositories/task.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"
@@ -13,6 +14,8 @@ export function registerTaskIPC() {
   ipcMain.handle("tasks:create", async (_, task) => {
     console.log("Task received from Renderer: ", task);
     try {
+      const result = await createTask(task);
+      console.log("Created task: ", result);
     } catch (error) {
       console.error("From Main: Error creating task: ", error);
       throw error;

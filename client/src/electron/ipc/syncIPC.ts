@@ -1,12 +1,11 @@
 import { ipcMain } from "electron";
-import { sync } from "../services/syncService.js";
+import sync from "../services/syncService.js";
 
 export function registerSyncIPC() {
   console.log("REGISTERING SYNC IPC");
   ipcMain.handle("sync:run", async () => {
     try {
       await sync();
-
       return {
         success: true,
       };

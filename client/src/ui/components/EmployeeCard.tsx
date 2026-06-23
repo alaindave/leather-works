@@ -141,11 +141,10 @@ const EmployeeCard = ({ employee }: Props) => {
         throw new Error("Attendance record not found");
       }
 
-      const updatedAttendance =
-        await window.electron.attendance.submitLateNotes(
-          attendance._id,
-          lateNotes
-        );
+      const updatedAttendance = await window.electron.attendance.update(
+        attendance._id,
+        { lateNotes }
+      );
       setAttendance(updatedAttendance);
       return true;
     } catch (error) {
@@ -234,7 +233,7 @@ const EmployeeCard = ({ employee }: Props) => {
             }
             position="absolute"
             top="15px"
-            right="12rem"
+            right="13rem"
           >
             {!loadingAttendance && attendance?.status === "ponctuel" ? (
               <Badge bg="#123D2B" color="#5EF29B" fontSize="14px">
@@ -252,7 +251,7 @@ const EmployeeCard = ({ employee }: Props) => {
             pointerEvents={attendance ? "auto" : "none"}
             position="absolute"
             top="1.2rem"
-            right="7rem"
+            right="8rem"
           >
             <CiClock2 color="#967103" size="22px" />
           </Box>
@@ -262,7 +261,7 @@ const EmployeeCard = ({ employee }: Props) => {
             pointerEvents={attendance ? "auto" : "none"}
             position="absolute"
             top="18px"
-            right="1rem"
+            right="2.5rem"
             color="gray.900"
             fontSize="17px"
             fontWeight="500"
@@ -282,7 +281,7 @@ const EmployeeCard = ({ employee }: Props) => {
             <Button
               position="absolute"
               top="18px"
-              right="1.5rem"
+              right="5rem"
               color="#c89704"
               backgroundColor="transparent"
               _hover={{ bg: "transparent" }}
@@ -297,7 +296,7 @@ const EmployeeCard = ({ employee }: Props) => {
               <Editable
                 width="65px"
                 position="absolute"
-                right="5rem"
+                right="9rem"
                 bottom="1.5rem"
                 defaultValue={_clockIn}
                 onChange={(clockIn) => setClockIn(clockIn)}

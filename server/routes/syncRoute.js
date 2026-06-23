@@ -4,6 +4,7 @@ const { syncEmployee, syncAttendance, syncLeave } = require("../sync");
 const Employee = require("../models/employeeModel");
 const Attendance = require("../models/attendanceModel");
 const Leave = require("../models/leaveModel");
+const { AdminUser } = require("../models/adminUserModel");
 
 //Push sync
 router.post("/push", async (req, res) => {
@@ -30,20 +31,17 @@ router.post("/push", async (req, res) => {
           default:
             continue;
         }
-
         synced.push(queueId);
       } catch (error) {
         console.error(`Sync failed for ${entity}`, error);
       }
     }
-
     return res.json({
       success: true,
       synced,
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Push sync failed",
@@ -55,14 +53,17 @@ router.post("/push", async (req, res) => {
 router.get("/pull", async (req, res) => {
   try {
     const since = req.query.since;
-
     if (!since) {
       return res.status(400).send("Missing since parameter");
     }
-
     const date = new Date(since);
+    const [taskRecipients, employees, attendances, leaves] = await Promise.all([
+      AdminUser.find({
+        updatedAt: { $gt: date },
+      })
+        .select("-password -notes")
+        .lean(),
 
-    const [employees, attendances, leaves] = await Promise.all([
       Employee.find({
         updatedAt: { $gt: date },
       }).lean(),
@@ -75,17 +76,16 @@ router.get("/pull", async (req, res) => {
         updatedAt: { $gt: date },
       }).lean(),
     ]);
-
     return res.send({
       success: true,
       employees,
       attendances,
       leaves,
+      taskRecipients,
       serverTime: new Date().toISOString(),
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).send({
       success: false,
       message: "Pull sync failed",

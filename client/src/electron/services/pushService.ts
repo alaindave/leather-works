@@ -25,7 +25,6 @@ export async function pushPendingChanges() {
     })),
   });
 
-  console.log("PUSH RESULT:", response);
-
   await markManySynced(response.data.synced);
+  return response;
 }

@@ -9,6 +9,7 @@ export async function createOfflineUsersTable() {
     role TEXT NOT NULL,
     firstName TEXT NOT NULL,
     lastName TEXT NOT NULL,
+    notes TEXT,
     lastVerifiedAt TEXT NOT NULL,
     synced INTEGER NOT NULL DEFAULT 1,
     createdAt TEXT NOT NULL,

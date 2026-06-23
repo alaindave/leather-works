@@ -13,10 +13,10 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
 import ClockIn from "./ClockIn";
-import { AttendanceWithEmployee } from "../../shared/types/AttendanceWithEmployee";
+import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
 
 interface Props {
-  attendance: AttendanceWithEmployee | undefined;
+  attendance: AttendanceWithEmployee | null;
   onDelete: () => void;
   gridTemplate: string;
 }
@@ -116,9 +116,8 @@ const EmployeeAttendanceCard = ({
 }: Props) => {
   if (!attendance) return null;
   const { _id, firstName, lastName, matricule, role, department } = attendance;
-  const [localAttendance, setLocalAttendance] = useState<
-    AttendanceWithEmployee | undefined
-  >(attendance);
+  const [localAttendance, setLocalAttendance] =
+    useState<AttendanceWithEmployee | null>(attendance);
   const [errorMessage, setErrorMessage] = useState("");
   const [clockOutMode, setClockOutMode] = useState<ClockOutMode>("idle");
 
@@ -164,40 +163,47 @@ const EmployeeAttendanceCard = ({
   // =========================
   const handleSubmitClockOut = async () => {
     const formattedClockOut = formatTime(draftClockOut);
+
     if (!formattedClockOut) {
       setErrorMessage("Heure invalide");
-      return false;
+      return;
     }
-    setDraftClockOut(formattedClockOut);
-    setClockOutValue(formattedClockOut);
+
     try {
       setClockOutMode("submitting");
+
       const [hours, minutes] = formattedClockOut.split(":").map(Number);
+
       const clockOutDate = new Date();
       clockOutDate.setHours(hours, minutes, 0, 0);
 
-      // Optimistic update
+      // optimistic update
       setLocalAttendance((prev) => {
-        if (!prev) return;
+        if (!prev) return null;
 
         return {
           ...prev,
           clockOut: clockOutDate.toISOString(),
         };
       });
-      const attendance: AttendanceWithEmployee | undefined =
-        await window.electron.attendance.clockOut(
-          _id,
-          clockOutDate.toISOString()
-        );
 
-      setLocalAttendance(attendance);
+      const updated = await window.electron.attendance.update(_id, {
+        clockOut: clockOutDate.toISOString(),
+      });
+
+      setLocalAttendance((prev) => {
+        if (!prev) return null;
+
+        return {
+          ...prev,
+          ...updated,
+        };
+      });
+
       setClockOutMode("completed");
-      return;
     } catch (error) {
       console.error("Error clocking out:", error);
       setClockOutMode("editing");
-      return;
     }
   };
 
@@ -216,17 +222,16 @@ const EmployeeAttendanceCard = ({
       updatedClockOut.setHours(hours, minutes, 0, 0);
       // Optimistic UI update
       setLocalAttendance((prev) => {
-        if (!prev) return undefined;
+        if (!prev) return null;
+
         return {
           ...prev,
           clockOut: updatedClockOut.toISOString(),
         };
       });
-
-      const updatedAttendance = await window.electron.attendance.updateClockOut(
-        _id,
-        updatedClockOut.toISOString()
-      );
+      const updatedAttendance = await window.electron.attendance.update(_id, {
+        clockOut: updatedClockOut.toISOString(),
+      });
 
       setLocalAttendance(updatedAttendance);
       return;
@@ -238,11 +243,12 @@ const EmployeeAttendanceCard = ({
 
   const refreshAttendance = async () => {
     if (!localAttendance?._id) return;
+
     const attendance = await window.electron.attendance.getById(
-      localAttendance?._id
+      localAttendance._id
     );
-    setLocalAttendance(attendance);
-    return;
+
+    setLocalAttendance(attendance ?? null);
   };
 
   return (

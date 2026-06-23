@@ -237,23 +237,9 @@ export function getUnsyncedEmployees() {
   );
 }
 
-export async function markEmployeeSynced(_id: string) {
-  await run(
-    `
-    UPDATE employees
-    SET
-      synced = 1,
-      lastSyncedAt = datetime('now')
-    WHERE _id = ?
-    `,
-    [_id]
-  );
-}
-
 export async function upsertEmployee(employee: Employee) {
   console.log("BEFORE UPSERT");
   console.log("EMPLOYEE:", employee);
-  console.log("MATRICULE:", employee.matricule);
   const local = await getEmployeeById(employee._id);
 
   if (local && new Date(local.updatedAt!) > new Date(employee.updatedAt!)) {
@@ -333,5 +319,18 @@ export async function upsertEmployee(employee: Employee) {
       employee.updatedAt,
       new Date().toISOString(),
     ]
+  );
+}
+
+export async function markEmployeeSynced(_id: string) {
+  await run(
+    `
+    UPDATE employees
+    SET
+      synced = 1,
+      lastSyncedAt = datetime('now')
+    WHERE _id = ?
+    `,
+    [_id]
   );
 }

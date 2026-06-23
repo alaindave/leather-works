@@ -11,6 +11,7 @@ const adminUser = require("./routes/adminUserRoute.js");
 const sync = require("./routes/syncRoute.js");
 const auth = require("./routes/authenticate.js");
 const tasks = require("./routes/taskRoute.js");
+const app = express();
 
 const requiredEnvVars = [
   { key: "JWT_PRIVATE_KEY", name: "JWT Private Key" },
@@ -27,7 +28,6 @@ for (const item of requiredEnvVars) {
   }
 }
 
-const app = express();
 //Connect to MongoDB database
 mongoose
   .connect(process.env.MONGO_URI)
@@ -61,6 +61,14 @@ app.use("/adminUsers", adminUser);
 app.use("/tasks", tasks);
 app.use("/auth", auth);
 app.use("/sync", sync);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}...`));

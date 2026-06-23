@@ -27,15 +27,16 @@ import { IoIosCheckmarkCircle } from "react-icons/io";
 import { FaSave } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
 import { TiDelete } from "react-icons/ti";
-import { AdminUser, AdminUserData } from "../../shared/types/AdminUser";
+import AdminUser from "../../shared/types/AdminUser";
+import TaskRecipient from "../../shared/types/TaskRecipient";
 import DatePicker from "react-datepicker";
 
 interface Props {
-  author: AdminUserData;
+  author: Omit<AdminUser, "password" | "notes">;
   isOpen: boolean;
   onClose: () => void;
   onRefresh: () => void;
-  adminUsers: AdminUser[];
+  adminUserslist: TaskRecipient[];
 }
 
 const errorMessage = "Remplissez tous les champs!";
@@ -43,9 +44,7 @@ const errorMessage = "Remplissez tous les champs!";
 const schema = z.object({
   subject: z.string().min(1, { message: errorMessage }),
   message: z.string().min(1, { message: errorMessage }),
-  recipient: z.string().min(1, { message: errorMessage }),
   deadline: z.string().min(1, { message: errorMessage }),
-  priority: z.string().min(1, { message: errorMessage }),
 });
 
 type TaskData = z.infer<typeof schema>;
@@ -57,33 +56,34 @@ const TaskSubmissionModal = ({
   isOpen,
   onClose,
   onRefresh,
-  adminUsers,
+  adminUserslist,
 }: Props) => {
-  const [adminUser, setAdminUser] = useState<AdminUserData>(
-    {} as AdminUserData
+  const [selectedRecipient, setSelectedRecipient] = useState<TaskRecipient>(
+    {} as TaskRecipient
   );
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [recipients, setRecipients] = useState<AdminUserData[]>([]);
+  const [taskRecipients, setTaskRecipients] = useState<TaskRecipient[]>([]);
   const [priority, setPriority] = useState<Priority>("Moyenne");
   const { register, handleSubmit, control, reset } = useForm<TaskData>({
     resolver: zodResolver(schema),
   });
 
   const handleSelectRecipients = () => {
-    console.log("Recipients: ", recipients);
-    setRecipients([...recipients, adminUser]);
+    console.log("Recipients: ", taskRecipients);
+    console.log("adminUser:", selectedRecipient);
+    setTaskRecipients([...taskRecipients, selectedRecipient]);
   };
 
   const handleRecipientDelete = (_id: string) => {
-    const updatedRecipient = recipients.filter((r) => r._id !== _id);
-    setRecipients(updatedRecipient);
+    const updatedRecipient = taskRecipients.filter((r) => r._id !== _id);
+    setTaskRecipients(updatedRecipient);
   };
 
   const handleFormClose = () => {
-    setAdminUser({} as AdminUser);
-    setRecipients([]);
-    setPriority("");
+    setSelectedRecipient({} as TaskRecipient);
+    setTaskRecipients([]);
+    setPriority("Moyenne");
     reset();
     onClose();
     setErrorMessage("");
@@ -91,22 +91,22 @@ const TaskSubmissionModal = ({
 
   //Handle task creation
   const onSubmit = async (task: TaskData) => {
-    setIsSubmitting(true);
-    if (!adminUser?._id) {
-      console.error("No employee selected");
+    if (!selectedRecipient?._id) {
+      console.error("No recipient selected");
       return;
     }
     try {
+      setIsSubmitting(true);
       const result = await window.electron.tasks.create({
         author,
         subject: task.subject,
         message: task.message,
-        recipients,
+        recipients: taskRecipients,
         deadline: task.deadline,
         priority,
       });
       console.log("Task successfully created:", result);
-      setAdminUser({} as AdminUser);
+      setSelectedRecipient({} as TaskRecipient);
       setErrorMessage("");
       onRefresh();
       reset();
@@ -114,7 +114,6 @@ const TaskSubmissionModal = ({
     } catch (error: any) {
       setErrorMessage("Une erreur est survenue. Veuillez contacter ADB Tech!");
       console.error("Unable to save task:", error.message);
-      console.error("Unable to save task:error status", error.status);
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +123,9 @@ const TaskSubmissionModal = ({
     <Modal size="3xl" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
       <ModalContent bg="#F8F9FB">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form
+          onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))}
+        >
           <ModalHeader color="#ffffff">
             <Flex justify="space-between">
               <Box>
@@ -143,9 +144,10 @@ const TaskSubmissionModal = ({
                       top="0.4rem"
                       right="5rem"
                     >
-                      {adminUser?._id ? (
+                      {selectedRecipient?._id ? (
                         <Text color="blue" fontSize="1.1rem">
-                          {adminUser?.firstName} {adminUser?.lastName}
+                          {selectedRecipient?.firstName}{" "}
+                          {selectedRecipient?.lastName}
                         </Text>
                       ) : (
                         <Text
@@ -159,7 +161,7 @@ const TaskSubmissionModal = ({
                         </Text>
                       )}
                     </MenuButton>
-                    {adminUser?._id && (
+                    {selectedRecipient?._id && (
                       <Button
                         position="relative"
                         bottom="0.7rem"
@@ -175,13 +177,14 @@ const TaskSubmissionModal = ({
                     )}
                   </HStack>
                   <MenuList maxH="450px" overflowY="auto">
-                    {adminUsers.map((adminUser) => (
+                    {adminUserslist?.map((adminUser) => (
                       <MenuItem
                         key={adminUser._id}
-                        onClick={() => setAdminUser(adminUser)}
+                        onClick={() => setSelectedRecipient(adminUser)}
                         color="black"
                         _hover={{
-                          bg: "transparent",
+                          bg: "gray.400",
+                          color: "white",
                         }}
                       >
                         <Text color="gray.800">
@@ -222,10 +225,20 @@ const TaskSubmissionModal = ({
                 render={({ field }) => (
                   <DatePicker
                     selected={field.value ? new Date(field.value) : null}
-                    onChange={(date: any) => {
-                      field.onChange(
-                        date ? date.toISOString().split("T")[0] : ""
+                    onChange={(date: Date | null) => {
+                      if (!date) {
+                        field.onChange("");
+                        return;
+                      }
+
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(
+                        2,
+                        "0"
                       );
+                      const day = String(date.getDate()).padStart(2, "0");
+
+                      field.onChange(`${year}-${month}-${day}`);
                     }}
                     locale="fr"
                     dateFormat="dd/MM/yyyy"
@@ -237,7 +250,7 @@ const TaskSubmissionModal = ({
                       <Input
                         color="gray.900"
                         fontWeight="600"
-                        width="17rem"
+                        width="15rem"
                         bg="#ffffff"
                         borderColor="gray.800"
                         borderWidth="1.5px"
@@ -312,12 +325,12 @@ const TaskSubmissionModal = ({
                 position="relative"
                 top="10px"
                 right="20px"
-                color="red.300"
+                color="red.500"
               >
                 {errorMessage}
               </Text>
               <HStack>
-                {recipients?.map((recipient) => (
+                {taskRecipients?.map((recipient) => (
                   <Box mr="0.8rem">
                     <Button
                       bg="transparent"

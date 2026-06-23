@@ -1,4 +1,4 @@
-import { AdminUserData } from "../../../shared/types/AdminUser.js";
+import AdminUser from "../../../shared/types/AdminUser.js";
 import type Task from "../../../shared/types/Task.js";
 import { get, all, run } from "../db.js";
 import { randomUUID } from "crypto";
@@ -51,7 +51,7 @@ export async function getTaskById(_id: string) {
 
   if (!task) return null;
 
-  const recipients = await all(
+  const recipients: AdminUser[] = await all(
     `
     SELECT recipient
     FROM task_recipients
@@ -62,7 +62,7 @@ export async function getTaskById(_id: string) {
 
   return {
     ...task,
-    recipients: recipients.map((r: any) => r.recipient),
+    recipients,
   };
 }
 
