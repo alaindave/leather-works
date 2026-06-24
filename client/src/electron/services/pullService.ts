@@ -4,7 +4,7 @@ import {
   getSetting,
   setSetting,
 } from "../database/repositories/settings.repository.js";
-import { upsertTaskRecipient } from "../database/repositories/taskRecipients.repository.js";
+import { upsertAdminUser } from "../database/repositories/adminUsers.repository.js";
 import {
   markEmployeeSynced,
   upsertEmployee,
@@ -20,7 +20,7 @@ import {
 import Employee from "../../shared/types/Employee.js";
 import Attendance from "../../shared/types/Attendance.js";
 import Leave from "../../shared/types/Leave.js";
-import TaskRecipient from "../../shared/types/TaskRecipient.js";
+import AdminUser from "../../shared/types/AdminUser.js";
 
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"
@@ -37,18 +37,18 @@ export async function pullLatestChanges() {
       },
     });
 
-    const { employees, attendances, leaves, taskRecipients, serverTime } =
+    const { adminUsers, employees, attendances, leaves, serverTime } =
       response.data;
 
     console.log("FETCHED EMPLOYEES FROM SERVER::", employees);
     console.log("FETCHED ATTENDANCES FROM SERVER::", attendances);
     console.log("FETCHED LEAVES FROM SERVER:", leaves);
-    console.log("FETCHED TASK RECIPIENTS FROM SERVER:", taskRecipients);
+    console.log("FETCHED ADMIN USERS FROM SERVER:", adminUsers);
 
     await syncEmployees(employees);
     await syncAttendances(attendances);
     await syncLeaves(leaves);
-    await syncTaskRecipients(taskRecipients);
+    await syncAdminUsers(adminUsers);
     await setSetting("lastSync", serverTime);
 
     return response;
@@ -90,8 +90,12 @@ async function syncLeaves(leaves: Leave[]) {
   }
 }
 
-async function syncTaskRecipients(taskRecipients: TaskRecipient[]) {
-  for (const taskRecipient of taskRecipients) {
-    await upsertTaskRecipient(taskRecipient);
+async function syncAdminUsers(adminUsers: AdminUser[]) {
+  for (const adminUser of adminUsers) {
+    try {
+      await upsertAdminUser(adminUser);
+    } catch (error) {
+      console.error("Failed to sync pulled leave:", adminUser._id, error);
+    }
   }
 }

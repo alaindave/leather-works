@@ -10,7 +10,7 @@ import {
 } from "../database/repositories/employee.repository.js";
 
 export function registerEmployeeIPC() {
-  console.log("REGISTERING EMPLOYEE IPC");
+  console.log("REGISTERING EMPLOYEES IPC");
   ipcMain.handle("employees:create", async (_, employee) => {
     console.log("EMPLOYEE CREATE IPC RECEIVED");
     return createEmployee(employee);

@@ -1,6 +1,6 @@
 export default interface SyncQueueItem {
   _id?: number;
-  entity: "employee" | "attendance" | "leave";
+  entity: "employee" | "attendance" | "leave" | "task";
   entityId: string;
   operation: "create" | "update" | "delete";
   payload: string;

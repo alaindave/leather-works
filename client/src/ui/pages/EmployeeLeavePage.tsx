@@ -198,13 +198,13 @@ const EmployeeLeavePage = () => {
   return (
     <>
       <Flex direction="column" justify="space-between">
+        {/* Header */}
         <Box
           mt="0.5rem"
-          ml="0.3rem"
-          mr="1.5rem"
+          ml="0.15rem"
           bg="#F8F9FB"
           height="10rem"
-          width="78vw"
+          width="77.45vw"
         >
           <Flex>
             <Box>
@@ -251,6 +251,7 @@ const EmployeeLeavePage = () => {
           </Flex>
         </Box>
 
+        {/* Main area */}
         {leaves.length === 0 ? (
           <Box>
             <Text
@@ -328,11 +329,12 @@ const EmployeeLeavePage = () => {
           </>
         )}
 
+        {/* Footer */}
         <Flex
-          mb="1rem"
-          ml="0.3rem"
-          height="3.62rem"
-          width="78vw"
+          mb="0.7rem"
+          ml="0.15rem"
+          height="3.7rem"
+          width="77.45vw"
           justify="space-between"
           bg="#F8F9FB"
         >
@@ -357,12 +359,14 @@ const EmployeeLeavePage = () => {
           </Box>
         </Flex>
       </Flex>
+      {/* Leave submission */}
       <LeaveSubmissionModal
         isOpen={isOpen}
         onClose={onClose}
         onRefresh={() => setRefresh(true)}
         employees={employees}
       />
+      {/* Leave deletion */}
       <DeletionDialog
         isOpen={isConfirmationOpen}
         onClose={onConfirmationClose}

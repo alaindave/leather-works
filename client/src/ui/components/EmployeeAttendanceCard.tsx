@@ -259,9 +259,8 @@ const EmployeeAttendanceCard = ({
       py={5}
       bg="#F8F9FB"
       border="1px solid #22345F"
-      width="78.3vw"
+      width="77.3vw"
       height="6.3rem"
-      mb="0.1rem"
     >
       {/* Employee Name */}
       <Text

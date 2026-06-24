@@ -1,8 +1,8 @@
 import { run } from "../db.js";
 
-export async function createTaskRecipientsTable() {
+export async function createAdminUsersTable() {
   await run(`
-  CREATE TABLE IF NOT EXISTS task_recipients (
+  CREATE TABLE IF NOT EXISTS admin_users (
     _id TEXT PRIMARY KEY,
     firstName TEXT NOT NULL,
     lastName TEXT NOT NULL,
@@ -17,5 +17,5 @@ export async function createTaskRecipientsTable() {
   );
   `);
 
-  console.log("TASK RECIPIENTS TABLE INITIALIZED");
+  console.log("ADMIN USERS TABLE INITIALIZED");
 }

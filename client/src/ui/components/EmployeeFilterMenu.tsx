@@ -31,7 +31,7 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
         as={Button}
         rightIcon={<FaChevronCircleDown color="black" />}
         borderWidth="0.5px"
-        borderRadius="5px"
+        borderRadius="3px"
         borderColor="gray.600"
         _hover={{ bg: "transparent" }}
       >

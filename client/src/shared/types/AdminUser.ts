@@ -3,7 +3,10 @@ export default interface AdminUser {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
   role: "manager" | "admin";
-  notes: string;
+  createdAt: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
+  synced: number;
+  isDeleted: number;
 }

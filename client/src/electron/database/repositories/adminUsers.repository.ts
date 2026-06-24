@@ -1,12 +1,10 @@
-import TaskRecipient from "../../../shared/types/TaskRecipient.js";
+import AdminUser from "../../../shared/types/AdminUser.js";
 import { get, all, run } from "../db.js";
 
-export async function upsertTaskRecipient(
-  taskRecipient: Partial<TaskRecipient>
-) {
+export async function upsertAdminUser(adminUser: Partial<AdminUser>) {
   await run(
     `
-      INSERT INTO task_recipients (
+      INSERT INTO admin_users (
         _id,
         firstName,
         lastName,
@@ -27,35 +25,35 @@ export async function upsertTaskRecipient(
         updatedAt = excluded.updatedAt
       `,
     [
-      taskRecipient._id,
-      taskRecipient.firstName,
-      taskRecipient.lastName,
-      taskRecipient.email,
-      taskRecipient.role,
-      taskRecipient.isDeleted,
-      taskRecipient.updatedAt ?? new Date().toISOString(),
+      adminUser._id,
+      adminUser.firstName,
+      adminUser.lastName,
+      adminUser.email,
+      adminUser.role,
+      adminUser.isDeleted,
+      adminUser.updatedAt ?? new Date().toISOString(),
       new Date().toISOString(),
     ]
   );
 }
 
-export async function getAllTaskRecipients(): Promise<TaskRecipient[] | null> {
+export async function getAllAdminUsers(): Promise<AdminUser[] | null> {
   return all(
     `
       SELECT *
-      FROM task_recipients
+      FROM admin_users
       ORDER BY lastName ASC
     `
   );
 }
 
-export async function getTaskRecipientById(
+export async function getAdminUsersById(
   _id: string
-): Promise<TaskRecipient | null> {
+): Promise<AdminUser | null> {
   return get(
     ` 
       SELECT *
-      FROM task_recipients
+      FROM admin_users
       WHERE _id = ?
     
     `,

@@ -1,16 +1,17 @@
 import AdminUser from "./AdminUser.js";
-import TaskRecipient from "./TaskRecipient.js";
 type Priority = "Haute" | "Moyenne" | "Basse" | "";
 
 export default interface Task {
   _id: string;
-  author: Omit<AdminUser, "password" | "notes">;
-  recipients: TaskRecipient[];
+  taskNumber?: string;
+  author: string;
+  recipients: AdminUser[];
   subject: string;
   message: string;
   deadline: string;
   priority: Priority;
-  createdAt: string;
+  submittedAt?: string;
+  createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;
   synced?: number;

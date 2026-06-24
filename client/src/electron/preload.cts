@@ -14,7 +14,6 @@ interface LoginCredentials {
 console.log("PRELOAD LOADED!!!");
 
 contextBridge.exposeInMainWorld("electron", {
-  file: { save: (data: string) => ipcRenderer.invoke("save-file", data) },
   auth: {
     login: (credentials: LoginCredentials) =>
       ipcRenderer.invoke("auth:login", credentials),
@@ -37,28 +36,6 @@ contextBridge.exposeInMainWorld("electron", {
     getAll: () => ipcRenderer.invoke("offline-users:getAll"),
 
     delete: (_id: string) => ipcRenderer.invoke("offline-users:delete", _id),
-  },
-
-  tasks: {
-    create: (task: Task) => ipcRenderer.invoke("tasks:create", task),
-
-    getAll: () => ipcRenderer.invoke("tasks:getAll"),
-
-    onNew: (callback: (data: any) => void) => {
-      const handler = (_: any, data: any) => {
-        callback(data);
-      };
-
-      ipcRenderer.on("task:new", handler);
-
-      return () => {
-        ipcRenderer.removeListener("task:new", handler);
-      };
-    },
-  },
-
-  taskRecipients: {
-    getAll: () => ipcRenderer.invoke("taskRecipients:getAll"),
   },
 
   employees: {
@@ -126,6 +103,30 @@ contextBridge.exposeInMainWorld("electron", {
 
     delete: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
   },
+
+   tasks: {
+    create: (task: Task) => ipcRenderer.invoke("tasks:create", task),
+
+    getAll: () => ipcRenderer.invoke("tasks:getAll"),
+
+    onNew: (callback: (data: any) => void) => {
+      const handler = (_: any, data: any) => {
+        callback(data);
+      };
+
+      ipcRenderer.on("task:new", handler);
+
+      return () => {
+        ipcRenderer.removeListener("task:new", handler);
+      };
+    },
+  },
+
+  adminUsers: {
+    getAll: () => ipcRenderer.invoke("adminUsers:getAll"),
+  },
+
+  file: { save: (data: string) => ipcRenderer.invoke("save-file", data) },
 
   sync: () => ipcRenderer.invoke("sync:run"),
 }) satisfies Window["electron"];

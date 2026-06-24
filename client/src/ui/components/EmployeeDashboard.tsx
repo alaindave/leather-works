@@ -95,7 +95,7 @@ const EmployeeDashboard = ({
             fontSize="22px"
             fontWeight="700"
             position="relative"
-            right="1.2rem"
+            right="1.5rem"
           >
             Présents
           </Text>
@@ -104,7 +104,7 @@ const EmployeeDashboard = ({
           color="black"
           fontSize="1.5rem"
           position="relative"
-          left="3.5rem"
+          left="4rem"
           fontWeight="700"
         >
           {attendanceCount}
@@ -149,7 +149,7 @@ const EmployeeDashboard = ({
           color="black"
           fontSize="1.5rem"
           position="relative"
-          left="5rem"
+          left="4rem"
           fontWeight="700"
         >
           {lateCount}

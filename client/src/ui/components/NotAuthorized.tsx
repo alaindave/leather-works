@@ -10,6 +10,7 @@ import {
   PopoverBody,
   PopoverContent,
   PopoverTrigger,
+  Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { IconType } from "react-icons";
@@ -36,13 +37,15 @@ const NotAuthorized = ({ buttonText, icon, placement, width }: Props) => {
               as={icon}
               color="gray.800"
               boxSize="1.3rem"
-              mr="0.6rem"
+              mr="0.5rem"
             />
           }
           onClick={() => setButtonClicked((prev) => !prev)}
           fontSize="1.1rem"
         >
-          {buttonText}
+          <Text position="relative" right="0.3rem" top="0.5rem">
+            {buttonText}
+          </Text>
         </Button>
       </PopoverTrigger>
 

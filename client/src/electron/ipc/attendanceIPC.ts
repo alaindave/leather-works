@@ -13,7 +13,7 @@ import {
 import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee.js";
 
 export function registerAttendanceIPC() {
-  console.log("REGISTERING ATTENDANCE IPC");
+  console.log("REGISTERING ATTENDANCES IPC");
 
   ipcMain.handle(
     "attendance:create",

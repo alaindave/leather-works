@@ -9,13 +9,14 @@ const API_URL = app.isPackaged
 console.log("API URL:", API_URL);
 
 export function registerTaskIPC() {
-  console.log("REGISTERING TASK IPC");
+  console.log("REGISTERING TASKS IPC");
   //Create tasks
   ipcMain.handle("tasks:create", async (_, task) => {
     console.log("Task received from Renderer: ", task);
     try {
       const result = await createTask(task);
       console.log("Created task: ", result);
+      return result;
     } catch (error) {
       console.error("From Main: Error creating task: ", error);
       throw error;

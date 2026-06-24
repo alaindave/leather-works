@@ -75,8 +75,8 @@ const EmployeeListPage = () => {
               color="#1F2937"
               fontSize="1.6rem"
               fontWeight="700"
+              mt="0.4rem"
               ml="0.4rem"
-              mt="0.3rem"
             >
               Employés
             </Text>
@@ -93,11 +93,11 @@ const EmployeeListPage = () => {
           </Box>
           <Spacer />
           {adminUser?.role === "manager" ? (
-            <Box mt="0.8rem" mr="1rem">
+            <Box mt="0.75rem" mr="0.5rem">
               <AddEmployee onAddEmployee={handleAddEmployee} />
             </Box>
           ) : (
-            <Box mt="0.8rem" mr="1rem">
+            <Box mt="0.1rem" mr="1rem">
               <NotAuthorized
                 buttonText="Ajouter un employé"
                 icon={FaAddressBook}
@@ -114,7 +114,7 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} mt="1.35rem" ml="0.1rem">
+          <Flex wrap="wrap" gap={2} mt="1.35rem">
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
@@ -122,8 +122,8 @@ const EmployeeListPage = () => {
             position="relative"
             left="1.1rem"
             wrap="wrap"
-            mt="1.1rem"
-            mr="1.2rem"
+            mt="1rem"
+            mr="1.25rem"
           >
             <SearchBar onSearch={handleOnSearch} />
           </Flex>
@@ -195,7 +195,7 @@ const EmployeeListPage = () => {
 
       {/* FOOTER SPACER  */}
       <Box
-        h="4.25rem"
+        h="3.8rem"
         bg="black"
         borderRadius="12px"
         ml="0.2rem"

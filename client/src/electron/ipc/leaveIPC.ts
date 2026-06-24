@@ -11,7 +11,7 @@ import {
 import Leave from "../../shared/types/Leave.js";
 
 export function registerLeaveIPC() {
-  console.log("REGISTERING LEAVE IPC");
+  console.log("REGISTERING LEAVES IPC");
   ipcMain.handle("leave:create", async (_, leave: Partial<Leave>) => {
     return createLeave(leave);
   });

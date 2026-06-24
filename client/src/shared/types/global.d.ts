@@ -6,7 +6,7 @@ import type AttendanceWithEmployee from "./AttendanceWithEmployee";
 import type LeaveWithEmployee from "./LeaveWithEmployee";
 import type Task from "./Task";
 import type AdminUser from "./AdminUser";
-import type TaskRecipient from "./TaskRecipient";
+import type TaskRecipient from "./AdminUser";
 
 interface SaveFileResult {
   success: boolean;
@@ -63,8 +63,8 @@ declare global {
         onNew: (callback: (data: Task) => void) => () => void;
       };
 
-      taskRecipients: {
-        getAll: () => Promise<TaskRecipient[]>;
+      adminUsers: {
+        getAll: () => Promise<AdminUser[]>;
       };
 
       employees: {

@@ -57,7 +57,7 @@ router.get("/pull", async (req, res) => {
       return res.status(400).send("Missing since parameter");
     }
     const date = new Date(since);
-    const [taskRecipients, employees, attendances, leaves] = await Promise.all([
+    const [adminUsers, employees, attendances, leaves] = await Promise.all([
       AdminUser.find({
         updatedAt: { $gt: date },
       })
@@ -78,10 +78,10 @@ router.get("/pull", async (req, res) => {
     ]);
     return res.send({
       success: true,
+      adminUsers,
       employees,
       attendances,
       leaves,
-      taskRecipients,
       serverTime: new Date().toISOString(),
     });
   } catch (error) {

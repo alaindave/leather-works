@@ -23,5 +23,5 @@ export async function createLeavesTable() {
     )
   `);
 
-  console.log("LEAVE TABLE INITIALIZED");
+  console.log("LEAVES TABLE INITIALIZED");
 }

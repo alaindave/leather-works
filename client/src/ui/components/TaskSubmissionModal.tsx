@@ -29,15 +29,15 @@ import { FaSave } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
 import { TiDelete } from "react-icons/ti";
 import AdminUser from "../../shared/types/AdminUser";
-import TaskRecipient from "../../shared/types/TaskRecipient";
 import DatePicker from "react-datepicker";
+import User from "../../shared/types/User";
 
 interface Props {
-  author: Omit<AdminUser, "password" | "notes">;
+  author: Omit<User, "password" | "notes">;
   isOpen: boolean;
   onClose: () => void;
   onRefresh: () => void;
-  adminUserslist: TaskRecipient[];
+  adminUsersList: AdminUser[];
 }
 
 const errorMessage = "Remplissez tous les champs!";
@@ -57,23 +57,20 @@ const TaskSubmissionModal = ({
   isOpen,
   onClose,
   onRefresh,
-  adminUserslist,
+  adminUsersList,
 }: Props) => {
-  const [selectedRecipient, setSelectedRecipient] = useState<TaskRecipient>(
-    {} as TaskRecipient
-  );
+  const [recipient, setRecipient] = useState<AdminUser>({} as AdminUser);
+  const [taskRecipients, setTaskRecipients] = useState<AdminUser[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [taskRecipients, setTaskRecipients] = useState<TaskRecipient[]>([]);
   const [priority, setPriority] = useState<Priority>("Moyenne");
   const { register, handleSubmit, control, reset } = useForm<TaskData>({
     resolver: zodResolver(schema),
   });
 
   const handleSelectRecipients = () => {
-    console.log("Recipients: ", taskRecipients);
-    console.log("adminUser:", selectedRecipient);
-    setTaskRecipients([...taskRecipients, selectedRecipient]);
+    setErrorMessage("");
+    setTaskRecipients([...taskRecipients, recipient]);
   };
 
   const handleRecipientDelete = (_id: string) => {
@@ -82,7 +79,7 @@ const TaskSubmissionModal = ({
   };
 
   const handleFormClose = () => {
-    setSelectedRecipient({} as TaskRecipient);
+    setRecipient({} as AdminUser);
     setTaskRecipients([]);
     setPriority("Moyenne");
     reset();
@@ -92,14 +89,15 @@ const TaskSubmissionModal = ({
 
   //Handle task creation
   const onSubmit = async (task: TaskData) => {
-    if (!selectedRecipient?._id) {
+    if (taskRecipients.length === 0) {
       console.error("No recipient selected");
+      setErrorMessage("Veuillez selectionner un destinataire");
       return;
     }
     try {
       setIsSubmitting(true);
       const result = await window.electron.tasks.create({
-        author,
+        author: author._id,
         subject: task.subject,
         message: task.message,
         recipients: taskRecipients,
@@ -107,7 +105,7 @@ const TaskSubmissionModal = ({
         priority,
       });
       console.log("Task successfully created:", result);
-      setSelectedRecipient({} as TaskRecipient);
+      setRecipient({} as AdminUser);
       setErrorMessage("");
       onRefresh();
       reset();
@@ -144,11 +142,11 @@ const TaskSubmissionModal = ({
                       position="relative"
                       top="0.4rem"
                       right="5rem"
+                      onClick={() => setErrorMessage("")}
                     >
-                      {selectedRecipient?._id ? (
+                      {recipient?._id ? (
                         <Text color="blue" fontSize="1.1rem">
-                          {selectedRecipient?.firstName}{" "}
-                          {selectedRecipient?.lastName}
+                          {recipient?.firstName} {recipient?.lastName}
                         </Text>
                       ) : (
                         <Text
@@ -162,7 +160,7 @@ const TaskSubmissionModal = ({
                         </Text>
                       )}
                     </MenuButton>
-                    {selectedRecipient?._id && (
+                    {recipient?._id && (
                       <Button
                         position="relative"
                         bottom="0.7rem"
@@ -178,10 +176,10 @@ const TaskSubmissionModal = ({
                     )}
                   </HStack>
                   <MenuList maxH="450px" overflowY="auto">
-                    {adminUserslist?.map((adminUser) => (
+                    {adminUsersList?.map((adminUser: AdminUser) => (
                       <MenuItem
                         key={adminUser._id}
-                        onClick={() => setSelectedRecipient(adminUser)}
+                        onClick={() => setRecipient(adminUser)}
                         color="black"
                         _hover={{
                           bg: "gray.400",
@@ -200,7 +198,7 @@ const TaskSubmissionModal = ({
           </ModalHeader>
           <ModalCloseButton onClick={handleFormClose} />
           <ModalBody bg="#F8F9FB" height="30rem">
-            <HStack position="relative" left="1rem">
+            <HStack position="relative" left="1rem" bottom="1.2rem">
               {/* Subject */}
               <VStack>
                 <FormLabel position="relative" top="1.5rem">
@@ -347,9 +345,9 @@ const TaskSubmissionModal = ({
               >
                 {errorMessage}
               </Text>
-              <HStack>
+              <HStack height="50px">
                 {taskRecipients?.map((recipient) => (
-                  <Box mr="0.8rem">
+                  <Box mr="2rem" key={recipient._id}>
                     <Button
                       bg="transparent"
                       _hover={{ bg: "transparent" }}

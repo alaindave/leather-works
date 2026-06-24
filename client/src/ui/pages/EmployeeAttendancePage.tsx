@@ -198,7 +198,7 @@ const EmployeeAttendancePage = () => {
         mt="0.5rem"
         bg="#F8F9FB"
         height="10rem"
-        width="78.3vw"
+        width="77.3vw"
       >
         <Flex>
           <Box>
@@ -236,7 +236,7 @@ const EmployeeAttendancePage = () => {
           </Box>
 
           <Spacer />
-          <Box>
+          <Box mr="0.05rem">
             <SearchBar onSearch={setSearchText} />
           </Box>
         </Flex>
@@ -248,10 +248,10 @@ const EmployeeAttendancePage = () => {
         px={10}
         fontWeight="600"
         bg="#F8F9FB"
-        mt="0.2rem"
-        mb="0.2rem"
+        mt="0.12rem"
+        mb="0.12rem"
         height="4.7rem"
-        width="78.3vw"
+        width="77.3vw"
         overflowY="hidden"
         overflowX="hidden"
       >
@@ -279,7 +279,7 @@ const EmployeeAttendancePage = () => {
       </Grid>
 
       {/* ================= BODY ================= */}
-      <Box height="90vh" width="79vw" overflowY="auto" overflowX="hidden">
+      <Box height="90vh" overflowY="auto" overflowX="hidden">
         {loading ? (
           <>
             <Box as="style">{shimmerKeyframes}</Box>
@@ -325,10 +325,11 @@ const EmployeeAttendancePage = () => {
       {/* ================= FOOTER  ================= */}
       <Flex
         bg="#F8F9FB"
-        mb="1rem"
+        mb="0.72rem"
+        mr="0.15rem"
         height="5rem"
         justify="space-between"
-        width="78.3vw"
+        width="77.3vw"
       >
         <Box
           mt="0.6rem"

@@ -47,7 +47,13 @@ export async function createLeave(leave: Partial<Leave>) {
     ]
   );
 
-  const savedLeave = { _id, ...leave, createdAt: time, updatedAt: time };
+  const savedLeave = {
+    _id,
+    ...leave,
+    submittedAt,
+    createdAt: time,
+    updatedAt: time,
+  };
 
   console.log("Leave to save to sync queue", savedLeave);
 

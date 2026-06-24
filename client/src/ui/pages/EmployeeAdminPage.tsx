@@ -17,13 +17,13 @@ import type Task from "../../shared/types/Task";
 import useAdminUser from "../../store/authStore";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 import TaskSubmissionModal from "../components/TaskSubmissionModal";
-import TaskRecipient from "../../shared/types/TaskRecipient";
+import AdminUser from "../../shared/types/AdminUser";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [leaves, setLeaves] = useState<Leave[]>([]);
-  const [taskRecipients, setTaskRecipients] = useState<TaskRecipient[]>([]);
+  const [adminUsersList, setAdminUsersList] = useState<AdminUser[]>([]);
   const [time, setTime] = useState<Date>(new Date());
   const [notes, setNotes] = useState("");
   const [liveTask, setLiveTask] = useState<Task | null>(null);
@@ -57,11 +57,11 @@ const EmployeeAdminPage = () => {
       })
       .then((leaves) => {
         setLeaves(leaves);
-        return window.electron.taskRecipients.getAll();
+        return window.electron.adminUsers.getAll();
       })
-      .then((taskRecipients) => {
-        console.log("Retrieved task recipients: ", taskRecipients);
-        setTaskRecipients(taskRecipients);
+      .then((adminUsers) => {
+        console.log("Retrieved admin users: ", adminUsers);
+        setAdminUsersList(adminUsers);
         return axios.get<Task[]>(`${API_URL}/tasks`);
       })
 
@@ -133,7 +133,7 @@ const EmployeeAdminPage = () => {
       mt="0.5rem"
       mr="0.3rem"
       w="100%"
-      h="97.3vh"
+      h="98vh"
       bg="#F8F9FB"
       border="1px solid"
       borderColor="#D1D9E0"
@@ -147,7 +147,7 @@ const EmployeeAdminPage = () => {
         flexDir={{ base: "column", md: "row" }}
         gap={3}
       >
-        <Box position="relative" bottom="1.2rem">
+        <Box position="relative" bottom="1rem">
           <Text fontSize="1.6rem" fontWeight="700" color="#1F2937">
             Tableau de bord
           </Text>
@@ -271,7 +271,7 @@ const EmployeeAdminPage = () => {
             isOpen={isOpen}
             onClose={onClose}
             onRefresh={handleTaskRefresh}
-            adminUserslist={taskRecipients}
+            adminUsersList={adminUsersList}
             author={adminUser!}
           />
         </Box>
