@@ -13,7 +13,7 @@ const Logo = ({ text }: Props) => {
     <Flex>
       <Box>
         <Link to="/admin">
-          <Image src={logo} boxSize="70px" borderRadius="30px" />
+          <Image src={logo} width="5rem" height="5rem" />
         </Link>
       </Box>
       <Box position="relative" left="0.4rem" top="0.3rem">

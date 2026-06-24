@@ -23,7 +23,7 @@ export default async function sync() {
     // PUSH
     try {
       const result = await pushPendingChanges();
-      console.log("Push success: ", result);
+      console.log("Push results: ", result);
     } catch (error) {
       console.error("Push failed:", error);
     }
@@ -31,7 +31,7 @@ export default async function sync() {
     // PULL
     try {
       const result = await pullLatestChanges();
-      console.log("Pull success: ", result);
+      console.log("Pull results: ", result.data);
     } catch (error) {
       console.error("Pull failed:", error);
     }

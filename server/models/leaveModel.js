@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const leaveSchema = new mongoose.Schema({
   _id: { type: String, required: true },
+
   employeeId: {
     type: String,
-    ref: "Employees",
     required: true,
   },
 
@@ -35,7 +35,7 @@ const leaveSchema = new mongoose.Schema({
     enum: [`En attente d'approbation`, "Approuvé", "Refusé"],
     default: `En attente d'approbation`,
   },
-  isDeleted: { type: Boolean, default: false, required: true },
+  isDeleted: { type: Number, default: 0, required: true },
   createdAt: { type: Date, required: true },
   updatedAt: { type: Date, required: true },
 });

@@ -10,10 +10,10 @@ export async function createOfflineUsersTable() {
     firstName TEXT NOT NULL,
     lastName TEXT NOT NULL,
     notes TEXT,
-    lastVerifiedAt TEXT NOT NULL,
-    synced INTEGER NOT NULL DEFAULT 1,
-    createdAt TEXT NOT NULL,
-    updatedAt TEXT NOT NULL
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    lastVerifiedAt DATETIME
+    
   );
   `);
 

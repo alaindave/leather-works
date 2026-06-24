@@ -28,6 +28,8 @@ router.post("/", async (req, res) => {
       lastName: adminUser.lastName,
       email: adminUser.email,
       role: adminUser.role,
+      createdAt: adminUser.createdAt,
+      updatedAt: adminUser.updatedAt,
     });
 });
 

@@ -10,7 +10,7 @@ export async function createAttendance(employeeId: string, clockIn: string) {
     throw new Error("No employee found with the given ID");
   }
   const now = new Date();
-  const createdAt = now.toISOString();
+  const time = now.toISOString();
   const date = now.toISOString().split("T")[0];
   const existingAttendance = await getAttendanceRecord(employeeId, date);
 
@@ -60,7 +60,8 @@ export async function createAttendance(employeeId: string, clockIn: string) {
     clockIn,
     status,
     lateMinutes,
-    createdAt,
+    createdAt: time,
+    updatedAt: time,
   };
 
   console.log("Attendance to save to sync queue", savedAttendance);
@@ -152,38 +153,6 @@ export async function getAttendanceRecord(employeeId: string, date: string) {
   );
 }
 
-// export async function updateClockIn(_id: string, clockIn: string) {
-//   const existing = await getAttendanceById(_id);
-
-//   if (!existing) {
-//     throw new Error("Attendance record not found");
-//   }
-
-//   const clockInDate = new Date(clockIn);
-//   const scheduledHour = 8;
-//   const scheduledMinute = 0;
-//   const expectedMinutes = scheduledHour * 60 + scheduledMinute;
-//   const actualMinutes = clockInDate.getHours() * 60 + clockInDate.getMinutes();
-//   const lateMinutes = Math.max(0, actualMinutes - expectedMinutes);
-//   const status = lateMinutes > 0 ? "retard" : "ponctuel";
-
-//   await run(
-//     `
-//     UPDATE attendances
-//     SET
-//       clockIn=?,
-//       lateMinutes=?,
-//       status=?,
-//       synced=0,
-//       updatedAt=datetime('now')
-//     WHERE _id=?
-//     `,
-//     [clockIn, lateMinutes, status, _id]
-//   );
-
-//   return getAttendanceById(_id);
-// }
-
 export async function updateAttendance(
   _id: string,
   updates: Partial<
@@ -198,6 +167,8 @@ export async function updateAttendance(
 
   const fields: string[] = [];
   const values: any[] = [];
+  let savedUpdates = {};
+  const updatedAt = new Date().toISOString();
 
   if (updates.clockIn !== undefined) {
     const clockInDate = new Date(updates.clockIn);
@@ -220,21 +191,43 @@ export async function updateAttendance(
 
     fields.push("status = ?");
     values.push(status);
+
+    savedUpdates = {
+      _id,
+      clockIn: updates.clockIn,
+      lateMinutes,
+      status,
+      updatedAt,
+    };
   }
 
   if (updates.clockOut !== undefined) {
     fields.push("clockOut = ?");
     values.push(updates.clockOut);
+    savedUpdates = {
+      _id,
+      clockOut: updates.clockOut,
+      updatedAt,
+    };
   }
 
   if (updates.lateNotes !== undefined) {
     fields.push("lateNotes = ?");
     values.push(updates.lateNotes);
+    savedUpdates = {
+      _id,
+      lateNotes: updates.lateNotes,
+      updatedAt,
+    };
   }
 
   if (updates.isDeleted !== undefined) {
     fields.push("isDeleted = ?");
     values.push(updates.isDeleted);
+    savedUpdates = {
+      _id,
+      updatedAt,
+    };
   }
 
   if (fields.length === 0) {
@@ -255,6 +248,15 @@ export async function updateAttendance(
     values
   );
 
+  console.log("Attendance to save to sync queue", savedUpdates);
+
+  await addToSyncQueue({
+    entity: "attendance",
+    entityId: _id,
+    operation: "update",
+    payload: JSON.stringify(savedUpdates),
+  });
+
   return getAttendanceById(_id);
 }
 
@@ -271,7 +273,18 @@ export async function deleteAttendance(_id: string) {
     [_id]
   );
 
-  return true;
+  const updatedAt = new Date().toISOString();
+
+  console.log("Attendance to delete from sync queue", { _id, updatedAt });
+
+  await addToSyncQueue({
+    entity: "attendance",
+    entityId: _id,
+    operation: "delete",
+    payload: JSON.stringify({ _id, updatedAt }),
+  });
+
+  return getAttendanceById(_id);
 }
 
 export async function upsertAttendance(attendance: Attendance) {
@@ -287,7 +300,6 @@ export async function upsertAttendance(attendance: Attendance) {
       return local;
     }
   }
-
   await run(
     `
     INSERT INTO attendances (
@@ -299,13 +311,11 @@ export async function upsertAttendance(attendance: Attendance) {
       status,
       lateMinutes,
       lateNotes,
-      synced,
       isDeleted,
       createdAt,
-      updatedAt,
-      lastSyncedAt
+      updatedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?,?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id)
     DO UPDATE SET
       employeeId = excluded.employeeId,
@@ -316,9 +326,8 @@ export async function upsertAttendance(attendance: Attendance) {
       lateMinutes = excluded.lateMinutes,
       lateNotes = excluded.lateNotes,
       isDeleted = excluded.isDeleted,
-      synced = 1,
+      createdAt = excluded.createdAt,
       updatedAt = excluded.updatedAt
-      lastSyncedAt = excluded.lastSyncedAt
     `,
     [
       attendance._id,
@@ -330,9 +339,8 @@ export async function upsertAttendance(attendance: Attendance) {
       attendance.lateMinutes,
       attendance.lateNotes,
       attendance.isDeleted ?? 0,
-      attendance.createdAt ?? new Date().toISOString(),
-      attendance.updatedAt ?? new Date().toISOString(),
-      new Date().toISOString(),
+      attendance.createdAt,
+      attendance.updatedAt,
     ]
   );
 
@@ -343,7 +351,9 @@ export async function markAttendanceSynced(_id: string) {
   await run(
     `
     UPDATE attendances
-    SET synced = 1
+    SET
+      synced = 1,
+      lastSyncedAt = CURRENT_TIMESTAMP
     WHERE _id = ?
     `,
     [_id]

@@ -2,6 +2,8 @@ import type OfflineUser from "../../../shared/types/OfflineUser.js";
 import { get, all, run } from "../db.js";
 
 export async function createOrUpdateOfflineUser(user: OfflineUser) {
+  console.log("Offline user to add: ", user);
+
   await run(
     `
     INSERT INTO offline_users (
@@ -11,11 +13,9 @@ export async function createOrUpdateOfflineUser(user: OfflineUser) {
       role,
       firstName,
       lastName,
-      lastVerifiedAt,
-      createdAt,
-      updatedAt
+      lastVerifiedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    VALUES (?, ?, ?, ?, ?, ?, ?)
 
     ON CONFLICT(email)
     DO UPDATE SET
@@ -23,8 +23,8 @@ export async function createOrUpdateOfflineUser(user: OfflineUser) {
       role = excluded.role,
       firstName = excluded.firstName,
       lastName = excluded.lastName,
-      lastVerifiedAt = excluded.lastVerifiedAt,
-      updatedAt = datetime('now')
+      updatedAt = CURRENT_TIMESTAMP,
+      lastVerifiedAt = excluded.lastVerifiedAt
     `,
     [
       user._id,

@@ -7,9 +7,9 @@ export default interface Attendance {
   status: "ponctuel" | "retard" | "absent" | "congé";
   lateMinutes?: number;
   lateNotes?: string;
-  synced: number;
-  isDeleted: number;
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;
+  synced: number;
+  isDeleted: number;
 }

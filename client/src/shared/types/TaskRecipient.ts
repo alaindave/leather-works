@@ -7,5 +7,6 @@ export default interface TaskRecipient {
   createdAt: string;
   updatedAt?: string;
   lastSyncedAt?: string;
+  synced: number;
   isDeleted: number;
 }

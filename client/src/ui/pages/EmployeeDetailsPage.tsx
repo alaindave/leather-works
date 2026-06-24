@@ -193,10 +193,9 @@ const EmployeeDetailsPage = () => {
                 </Box>
               </ErrorBoundary>
             ) : (
-              <Box position="relative" right="1rem" bottom="1.5rem">
+              <Box position="relative" right="1.3rem" bottom="1.5rem">
                 <NotAuthorized
                   buttonText="Modifier"
-                  buttonColor="red"
                   icon={FaUserEdit}
                   placement="left"
                   width="13rem"
@@ -264,18 +263,18 @@ const EmployeeDetailsPage = () => {
                 </Box>
                 {adminUser?.role === "manager" ? (
                   <Button
-                    colorScheme="red"
+                    colorScheme="yellow"
                     onClick={onOpen}
+                    fontSize="1.3rem"
                     w="100%"
                     mt={4}
-                    leftIcon={<MdDeleteForever />}
+                    leftIcon={<MdDeleteForever fontSize="1.3rem" />}
                   >
                     Supprimer
                   </Button>
                 ) : (
                   <NotAuthorized
                     buttonText="Supprimer"
-                    buttonColor="red"
                     icon={MdDeleteForever}
                     placement="bottom"
                     width="13rem"

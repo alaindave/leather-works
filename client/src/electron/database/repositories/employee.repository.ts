@@ -10,7 +10,7 @@ export async function createEmployee(
   >
 ) {
   const _id = randomUUID();
-  const createdAt = new Date().toISOString();
+  const time = new Date().toISOString();
 
   await run(
     `
@@ -32,16 +32,12 @@ export async function createEmployee(
       status,
       remainingLeave,
       synced,
-      isDeleted,
-      createdAt,
-      updatedAt
+      isDeleted
     )
     VALUES (
       ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
       0,
-      0,
-      datetime('now'),
-      datetime('now')
+      0
     )
     `,
     [
@@ -64,7 +60,7 @@ export async function createEmployee(
     ]
   );
 
-  const savedEmployee = { _id, ...employee, createdAt };
+  const savedEmployee = { _id, ...employee, createdAt: time, updatedAt: time };
 
   console.log("Employee to save to sync queue", savedEmployee);
 
@@ -133,6 +129,7 @@ export function searchEmployees(searchTerm: string) {
 
 export async function updateEmployee(_id: string, data: Partial<Employee>) {
   const existing = await getEmployeeById(_id);
+  const updatedAt = new Date().toISOString();
 
   if (!existing) {
     throw new Error("Employee not found");
@@ -181,7 +178,7 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
     ]
   );
 
-  const updatedEmployee = { _id, ...data };
+  const updatedEmployee = { _id, ...data, updatedAt };
   console.log("Employee to save to sync queue: ", updatedEmployee);
 
   await addToSyncQueue({
@@ -195,7 +192,7 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
 }
 
 export async function deleteEmployee(_id: string) {
-  const deletedAt = new Date().toISOString();
+  const updatedAt = new Date().toISOString();
 
   await run(
     `
@@ -206,13 +203,13 @@ export async function deleteEmployee(_id: string) {
       updatedAt = ?
     WHERE _id = ?
     `,
-    [deletedAt, _id]
+    [updatedAt, _id]
   );
 
   console.log("Employee deletion to save to sync queue", {
     _id,
     deleted: true,
-    updatedAt: deletedAt,
+    updatedAt: updatedAt,
   });
 
   await addToSyncQueue({
@@ -221,8 +218,7 @@ export async function deleteEmployee(_id: string) {
     operation: "delete",
     payload: JSON.stringify({
       _id,
-      deleted: true,
-      updatedAt: deletedAt,
+      updatedAt,
     }),
   });
 }
@@ -248,76 +244,76 @@ export async function upsertEmployee(employee: Employee) {
 
   await run(
     `
-    INSERT INTO employees (
-      _id,
-      firstName,
-      lastName,
-      matricule,
-      dateBirth,
-      role,
-      dateHired,
-      department,
-      telephone,
-      address,
-      emergencyContact,
-      relationship,
-      contactPhone,
-      salary,
-      status,
-      remainingLeave,
-      synced,
-      isDeleted,
-      createdAt,
-      updatedAt,
-      lastSyncedAt
-    )
-    VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
-    )
+  INSERT INTO employees (
+    _id,
+    firstName,
+    lastName,
+    matricule,
+    idNum,
+    dateBirth,
+    dateHired,
+    role,
+    department,
+    salary,
+    remainingLeave,
+    status,
+    telephone,
+    address,
+    emergencyContact,
+    relationship,
+    contactPhone,
+    createdAt,
+    updatedAt,
+    isDeleted
 
-    ON CONFLICT(_id)
-    DO UPDATE SET
-      firstName = excluded.firstName,
-      lastName = excluded.lastName,
-      matricule = excluded.matricule,
-      dateBirth = excluded.dateBirth,
-      role = excluded.role,
-      dateHired = excluded.dateHired,
-      department = excluded.department,
-      telephone = excluded.telephone,
-      address = excluded.address,
-      emergencyContact = excluded.emergencyContact,
-      relationship = excluded.relationship,
-      contactPhone = excluded.contactPhone,
-      salary = excluded.salary,
-      status = excluded.status,
-      remainingLeave = excluded.remainingLeave,
-      isDeleted = excluded.isDeleted,
-      updatedAt = excluded.updatedAt,
-      lastSyncedAt = excluded.lastSyncedAt
-    `,
+  )
+  VALUES (
+    ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+  )
+  ON CONFLICT(_id)
+  DO UPDATE SET
+    firstName = excluded.firstName,
+    lastName = excluded.lastName,
+    matricule = excluded.matricule,
+    idNum=excluded.idNum,
+    dateBirth = excluded.dateBirth,
+    dateHired = excluded.dateHired,
+    role = excluded.role,
+    department = excluded.department,
+    salary = excluded.salary,
+    remainingLeave = excluded.remainingLeave,
+    status = excluded.status,
+    telephone = excluded.telephone,
+    address = excluded.address,
+    emergencyContact = excluded.emergencyContact,
+    relationship = excluded.relationship,
+    contactPhone = excluded.contactPhone,
+    createdAt=excluded.createdAt,
+    updatedAt = excluded.updatedAt,
+    isDeleted = excluded.isDeleted
+
+  `,
     [
       employee._id,
       employee.firstName,
       employee.lastName,
       employee.matricule,
+      employee.idNum,
       employee.dateBirth,
-      employee.role,
       employee.dateHired,
+      employee.role,
       employee.department,
+      employee.salary,
+      employee.remainingLeave,
+      employee.status,
       employee.telephone,
       employee.address,
       employee.emergencyContact,
       employee.relationship,
       employee.contactPhone,
-      employee.salary,
-      employee.status,
-      employee.remainingLeave,
-      1,
-      employee.isDeleted ? 1 : 0,
       employee.createdAt,
       employee.updatedAt,
-      new Date().toISOString(),
+      employee.isDeleted,
     ]
   );
 }
@@ -328,7 +324,7 @@ export async function markEmployeeSynced(_id: string) {
     UPDATE employees
     SET
       synced = 1,
-      lastSyncedAt = datetime('now')
+      lastSyncedAt = CURRENT_TIMESTAMP
     WHERE _id = ?
     `,
     [_id]

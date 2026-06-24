@@ -23,7 +23,7 @@ export async function upsertTaskRecipient(
         lastName = excluded.lastName,
         email = excluded.email,
         role = excluded.role,
-        isDeleted=excluded.isDeleted
+        isDeleted=excluded.isDeleted,
         updatedAt = excluded.updatedAt
       `,
     [

@@ -11,4 +11,8 @@ export default interface Task {
   deadline: string;
   priority: Priority;
   createdAt: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
+  synced?: number;
+  isDeleted?: number;
 }

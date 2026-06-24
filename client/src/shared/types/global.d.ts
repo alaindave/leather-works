@@ -25,6 +25,8 @@ interface LoggedUser {
   email: string;
   role: "manager" | "admin";
   notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 declare global {
@@ -79,18 +81,20 @@ declare global {
 
       attendance: {
         create: (employeeID: string, clockIn: string) => Promise<Attendance>;
-        getAll: () => Promise<Attendance[]>;
+        getAll: () => Promise<AttendanceWithEmployee[]>;
         getById: (_id: string) => Promise<AttendanceWithEmployee | null>;
         getByEmployee: (employeeId: string) => Promise<Attendance[]>;
         getByDate: (date: string) => Promise<AttendanceWithEmployee[]>;
         getAttendanceRecord: (
           employeeId: string,
           date: string
-        ) => Promise<Attendance>;
+        ) => Promise<AttendanceWithEmployee>;
         update: (
           _id: string,
           updates: Partial<AttendanceWithEmployee>
         ) => Promise<AttendanceWithEmployee>;
+
+        delete: (_id: string) => Promise<AttendanceWithEmployee>;
       };
 
       leave: {
@@ -98,7 +102,7 @@ declare global {
 
         getLeaveById: (_id: string) => Promise<LeaveWithEmployee>;
 
-        getOngoingLeaves: () => Promise<Leave[]>;
+        getOngoingLeaves: () => Promise<LeaveWithEmployee[]>;
 
         getLeaveByMonth: (month: string) => Promise<LeaveWithEmployee[]>;
 
@@ -113,7 +117,7 @@ declare global {
           }
         ) => Promise<LeaveWithEmployee>;
 
-        delete: (_id: string) => Promise<Leave>;
+        delete: (_id: string) => Promise<LeaveWithEmployee>;
       };
 
       sync: () => Promise<{

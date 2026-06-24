@@ -12,11 +12,11 @@ export async function createAttendancesTable() {
         CHECK(status IN ('ponctuel', 'retard', 'absent', 'congé')),
       lateMinutes INTEGER NOT NULL DEFAULT 0,
       lateNotes TEXT,
-      synced INTEGER NOT NULL DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      lastSyncedAt DATETIME,
+      synced INTEGER DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
-      createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL,
-      lastSyncedAt TEXT,
       FOREIGN KEY (employeeId)
         REFERENCES employees(_id)
     )

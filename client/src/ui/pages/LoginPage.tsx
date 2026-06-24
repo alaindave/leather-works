@@ -41,20 +41,17 @@ const LoginPage = () => {
     resolver: zodResolver(schema),
   });
 
-  const handleLogin = async (data: AuthData) => {
+  const handleLogin = async (credentials: AuthData) => {
     setIsLoggingIn(true);
 
     try {
-      const adminUser = await window.electron.auth.login({
-        email: data.email,
-        password: data.password,
-      });
+      const adminUser = await window.electron.auth.login(credentials);
 
       if (adminUser) {
         const offlineUser = await window.electron.offlineUsers.save({
           _id: adminUser._id,
           email: adminUser.email,
-          password: data.password,
+          password: credentials.password,
           firstName: adminUser.firstName,
           lastName: adminUser.lastName,
           role: adminUser.role,
@@ -70,13 +67,35 @@ const LoginPage = () => {
           adminUser.role
         );
 
-        navigate("/admin", {
-          replace: true,
-        });
+        navigate("/admin", { replace: true });
       }
     } catch (error) {
-      console.error("Login error:", error);
-      setErrorMessage("Email et/ou mot de passe incorrect.");
+      try {
+        const offlineUser = await window.electron.offlineUsers.login({
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        if (offlineUser) {
+          console.log("Offline login successful for user: ", offlineUser);
+          setLogIn(
+            offlineUser._id,
+            offlineUser.firstName,
+            offlineUser.lastName,
+            offlineUser.email,
+            offlineUser.role
+          );
+
+          navigate("/admin", {
+            replace: true,
+          });
+
+          return;
+        }
+      } catch (error) {
+        setErrorMessage("Email et/ou mot de passe incorrect.");
+        console.log("Online and offline login unsuccessful: ", error);
+      }
     } finally {
       setIsLoggingIn(false);
     }

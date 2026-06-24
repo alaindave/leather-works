@@ -23,7 +23,7 @@ import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
 import DateDropdown from "../components/DateDropdown";
-import { AttendanceWithEmployee } from "../../shared/types/AttendanceWithEmployee";
+import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -225,7 +225,7 @@ const EmployeeAttendancePage = () => {
 
           <Spacer />
 
-          <Button bg="#F2B705" onClick={handleExport} mt="0.5rem" mr="0.5rem">
+          <Button bg="#F2B705" onClick={handleExport} mt="0.5rem" mr="1.3rem">
             <HiOutlineDownload /> Exporter
           </Button>
         </Flex>

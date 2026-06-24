@@ -13,11 +13,11 @@ export async function createLeavesTable() {
       notes TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'En attente d''approbation'
         CHECK(status IN ('Approuvé', 'Refusé', 'En attente d''approbation','Annulé')),
-      synced INTEGER NOT NULL DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      lastSyncedAt DATETIME,
+      synced INTEGER DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
-      createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL,
-      lastSyncedAt TEXT,
       FOREIGN KEY (employeeId)
         REFERENCES employees(_id)
     )

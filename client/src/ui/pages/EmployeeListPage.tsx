@@ -93,14 +93,13 @@ const EmployeeListPage = () => {
           </Box>
           <Spacer />
           {adminUser?.role === "manager" ? (
-            <Box mt="0.4rem" mr="0.2rem">
+            <Box mt="0.8rem" mr="1rem">
               <AddEmployee onAddEmployee={handleAddEmployee} />
             </Box>
           ) : (
-            <Box mt="0.2rem" mr="0.2rem">
+            <Box mt="0.8rem" mr="1rem">
               <NotAuthorized
                 buttonText="Ajouter un employé"
-                buttonColor="red"
                 icon={FaAddressBook}
                 placement="left"
                 width="13rem"
@@ -196,7 +195,7 @@ const EmployeeListPage = () => {
 
       {/* FOOTER SPACER  */}
       <Box
-        h="2.5rem"
+        h="4.25rem"
         bg="black"
         borderRadius="12px"
         ml="0.2rem"

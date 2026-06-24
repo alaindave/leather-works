@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Flex,
+  FormLabel,
   HStack,
   Input,
   Menu,
@@ -198,102 +199,119 @@ const TaskSubmissionModal = ({
             </Flex>
           </ModalHeader>
           <ModalCloseButton onClick={handleFormClose} />
-          <ModalBody bg="#F8F9FB" height="25rem">
-            <HStack>
+          <ModalBody bg="#F8F9FB" height="30rem">
+            <HStack position="relative" left="1rem">
               {/* Subject */}
-              <Input
-                color="gray.800"
-                fontWeight="600"
-                fontSize="1.2rem"
-                width="19rem"
-                height="40px"
-                border="2px solid gray"
-                position="relative"
-                {...register("subject")}
-                placeholder="Sujet"
-                _placeholder={{
-                  opacity: 1,
-                  color: "gray.500",
-                  fontWeight: "700",
-                  fontSize: "1.1rem",
-                }}
-              />
-              {/* Deadline */}
-              <Controller
-                control={control}
-                name="deadline"
-                render={({ field }) => (
-                  <DatePicker
-                    selected={field.value ? new Date(field.value) : null}
-                    onChange={(date: Date | null) => {
-                      if (!date) {
-                        field.onChange("");
-                        return;
+              <VStack>
+                <FormLabel position="relative" top="1.5rem">
+                  <Text fontWeight="600" fontSize="1.1rem">
+                    Sujet
+                  </Text>
+                </FormLabel>
+
+                <Input
+                  color="gray.800"
+                  fontWeight="800"
+                  fontSize="1.2rem"
+                  width="20rem"
+                  height="40px"
+                  border="2px solid gray"
+                  position="relative"
+                  {...register("subject")}
+                />
+              </VStack>
+              <VStack>
+                {/* Deadline */}
+                <FormLabel position="relative" top="1.5rem">
+                  <Text fontWeight="600" fontSize="1.1rem">
+                    {" "}
+                    Date limite
+                  </Text>
+                </FormLabel>
+
+                <Controller
+                  control={control}
+                  name="deadline"
+                  render={({ field }) => (
+                    <DatePicker
+                      selected={field.value ? new Date(field.value) : null}
+                      onChange={(date: Date | null) => {
+                        if (!date) {
+                          field.onChange("");
+                          return;
+                        }
+
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(
+                          2,
+                          "0"
+                        );
+                        const day = String(date.getDate()).padStart(2, "0");
+
+                        field.onChange(`${year}-${month}-${day}`);
+                      }}
+                      locale="fr"
+                      dateFormat="dd/MM/yyyy"
+                      showYearDropdown
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={80}
+                      customInput={
+                        <Input
+                          color="gray.900"
+                          fontWeight="600"
+                          width="15rem"
+                          bg="#ffffff"
+                          borderColor="gray.800"
+                          borderWidth="1.5px"
+                        />
                       }
+                    />
+                  )}
+                />
+              </VStack>
 
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(
-                        2,
-                        "0"
-                      );
-                      const day = String(date.getDate()).padStart(2, "0");
-
-                      field.onChange(`${year}-${month}-${day}`);
-                    }}
-                    locale="fr"
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="Date limite"
-                    showYearDropdown
-                    scrollableYearDropdown
-                    yearDropdownItemNumber={80}
-                    customInput={
-                      <Input
-                        color="gray.900"
-                        fontWeight="600"
-                        width="15rem"
-                        bg="#ffffff"
-                        borderColor="gray.800"
-                        borderWidth="1.5px"
-                        _placeholder={{
-                          opacity: 1,
-                          color: "gray.500",
-                          fontWeight: "700",
-                          fontSize: "1.1rem",
-                        }}
-                      />
-                    }
-                  />
-                )}
-              />
               {/* Priority */}
-              <Menu>
-                <MenuButton>
-                  <HStack>
-                    <Text position="relative" top="0.5rem" fontWeight="700">
-                      Priorite:
-                    </Text>
+              <VStack>
+                <FormLabel>
+                  <Text
+                    position="relative"
+                    top="2.1rem"
+                    left="0.3rem"
+                    fontWeight="600"
+                    fontSize="1.1rem"
+                  >
+                    Priorite
+                  </Text>
+                </FormLabel>
+                <Menu>
+                  <MenuButton>
                     <Text
                       position="relative"
-                      top="0.5rem"
-                      right="0.4rem"
-                      fontWeight="500"
+                      top="0.2rem"
+                      right="0.14rem"
+                      fontWeight="600"
+                      border="1.5px solid black"
+                      padding="0.5rem"
+                      borderRadius="0.5rem"
+                      mt="0.4rem"
+                      ml="0.1rem"
                     >
                       {priority}
                     </Text>
-                  </HStack>
-                </MenuButton>
-                <MenuList>
-                  <MenuItem onClick={() => setPriority("Haute")}>
-                    Haute
-                  </MenuItem>
-                  <MenuItem onClick={() => setPriority("Moyenne")}>
-                    Moyenne
-                  </MenuItem>
-                  <MenuItem onClick={() => setPriority("Basse")}>
-                    Basse
-                  </MenuItem>
-                </MenuList>
-              </Menu>
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem onClick={() => setPriority("Haute")}>
+                      Haute
+                    </MenuItem>
+                    <MenuItem onClick={() => setPriority("Moyenne")}>
+                      Moyenne
+                    </MenuItem>
+                    <MenuItem onClick={() => setPriority("Basse")}>
+                      Basse
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+              </VStack>
             </HStack>
             {/* Task text */}
             <Textarea
@@ -305,9 +323,9 @@ const TaskSubmissionModal = ({
               position="relative"
               top="2rem"
               border="1px solid rgba(255,255,255,0.1)"
-              color="#ffffff"
+              color="gray.200"
               fontWeight="600"
-              fontSize="1.1rem"
+              fontSize="1.2rem"
               _hover={{ borderColor: "yellow.300" }}
               _focus={{
                 borderColor: "yellow.400",

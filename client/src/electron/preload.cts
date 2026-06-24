@@ -98,16 +98,9 @@ contextBridge.exposeInMainWorld("electron", {
     update: (_id: string, updates: Partial<AttendanceWithEmployee>) =>
       ipcRenderer.invoke("attendance:update", _id, updates),
 
-    // updateClockOut: (_id: string, clockOut: string) =>
-    //   ipcRenderer.invoke("attendance:updateClockOut", _id, clockOut),
+    delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
 
-    // submitLateNotes: (_id: string, lateNotes: string | undefined) =>
-    //   ipcRenderer.invoke("attendance:submitLateNotes", _id, lateNotes),
 
-    // delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
-
-    // clockOut: (_id: string, clockOut: string) =>
-    //   ipcRenderer.invoke("attendance:clockOut", _id, clockOut),
   },
 
   leave: {

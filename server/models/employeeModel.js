@@ -7,11 +7,19 @@ const employeeSchema = new mongoose.Schema({
   matricule: { type: String, required: true },
   idNum: { type: String, required: true, default: "BDI/11/222" },
   dateBirth: { type: Date, required: true },
-  role: { type: String, required: true },
   dateHired: { type: Date, required: true },
+  role: { type: String, required: true },
   department: {
     type: String,
     enum: ["Administration", "Atelier", "Usine", "Magasin", "Sentinelle"],
+    required: true,
+  },
+  salary: { type: Number, required: true },
+  remainingLeave: { type: Number, default: 20, required: true },
+  status: {
+    type: String,
+    enum: ["actif", "inactif"],
+    default: "actif",
     required: true,
   },
   telephone: { type: String, required: true },
@@ -19,17 +27,9 @@ const employeeSchema = new mongoose.Schema({
   emergencyContact: { type: String, required: true },
   relationship: { type: String, required: true },
   contactPhone: { type: String, required: true },
-  salary: { type: Number, required: true },
-  status: {
-    type: String,
-    enum: ["actif", "inactif"],
-    default: "actif",
-    required: true,
-  },
-  remainingLeave: { type: Number, default: 20, required: true },
-  isDeleted: { type: Boolean, default: false, required: true },
   createdAt: { type: Date, required: true },
   updatedAt: { type: Date, required: true },
+  isDeleted: { type: Number, default: 0, required: true },
 });
 
 const Employee = mongoose.model("Employees", employeeSchema);

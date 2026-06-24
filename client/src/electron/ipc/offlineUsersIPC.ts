@@ -9,12 +9,13 @@ import {
   getAllOfflineUsers,
   deleteOfflineUser,
 } from "../database/repositories/offline_users.repository.js";
+import OfflineUser from "../../shared/types/OfflineUser.js";
 
 export function registerOfflineUsersIPC() {
   console.log("REGISTERING OFFLINE USERS IPC");
 
-  ipcMain.handle("offline-users:save", async (_, user) => {
-    const passwordHash = await bcrypt.hash(user.password, 12);
+  ipcMain.handle("offline-users:save", async (_, user: OfflineUser) => {
+    const passwordHash = await bcrypt.hash(user.passwordHash, 12);
 
     return createOrUpdateOfflineUser({
       _id: user._id,
@@ -23,6 +24,8 @@ export function registerOfflineUsersIPC() {
       role: user.role,
       firstName: user.firstName,
       lastName: user.lastName,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
       lastVerifiedAt: new Date().toISOString(),
     });
   });

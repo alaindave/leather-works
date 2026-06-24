@@ -10,15 +10,11 @@ export async function createLeave(leave: Partial<Leave>) {
     throw new Error("No employee found with the given ID");
   }
   const today = new Date();
-
   const submittedAt = today.toISOString().split("T")[0];
-  const createdAt = today.toISOString();
-
+  const time = today.toISOString();
   const month = String(today.getMonth() + 1).padStart(2, "0");
   const year = today.getFullYear();
-
   const submittedMonth = `${year}-${month}`;
-
   const _id = randomUUID();
 
   await run(
@@ -51,7 +47,7 @@ export async function createLeave(leave: Partial<Leave>) {
     ]
   );
 
-  const savedLeave = { _id, ...leave, createdAt };
+  const savedLeave = { _id, ...leave, createdAt: time, updatedAt: time };
 
   console.log("Leave to save to sync queue", savedLeave);
 
@@ -236,6 +232,19 @@ export async function updateLeave(
     values
   );
 
+  const updatedAt = new Date().toISOString();
+
+  const savedUpdates = { _id, ...updates, updatedAt };
+
+  console.log("Leave to save to sync queue", savedUpdates);
+
+  await addToSyncQueue({
+    entity: "leave",
+    entityId: _id,
+    operation: "update",
+    payload: JSON.stringify(savedUpdates),
+  });
+
   return getLeaveById(_id);
 }
 
@@ -252,7 +261,20 @@ export async function deleteLeave(_id: string) {
     [_id]
   );
 
-  return true;
+  const deletedAt = new Date().toISOString();
+
+  const deletedLeave = { _id, deletedAt };
+
+  console.log("Leave to delete from sync queue", deletedLeave);
+
+  await addToSyncQueue({
+    entity: "leave",
+    entityId: _id,
+    operation: "delete",
+    payload: JSON.stringify(deletedLeave),
+  });
+
+  return getLeaveById(_id);
 }
 
 export async function upsertLeave(leave: Leave) {
@@ -282,13 +304,11 @@ export async function upsertLeave(leave: Leave) {
       subject,
       notes,
       status,
-      synced,
       isDeleted,
       createdAt,
-      updatedAt,
-      lastSyncedAt
+      updatedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id)
     DO UPDATE SET
       employeeId = excluded.employeeId,
@@ -300,9 +320,8 @@ export async function upsertLeave(leave: Leave) {
       notes = excluded.notes,
       status = excluded.status,
       isDeleted = excluded.isDeleted,
-      synced = 1,
-      updatedAt = excluded.updatedAt,
-      lastSyncedAt = excluded.lastSyncedAt
+      createdAt = excluded.createdAt,
+      updatedAt = excluded.updatedAt
     `,
     [
       leave._id,
@@ -315,9 +334,8 @@ export async function upsertLeave(leave: Leave) {
       leave.notes,
       leave.status,
       leave.isDeleted ?? 0,
-      leave.createdAt ?? new Date().toISOString(),
-      leave.updatedAt ?? new Date().toISOString(),
-      new Date().toISOString(),
+      leave.createdAt,
+      leave.updatedAt,
     ]
   );
 
@@ -330,7 +348,7 @@ export async function markLeaveSynced(_id: string) {
     UPDATE leaves
     SET
       synced = 1,
-      updatedAt = datetime('now')
+      lastSyncedAt = CURRENT_TIMESTAMP
     WHERE _id = ?
     `,
     [_id]

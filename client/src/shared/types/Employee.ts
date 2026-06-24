@@ -5,20 +5,20 @@ export default interface Employee {
   matricule: string;
   idNum: string;
   dateBirth: string;
+  dateHired: string;
   role: string;
   department: string;
-  dateHired: string;
   salary: number;
+  remainingLeave: number;
   status: "actif" | "inactif";
   telephone: string;
   address: string;
   emergencyContact: string;
   relationship: string;
   contactPhone: string;
-  remainingLeave: number;
-  synced: number;
-  isDeleted: number;
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;
+  synced: number;
+  isDeleted: number;
 }

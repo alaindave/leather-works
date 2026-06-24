@@ -28,6 +28,8 @@ const taskSchema = new mongoose.Schema({
     enum: ["Haute", "Moyenne", "Basse"],
   },
   createdAt: { type: Date, required: true },
+  updatedAt: { type: Date, required: true },
+  isDeleted: { type: Number, default: 0, required: true },
 });
 
 const Task = mongoose.model("Tasks", taskSchema);

@@ -6,5 +6,7 @@ export default interface OfflineUser {
   firstName: string;
   lastName: string;
   notes?: string;
+  createdAt: string;
+  updatedAt: string;
   lastVerifiedAt: string;
 }

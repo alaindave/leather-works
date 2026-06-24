@@ -12,7 +12,13 @@ export async function createEmployeesTable() {
       role TEXT NOT NULL,
       dateHired TEXT NOT NULL,
       department TEXT NOT NULL
-        CHECK(status IN ('Administration', 'Atelier', 'Usine', 'Magasin', 'Sentinelle')),
+        CHECK(department IN (
+          'Administration',
+          'Atelier',
+          'Usine',
+          'Magasin',
+          'Sentinelle'
+        )),
       telephone TEXT NOT NULL,
       address TEXT NOT NULL,
       emergencyContact TEXT NOT NULL,
@@ -21,13 +27,13 @@ export async function createEmployeesTable() {
       salary INTEGER NOT NULL,
       status TEXT NOT NULL DEFAULT 'actif',
       remainingLeave INTEGER NOT NULL DEFAULT 20,
-      synced INTEGER NOT NULL DEFAULT 0,
-      isDeleted INTEGER NOT NULL DEFAULT 0,
-      createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL,
-      lastSyncedAt TEXT
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      lastSyncedAt DATETIME,
+      synced INTEGER DEFAULT 0,
+      isDeleted INTEGER NOT NULL DEFAULT 0
+
     )
   `);
-
   console.log("EMPLOYEES TABLE INITIALIZED");
 }

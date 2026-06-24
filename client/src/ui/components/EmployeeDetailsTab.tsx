@@ -14,7 +14,7 @@ interface Props {
 
 const EmployeeDetailsTab = ({ employee }: Props) => {
   return (
-    <Box h="100%" w="50vw">
+    <Box h="100%" w="47vw">
       <Tabs variant="enclosed" h="100%" display="flex" flexDirection="column">
         <TabList
           borderBottomColor="rgba(255,255,255,0.08)"

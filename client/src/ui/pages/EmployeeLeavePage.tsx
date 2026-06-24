@@ -9,7 +9,7 @@ import {
   VStack,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCirclePlus } from "react-icons/fa6";
 import type Employee from "../../shared/types/Employee";
 import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
@@ -235,8 +235,8 @@ const EmployeeLeavePage = () => {
               size="md"
               onClick={onOpen}
               zIndex="1"
-              mt="0.4rem"
-              mr="0.4rem"
+              mt="0.7rem"
+              mr="1.3rem"
             >
               <FaCirclePlus />{" "}
               <Text
@@ -329,9 +329,9 @@ const EmployeeLeavePage = () => {
         )}
 
         <Flex
-          mb="1.1rem"
+          mb="1rem"
           ml="0.3rem"
-          height="3.5rem"
+          height="3.62rem"
           width="78vw"
           justify="space-between"
           bg="#F8F9FB"

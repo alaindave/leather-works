@@ -228,7 +228,7 @@ const EmployeeCard = ({ employee }: Props) => {
             pointerEvents={attendance ? "auto" : "none"}
             animation={
               attendance && attendance?.status !== "ponctuel"
-                ? `${flashLate} 1.4s ease-in-out 2`
+                ? `${flashLate} 1.5s ease-in-out 2`
                 : undefined
             }
             position="absolute"
@@ -250,8 +250,8 @@ const EmployeeCard = ({ employee }: Props) => {
             opacity={attendance ? 1 : 0}
             pointerEvents={attendance ? "auto" : "none"}
             position="absolute"
-            top="1.2rem"
-            right="8rem"
+            top="1.3rem"
+            right="6.1rem"
           >
             <CiClock2 color="#967103" size="22px" />
           </Box>

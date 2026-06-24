@@ -98,7 +98,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
   return (
     <>
       <Button
-        colorScheme="red"
+        colorScheme="yellow"
         padding="16px"
         _hover={{
           bg: "brown",
@@ -112,7 +112,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
         spinnerPlacement="start"
         isDisabled={isSaving}
       >
-        <IoPersonAdd fontSize="1.3rem" />
+        <IoPersonAdd fontSize="1.2rem" />
         <Text fontSize="1rem" marginLeft="10px" marginTop="15px">
           Ajouter un employé
         </Text>

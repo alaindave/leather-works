@@ -11,31 +11,36 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@chakra-ui/react";
+import { useState } from "react";
 import { IconType } from "react-icons";
 
 interface Props {
   buttonText: string;
-  buttonColor: string;
   placement: PlacementWithLogical;
   icon?: IconType;
   width: string;
 }
 
-const NotAuthorized = ({
-  buttonText,
-  buttonColor,
-  icon,
-  placement,
-  width,
-}: Props) => {
+const NotAuthorized = ({ buttonText, icon, placement, width }: Props) => {
+  const [buttonClicked, setButtonClicked] = useState(false);
+
   return (
     <Popover placement={placement} trigger="click">
       <PopoverTrigger>
         <Button
-          colorScheme={buttonColor}
+          colorScheme={buttonClicked ? "red" : "yellow"}
           w={width}
           mt={4}
-          leftIcon={<ChakraIcon as={icon} color="#ffffff" boxSize="1.2rem" />}
+          leftIcon={
+            <ChakraIcon
+              as={icon}
+              color="gray.800"
+              boxSize="1.3rem"
+              mr="0.6rem"
+            />
+          }
+          onClick={() => setButtonClicked((prev) => !prev)}
+          fontSize="1.1rem"
         >
           {buttonText}
         </Button>

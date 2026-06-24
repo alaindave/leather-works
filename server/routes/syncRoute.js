@@ -33,7 +33,7 @@ router.post("/push", async (req, res) => {
         }
         synced.push(queueId);
       } catch (error) {
-        console.error(`Sync failed for ${entity}`, error);
+        console.error(`Push failed for ${entity}`, error);
       }
     }
     return res.json({

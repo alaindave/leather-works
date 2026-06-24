@@ -25,7 +25,6 @@ import SyncButton from "./SyncButton";
 import "../styles/App.css";
 import Logo from "./Logo";
 import useAdminUser from "../../store/authStore";
-import ComponentErrorFallback from "../pages/ComponentErrorFallback";
 import { ErrorBoundary } from "react-error-boundary";
 import PageErrorFallback from "../pages/PageErrorFallback";
 
@@ -57,8 +56,8 @@ const EmployeeNavBar = () => {
       mt="0.5rem"
       ml="0.2rem"
       padding="8px"
-      height="97vh"
-      width="18.5rem"
+      height="97.5vh"
+      width="19.3rem"
       bg="#FFFFFF"
       borderRight="1px solid"
       borderColor="#D1D9E0"
@@ -74,12 +73,12 @@ const EmployeeNavBar = () => {
           <SyncButton />
         </Box>
       </Flex>
-      <Box position="relative" top="2rem" left="0.5rem">
+      <Box position="relative" top="2rem" left="1rem">
         <List>
           <ListItem marginBottom="40px">
             <HStack position="relative" right="1.5rem">
               {" "}
-              <FaHome size="1.5rem" />
+              <FaHome size="1.7rem" />
               <NavLink className="nav-button" end to="/employees_admin">
                 Tableau de bord
               </NavLink>
@@ -140,10 +139,10 @@ const EmployeeNavBar = () => {
         borderColor="gray.900"
         borderRadius="0.3rem"
         position="absolute"
-        left="0.01rem"
+        left="0.001rem"
         bottom="0.01rem"
-        height="60px"
-        width="18.45rem"
+        height="3.9rem"
+        width="19.4rem"
         right="7px"
         justify="space-evenly"
       >

@@ -5,9 +5,18 @@ import {
   setSetting,
 } from "../database/repositories/settings.repository.js";
 import { upsertTaskRecipient } from "../database/repositories/taskRecipients.repository.js";
-import { upsertEmployee } from "../database/repositories/employee.repository.js";
-import { upsertAttendance } from "../database/repositories/attendance.repository.js";
-import { upsertLeave } from "../database/repositories/leave.repository.js";
+import {
+  markEmployeeSynced,
+  upsertEmployee,
+} from "../database/repositories/employee.repository.js";
+import {
+  markAttendanceSynced,
+  upsertAttendance,
+} from "../database/repositories/attendance.repository.js";
+import {
+  markLeaveSynced,
+  upsertLeave,
+} from "../database/repositories/leave.repository.js";
 import Employee from "../../shared/types/Employee.js";
 import Attendance from "../../shared/types/Attendance.js";
 import Leave from "../../shared/types/Leave.js";
@@ -31,13 +40,17 @@ export async function pullLatestChanges() {
     const { employees, attendances, leaves, taskRecipients, serverTime } =
       response.data;
 
-    console.log("Fetched employees to sync:", employees);
+    console.log("FETCHED EMPLOYEES FROM SERVER::", employees);
+    console.log("FETCHED ATTENDANCES FROM SERVER::", attendances);
+    console.log("FETCHED LEAVES FROM SERVER:", leaves);
+    console.log("FETCHED TASK RECIPIENTS FROM SERVER:", taskRecipients);
 
     await syncEmployees(employees);
     await syncAttendances(attendances);
     await syncLeaves(leaves);
     await syncTaskRecipients(taskRecipients);
     await setSetting("lastSync", serverTime);
+
     return response;
   } catch (error) {
     throw error;
@@ -46,19 +59,34 @@ export async function pullLatestChanges() {
 
 async function syncEmployees(employees: Employee[]) {
   for (const employee of employees) {
-    await upsertEmployee(employee);
+    try {
+      await upsertEmployee(employee);
+      await markEmployeeSynced(employee._id);
+    } catch (error) {
+      console.error("Failed to sync pulled employee:", employee._id, error);
+    }
   }
 }
 
 async function syncAttendances(attendances: Attendance[]) {
   for (const attendance of attendances) {
-    await upsertAttendance(attendance);
+    try {
+      await upsertAttendance(attendance);
+      await markAttendanceSynced(attendance._id);
+    } catch (error) {
+      console.error("Failed to sync pulled attendance:", attendance._id, error);
+    }
   }
 }
 
 async function syncLeaves(leaves: Leave[]) {
   for (const leave of leaves) {
-    await upsertLeave(leave);
+    try {
+      await upsertLeave(leave);
+      await markLeaveSynced(leave._id);
+    } catch (error) {
+      console.error("Failed to sync pulled leave:", leave._id, error);
+    }
   }
 }
 
