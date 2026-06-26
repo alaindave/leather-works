@@ -8,6 +8,7 @@ import {
 import { markEmployeeSynced } from "../database/repositories/employee.repository.js";
 import { markAttendanceSynced } from "../database/repositories/attendance.repository.js";
 import { markLeaveSynced } from "../database/repositories/leave.repository.js";
+import { markTaskSynced } from "../database/repositories/task.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"
@@ -45,6 +46,10 @@ export async function pushPendingChanges() {
 
         case "leave":
           await markLeaveSynced(data._id);
+          break;
+
+        case "task":
+          await markTaskSynced(data._id);
           break;
       }
     }

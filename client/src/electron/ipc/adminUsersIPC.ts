@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getAllAdminUsers } from "../database/repositories/adminUsers.repository.js";
+import { getAllAdminUsers } from "../database/repositories/admin_users.repository.js";
 
 export function registerAdminUsersIPC() {
   console.log("REGISTERING ADMIN USERS IPC");

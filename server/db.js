@@ -3,6 +3,7 @@ const Attendance = require("./models/attendanceModel.js");
 const Leave = require("./models/leaveModel.js");
 const { AdminUser } = require("./models/adminUserModel.js");
 const Task = require("./models/taskModel.js");
+const { randomUUID } = require("crypto");
 
 //Employee operations
 //Add an employee
@@ -326,6 +327,7 @@ const deleteLeave = async (id) => {
 //Create new admin user
 const createAdminUser = async ({ firstName, lastName, email, password }) => {
   const adminUser = new AdminUser({
+    _id: randomUUID(),
     firstName,
     lastName,
     email,

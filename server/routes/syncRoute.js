@@ -1,9 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const { syncEmployee, syncAttendance, syncLeave } = require("../sync");
+const {
+  syncEmployee,
+  syncAttendance,
+  syncLeave,
+  syncTask,
+} = require("../sync");
 const Employee = require("../models/employeeModel");
 const Attendance = require("../models/attendanceModel");
 const Leave = require("../models/leaveModel");
+const Task = require("../models/taskModel");
 const { AdminUser } = require("../models/adminUserModel");
 
 //Push sync
@@ -26,6 +32,10 @@ router.post("/push", async (req, res) => {
 
           case "leave":
             await syncLeave(operation, data);
+            break;
+
+          case "task":
+            await syncTask(operation, data);
             break;
 
           default:
@@ -57,31 +67,37 @@ router.get("/pull", async (req, res) => {
       return res.status(400).send("Missing since parameter");
     }
     const date = new Date(since);
-    const [adminUsers, employees, attendances, leaves] = await Promise.all([
-      AdminUser.find({
-        updatedAt: { $gt: date },
-      })
-        .select("-password -notes")
-        .lean(),
+    const [adminUsers, employees, attendances, leaves, tasks] =
+      await Promise.all([
+        AdminUser.find({
+          updatedAt: { $gt: date },
+        })
+          .select("-password -notes")
+          .lean(),
 
-      Employee.find({
-        updatedAt: { $gt: date },
-      }).lean(),
+        Employee.find({
+          updatedAt: { $gt: date },
+        }).lean(),
 
-      Attendance.find({
-        updatedAt: { $gt: date },
-      }).lean(),
+        Attendance.find({
+          updatedAt: { $gt: date },
+        }).lean(),
 
-      Leave.find({
-        updatedAt: { $gt: date },
-      }).lean(),
-    ]);
+        Leave.find({
+          updatedAt: { $gt: date },
+        }).lean(),
+
+        Task.find({
+          updatedAt: { $gt: date },
+        }).lean(),
+      ]);
     return res.send({
       success: true,
       adminUsers,
       employees,
       attendances,
       leaves,
+      tasks,
       serverTime: new Date().toISOString(),
     });
   } catch (error) {

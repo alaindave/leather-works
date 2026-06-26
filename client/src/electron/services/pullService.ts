@@ -4,7 +4,7 @@ import {
   getSetting,
   setSetting,
 } from "../database/repositories/settings.repository.js";
-import { upsertAdminUser } from "../database/repositories/adminUsers.repository.js";
+import { upsertAdminUser } from "../database/repositories/admin_users.repository.js";
 import {
   markEmployeeSynced,
   upsertEmployee,
@@ -95,7 +95,7 @@ async function syncAdminUsers(adminUsers: AdminUser[]) {
     try {
       await upsertAdminUser(adminUser);
     } catch (error) {
-      console.error("Failed to sync pulled leave:", adminUser._id, error);
+      console.error("Failed to sync pulled admin users:", adminUser._id, error);
     }
   }
 }

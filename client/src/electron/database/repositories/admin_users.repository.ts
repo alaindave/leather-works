@@ -19,7 +19,6 @@ export async function upsertAdminUser(adminUser: Partial<AdminUser>) {
       DO UPDATE SET
         firstName = excluded.firstName,
         lastName = excluded.lastName,
-        email = excluded.email,
         role = excluded.role,
         isDeleted=excluded.isDeleted,
         updatedAt = excluded.updatedAt
@@ -28,7 +27,6 @@ export async function upsertAdminUser(adminUser: Partial<AdminUser>) {
       adminUser._id,
       adminUser.firstName,
       adminUser.lastName,
-      adminUser.email,
       adminUser.role,
       adminUser.isDeleted,
       adminUser.updatedAt ?? new Date().toISOString(),

@@ -5,7 +5,7 @@ export async function createOfflineUsersTable() {
   CREATE TABLE IF NOT EXISTS offline_users (
     _id TEXT PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
-    passwordHash TEXT NOT NULL,
+    password TEXT NOT NULL,
     role TEXT NOT NULL,
     firstName TEXT NOT NULL,
     lastName TEXT NOT NULL,

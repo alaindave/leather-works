@@ -1,7 +1,8 @@
 import { ipcMain, app } from "electron";
-import { getToken } from "../auth.js";
-import axios from "axios";
-import { createTask } from "../database/repositories/task.repository.js";
+import {
+  createTask,
+  getAllTasks,
+} from "../database/repositories/task.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"
@@ -12,7 +13,7 @@ export function registerTaskIPC() {
   console.log("REGISTERING TASKS IPC");
   //Create tasks
   ipcMain.handle("tasks:create", async (_, task) => {
-    console.log("Task received from Renderer: ", task);
+    console.log("TASK CREATE CALLED: ", task);
     try {
       const result = await createTask(task);
       console.log("Created task: ", result);
@@ -23,23 +24,12 @@ export function registerTaskIPC() {
     }
   });
 
-  //Get tasks
+  //Get all tasks
   ipcMain.handle("tasks:getAll", async () => {
     try {
-      const token = await getToken();
-
-      if (!token) {
-        throw new Error("No auth token found");
-      }
-
-      const res = await axios.get(`${API_URL}/tasks`, {
-        headers: {
-          "x-auth-token": token,
-        },
-      });
-
-      console.log("From main: Tasks fetched: ", res.data);
-      return res.data;
+      const tasks = await getAllTasks();
+      console.log("From main: Tasks fetched: ", tasks);
+      return tasks;
     } catch (error) {
       console.error("Error fetching tasks:", error);
       throw error;

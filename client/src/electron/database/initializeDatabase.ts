@@ -6,7 +6,6 @@ import { createTasksTables } from "./schemas/tasks.schema.js";
 import { createOfflineUsersTable } from "./schemas/offline_users.schema.js";
 import { createSyncTable } from "./schemas/sync.schema.js";
 import { createSettingsTable } from "./schemas/settings.schema.js";
-import { createAdminUsersMapTable } from "./schemas/admin_users_map.schema.js";
 
 export async function initializeDatabase() {
   await createOfflineUsersTable();
@@ -17,6 +16,5 @@ export async function initializeDatabase() {
   await createAdminUsersTable();
   await createSyncTable();
   await createSettingsTable();
-  await createAdminUsersMapTable();
   console.log("Database initialized");
 }

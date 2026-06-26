@@ -1,6 +1,7 @@
 const Employee = require("./models/employeeModel.js");
 const Attendance = require("./models/attendanceModel.js");
 const Leave = require("./models/leaveModel.js");
+const Task = require("./models/taskModel.js");
 
 async function syncEmployee(operation, data) {
   switch (operation) {
@@ -57,8 +58,25 @@ async function syncLeave(operation, data) {
   }
 }
 
+async function syncTask(operation, data) {
+  switch (operation) {
+    case "create":
+    case "update":
+      await Task.updateOne({ _id: data._id }, data, { upsert: true });
+      break;
+
+    case "delete":
+      await Task.updateOne(
+        { _id: data._id },
+        { isDeleted: 1, updatedAt: new Date() }
+      );
+      break;
+  }
+}
+
 module.exports = {
   syncEmployee,
   syncAttendance,
   syncLeave,
+  syncTask,
 };

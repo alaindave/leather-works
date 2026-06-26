@@ -122,6 +122,20 @@ contextBridge.exposeInMainWorld("electron", {
     },
   },
 
+  taskComments: {
+  create: (payload: {
+    taskId: string;
+    authorId: string;
+    message: string;
+  }) => ipcRenderer.invoke("task-comments:create", payload),
+
+  getByTaskId: (taskId: string) =>
+    ipcRenderer.invoke("task-comments:get", taskId),
+
+  delete: (commentId: string) =>
+    ipcRenderer.invoke("task-comments:delete", commentId),
+},
+
   adminUsers: {
     getAll: () => ipcRenderer.invoke("adminUsers:getAll"),
   },

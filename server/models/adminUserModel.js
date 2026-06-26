@@ -3,6 +3,10 @@ const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 
 const AdminUserSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    required: true,
+  },
   firstName: { type: String, required: true, minLength: 2, maxLength: 50 },
   lastName: { type: String, required: true, minLength: 3, maxLength: 50 },
   email: {

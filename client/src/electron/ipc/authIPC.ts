@@ -10,7 +10,7 @@ export function registerAuthIPC() {
 
   //Login handler
   ipcMain.handle("auth:login", async (_, credentials) => {
-    console.log("LOGIN IPC RECEIVED", credentials);
+    console.log("LOGIN IPC RECEIVED");
     if (!credentials) {
       throw new Error("Missing credentials");
     }

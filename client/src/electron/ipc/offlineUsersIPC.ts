@@ -15,17 +15,14 @@ export function registerOfflineUsersIPC() {
   console.log("REGISTERING OFFLINE USERS IPC");
 
   ipcMain.handle("offline-users:save", async (_, user: OfflineUser) => {
-    const passwordHash = await bcrypt.hash(user.passwordHash, 12);
-
+    const password = await bcrypt.hash(user.password, 12);
     return createOrUpdateOfflineUser({
       _id: user._id,
       email: user.email,
-      passwordHash,
+      password,
       role: user.role,
       firstName: user.firstName,
       lastName: user.lastName,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
       lastVerifiedAt: new Date().toISOString(),
     });
   });
@@ -37,7 +34,7 @@ export function registerOfflineUsersIPC() {
       throw new Error("No offline account found.");
     }
 
-    const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+    const valid = await bcrypt.compare(credentials.password, user.password);
 
     if (!valid) {
       throw new Error("Invalid credentials.");

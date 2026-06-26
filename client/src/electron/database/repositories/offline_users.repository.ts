@@ -9,7 +9,7 @@ export async function createOrUpdateOfflineUser(user: OfflineUser) {
     INSERT INTO offline_users (
       _id,
       email,
-      passwordHash,
+      password,
       role,
       firstName,
       lastName,
@@ -19,7 +19,7 @@ export async function createOrUpdateOfflineUser(user: OfflineUser) {
 
     ON CONFLICT(email)
     DO UPDATE SET
-      passwordHash = excluded.passwordHash,
+      password = excluded.password,
       role = excluded.role,
       firstName = excluded.firstName,
       lastName = excluded.lastName,
@@ -29,7 +29,7 @@ export async function createOrUpdateOfflineUser(user: OfflineUser) {
     [
       user._id,
       user.email,
-      user.passwordHash,
+      user.password,
       user.role,
       user.firstName,
       user.lastName,

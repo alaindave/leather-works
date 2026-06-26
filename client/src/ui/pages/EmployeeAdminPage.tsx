@@ -18,6 +18,8 @@ import useAdminUser from "../../store/authStore";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 import TaskSubmissionModal from "../components/TaskSubmissionModal";
 import AdminUser from "../../shared/types/AdminUser";
+import TaskCard from "../components/TaskCard";
+import PopulatedTask from "../../shared/types/PopulatedTask";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -26,8 +28,7 @@ const EmployeeAdminPage = () => {
   const [adminUsersList, setAdminUsersList] = useState<AdminUser[]>([]);
   const [time, setTime] = useState<Date>(new Date());
   const [notes, setNotes] = useState("");
-  const [liveTask, setLiveTask] = useState<Task | null>(null);
-  const [oldTasks, setOldTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<PopulatedTask[]>([]);
   const adminUser = useAdminUser((store) => store.adminUser);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -62,12 +63,12 @@ const EmployeeAdminPage = () => {
       .then((adminUsers) => {
         console.log("Retrieved admin users: ", adminUsers);
         setAdminUsersList(adminUsers);
-        return axios.get<Task[]>(`${API_URL}/tasks`);
+        return window.electron.tasks.getAll();
       })
 
-      .then((res) => {
-        console.log("Retrieved old tasks: ", res.data);
-        setOldTasks(res.data);
+      .then((tasks) => {
+        console.log("Retrieved tasks: ", tasks);
+        setTasks(tasks);
       })
 
       .catch((error) => {
@@ -89,23 +90,23 @@ const EmployeeAdminPage = () => {
   }, [notes]);
 
   //useEffect to fetch live tasks
-  useEffect(() => {
-    const unsubscribe = window.electron.tasks.onNew((data) => {
-      setLiveTask(data);
-      console.log("Live announcement fetched: ", data.message);
-    });
+  // useEffect(() => {
+  //   const unsubscribe = window.electron.tasks.onNew((task) => {
+  //     setTasks([...tasks, task]);
+  //     console.log("Live tasks: ", task);
+  //   });
 
-    return () => unsubscribe();
-  }, []);
+  //   return () => unsubscribe();
+  // }, []);
 
   //refresh tasks
   const handleTaskRefresh = async () => {
     try {
       const tasks = await window.electron.tasks.getAll();
       console.log("Fetched tasks:", tasks);
-      setOldTasks(tasks);
-    } catch (e) {
-      console.log("An error occured while refreshing tasks:", e);
+      setTasks(tasks);
+    } catch (error) {
+      console.log("An error occured while refreshing tasks:", error);
     }
   };
 
@@ -125,6 +126,16 @@ const EmployeeAdminPage = () => {
         console.error("An error occured while saving notes: ", error)
       );
   };
+
+  // const showTask = (task: Task): boolean => {
+  //   if (adminUser.role === "manager") return true;
+  //   if (task.author === adminUser._id) return true;
+  //   const recipients = task.recipients.filter(
+  //     (task) => task._id === adminUser._id
+  //   );
+  //   if (recipients.length !== 0) return true;
+  //   return false;
+  // };
 
   return (
     <Flex
@@ -217,9 +228,10 @@ const EmployeeAdminPage = () => {
       <Grid
         templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
         gap={6}
-        mt={6}
-        flex="1"
+        flex="4"
         overflow="auto"
+        position="relative"
+        top="6rem"
       >
         {/* NOTES */}
         <Box
@@ -231,21 +243,21 @@ const EmployeeAdminPage = () => {
           p={5}
           display="flex"
           flexDir="column"
+          height="30rem"
         >
           <Flex align="center" gap={2} mb={3}>
             <Text
               color="#1F2937"
-              fontSize="1.2rem"
+              fontSize="1.3rem"
               fontWeight="600"
               position="relative"
               top="0.4rem"
             >
-              Notes personnelles
+              Notes
             </Text>
           </Flex>
 
           <Textarea
-            flex="1"
             placeholder="Écrivez vos notes ici..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -256,6 +268,7 @@ const EmployeeAdminPage = () => {
               borderColor: "yellow.400",
               boxShadow: "0 0 0 1px #F4C20D",
             }}
+            height="35rem"
             color="#ffffff"
             fontSize="1.3rem"
             fontWeight="700"
@@ -266,7 +279,15 @@ const EmployeeAdminPage = () => {
           />
         </Box>
         <Box>
-          <Button onClick={onOpen}>Creer une tache</Button>
+          <Button
+            onClick={onOpen}
+            border="none"
+            bg="transparent"
+            fontSize="1.8rem"
+            right="0.2rem"
+          >
+            +
+          </Button>
           <TaskSubmissionModal
             isOpen={isOpen}
             onClose={onClose}
@@ -274,6 +295,12 @@ const EmployeeAdminPage = () => {
             adminUsersList={adminUsersList}
             author={adminUser!}
           />
+
+          {tasks.map((task) => (
+            <Box>
+              <TaskCard key={task._id} task={task} />
+            </Box>
+          ))}
         </Box>
       </Grid>
     </Flex>
