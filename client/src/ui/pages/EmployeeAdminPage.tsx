@@ -150,7 +150,7 @@ const EmployeeAdminPage = () => {
       mt="0.5rem"
       mr="0.3rem"
       w="100%"
-      h="98vh"
+      h="94vh"
       bg="#F8F9FB"
       border="1px solid"
       borderColor="#D1D9E0"

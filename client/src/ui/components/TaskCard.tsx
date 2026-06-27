@@ -16,8 +16,9 @@ const TaskCard = ({ task }: Props) => {
     <VStack
       border="1px solid black"
       borderRadius="0.4rem"
-      mb="0.2rem"
-      height="8rem"
+      mb="0.4rem"
+      height="6rem"
+      pb={2}
       borderColor="#D1D9E0"
       boxShadow="0 2px 8px rgba(1,0,1,1)"
       width="25rem"
@@ -26,28 +27,18 @@ const TaskCard = ({ task }: Props) => {
         <Text fontWeight="800" mt="0.4rem" ml="0.4rem">
           {task.taskNumber}
         </Text>
+        <Text mt="0.4rem">{task.author.firstName}</Text>
         <Text fontSize="1.1rem" fontWeight="800" mt="0.3rem" mr="0.5rem">
           {taskMapping(task.priority)}
         </Text>
       </Flex>
 
-      <Text
-        color="gray.700"
-        fontWeight="500"
-        position="relative"
-        bottom="0.3rem"
-      >
-        {task.subject}
-      </Text>
-      <Flex
-        position="relative"
-        bottom="0.3rem"
-        width="25rem"
-        justifyContent="space-between"
-      >
-        <Text ml="1rem">Ouvert par:{task.author.firstName}</Text>
+      <Flex width="25rem" justifyContent="space-between">
+        <Text ml="0.4rem" color="gray.700" fontWeight="500">
+          {task.subject}
+        </Text>
         <Text mr="1rem">
-          Date limite:{new Date(task.deadline).toLocaleDateString("fr-FR")}
+          {new Date(task.deadline).toLocaleDateString("fr-FR")}
         </Text>
       </Flex>
     </VStack>

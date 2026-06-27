@@ -10,6 +10,7 @@ import {
   Button,
   List,
   ListItem,
+  Divider,
 } from "@chakra-ui/react";
 import { FaHome, FaRegCalendarAlt } from "react-icons/fa";
 import { FaFileSignature, FaRegClock } from "react-icons/fa6";
@@ -19,6 +20,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import { FaUserAlt } from "react-icons/fa";
 import { IoSettings } from "react-icons/io5";
 import { FaSignOutAlt } from "react-icons/fa";
+import { IoStatsChartSharp } from "react-icons/io5";
 import { NavLink, useNavigate } from "react-router-dom";
 import SyncButton from "./SyncButton";
 // @ts-ignore
@@ -54,15 +56,15 @@ const EmployeeNavBar = () => {
       position="relative"
       direction="column"
       mt="0.5rem"
-      ml="0.2rem"
       padding="8px"
-      height="98vh"
+      height="94vh"
       width="19.3rem"
       bg="#FFFFFF"
       borderRight="1px solid"
       borderColor="#D1D9E0"
       boxShadow="2px 0 8px rgba(0,0,0,0.04)"
       borderRadius="0"
+      justify="space-between"
     >
       <Flex position="relative" left="0.4rem">
         <Box padding="10px" position="relative" bottom="0.8rem" right="0.5rem">
@@ -73,7 +75,7 @@ const EmployeeNavBar = () => {
           <SyncButton />
         </Box>
       </Flex>
-      <Box position="relative" top="2rem" left="1rem">
+      <Box position="relative" left="1rem">
         <List>
           <ListItem marginBottom="40px">
             <HStack position="relative" right="1.5rem">
@@ -127,6 +129,26 @@ const EmployeeNavBar = () => {
               <ErrorBoundary FallbackComponent={PageErrorFallback}>
                 <NavLink className="nav-button" to="/admin">
                   Fiches de paye
+                </NavLink>
+              </ErrorBoundary>
+            </HStack>
+          </ListItem>
+          <ListItem marginBottom="40px">
+            <HStack position="relative" right="1.4rem">
+              <IoStatsChartSharp size="1.5rem" />
+              <ErrorBoundary FallbackComponent={PageErrorFallback}>
+                <NavLink className="nav-button" to="/admin">
+                  Rapports
+                </NavLink>
+              </ErrorBoundary>
+            </HStack>
+          </ListItem>
+          <ListItem marginBottom="40px">
+            <HStack position="relative" right="1.4rem">
+              <FaFileSignature size="1.5rem" />
+              <ErrorBoundary FallbackComponent={PageErrorFallback}>
+                <NavLink className="nav-button" to="/admin">
+                  Parametres
                 </NavLink>
               </ErrorBoundary>
             </HStack>
@@ -260,6 +282,31 @@ const EmployeeNavBar = () => {
             </MenuList>
           </Menu>
         </Box>
+      </Flex>
+      <Flex
+        position="relative"
+        top="4rem"
+        right="0.3rem"
+        width="99vw"
+        height="6vh"
+        bg="gray.200"
+        justify="space-between"
+      >
+        <Text ml="1rem" mt="0.6rem" fontSize="1rem" color="gray.600">
+          Afritan-Gestion de personnel
+        </Text>
+        <HStack mr="1rem" mt="0.6rem" fontSize="1rem" color="gray.600">
+          <Text>Version 1.0.0</Text>
+          <Divider
+            orientation="vertical"
+            h="1.3rem"
+            borderColor="gray.500"
+            borderWidth="1px"
+            position="relative"
+            bottom="0.3rem"
+          />
+          <Text>Connecte</Text>
+        </HStack>
       </Flex>
     </Flex>
   );
