@@ -6,7 +6,7 @@ export function registerAdminUsersIPC() {
   ipcMain.handle("adminUsers:getAll", async () => {
     try {
       const adminUsers = await getAllAdminUsers();
-      console.log("Retrieved admin users:", adminUsers);
+      console.log("RETRIEVED ADMIN USERS:", adminUsers);
       return adminUsers;
     } catch (error) {
       console.error("An error occured while retrieving admin users", error);

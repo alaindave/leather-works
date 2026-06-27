@@ -15,7 +15,7 @@ import { registerAuthIPC } from "./ipc/authIPC.js";
 import { registerAttendanceExportIPC } from "./ipc/attendanceExportIPC.js";
 import { registerSyncIPC } from "./ipc/syncIPC.js";
 import { fileURLToPath } from "url";
-import sync from "./services/syncService.js";
+import sync from "./services/sync.service.js";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged

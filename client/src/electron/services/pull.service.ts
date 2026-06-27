@@ -39,11 +39,12 @@ export async function pullLatestChanges() {
 
     const { adminUsers, employees, attendances, leaves, serverTime } =
       response.data;
-
-    console.log("FETCHED EMPLOYEES FROM SERVER::", employees);
-    console.log("FETCHED ATTENDANCES FROM SERVER::", attendances);
-    console.log("FETCHED LEAVES FROM SERVER:", leaves);
-    console.log("FETCHED ADMIN USERS FROM SERVER:", adminUsers);
+    console.log("PULLED ITEMS FROM SERVER");
+    console.log("---------------------------");
+    console.log("FETCHED EMPLOYEES:", employees);
+    console.log("FETCHED ATTENDANCES:", attendances);
+    console.log("FETCHED LEAVES:", leaves);
+    console.log("FETCHED ADMIN USERS:", adminUsers);
 
     await syncEmployees(employees);
     await syncAttendances(attendances);

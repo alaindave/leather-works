@@ -234,8 +234,6 @@ export function getUnsyncedEmployees() {
 }
 
 export async function upsertEmployee(employee: Employee) {
-  console.log("BEFORE UPSERT");
-  console.log("EMPLOYEE:", employee);
   const local = await getEmployeeById(employee._id);
 
   if (local && new Date(local.updatedAt!) > new Date(employee.updatedAt!)) {

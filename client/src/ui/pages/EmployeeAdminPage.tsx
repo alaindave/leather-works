@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Flex,
   Grid,
   Text,
@@ -13,13 +12,13 @@ import { CiCalendarDate, CiClock2 } from "react-icons/ci";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
 import type Leave from "../../shared/types/Leave";
-import type Task from "../../shared/types/Task";
 import useAdminUser from "../../store/authStore";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 import TaskSubmissionModal from "../components/TaskSubmissionModal";
 import AdminUser from "../../shared/types/AdminUser";
 import TaskCard from "../components/TaskCard";
 import PopulatedTask from "../../shared/types/PopulatedTask";
+import QuickActions from "../components/QuickActions";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -98,6 +97,13 @@ const EmployeeAdminPage = () => {
 
   //   return () => unsubscribe();
   // }, []);
+
+  //Handle task create
+
+  const handleTaskCreate = () => {
+    console.log("Task create clicked");
+    onOpen();
+  };
 
   //refresh tasks
   const handleTaskRefresh = async () => {
@@ -231,7 +237,7 @@ const EmployeeAdminPage = () => {
         flex="4"
         overflow="auto"
         position="relative"
-        top="6rem"
+        top="4.5rem"
       >
         {/* NOTES */}
         <Box
@@ -243,7 +249,7 @@ const EmployeeAdminPage = () => {
           p={5}
           display="flex"
           flexDir="column"
-          height="30rem"
+          height="22rem"
         >
           <Flex align="center" gap={2} mb={3}>
             <Text
@@ -279,7 +285,7 @@ const EmployeeAdminPage = () => {
           />
         </Box>
         <Box>
-          <Button
+          {/* <Button
             onClick={onOpen}
             border="none"
             bg="transparent"
@@ -287,7 +293,7 @@ const EmployeeAdminPage = () => {
             right="0.2rem"
           >
             +
-          </Button>
+          </Button> */}
           <TaskSubmissionModal
             isOpen={isOpen}
             onClose={onClose}
@@ -303,6 +309,9 @@ const EmployeeAdminPage = () => {
           ))}
         </Box>
       </Grid>
+      <Box position="relative" top="1.1rem">
+        <QuickActions onTaskCreate={handleTaskCreate} />
+      </Box>
     </Flex>
   );
 };

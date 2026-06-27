@@ -2,37 +2,47 @@ import AdminUser from "../../../shared/types/AdminUser.js";
 import { get, all, run } from "../db.js";
 
 export async function upsertAdminUser(adminUser: Partial<AdminUser>) {
-  await run(
-    `
+  console.log("Admin user to upsert:", adminUser);
+
+  try {
+    await run(
+      `
       INSERT INTO admin_users (
         _id,
         firstName,
         lastName,
         email,
         role,
-        isDeleted,
         updatedAt,
-        lastSyncedAt
+        lastSyncedAt,
+        isDeleted
+
       )
       VALUES (?, ?, ?, ?, ?, ?, ?,?)
       ON CONFLICT(_id)
       DO UPDATE SET
         firstName = excluded.firstName,
         lastName = excluded.lastName,
+        email= excluded.email,
         role = excluded.role,
-        isDeleted=excluded.isDeleted,
-        updatedAt = excluded.updatedAt
+        updatedAt = excluded.updatedAt,
+        isDeleted=excluded.isDeleted
+
       `,
-    [
-      adminUser._id,
-      adminUser.firstName,
-      adminUser.lastName,
-      adminUser.role,
-      adminUser.isDeleted,
-      adminUser.updatedAt ?? new Date().toISOString(),
-      new Date().toISOString(),
-    ]
-  );
+      [
+        adminUser._id,
+        adminUser.firstName,
+        adminUser.lastName,
+        adminUser.email,
+        adminUser.role,
+        adminUser.updatedAt ?? new Date().toISOString(),
+        new Date().toISOString(),
+        adminUser.isDeleted,
+      ]
+    );
+  } catch (error) {
+    console.error("AN ERROR OCCURED DURING ADMIN USERS UPSERT:", error);
+  }
 }
 
 export async function getAllAdminUsers(): Promise<AdminUser[] | null> {

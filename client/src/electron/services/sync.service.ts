@@ -1,7 +1,7 @@
 import axios from "axios";
 import { app } from "electron";
-import { pushPendingChanges } from "./pushService.js";
-import { pullLatestChanges } from "./pullService.js";
+import { pushPendingChanges } from "./push.service.js";
+import { pullLatestChanges } from "./pull.service.js";
 
 const API_URL = app.isPackaged
   ? "https://striking-celebration-production-5910.up.railway.app"
@@ -15,28 +15,31 @@ export default async function sync() {
   try {
     try {
       const result = await axios.get(`${API_URL}/health`);
-      console.log("Backend available: ", result);
+      console.log("BACKEND AVAILABLE: ", result);
     } catch (error) {
-      console.error("Backend unavailable: ", error);
+      console.error("BACKEND UNAVAILABLE: ", error);
       return;
     }
     // PUSH
     try {
       const result = await pushPendingChanges();
-      console.log("Push results: ", result);
+      if (result) {
+        console.log("PUSH RESULTS: ", result.status);
+      }
+      console.log("NO ITEMS TO PUSH");
     } catch (error) {
-      console.error("Push failed:", error);
+      console.error("PUSH FAILED:", error);
     }
 
     // PULL
     try {
       const result = await pullLatestChanges();
-      console.log("Pull results: ", result.data);
+      console.log("PULL RESULTS: ", result.status);
     } catch (error) {
-      console.error("Pull failed:", error);
+      console.error("PULL FAILED:", error);
     }
   } catch (error) {
-    console.error("Sync failed completely:", error);
+    console.error("PUSH/PULL SYNC FAILED:", error);
   } finally {
     syncing = false;
   }

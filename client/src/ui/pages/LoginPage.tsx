@@ -23,6 +23,7 @@ import useAdminUser from "../../store/authStore";
 import logo from "../assets/afritan_logo.png";
 import SignUp from "../components/SignUp";
 import "../styles/App.css";
+import { checkOnline } from "../services/connectivity_check.service";
 
 const schema = z.object({
   email: z.string(),
@@ -45,6 +46,34 @@ const LoginPage = () => {
     setIsLoggingIn(true);
 
     try {
+      const online = await checkOnline();
+      console.log("Am I online?", online);
+
+      if (!online) {
+        const offlineUser = await window.electron.offlineUsers.login({
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        if (!offlineUser) {
+          throw new Error("Offline login failed");
+        }
+
+        console.log("OFFLINE LOGIN SUCCESS: ", offlineUser);
+
+        setLogIn(
+          offlineUser._id,
+          offlineUser.firstName,
+          offlineUser.lastName,
+          offlineUser.email,
+          offlineUser.role
+        );
+
+        navigate("/admin", { replace: true });
+
+        return;
+      }
+
       const adminUser = await window.electron.auth.login(credentials);
 
       if (adminUser) {
@@ -70,32 +99,8 @@ const LoginPage = () => {
         navigate("/admin", { replace: true });
       }
     } catch (error) {
-      try {
-        const offlineUser = await window.electron.offlineUsers.login({
-          email: credentials.email,
-          password: credentials.password,
-        });
-
-        if (offlineUser) {
-          console.log("Offline login successful for user: ", offlineUser);
-          setLogIn(
-            offlineUser._id,
-            offlineUser.firstName,
-            offlineUser.lastName,
-            offlineUser.email,
-            offlineUser.role
-          );
-
-          navigate("/admin", {
-            replace: true,
-          });
-
-          return;
-        }
-      } catch (error) {
-        setErrorMessage("Email et/ou mot de passe incorrect.");
-        console.log("Online and offline login unsuccessful: ", error);
-      }
+      console.log("Login failed: ", error);
+      setErrorMessage("Email et/ou mot de passe incorrect.");
     } finally {
       setIsLoggingIn(false);
     }

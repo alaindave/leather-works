@@ -10,7 +10,7 @@ export async function createAdminUsersTable() {
     role TEXT NOT NULL,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    lastSyncedAt DATETIME,
     synced INTEGER DEFAULT 0,
     isDeleted INTEGER NOT NULL DEFAULT 0
 

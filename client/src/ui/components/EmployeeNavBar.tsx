@@ -155,9 +155,9 @@ const EmployeeNavBar = () => {
           borderColor="blue"
           position="relative"
           top="0.4rem"
-          right="0.2rem"
           justifyContent="center"
           alignItems="center"
+          ml="0.2rem"
         >
           <MdPersonOutline
             color={adminUser?.role === "manager" ? "blue" : "#0078D4"}
