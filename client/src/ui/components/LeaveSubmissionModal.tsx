@@ -110,7 +110,7 @@ const LeaveSubmissionModal = ({
       <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
       <ModalContent bg="#08162b">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader color="#ffffff" position="relative" left="120px">
+          <ModalHeader color="#08162b" position="relative" left="120px">
             <HStack>
               <Box position="relative" left="120px">
                 <p
@@ -175,59 +175,70 @@ const LeaveSubmissionModal = ({
             </HStack>
           </ModalHeader>
           <ModalCloseButton onClick={handleFormClose} />
-          <ModalBody bg="#08162b">
+          <ModalBody bg="#ffffff">
             <FormControl>
               <VStack spacing="10px">
                 <HStack>
                   <Box>
                     <HStack>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color="gray.600"
+                        marginBottom="10px"
+                        fontSize="1.1rem"
+                      >
                         Nom
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
                       type="text"
-                      color="#e6ebfe"
+                      color="gray.900"
+                      fontSize="1.1rem"
                       width="250px"
                       value={employee?.lastName || ""}
                       isReadOnly
+                      borderColor="gray.900"
                     />
                   </Box>
                   <Box>
                     <HStack>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color="gray.600"
+                        marginBottom="10px"
+                        fontSize="1.1rem"
+                      >
+                        {" "}
                         Prenom
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
                       type="text"
-                      color="#e6ebfe"
+                      color="gray.900"
+                      fontSize="1.1rem"
                       width="250px"
                       value={employee?.firstName || ""}
                       isReadOnly
+                      borderColor="gray.900"
                     />
                   </Box>
                   <Box>
                     <HStack>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color="gray.600"
+                        marginBottom="10px"
+                        fontSize="1.1rem"
+                      >
+                        {" "}
                         Poste
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
                       type="text"
-                      color="#e6ebfe"
+                      color="gray.900"
+                      fontSize="1.1rem"
                       width="250px"
                       value={employee?.role || ""}
                       isReadOnly
+                      borderColor="gray.900"
                     />
                   </Box>
                 </HStack>
@@ -235,28 +246,34 @@ const LeaveSubmissionModal = ({
                 <HStack>
                   <Box>
                     <HStack>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color="gray.600"
+                        marginBottom="10px"
+                        fontSize="1.1rem"
+                      >
+                        {" "}
                         Departement
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
+                      color="gray.900"
+                      fontSize="1.1rem"
                       type="text"
-                      color="#e6ebfe"
                       width="250px"
+                      borderColor="gray.900"
                       value={employee?.department || ""}
                       isReadOnly
                     />
                   </Box>
                   <Box>
                     <HStack>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color="gray.600"
+                        marginBottom="10px"
+                        fontSize="1.1rem"
+                      >
+                        {" "}
                         Date de début de congé
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Controller
@@ -287,10 +304,11 @@ const LeaveSubmissionModal = ({
                           yearDropdownItemNumber={100}
                           customInput={
                             <Input
-                              color="#e6ebfe"
+                              color="gray.900"
+                              fontSize="1.1rem"
                               width="300px"
-                              bg="#08162b"
-                              borderColor="#ffffff"
+                              bg="#ffffff"
+                              borderColor="gray.900"
                               borderWidth="1px"
                             />
                           }
@@ -305,11 +323,13 @@ const LeaveSubmissionModal = ({
                   </Box>
                   <Box>
                     <HStack>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color="gray.600"
+                        marginBottom="10px"
+                        fontSize="1.1rem"
+                      >
+                        {" "}
                         Date de fin de congé
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Controller
@@ -340,10 +360,11 @@ const LeaveSubmissionModal = ({
                           yearDropdownItemNumber={100}
                           customInput={
                             <Input
-                              color="#e6ebfe"
+                              color="gray.900"
+                              fontSize="1.1rem"
                               width="300px"
-                              bg="#08162b"
-                              borderColor="#ffffff"
+                              bg="#ffffff"
+                              borderColor="gray.900"
                               borderWidth="1px"
                             />
                           }
@@ -360,17 +381,23 @@ const LeaveSubmissionModal = ({
                 <VStack>
                   <Box>
                     <HStack>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color="gray.600"
+                        marginBottom="10px"
+                        fontSize="1.1rem"
+                      >
+                        {" "}
                         Sujet
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Input
-                      color="#e6ebfe"
-                      width="300px"
                       height="40px"
+                      color="gray.900"
+                      fontSize="1.1rem"
+                      width="300px"
+                      bg="#ffffff"
+                      borderColor="gray.900"
+                      borderWidth="1px"
                       {...register("subject")}
                     />
                     {errors.subject && (
@@ -381,15 +408,20 @@ const LeaveSubmissionModal = ({
                   </Box>
                   <Box>
                     <HStack>
-                      <FormLabel color="#C7D2FE" marginBottom="10px">
+                      <FormLabel
+                        color="gray.600"
+                        marginBottom="10px"
+                        fontSize="1.1rem"
+                      >
+                        {" "}
                         Motif
-                        <span style={{ color: "#F2B705", fontSize: "1rem" }}>
-                          *
-                        </span>
                       </FormLabel>
                     </HStack>
                     <Textarea
-                      color="#e6ebfe"
+                      color="gray.900"
+                      fontSize="1.1rem"
+                      borderColor="gray.900"
+                      bg="#ffffff"
                       height="300px"
                       width="350px"
                       resize="none"

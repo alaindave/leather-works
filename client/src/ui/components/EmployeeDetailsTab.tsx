@@ -35,12 +35,12 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             fontWeight="600"
             px={{ base: 3, md: 5 }}
             _selected={{
-              color: "#e68a00",
+              color: "purple.600",
               borderColor: "#F2B705",
-              bg: "rgba(242,183,5,0.08)",
+              bg: "transparent",
             }}
             _hover={{
-              color: "#F2B705",
+              color: "purple.600",
             }}
           >
             Info personnelles
@@ -53,12 +53,12 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             fontWeight="600"
             px={{ base: 3, md: 5 }}
             _selected={{
-              color: "#e68a00",
+              color: "purple.600",
               borderColor: "#F2B705",
-              bg: "rgba(242,183,5,0.08)",
+              bg: "transparent",
             }}
             _hover={{
-              color: "#F2B705",
+              color: "purple.600",
             }}
           >
             Info professionnelles
@@ -71,12 +71,12 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             fontWeight="600"
             px={{ base: 3, md: 5 }}
             _selected={{
-              color: "#e68a00",
+              color: "purple.600",
               borderColor: "#F2B705",
-              bg: "rgba(242,183,5,0.08)",
+              bg: "transparent",
             }}
             _hover={{
-              color: "#F2B705",
+              color: "purple.600",
             }}
           >
             Contact

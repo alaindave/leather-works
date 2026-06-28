@@ -22,6 +22,11 @@ const TaskCard = ({ task }: Props) => {
       borderColor="#D1D9E0"
       boxShadow="0 2px 8px rgba(1,0,1,1)"
       width="25rem"
+      cursor="pointer"
+      _hover={{
+        transform: "translateY(-2px)",
+        shadow: "md",
+      }}
     >
       <Flex justify="space-between" width="25rem">
         <Text fontWeight="800" mt="0.4rem" ml="0.4rem">

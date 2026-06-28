@@ -26,7 +26,7 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
         p={3}
         borderWidth="2px"
         borderRadius="full"
-        borderColor="gray.500"
+        borderColor="purple.400"
         bg="rgba(242,183,5,0.08)"
         flexShrink={0}
         height="2.2rem"
@@ -35,7 +35,7 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
       >
         <ChakraIcon
           as={icon}
-          color="gray.600"
+          color="purple.600"
           fontSize="1.3rem"
           position="relative"
           bottom="0.6rem"

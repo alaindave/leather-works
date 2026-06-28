@@ -6,7 +6,7 @@ type Priority = "Haute" | "Moyenne" | "Basse" | "";
 export default interface Task {
   _id: string;
   taskNumber?: string;
-  author: string;
+  author: AdminUser;
   recipients: AdminUser[];
   subject: string;
   message: string;

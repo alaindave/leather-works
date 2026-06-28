@@ -22,6 +22,7 @@ import { IoSettings } from "react-icons/io5";
 import { FaSignOutAlt } from "react-icons/fa";
 import { IoStatsChartSharp } from "react-icons/io5";
 import { NavLink, useNavigate } from "react-router-dom";
+import { GoDotFill } from "react-icons/go";
 import SyncButton from "./SyncButton";
 // @ts-ignore
 import "../styles/App.css";
@@ -295,7 +296,7 @@ const EmployeeNavBar = () => {
         <Text ml="1rem" mt="0.6rem" fontSize="1rem" color="gray.600">
           Afritan-Gestion de personnel
         </Text>
-        <HStack mr="1rem" mt="0.6rem" fontSize="1rem" color="gray.600">
+        <HStack mr="2rem" mt="0.6rem" fontSize="1rem" color="gray.600">
           <Text>Version 1.0.0</Text>
           <Divider
             orientation="vertical"
@@ -305,7 +306,17 @@ const EmployeeNavBar = () => {
             position="relative"
             bottom="0.3rem"
           />
-          <Text>Connecte</Text>
+          <HStack>
+            <Box
+              color="green.400"
+              position="relative"
+              left="0.4rem"
+              bottom="0.4rem"
+            >
+              <GoDotFill size="1.3rem" />
+            </Box>
+            <Text>Connecté</Text>
+          </HStack>
         </HStack>
       </Flex>
     </Flex>

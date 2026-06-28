@@ -19,6 +19,7 @@ import AdminUser from "../../shared/types/AdminUser";
 import TaskCard from "../components/TaskCard";
 import PopulatedTask from "../../shared/types/PopulatedTask";
 import QuickActions from "../components/QuickActions";
+import TaskDetailsDrawer from "../components/TaskDetailsDrawer";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -29,7 +30,19 @@ const EmployeeAdminPage = () => {
   const [notes, setNotes] = useState("");
   const [tasks, setTasks] = useState<PopulatedTask[]>([]);
   const adminUser = useAdminUser((store) => store.adminUser);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isCreateOpen,
+    onOpen: onCreateOpen,
+    onClose: onCreateClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isDetailsOpen,
+    onOpen: onDetailsOpen,
+    onClose: onDetailsClose,
+  } = useDisclosure();
+
+  const [selectedTask, setSelectedTask] = useState<PopulatedTask | null>(null);
 
   const lateCount = attendances.filter(
     (attendance) => attendance.status === "retard"
@@ -102,7 +115,7 @@ const EmployeeAdminPage = () => {
 
   const handleTaskCreate = () => {
     console.log("Task create clicked");
-    onOpen();
+    onCreateOpen();
   };
 
   //refresh tasks
@@ -133,15 +146,10 @@ const EmployeeAdminPage = () => {
       );
   };
 
-  // const showTask = (task: Task): boolean => {
-  //   if (adminUser.role === "manager") return true;
-  //   if (task.author === adminUser._id) return true;
-  //   const recipients = task.recipients.filter(
-  //     (task) => task._id === adminUser._id
-  //   );
-  //   if (recipients.length !== 0) return true;
-  //   return false;
-  // };
+  const handleTaskClick = (task: PopulatedTask) => {
+    setSelectedTask(task);
+    onDetailsOpen();
+  };
 
   return (
     <Flex
@@ -285,26 +293,26 @@ const EmployeeAdminPage = () => {
           />
         </Box>
         <Box>
-          {/* <Button
-            onClick={onOpen}
-            border="none"
-            bg="transparent"
-            fontSize="1.8rem"
-            right="0.2rem"
-          >
-            +
-          </Button> */}
           <TaskSubmissionModal
-            isOpen={isOpen}
-            onClose={onClose}
+            isOpen={isCreateOpen}
+            onClose={onCreateClose}
             onRefresh={handleTaskRefresh}
             adminUsersList={adminUsersList}
             author={adminUser!}
           />
+          <TaskDetailsDrawer
+            task={selectedTask}
+            isOpen={isDetailsOpen}
+            onClose={onDetailsClose}
+          />
 
           {tasks.map((task) => (
-            <Box>
-              <TaskCard key={task._id} task={task} />
+            <Box
+              key={task._id}
+              onClick={() => handleTaskClick(task)}
+              cursor="pointer"
+            >
+              <TaskCard task={task} />
             </Box>
           ))}
         </Box>
