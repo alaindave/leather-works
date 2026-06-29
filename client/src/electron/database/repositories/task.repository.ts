@@ -79,7 +79,6 @@ export async function createTask(task: Task) {
 
   const savedTask = {
     ...task,
-    _id,
     taskNumber,
     recipients: task.recipients.map((r) => r._id),
     submittedAt,

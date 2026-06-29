@@ -97,7 +97,7 @@ const TaskSubmissionModal = ({
     try {
       setIsSubmitting(true);
       const result = await window.electron.tasks.create({
-        author: author._id,
+        author: author,
         subject: task.subject,
         message: task.message,
         recipients: taskRecipients,

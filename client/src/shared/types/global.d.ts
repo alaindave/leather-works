@@ -7,7 +7,6 @@ import type LeaveWithEmployee from "./LeaveWithEmployee";
 import type Task from "./Task";
 import type AdminUser from "./AdminUser";
 import type TaskRecipient from "./AdminUser";
-import PopulatedTask from "./PopulatedTask";
 import { TaskComment } from "./Task";
 
 interface SaveFileResult {
@@ -60,7 +59,7 @@ declare global {
       tasks: {
         create: (data: Omit<Task, "_id" | "createdAt">) => Promise<Task>;
 
-        getAll: () => Promise<PopulatedTask[]>;
+        getAll: () => Promise<Task[]>;
 
         onNew: (callback: (data: Task) => void) => () => void;
       };
@@ -68,7 +67,7 @@ declare global {
       taskComments: {
         create: (payload: {
           taskId: string;
-          authorId: string;
+          author: string;
           message: string;
         }) => Promise<TaskComment>;
 

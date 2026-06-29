@@ -6,11 +6,11 @@ import {
   Divider,
   Drawer,
   DrawerBody,
-  DrawerCloseButton,
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
+  Flex,
   HStack,
   Icon,
   Stack,
@@ -20,6 +20,8 @@ import {
 } from "@chakra-ui/react";
 import { FiCalendar, FiCheckCircle, FiClock, FiUser } from "react-icons/fi";
 import Task from "../../shared/types/Task";
+import useAdminUser from "../../store/authStore";
+import { useState } from "react";
 
 interface Props {
   task: Task | null;
@@ -29,21 +31,46 @@ interface Props {
 
 export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
   if (!task) return null;
+  const user = useAdminUser((store) => store.adminUser);
+
+  const handleTaskComment = async () => {
+    console.log("Task ID:", task._id);
+    console.log("author name:", user.firstName);
+    console.log("comment:", comment);
+    try {
+      const result = await window.electron.taskComments.create({
+        taskId: task._id,
+        author: user._id,
+        message: comment,
+      });
+      console.log("Comment submission result:", result);
+    } catch (error) {
+      console.error("An error occured during comment submission: ", error);
+    }
+  };
+
+  const [comment, setComment] = useState("");
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="lg">
+    <Drawer isOpen={isOpen} onClose={onClose} placement="left" size="lg">
       <DrawerOverlay />
-
       <DrawerContent>
-        <DrawerCloseButton />
-
-        <DrawerHeader borderBottomWidth="1px">
-          <VStack align="start" spacing={1}>
-            <Text fontSize="xl" fontWeight="bold">
+        <DrawerHeader borderBottomWidth="1px" borderColor="gray.500">
+          <VStack align="start" spacing={1} position="relative">
+            <Text fontWeight="bold">{task.taskNumber}</Text>
+            <Text
+              color="gray.600"
+              fontSize="l"
+              position="relative"
+              bottom="1.1rem"
+            >
               {task.subject}
             </Text>
+            <Text position="absolute" top="4rem" right="0.1rem">
+              {task.author._id === user._id ? <Button>Resoudre</Button> : null}
+            </Text>
 
-            <HStack spacing={3}>
+            <HStack spacing={3} position="absolute" right="0.5rem">
               <Badge
                 colorScheme={
                   task.priority === "Haute"
@@ -57,9 +84,29 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
               </Badge>
 
               <Badge colorScheme={task.isResolved ? "green" : "yellow"}>
-                {task.isResolved ? "Resolved" : "Open"}
+                {task.isResolved ? "Resolu" : "Ouvert"}
               </Badge>
             </HStack>
+            <Flex width="20rem" justify="space-between">
+              <Text
+                position="relative"
+                top="1.5rem"
+                fontSize="0.93rem"
+                color="gray.600"
+              >
+                Ouvert le:{" "}
+                {new Date(task.submittedAt!).toLocaleDateString("fr-FR")}
+              </Text>
+              <Text
+                position="relative"
+                top="1.5rem"
+                fontSize="0.93rem"
+                color="gray.600"
+              >
+                Date limite:{" "}
+                {new Date(task.deadline).toLocaleDateString("fr-FR")}
+              </Text>
+            </Flex>
           </VStack>
         </DrawerHeader>
 
@@ -68,7 +115,7 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
             {/* Author */}
             <Box>
               <Text fontWeight="bold" mb={2}>
-                Author
+                Auteur
               </Text>
 
               <HStack>
@@ -78,40 +125,32 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
                 />
 
                 <Box>
-                  <Text fontWeight="medium">
+                  <Text fontWeight="medium" mt="0.7rem">
                     {task.author.firstName} {task.author.lastName}
-                  </Text>
-
-                  <Text fontSize="sm" color="gray.500">
-                    {task.author.email}
                   </Text>
                 </Box>
               </HStack>
             </Box>
 
-            <Divider />
+            <Divider borderColor="gray.500" />
 
             {/* Recipients */}
             <Box>
               <Text fontWeight="bold" mb={3}>
-                Recipients
+                Destinataires
               </Text>
 
               <Stack spacing={3}>
                 {task.recipients.map((user) => (
                   <HStack key={user._id}>
                     <Avatar
-                      size="xs"
+                      size="sm"
                       name={`${user.firstName} ${user.lastName}`}
                     />
 
-                    <Box>
-                      <Text>
+                    <Box ml="0.1rem">
+                      <Text position="relative" top="0.4rem">
                         {user.firstName} {user.lastName}
-                      </Text>
-
-                      <Text fontSize="xs" color="gray.500">
-                        {user.role}
                       </Text>
                     </Box>
                   </HStack>
@@ -119,7 +158,7 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
               </Stack>
             </Box>
 
-            <Divider />
+            <Divider borderColor="gray.500" />
 
             {/* Description */}
             <Box>
@@ -130,33 +169,13 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
               <Text whiteSpace="pre-wrap">{task.message}</Text>
             </Box>
 
-            <Divider />
-
-            {/* Details */}
             <Box>
-              <Text fontWeight="bold" mb={3}>
-                Details
-              </Text>
-
               <VStack align="stretch" spacing={3}>
-                <HStack>
-                  <Icon as={FiCalendar} />
-                  <Text>Date limite: {task.deadline}</Text>
-                </HStack>
-
-                <HStack>
-                  <Icon as={FiClock} />
-                  <Text>
-                    Soumis le:{" "}
-                    {new Date(task.submittedAt!).toLocaleDateString("fr-FR")}
-                  </Text>
-                </HStack>
-
                 {task.isResolved && (
                   <>
                     <HStack>
                       <Icon as={FiCheckCircle} color="green.500" />
-                      <Text>Resolved on {task.resolvedAt}</Text>
+                      <Text>Resolu le {task.resolvedAt}</Text>
                     </HStack>
 
                     {task.resolvedBy && (
@@ -172,7 +191,7 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
                     {task.resolutionNotes && (
                       <Box p={3} bg="gray.50" rounded="md">
                         <Text fontWeight="bold" mb={1}>
-                          Resolution Notes
+                          Notes de resolution
                         </Text>
 
                         <Text>{task.resolutionNotes}</Text>
@@ -183,7 +202,7 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
               </VStack>
             </Box>
 
-            <Divider />
+            <Divider borderColor="gray.500" />
 
             {/* Comments */}
             <Box>
@@ -196,22 +215,34 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
                   <Box key={comment._id} borderWidth="1px" rounded="md" p={3}>
                     <HStack mb={2}>
                       <Avatar
-                        size="xs"
+                        size="sm"
                         name={`${comment.author.firstName} ${comment.author.lastName}`}
                       />
 
-                      <Box flex={1}>
+                      <Box
+                        flex={1}
+                        position="relative"
+                        top="1rem"
+                        left="0.2rem"
+                      >
                         <Text fontWeight="semibold">
                           {comment.author.firstName} {comment.author.lastName}
                         </Text>
 
-                        <Text fontSize="xs" color="gray.500">
+                        <Text
+                          position="relative"
+                          bottom="1.1rem"
+                          fontSize="0.92rem"
+                          color="gray.500"
+                        >
                           {comment.createdAt}
                         </Text>
                       </Box>
                     </HStack>
 
-                    <Text whiteSpace="pre-wrap">{comment.message}</Text>
+                    <Text ml="2.5rem" whiteSpace="pre-wrap">
+                      {comment.message}
+                    </Text>
                   </Box>
                 ))}
               </Stack>
@@ -221,9 +252,15 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
 
         <DrawerFooter borderTopWidth="1px">
           <HStack w="100%">
-            <Textarea placeholder="Write a comment..." />
+            <Textarea
+              placeholder="Write a comment..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
 
-            <Button colorScheme="blue">Commenter</Button>
+            <Button colorScheme="blue" onClick={handleTaskComment}>
+              Commenter
+            </Button>
           </HStack>
         </DrawerFooter>
       </DrawerContent>

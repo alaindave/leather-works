@@ -195,7 +195,7 @@ const EmployeeListPage = () => {
 
       {/* FOOTER SPACER  */}
       <Box
-        h="3.8rem"
+        h="2.5rem"
         bg="black"
         borderRadius="12px"
         ml="0.2rem"

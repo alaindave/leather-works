@@ -1,10 +1,16 @@
 import TaskComment from "../../../shared/types/TaskComment.js";
 import { randomUUID } from "crypto";
 import { run, all } from "../db.js";
+import { addToSyncQueue } from "./sync.repository.js";
 
 //Create task comment
 export async function createTaskComment(comment: TaskComment) {
+  console.log("Comment to save:", comment);
   const _id = randomUUID();
+  const today = new Date();
+  const submittedAt = today.toISOString().split("T")[0];
+  const time = today.toISOString();
+
   await run(
     `
     INSERT INTO task_comments (
@@ -18,7 +24,23 @@ export async function createTaskComment(comment: TaskComment) {
     [_id, comment.taskId, comment.author, comment.message]
   );
 
-  return comment;
+  const savedTaskComment = {
+    ...comment,
+    submittedAt,
+    createdAt: time,
+    updatedAt: time,
+  };
+
+  console.log("Task to save to sync queue", savedTaskComment);
+
+  await addToSyncQueue({
+    entity: "task_comment",
+    entityId: _id,
+    operation: "create",
+    payload: JSON.stringify(savedTaskComment),
+  });
+
+  return savedTaskComment;
 }
 
 //Get task comments

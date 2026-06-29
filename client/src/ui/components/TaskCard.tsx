@@ -1,8 +1,8 @@
 import { VStack, Text, Flex, Box, HStack } from "@chakra-ui/react";
-import PopulatedTask from "../../shared/types/PopulatedTask";
+import Task from "../../shared/types/Task";
 
 interface Props {
-  task: PopulatedTask;
+  task: Task;
 }
 
 const TaskCard = ({ task }: Props) => {

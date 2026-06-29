@@ -20,6 +20,7 @@ import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
 interface Props {
   attendance?: AttendanceWithEmployee | null;
   onRefresh?: () => void;
+  isUnlocked: boolean;
 }
 
 const formatLateMinutes = (lateMinutes: number): string => {
@@ -120,7 +121,7 @@ const formatTime = (input?: string | Date | null) => {
   )}`;
 };
 
-const ClockIn = ({ attendance, onRefresh }: Props) => {
+const ClockIn = ({ attendance, onRefresh, isUnlocked }: Props) => {
   if (!attendance) return;
   const [clockInValue, setClockInValue] = useState(
     formatTime(attendance?.clockIn)
@@ -200,6 +201,7 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
                   width="80px"
                   selectAllOnFocus
                   onSubmit={handleEditClockIn}
+                  isDisabled={isUnlocked ? false : true}
                 >
                   <EditablePreview
                     color="red.600"
@@ -208,9 +210,11 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
                     px={2}
                     borderRadius="6px"
                     transition="0.2s"
+                    cursor={isUnlocked ? "pointer" : "default"}
                     _hover={{
                       bg: "rgba(255,255,255,0.05)",
-                      cursor: "pointer",
+
+                      cursor: isUnlocked ? "pointer" : "default",
                     }}
                   />
 
@@ -274,6 +278,7 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
           width="80px"
           selectAllOnFocus
           onSubmit={handleEditClockIn}
+          isDisabled={isUnlocked ? false : true}
         >
           <Tooltip
             label={errorMessage}
@@ -290,9 +295,11 @@ const ClockIn = ({ attendance, onRefresh }: Props) => {
               px={2}
               borderRadius="6px"
               transition="0.2s"
+              cursor={isUnlocked ? "pointer" : "default"}
               _hover={{
                 bg: "rgba(255,255,255,0.05)",
-                cursor: "pointer",
+
+                cursor: isUnlocked ? "pointer" : "default",
               }}
             />
           </Tooltip>

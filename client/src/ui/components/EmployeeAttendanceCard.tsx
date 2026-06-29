@@ -19,6 +19,8 @@ interface Props {
   attendance: AttendanceWithEmployee | null;
   onDelete: () => void;
   gridTemplate: string;
+  isUnlocked: boolean;
+  toggleOff: () => void;
 }
 
 type ClockOutMode = "idle" | "editing" | "submitting" | "completed";
@@ -113,6 +115,8 @@ const EmployeeAttendanceCard = ({
   attendance,
   onDelete,
   gridTemplate,
+  isUnlocked,
+  toggleOff,
 }: Props) => {
   if (!attendance) return null;
   const { _id, firstName, lastName, matricule, role, department } = attendance;
@@ -176,7 +180,6 @@ const EmployeeAttendanceCard = ({
 
       const clockOutDate = new Date();
       clockOutDate.setHours(hours, minutes, 0, 0);
-
       // optimistic update
       setLocalAttendance((prev) => {
         if (!prev) return null;
@@ -191,6 +194,7 @@ const EmployeeAttendanceCard = ({
         clockOut: clockOutDate.toISOString(),
       });
 
+      toggleOff();
       setLocalAttendance((prev) => {
         if (!prev) return null;
 
@@ -243,6 +247,7 @@ const EmployeeAttendanceCard = ({
 
   const refreshAttendance = async () => {
     if (!localAttendance?._id) return;
+    toggleOff?.();
 
     const attendance = await window.electron.attendance.getById(
       localAttendance._id
@@ -291,7 +296,11 @@ const EmployeeAttendanceCard = ({
 
       {/* Clock In */}
       <Box ml="0.3rem">
-        <ClockIn attendance={localAttendance} onRefresh={refreshAttendance} />
+        <ClockIn
+          isUnlocked={isUnlocked}
+          attendance={localAttendance}
+          onRefresh={refreshAttendance}
+        />
       </Box>
 
       {/* Clock Out */}
@@ -321,6 +330,7 @@ const EmployeeAttendanceCard = ({
               selectAllOnFocus
               width="80px"
               onSubmit={handleEditClockOut}
+              isDisabled={isUnlocked ? false : true}
             >
               <EditablePreview
                 color="purple.700"
@@ -329,9 +339,11 @@ const EmployeeAttendanceCard = ({
                 px={2}
                 borderRadius="6px"
                 transition="0.2s"
+                cursor={isUnlocked ? "pointer" : "default"}
                 _hover={{
                   bg: "rgba(255,255,255,0.05)",
-                  cursor: "pointer",
+
+                  cursor: isUnlocked ? "pointer" : "default",
                 }}
               />
               <EditableInput

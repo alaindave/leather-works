@@ -199,13 +199,7 @@ const EmployeeLeavePage = () => {
     <>
       <Flex direction="column" justify="space-between">
         {/* Header */}
-        <Box
-          mt="0.5rem"
-          ml="0.15rem"
-          bg="#F8F9FB"
-          height="10rem"
-          width="77.45vw"
-        >
+        <Box mt="0.5rem" ml="0.1rem" bg="#F8F9FB" height="10rem" width="78vw">
           <Flex>
             <Box>
               <Text
@@ -273,7 +267,7 @@ const EmployeeLeavePage = () => {
               bg="#F8F9FB"
               height="5rem"
               mt="0.2rem"
-              ml="0.3rem"
+              ml="0.1rem"
               mb="0.2rem"
               width="78vw"
               overflowY="hidden"
@@ -331,10 +325,10 @@ const EmployeeLeavePage = () => {
 
         {/* Footer */}
         <Flex
-          mb="0.7rem"
+          mb="3.1rem"
           ml="0.15rem"
-          height="3.7rem"
-          width="77.45vw"
+          height="3.5rem"
+          width="78vw"
           justify="space-between"
           bg="#F8F9FB"
         >

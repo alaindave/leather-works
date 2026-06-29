@@ -11,6 +11,7 @@ import {
   Grid,
   HStack,
   Spacer,
+  Switch,
   Text,
   useDisclosure,
   VStack,
@@ -55,6 +56,7 @@ const EmployeeAttendancePage = () => {
   const [filter, setFilter] = useState("");
   const [time, setTime] = useState(new Date());
   const [loading, setLoading] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const gridTemplate = `
@@ -317,6 +319,8 @@ const EmployeeAttendancePage = () => {
                   setAttendance(attendance);
                   onOpen();
                 }}
+                isUnlocked={unlocked}
+                toggleOff={() => setUnlocked(false)}
               />
             ))
         )}
@@ -325,11 +329,11 @@ const EmployeeAttendancePage = () => {
       {/* ================= FOOTER  ================= */}
       <Flex
         bg="#F8F9FB"
-        mb="0.72rem"
+        mb="3.1rem"
         mr="0.15rem"
         height="5rem"
         justify="space-between"
-        width="77.3vw"
+        width="78vw"
       >
         <Box
           mt="0.6rem"
@@ -339,6 +343,15 @@ const EmployeeAttendancePage = () => {
           fontWeight="600"
         >
           <DateDropdown onChange={setSelectedDate} />
+        </Box>
+
+        <Box mt="0.8rem">
+          <Switch
+            colorScheme="blue"
+            size="lg"
+            isChecked={unlocked}
+            onChange={(e) => setUnlocked(e.target.checked)}
+          />
         </Box>
 
         <Box

@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Badge,
   Box,
   Button,
@@ -181,13 +182,14 @@ const EmployeeCard = ({ employee }: Props) => {
       spacing={4}
       borderRadius="8px"
     >
-      <Box ml="1.1rem">
+      <Box ml="1.3rem">
         <Link
           to={{
             pathname: `/employees_admin/employees_list/${employee._id}`,
           }}
         >
-          <Image src={source} boxSize="70px" borderRadius="full" fit="cover" />
+          <Avatar size="lg" name="profile picture" src={source} />
+          {/* <Image src={source} boxSize="70px" borderRadius="full" fit="cover" /> */}
         </Link>
       </Box>
       <Box position="relative" top="10px">

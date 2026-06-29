@@ -17,9 +17,9 @@ import EmployeeDashboard from "../components/EmployeeDashboard";
 import TaskSubmissionModal from "../components/TaskSubmissionModal";
 import AdminUser from "../../shared/types/AdminUser";
 import TaskCard from "../components/TaskCard";
-import PopulatedTask from "../../shared/types/PopulatedTask";
 import QuickActions from "../components/QuickActions";
 import TaskDetailsDrawer from "../components/TaskDetailsDrawer";
+import Task from "../../shared/types/Task";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -28,7 +28,7 @@ const EmployeeAdminPage = () => {
   const [adminUsersList, setAdminUsersList] = useState<AdminUser[]>([]);
   const [time, setTime] = useState<Date>(new Date());
   const [notes, setNotes] = useState("");
-  const [tasks, setTasks] = useState<PopulatedTask[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const adminUser = useAdminUser((store) => store.adminUser);
   const {
     isOpen: isCreateOpen,
@@ -42,7 +42,7 @@ const EmployeeAdminPage = () => {
     onClose: onDetailsClose,
   } = useDisclosure();
 
-  const [selectedTask, setSelectedTask] = useState<PopulatedTask | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const lateCount = attendances.filter(
     (attendance) => attendance.status === "retard"
@@ -146,7 +146,7 @@ const EmployeeAdminPage = () => {
       );
   };
 
-  const handleTaskClick = (task: PopulatedTask) => {
+  const handleTaskClick = (task: Task) => {
     setSelectedTask(task);
     onDetailsOpen();
   };

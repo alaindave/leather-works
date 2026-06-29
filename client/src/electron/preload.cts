@@ -125,7 +125,7 @@ contextBridge.exposeInMainWorld("electron", {
   taskComments: {
   create: (payload: {
     taskId: string;
-    authorId: string;
+    author: string;
     message: string;
   }) => ipcRenderer.invoke("task-comments:create", payload),
 

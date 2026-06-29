@@ -144,7 +144,7 @@ const EmployeeDetailsPage = () => {
         ml="0.3rem"
         mr="0.3rem"
         mb="1rem"
-        height="98vh"
+        height="93.5vh"
       >
         <VStack spacing={4} align="stretch">
           {/* HEADER */}
@@ -251,7 +251,7 @@ const EmployeeDetailsPage = () => {
                   </Text>
                 </HStack>
 
-                <Divider />
+                <Divider borderColor="gray.500" />
 
                 <Box textAlign="center">
                   <Text color="gray.800" fontWeight="700" fontSize="1.1rem">

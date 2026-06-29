@@ -124,7 +124,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
     <Grid
       templateColumns={gridTemplate}
       alignItems="center"
-      ml="0.2rem"
+      ml="0.1rem"
       px={4}
       py={4}
       bg="#F8F9FB"
