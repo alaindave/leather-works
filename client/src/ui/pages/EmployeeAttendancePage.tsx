@@ -329,9 +329,9 @@ const EmployeeAttendancePage = () => {
       {/* ================= FOOTER  ================= */}
       <Flex
         bg="#F8F9FB"
-        mb="3.1rem"
+        mb="2.6rem"
         mr="0.15rem"
-        height="5rem"
+        height="5.5rem"
         justify="space-between"
         width="78vw"
       >

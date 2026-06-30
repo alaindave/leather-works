@@ -244,7 +244,7 @@ const EmployeeAdminPage = () => {
         flex="4"
         overflow="auto"
         position="relative"
-        top="4.5rem"
+        top="1rem"
       >
         {/* NOTES */}
         <Box

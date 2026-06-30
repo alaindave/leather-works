@@ -8,11 +8,12 @@ async function syncEmployee(operation, data) {
   switch (operation) {
     case "create":
     case "update":
-      const employee = await Employee.updateOne({ _id: data._id }, data, {
+      console.log("Employee to sync in Mongo:", data);
+      await Employee.updateOne({ _id: data._id }, data, {
         upsert: true,
       });
-
-      console.log("Employee create/update synced in Mongo:", employee);
+      const updated = await Employee.findById(data._id);
+      console.log("Updated employee:", updated);
       break;
 
     case "delete":
@@ -32,6 +33,8 @@ async function syncAttendance(operation, data) {
     case "update":
       console.log("Attendance to sync to server:", data);
       await Attendance.updateOne({ _id: data._id }, data, { upsert: true });
+      const updated = await Attendance.findById(data._id);
+      console.log("Updated attendance:", updated);
       break;
 
     case "delete":

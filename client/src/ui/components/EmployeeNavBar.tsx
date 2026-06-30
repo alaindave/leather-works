@@ -286,8 +286,8 @@ const EmployeeNavBar = () => {
       </Flex>
       <Flex
         position="relative"
-        top="4rem"
-        right="0.15rem"
+        top="3.7rem"
+        right="0.3rem"
         width="100vw"
         height="6vh"
         bg="gray.200"
