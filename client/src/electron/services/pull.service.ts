@@ -21,6 +21,11 @@ import Employee from "../../shared/types/Employee.js";
 import Attendance from "../../shared/types/Attendance.js";
 import Leave from "../../shared/types/Leave.js";
 import AdminUser from "../../shared/types/AdminUser.js";
+import Task from "../../shared/types/Task.js";
+import {
+  markTaskSynced,
+  upsertTask,
+} from "../database/repositories/task.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -38,18 +43,20 @@ export async function pullLatestChanges() {
       },
     });
 
-    const { adminUsers, employees, attendances, leaves, serverTime } =
+    const { adminUsers, employees, attendances, leaves, tasks, serverTime } =
       response.data;
     console.log("PULLED ITEMS FROM SERVER");
     console.log("---------------------------");
     console.log("FETCHED EMPLOYEES:", employees);
     console.log("FETCHED ATTENDANCES:", attendances);
     console.log("FETCHED LEAVES:", leaves);
+    console.log("FETCHED TASKS:", tasks);
     console.log("FETCHED ADMIN USERS:", adminUsers);
 
     await syncEmployees(employees);
     await syncAttendances(attendances);
     await syncLeaves(leaves);
+    await syncTasks(tasks);
     await syncAdminUsers(adminUsers);
     await setSetting("lastSync", serverTime);
 
@@ -88,6 +95,17 @@ async function syncLeaves(leaves: Leave[]) {
       await markLeaveSynced(leave._id);
     } catch (error) {
       console.error("Failed to sync pulled leave:", leave._id, error);
+    }
+  }
+}
+
+async function syncTasks(tasks: Task[]) {
+  for (const task of tasks) {
+    try {
+      await upsertTask(task);
+      await markTaskSynced(task._id);
+    } catch (error) {
+      console.error("Failed to sync pulled task:", task._id, error);
     }
   }
 }

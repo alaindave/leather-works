@@ -184,6 +184,35 @@ const EmployeeDetailsPage = () => {
                 </Text>
               </Box>
             </HStack>
+            <HStack>
+              <HStack
+                cursor="pointer"
+                bg="gray.100"
+                border="1px solid rgba(255,255,255,0.12)"
+                boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+                borderRadius="0.4rem"
+                padding="0.4rem"
+              >
+                <FaRegClock size="1.3rem" color="purple" />
+                <Text color="gray.900" position="relative" top="0.4rem">
+                  Presence
+                </Text>
+              </HStack>
+
+              <HStack
+                cursor="pointer"
+                bg="gray.100"
+                border="1px solid rgba(255,255,255,0.12)"
+                boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+                borderRadius="0.4rem"
+                padding="0.4rem"
+              >
+                <CiCalendarDate size="1.3rem" color="purple" />
+                <Text position="relative" top="0.4rem">
+                  Conges
+                </Text>
+              </HStack>
+            </HStack>
             {adminUser?.role === "manager" ? (
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <Box position="relative" bottom="1rem">
@@ -297,35 +326,6 @@ const EmployeeDetailsPage = () => {
               </ErrorBoundary>
             </Box>
           </Stack>
-          <HStack position="absolute" right="2rem" bottom="2rem">
-            <HStack
-              cursor="pointer"
-              bg="gray.100"
-              border="1px solid rgba(255,255,255,0.12)"
-              boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-              borderRadius="0.4rem"
-              padding="0.4rem"
-            >
-              <FaRegClock size="1.3rem" color="purple" />
-              <Text color="gray.900" position="relative" top="0.4rem">
-                Presence
-              </Text>
-            </HStack>
-
-            <HStack
-              cursor="pointer"
-              bg="gray.100"
-              border="1px solid rgba(255,255,255,0.12)"
-              boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-              borderRadius="0.4rem"
-              padding="0.4rem"
-            >
-              <CiCalendarDate size="1.3rem" color="purple" />
-              <Text position="relative" top="0.4rem">
-                Conges
-              </Text>
-            </HStack>
-          </HStack>
         </VStack>
       </Box>
     </>

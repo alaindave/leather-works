@@ -50,7 +50,12 @@ async function syncLeave(operation, data) {
   switch (operation) {
     case "create":
     case "update":
-      await Leave.updateOne({ _id: data._id }, data, { upsert: true });
+      console.log("Leave to sync to server:", data);
+      await Leave.updateOne({ _id: data._id }, data, {
+        upsert: true,
+      });
+      const updated = await Leave.findById(data._id);
+      console.log("Updated leave:", updated);
       break;
 
     case "delete":
@@ -66,7 +71,12 @@ async function syncTask(operation, data) {
   switch (operation) {
     case "create":
     case "update":
-      await Task.updateOne({ _id: data._id }, data, { upsert: true });
+      console.log("Task to sync to server:", data);
+      await Task.updateOne({ _id: data._id }, data, {
+        upsert: true,
+      });
+      const updated = await Task.findById(data._id);
+      console.log("Updated task:", updated);
       break;
 
     case "delete":
@@ -79,7 +89,10 @@ async function syncTask(operation, data) {
 }
 
 async function syncUserNotes(data) {
+  console.log("User notes to sync to server:", data);
   await AdminUser.updateOne({ _id: data._id }, data, { upsert: true });
+  const updated = await AdminUser.findById(data._id);
+  console.log("Updated admin user:", updated);
 }
 
 module.exports = {
