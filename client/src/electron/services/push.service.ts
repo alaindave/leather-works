@@ -11,10 +11,11 @@ import { markLeaveSynced } from "../database/repositories/leave.repository.js";
 import { markTaskSynced } from "../database/repositories/task.repository.js";
 
 const API_URL = app.isPackaged
-  ? "https://striking-celebration-production-5910.up.railway.app"
+  ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
 
 export async function pushPendingChanges() {
+  console.log("PUSH SERVICE API URL:", API_URL);
   const pending = await getUnsyncedItems();
   if (!pending.length) return;
 

@@ -3,11 +3,13 @@ import { NetworkService } from "../services/network.service.js";
 import axios from "axios";
 import { clearToken, saveToken } from "../auth.js";
 const API_URL = app.isPackaged
-  ? "https://striking-celebration-production-5910.up.railway.app"
+  ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
 
 export function registerAuthIPC() {
   console.log("REGISTERING AUTH IPC");
+  console.log("AUTH API URL:", API_URL);
+
   //Login handler
   ipcMain.handle("auth:login", async (_, credentials) => {
     console.log("LOGIN IPC RECEIVED");

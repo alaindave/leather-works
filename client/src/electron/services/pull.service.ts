@@ -23,10 +23,11 @@ import Leave from "../../shared/types/Leave.js";
 import AdminUser from "../../shared/types/AdminUser.js";
 
 const API_URL = app.isPackaged
-  ? "https://striking-celebration-production-5910.up.railway.app"
+  ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
 
 export async function pullLatestChanges() {
+  console.log("PULL SERVICE API URL:", API_URL);
   try {
     const lastSync =
       (await getSetting("lastSync")) ?? "1970-01-01T00:00:00.000Z";

@@ -42,7 +42,6 @@ const EmployeeDetailsPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const adminUser = useAdminUser((store) => store.adminUser);
-  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   console.log("Employee ID:", _id);
 

@@ -6,12 +6,13 @@ import {
 } from "../database/repositories/task.repository.js";
 
 const API_URL = app.isPackaged
-  ? "https://striking-celebration-production-5910.up.railway.app"
+  ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
-console.log("API URL:", API_URL);
 
 export function registerTaskIPC() {
   console.log("REGISTERING TASKS IPC");
+  console.log("TASKS API URL:", API_URL);
+
   //Create tasks
   ipcMain.handle("tasks:create", async (_, task) => {
     console.log("TASK CREATE CALLED: ", task);

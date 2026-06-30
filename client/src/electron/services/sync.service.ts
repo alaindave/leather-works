@@ -4,12 +4,13 @@ import { pushPendingChanges } from "./push.service.js";
 import { pullLatestChanges } from "./pull.service.js";
 
 const API_URL = app.isPackaged
-  ? "https://striking-celebration-production-5910.up.railway.app"
+  ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
 
 let syncing = false;
 
 export default async function sync() {
+  console.log("SYNC SERVICE API URL:", API_URL);
   if (syncing) return;
   syncing = true;
   try {

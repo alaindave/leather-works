@@ -68,7 +68,6 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const {
     register,

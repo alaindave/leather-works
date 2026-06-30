@@ -199,7 +199,7 @@ const EmployeeLeavePage = () => {
     <>
       <Flex direction="column" justify="space-between">
         {/* Header */}
-        <Box mt="0.5rem" ml="0.1rem" bg="#F8F9FB" height="10rem" width="80vw">
+        <Box mt="0.5rem" ml="0.1rem" bg="#F8F9FB" height="10rem" width="77.7vw">
           <Flex>
             <Box>
               <Text
@@ -269,7 +269,7 @@ const EmployeeLeavePage = () => {
               mt="0.2rem"
               ml="0.1rem"
               mb="0.2rem"
-              width="80vw"
+              width="77.7vw"
               overflowY="hidden"
               overflowX="hidden"
             >
@@ -307,7 +307,12 @@ const EmployeeLeavePage = () => {
                 Actions
               </Text>
             </Grid>
-            <Box height="90vh" width="80vw" overflowX="hidden" overflowY="auto">
+            <Box
+              height="90vh"
+              width="77.7vw"
+              overflowX="hidden"
+              overflowY="auto"
+            >
               {leaves.map((leave, index) => {
                 console.log("Leave at index", index, leave);
                 return (
@@ -325,10 +330,10 @@ const EmployeeLeavePage = () => {
 
         {/* Footer */}
         <Flex
-          mb="2.7rem"
+          mb="3rem"
           ml="0.15rem"
           height="3.5rem"
-          width="81vw"
+          width="77.7vw"
           justify="space-between"
           bg="#F8F9FB"
         >

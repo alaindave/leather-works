@@ -45,7 +45,6 @@ interface Props {
 
 const LeaveEdit = ({ leave, onUpdated, isOpen, onClose }: Props) => {
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
-  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const [isUpdating, setIsUpdating] = useState(false);
 
   console.log("LeaveEdit received:", leave);

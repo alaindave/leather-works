@@ -44,7 +44,6 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   } = localLeave;
 
   const adminUser = useAdminUser((store) => store.adminUser);
-  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   // //Handle leave approval
   const handleApprove = () => {
