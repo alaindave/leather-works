@@ -19,6 +19,7 @@ export async function createEmployee(
       firstName,
       lastName,
       matricule,
+      idNum,
       dateBirth,
       role,
       dateHired,
@@ -35,7 +36,7 @@ export async function createEmployee(
       isDeleted
     )
     VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
       0,
       0
     )
@@ -45,6 +46,7 @@ export async function createEmployee(
       employee.firstName,
       employee.lastName,
       employee.matricule,
+      employee.idNum,
       employee.dateBirth,
       employee.role,
       employee.dateHired,

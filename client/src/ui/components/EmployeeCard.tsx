@@ -175,7 +175,7 @@ const EmployeeCard = ({ employee }: Props) => {
     <HStack
       bg="#ffffff"
       height="80px"
-      w="77.8vw"
+      w="80vw"
       padding="10px"
       position="relative"
       right="20px"

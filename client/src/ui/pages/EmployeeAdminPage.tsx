@@ -244,7 +244,7 @@ const EmployeeAdminPage = () => {
         flex="4"
         overflow="auto"
         position="relative"
-        top="1rem"
+        top="1.5rem"
       >
         {/* NOTES */}
         <Box
@@ -258,6 +258,7 @@ const EmployeeAdminPage = () => {
           flexDir="column"
           height="22rem"
           position="relative"
+          top="2rem"
         >
           <Flex align="center" gap={2} mb={3}>
             <Text
@@ -321,6 +322,8 @@ const EmployeeAdminPage = () => {
               onClick={() => handleTaskClick(task)}
               cursor="pointer"
               ml="2rem"
+              position="relative"
+              top="2rem"
             >
               <TaskCard task={task} />
             </Box>

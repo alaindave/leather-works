@@ -200,7 +200,7 @@ const EmployeeAttendancePage = () => {
         mt="0.5rem"
         bg="#F8F9FB"
         height="10rem"
-        width="77.3vw"
+        width="80vw"
       >
         <Flex>
           <Box>
@@ -253,7 +253,7 @@ const EmployeeAttendancePage = () => {
         mt="0.12rem"
         mb="0.12rem"
         height="4.7rem"
-        width="77.3vw"
+        width="80vw"
         overflowY="hidden"
         overflowX="hidden"
       >
@@ -333,7 +333,7 @@ const EmployeeAttendancePage = () => {
         mr="0.15rem"
         height="5.5rem"
         justify="space-between"
-        width="78vw"
+        width="81vw"
       >
         <Box
           mt="0.6rem"

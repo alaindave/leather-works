@@ -78,9 +78,9 @@ const inputStyle = {
 };
 
 const labelColor = "#374151";
-const secondaryText = "#6B7280";
-const primaryBlue = "#0078D4";
-const errorColor = "#D13438";
+// const secondaryText = "#6B7280";
+// const primaryBlue = "#0078D4";
+// const errorColor = "#D13438";
 
 const SignUp = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -114,7 +114,8 @@ const SignUp = () => {
         res.data.firstName,
         res.data.lastName,
         res.data.email,
-        res.data.roles
+        res.data.roles,
+        res.data.notes
       );
       navigate("/admin");
     } catch (error) {

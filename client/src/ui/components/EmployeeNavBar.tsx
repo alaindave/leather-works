@@ -288,7 +288,7 @@ const EmployeeNavBar = () => {
         position="relative"
         top="3.7rem"
         right="0.3rem"
-        width="100vw"
+        width="99.2vw"
         height="6vh"
         bg="gray.200"
         justify="space-between"
