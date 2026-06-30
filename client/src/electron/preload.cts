@@ -103,9 +103,11 @@ contextBridge.exposeInMainWorld("electron", {
 
     delete: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
   },
-
+          
    tasks: {
     create: (task: Task) => ipcRenderer.invoke("tasks:create", task),
+
+    update:(task: Task) => ipcRenderer.invoke("tasks:update", task),
 
     getAll: () => ipcRenderer.invoke("tasks:getAll"),
 

@@ -49,13 +49,14 @@ const LoginPage = () => {
       console.log("Am I online?", online);
 
       if (!online) {
+        //Offline login
         const offlineUser = await window.electron.offlineUsers.login({
           email: credentials.email,
           password: credentials.password,
         });
 
         if (!offlineUser) {
-          throw new Error("Offline login failed");
+          throw new Error("OFFLINE LOGIN FAILED");
         }
 
         console.log("OFFLINE LOGIN SUCCESS: ", offlineUser);
@@ -65,7 +66,8 @@ const LoginPage = () => {
           offlineUser.firstName,
           offlineUser.lastName,
           offlineUser.email,
-          offlineUser.role
+          offlineUser.role,
+          offlineUser.notes
         );
 
         navigate("/admin", { replace: true });
@@ -73,8 +75,8 @@ const LoginPage = () => {
         return;
       }
 
+      //Online login
       const adminUser = await window.electron.auth.login(credentials);
-
       if (adminUser) {
         const offlineUser = await window.electron.offlineUsers.save({
           _id: adminUser._id,
@@ -83,16 +85,19 @@ const LoginPage = () => {
           firstName: adminUser.firstName,
           lastName: adminUser.lastName,
           role: adminUser.role,
+          notes: adminUser.notes,
         });
 
         console.log("Offline user successfully saved: ", offlineUser);
 
+        //Save user to zustand store
         setLogIn(
           adminUser._id,
           adminUser.firstName,
           adminUser.lastName,
           adminUser.email,
-          adminUser.role
+          adminUser.role,
+          adminUser.notes
         );
 
         navigate("/admin", { replace: true });

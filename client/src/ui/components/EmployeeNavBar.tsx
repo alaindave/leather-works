@@ -149,7 +149,7 @@ const EmployeeNavBar = () => {
               <FaFileSignature size="1.5rem" />
               <ErrorBoundary FallbackComponent={PageErrorFallback}>
                 <NavLink className="nav-button" to="/admin">
-                  Parametres
+                  Taches
                 </NavLink>
               </ErrorBoundary>
             </HStack>

@@ -29,7 +29,13 @@ const TaskCard = ({ task }: Props) => {
       }}
     >
       <Flex justify="space-between" width="25rem">
-        <Text fontWeight="800" mt="0.4rem" ml="0.4rem">
+        <Text
+          fontFamily="monospace"
+          fontSize="1.1rem"
+          fontWeight="800"
+          mt="0.4rem"
+          ml="0.4rem"
+        >
           {task.taskNumber}
         </Text>
         <Text mt="0.4rem">{task.author.firstName}</Text>
@@ -39,7 +45,7 @@ const TaskCard = ({ task }: Props) => {
       </Flex>
 
       <Flex width="25rem" justifyContent="space-between">
-        <Text ml="0.4rem" color="gray.700" fontWeight="500">
+        <Text ml="0.4rem" color="gray.700" fontSize="1.1rem" fontWeight="500">
           {task.subject}
         </Text>
         <Text mr="1rem">

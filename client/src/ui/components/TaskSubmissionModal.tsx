@@ -128,7 +128,7 @@ const TaskSubmissionModal = ({
           <ModalHeader color="#ffffff">
             <Flex justify="space-between">
               <Box>
-                <Text color="brown" fontSize="1.5rem">
+                <Text color="brown" fontFamily="heading" fontSize="1.6rem">
                   Nouvelle tache
                 </Text>
               </Box>

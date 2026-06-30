@@ -188,8 +188,7 @@ const EmployeeCard = ({ employee }: Props) => {
             pathname: `/employees_admin/employees_list/${employee._id}`,
           }}
         >
-          <Avatar size="lg" name="profile picture" src={source} />
-          {/* <Image src={source} boxSize="70px" borderRadius="full" fit="cover" /> */}
+          <Image src={source} boxSize="70px" borderRadius="full" fit="cover" />
         </Link>
       </Box>
       <Box position="relative" top="10px">

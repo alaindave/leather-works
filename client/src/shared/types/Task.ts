@@ -1,12 +1,13 @@
 import AdminUser from "./AdminUser.js";
 import TaskComment from "./TaskComment.js";
+import User from "./User.js";
 
 type Priority = "Haute" | "Moyenne" | "Basse" | "";
 
 export default interface Task {
   _id: string;
   taskNumber?: string;
-  author: AdminUser;
+  author: Omit<User, "password" | "notes">;
   recipients: AdminUser[];
   subject: string;
   message: string;
@@ -15,9 +16,9 @@ export default interface Task {
   deadline: string;
   isResolved?: number;
   resolutionNotes?: string;
-  submittedAt?: string;
   resolvedAt?: string;
-  resolvedBy?: AdminUser;
+  resolvedBy?: string;
+  submittedAt?: string;
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;

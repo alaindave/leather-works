@@ -13,6 +13,10 @@ type TaskRow = {
   author: string;
   priority: Priority;
   deadline: string;
+  isResolved?: number;
+  resolutionNotes?: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
 
   authorId: string | null;
   authorFirstName: string | null;
@@ -97,6 +101,85 @@ export async function createTask(task: Task) {
 
   return getTaskById(_id);
 }
+
+//Update task
+export async function updateTask(task: Task) {
+  const updatedAt = new Date().toISOString();
+
+  await run("BEGIN TRANSACTION");
+
+  try {
+    await run(
+      `
+      UPDATE tasks
+      SET
+        subject = ?,
+        message = ?,
+        priority = ?,
+        deadline = ?,
+        isResolved = ?,
+        resolutionNotes = ?,
+        resolvedBy = ?,
+        resolvedAt = ?,
+        updatedAt = ?,
+        synced = 0
+      WHERE _id = ?
+      `,
+      [
+        task.subject,
+        task.message,
+        task.priority,
+        task.deadline,
+        task.isResolved ?? 0,
+        task.resolutionNotes ?? null,
+        task.resolvedBy ?? null,
+        task.resolvedAt ?? null,
+        updatedAt,
+        task._id,
+      ]
+    );
+
+    // Replace recipients
+    await run(`DELETE FROM task_recipients WHERE taskId = ?`, [task._id]);
+
+    for (const recipient of task.recipients) {
+      await run(
+        `
+        INSERT INTO task_recipients (
+          taskId,
+          recipient
+        )
+        VALUES (?, ?)
+        `,
+        [task._id, recipient._id]
+      );
+    }
+
+    const updatedTask = {
+      ...task,
+      recipients: task.recipients.map((r) => r._id),
+      updatedAt,
+    };
+
+    console.log("Task to save to sync queue", updatedTask);
+
+    await addToSyncQueue({
+      entity: "task",
+      entityId: task._id,
+      operation: "update",
+      payload: JSON.stringify(updatedTask),
+    });
+
+    await run("COMMIT");
+  } catch (error) {
+    await run("ROLLBACK");
+    throw error;
+  }
+
+  return getTaskById(task._id);
+}
+
+//Get task by ID
 export async function getTaskById(_id: string) {
   const rows = await all<TaskRow>(
     `
@@ -108,6 +191,10 @@ export async function getTaskById(_id: string) {
       t.author,
       t.priority,
       t.deadline,
+      t.isResolved,
+      t.resolutionNotes,
+      t.resolvedAt,
+      t.resolvedBy,
 
       -- author
       a._id AS author,
@@ -148,6 +235,10 @@ export async function getTaskById(_id: string) {
     message: rows[0].message,
     priority: rows[0].priority,
     deadline: rows[0].deadline,
+    isResolved: rows[0].isResolved ?? null,
+    resolutionNotes: rows[0].resolutionNotes ?? null,
+    resolvedAt: rows[0].resolvedAt ?? null,
+    resolvedBy: rows[0].resolvedBy ?? null,
 
     author: {
       _id: rows[0].author,
@@ -190,6 +281,7 @@ export async function getTaskById(_id: string) {
   };
 }
 
+//Get all tasks
 export async function getAllTasks() {
   const rows = await all<TaskRow>(
     `
@@ -203,6 +295,10 @@ export async function getAllTasks() {
       t.author,
       t.priority,
       t.deadline,
+      t.isResolved,
+      t.resolutionNotes,
+      t.resolvedAt,
+      t.resolvedBy,
 
       -- author
       a._id AS author,
@@ -245,6 +341,10 @@ export async function getAllTasks() {
         message: row.message,
         priority: row.priority,
         deadline: row.deadline,
+        isResolved: row.isResolved ?? null,
+        resolutionNotes: row.resolutionNotes ?? null,
+        resolvedAt: row.resolvedAt ?? null,
+        resolvedBy: row.resolvedBy ?? null,
         submittedAt: row.submittedAt,
         isDeleted: row.isDeleted,
 

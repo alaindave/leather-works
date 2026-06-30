@@ -23,6 +23,7 @@ export function registerOfflineUsersIPC() {
       role: user.role,
       firstName: user.firstName,
       lastName: user.lastName,
+      notes: user.notes,
       lastVerifiedAt: new Date().toISOString(),
     });
   });

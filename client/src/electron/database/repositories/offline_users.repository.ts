@@ -1,5 +1,6 @@
 import type OfflineUser from "../../../shared/types/OfflineUser.js";
 import { get, all, run } from "../db.js";
+import { addToSyncQueue } from "./sync.repository.js";
 
 export async function createOrUpdateOfflineUser(user: OfflineUser) {
   console.log("OFFLINE USER: ", user);
@@ -13,9 +14,10 @@ export async function createOrUpdateOfflineUser(user: OfflineUser) {
       role,
       firstName,
       lastName,
+      notes,
       lastVerifiedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?,?, ?)
 
     ON CONFLICT(email)
     DO UPDATE SET
@@ -23,6 +25,7 @@ export async function createOrUpdateOfflineUser(user: OfflineUser) {
       role = excluded.role,
       firstName = excluded.firstName,
       lastName = excluded.lastName,
+      notes = excluded.notes,
       updatedAt = CURRENT_TIMESTAMP,
       lastVerifiedAt = excluded.lastVerifiedAt
     `,
@@ -33,6 +36,7 @@ export async function createOrUpdateOfflineUser(user: OfflineUser) {
       user.role,
       user.firstName,
       user.lastName,
+      user.notes,
       user.lastVerifiedAt,
     ]
   );
@@ -66,18 +70,36 @@ export async function getOfflineUserByEmail(
   );
 }
 
-export async function saveNotes(userId: string, notes: string) {
-  return run(
+export async function saveNotes(_id: string, notes: string) {
+  const time = new Date().toISOString();
+  await run(
     `
-    INSERT INTO offline_users (_id, notes, updatedAt)
-    VALUES (?, ?, datetime('now'))
-    ON CONFLICT(_id)
-    DO UPDATE SET
-      notes = excluded.notes,
-      updatedAt = excluded.updatedAt
+    UPDATE offline_users
+    SET
+      notes=?,
+      updatedAt=datetime('now')
+    WHERE _id=?
     `,
-    [userId, notes]
+    [notes, _id]
   );
+
+  const savedNotes = {
+    _id,
+    notes,
+    createdAt: time,
+    updatedAt: time,
+  };
+
+  console.log("Notes to save to sync queue", savedNotes);
+
+  await addToSyncQueue({
+    entity: "user_notes",
+    entityId: _id,
+    operation: "create",
+    payload: JSON.stringify(savedNotes),
+  });
+
+  return getOfflineUserById(_id);
 }
 
 export async function getAllOfflineUsers() {

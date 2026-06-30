@@ -20,7 +20,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { FaUserEdit } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
-import { MdAutoDelete, MdDeleteForever } from "react-icons/md";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type Employee from "../../shared/types/Employee";
@@ -30,6 +31,8 @@ import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
 import UpdateEmployee from "../components/UpdateEmployee";
 import ComponentErrorFallback from "./ComponentErrorFallback";
 import NotAuthorized from "../components/NotAuthorized";
+import { CiCalendarDate } from "react-icons/ci";
+import { FaRegClock } from "react-icons/fa";
 
 const EmployeeDetailsPage = () => {
   const [employee, setEmployee] = useState<Employee | null>({} as Employee);
@@ -235,17 +238,14 @@ const EmployeeDetailsPage = () => {
                   {employee?.firstName} {employee?.lastName}
                 </Text>
 
-                <Text fontSize="1rem" color="gray.600" fontWeight="600">
-                  {employee?.role}
-                </Text>
-
-                <HStack bg="#08162b" px={3} py={1} borderRadius="full">
-                  <GoDotFill color="green" />
+                <HStack bg="green.100" px={3} py={1} borderRadius="1.1rem">
+                  <GoDotFill color="green" size="1.3rem" />
                   <Text
-                    color="green.300"
+                    color="green.700"
                     position="relative"
                     top="0.4rem"
                     right="0.3rem"
+                    fontSize="1rem"
                   >
                     Actif
                   </Text>
@@ -258,24 +258,25 @@ const EmployeeDetailsPage = () => {
                     Matricule
                   </Text>
                   <Text color="gray.800" fontWeight="500">
-                    #{employee?.matricule}
+                    {employee?.matricule}
                   </Text>
                 </Box>
                 {adminUser?.role === "manager" ? (
                   <Button
-                    colorScheme="yellow"
+                    bg="yellow.200"
+                    width="12rem"
+                    height="3rem"
                     onClick={onOpen}
-                    fontSize="1.3rem"
-                    w="100%"
+                    fontSize="1.1rem"
                     mt={4}
-                    leftIcon={<MdDeleteForever fontSize="1.3rem" />}
+                    leftIcon={<FaRegTrashCan fontSize="1.3rem" />}
                   >
                     Supprimer
                   </Button>
                 ) : (
                   <NotAuthorized
                     buttonText="Supprimer"
-                    icon={MdDeleteForever}
+                    icon={FaRegTrashCan}
                     placement="bottom"
                     width="13rem"
                   />
@@ -297,6 +298,35 @@ const EmployeeDetailsPage = () => {
               </ErrorBoundary>
             </Box>
           </Stack>
+          <HStack position="absolute" right="2rem" bottom="2rem">
+            <HStack
+              cursor="pointer"
+              bg="gray.100"
+              border="1px solid rgba(255,255,255,0.12)"
+              boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+              borderRadius="0.4rem"
+              padding="0.4rem"
+            >
+              <FaRegClock size="1.3rem" color="purple" />
+              <Text color="gray.900" position="relative" top="0.4rem">
+                Presence
+              </Text>
+            </HStack>
+
+            <HStack
+              cursor="pointer"
+              bg="gray.100"
+              border="1px solid rgba(255,255,255,0.12)"
+              boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+              borderRadius="0.4rem"
+              padding="0.4rem"
+            >
+              <CiCalendarDate size="1.3rem" color="purple" />
+              <Text position="relative" top="0.4rem">
+                Conges
+              </Text>
+            </HStack>
+          </HStack>
         </VStack>
       </Box>
     </>

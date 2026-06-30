@@ -1,6 +1,7 @@
 import { ipcMain, app } from "electron";
 import {
   createTask,
+  updateTask,
   getAllTasks,
 } from "../database/repositories/task.repository.js";
 
@@ -20,6 +21,19 @@ export function registerTaskIPC() {
       return result;
     } catch (error) {
       console.error("From Main: Error creating task: ", error);
+      throw error;
+    }
+  });
+
+  //Update tasks
+  ipcMain.handle("tasks:update", async (_, task) => {
+    console.log("TASK UPDATE CALLED: ", task);
+    try {
+      const result = await updateTask(task);
+      console.log("Updated task: ", result);
+      return result;
+    } catch (error) {
+      console.error("From Main: Error updating task: ", error);
       throw error;
     }
   });

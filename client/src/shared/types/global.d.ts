@@ -25,7 +25,7 @@ interface LoggedUser {
   lastName: string;
   email: string;
   role: "manager" | "admin";
-  notes?: string;
+  notes: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,6 +58,8 @@ declare global {
 
       tasks: {
         create: (data: Omit<Task, "_id" | "createdAt">) => Promise<Task>;
+
+        update: (task: Task) => Promise<Task>;
 
         getAll: () => Promise<Task[]>;
 

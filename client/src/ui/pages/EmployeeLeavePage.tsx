@@ -117,7 +117,7 @@ const EmployeeLeavePage = () => {
     setLeave(leave);
   };
 
-  /* ================= LOADING UI ================= */
+  // /* ================= LOADING UI ================= */
   if (loading)
     return (
       <>

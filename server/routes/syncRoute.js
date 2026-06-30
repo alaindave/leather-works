@@ -5,6 +5,7 @@ const {
   syncAttendance,
   syncLeave,
   syncTask,
+  syncUserNotes,
 } = require("../sync");
 const Employee = require("../models/employeeModel");
 const Attendance = require("../models/attendanceModel");
@@ -36,6 +37,10 @@ router.post("/push", async (req, res) => {
 
           case "task":
             await syncTask(operation, data);
+            break;
+
+          case "user_notes":
+            await syncUserNotes(data);
             break;
 
           default:

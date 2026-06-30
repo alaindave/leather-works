@@ -59,8 +59,10 @@ const createSplashWindow = () => {
 
 const createMainWindow = async () => {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 1500,
+    width: 1400,
+    height: 900,
+    minWidth: 1200,
+    minHeight: 700,
     show: false,
     backgroundColor: "#0f172a",
     webPreferences: {

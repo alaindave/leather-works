@@ -1,12 +1,12 @@
 import {
   Box,
+  Button,
   Flex,
   Grid,
   Text,
   Textarea,
   useDisclosure,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { CiCalendarDate, CiClock2 } from "react-icons/ci";
 import type Attendance from "../../shared/types/Attendance";
@@ -27,9 +27,12 @@ const EmployeeAdminPage = () => {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [adminUsersList, setAdminUsersList] = useState<AdminUser[]>([]);
   const [time, setTime] = useState<Date>(new Date());
-  const [notes, setNotes] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
-  const adminUser = useAdminUser((store) => store.adminUser);
+  const user = useAdminUser((store) => store.adminUser);
+  const saveNotes = useAdminUser((store) => store.saveNotes);
+
+  const [notes, setNotes] = useState(user.notes);
+
   const {
     isOpen: isCreateOpen,
     onOpen: onCreateOpen,
@@ -47,8 +50,6 @@ const EmployeeAdminPage = () => {
   const lateCount = attendances.filter(
     (attendance) => attendance.status === "retard"
   );
-
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   //useEffect for initial data fetch and live clock
   useEffect(() => {
@@ -93,6 +94,7 @@ const EmployeeAdminPage = () => {
   //useEffect for personal notes saving
   useEffect(() => {
     if (!notes?.trim()) return;
+    if (notes === user.notes) return;
 
     const timeout = setTimeout(() => {
       handleNotesSubmission();
@@ -131,15 +133,12 @@ const EmployeeAdminPage = () => {
 
   //Submit personal notes
   const handleNotesSubmission = () => {
-    console.log("Notes to submit:", notes);
-    window.electron.offlineUsers.save;
-    axios
-      .put(`${API_URL}/adminUsers/${adminUser?._id}`, {
-        notes,
-      })
+    window.electron.offlineUsers
+      .saveNotes(user._id, notes)
       .then((res) => {
-        console.log("Notes successfully saved: ", res.data);
+        console.log("Notes successfully saved: ", res);
         setNotes(notes);
+        saveNotes(notes);
       })
       .catch((error) =>
         console.error("An error occured while saving notes: ", error)
@@ -258,6 +257,7 @@ const EmployeeAdminPage = () => {
           display="flex"
           flexDir="column"
           height="22rem"
+          position="relative"
         >
           <Flex align="center" gap={2} mb={3}>
             <Text
@@ -291,6 +291,15 @@ const EmployeeAdminPage = () => {
               color: "#6B7280",
             }}
           />
+          <Button
+            position="absolute"
+            right="0.5rem"
+            colorScheme="blue"
+            width="5rem"
+            height="3rem"
+          >
+            Rappel
+          </Button>
         </Box>
         <Box>
           <TaskSubmissionModal
@@ -298,7 +307,7 @@ const EmployeeAdminPage = () => {
             onClose={onCreateClose}
             onRefresh={handleTaskRefresh}
             adminUsersList={adminUsersList}
-            author={adminUser!}
+            author={user!}
           />
           <TaskDetailsDrawer
             task={selectedTask}
@@ -311,6 +320,7 @@ const EmployeeAdminPage = () => {
               key={task._id}
               onClick={() => handleTaskClick(task)}
               cursor="pointer"
+              ml="2rem"
             >
               <TaskCard task={task} />
             </Box>
