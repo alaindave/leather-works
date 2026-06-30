@@ -20,7 +20,7 @@ import sync from "./services/sync.service.js";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged
-  ? "https://striking-celebration-production-5910.up.railway.app"
+  ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
 console.log("API URL:", API_URL);
 const __filename = fileURLToPath(import.meta.url);
@@ -136,4 +136,9 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:");
+  console.error(err);
 });

@@ -1,6 +1,6 @@
 {
   "name": "leather-works",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist-electron/electron/main.cjs",
 
   "repository": {
@@ -16,11 +16,7 @@
       "output": "dist-app"
     },
 
-    "files": [
-      "dist-electron/**/*",
-      "dist/**/*",
-      "package.json"
-    ],
+    "files": ["dist-electron/**/*", "dist/**/*", "package.json"],
 
     "publish": [
       {
