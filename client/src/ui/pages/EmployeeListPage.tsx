@@ -63,7 +63,7 @@ const EmployeeListPage = () => {
       {/* HEADER */}
       <Flex
         direction="column"
-        w="78.5vw"
+        w="79vw"
         bg="#F8F9FB"
         height="10rem"
         mt="0.5rem"

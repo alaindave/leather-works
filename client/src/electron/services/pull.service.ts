@@ -102,6 +102,7 @@ async function syncLeaves(leaves: Leave[]) {
 async function syncTasks(tasks: Task[]) {
   for (const task of tasks) {
     try {
+      // This should be a transaction
       await upsertTask(task);
       await markTaskSynced(task._id);
     } catch (error) {

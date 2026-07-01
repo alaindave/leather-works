@@ -34,6 +34,7 @@ type TaskRow = {
 };
 
 export async function createTask(task: Task) {
+  console.log("Task to create:", task);
   const _id = randomUUID();
   const taskNumber = generateTaskNumber();
   const today = new Date();
@@ -83,6 +84,7 @@ export async function createTask(task: Task) {
 
   const savedTask = {
     ...task,
+    _id,
     taskNumber,
     recipients: task.recipients.map((r) => r._id),
     submittedAt,
@@ -406,6 +408,7 @@ export async function markTaskSynced(_id: string) {
 }
 
 export async function upsertTask(task: Task) {
+  console.log("Task to upsert:", task);
   await run("BEGIN TRANSACTION");
 
   try {
@@ -476,7 +479,7 @@ export async function upsertTask(task: Task) {
       [
         task._id,
         task.taskNumber,
-        task.author._id,
+        task.author,
         task.subject,
         task.message,
         task.priority,
@@ -506,7 +509,7 @@ export async function upsertTask(task: Task) {
         )
         VALUES (?, ?)
         `,
-        [task._id, recipient._id]
+        [task._id, recipient]
       );
     }
 

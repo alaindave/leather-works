@@ -243,8 +243,6 @@ const EmployeeAdminPage = () => {
         gap={6}
         flex="4"
         overflow="auto"
-        position="relative"
-        top="1.2rem"
       >
         {/* NOTES */}
         <Box
@@ -258,7 +256,7 @@ const EmployeeAdminPage = () => {
           flexDir="column"
           height="22rem"
           position="relative"
-          top="2rem"
+          mt="1.5rem"
         >
           <Flex align="center" gap={2} mb={3}>
             <Text
