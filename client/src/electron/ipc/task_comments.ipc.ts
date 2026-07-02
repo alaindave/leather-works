@@ -1,8 +1,8 @@
 import { ipcMain } from "electron";
 import {
   createTaskComment,
-  getTaskComments,
   deleteTaskComment,
+  getTaskCommentsWithAuthor,
 } from "../database/repositories/tasks_comments.repository.js";
 
 export function registerTaskCommentIPC() {
@@ -11,7 +11,7 @@ export function registerTaskCommentIPC() {
   });
 
   ipcMain.handle("task-comments:get", async (_event, taskId: string) => {
-    return await getTaskComments(taskId);
+    return await getTaskCommentsWithAuthor(taskId);
   });
 
   ipcMain.handle("task-comments:delete", async (_event, commentId: string) => {

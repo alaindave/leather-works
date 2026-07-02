@@ -1,9 +1,7 @@
-import AdminUser from "./AdminUser.js";
-
 export default interface TaskComment {
   _id: string;
   taskId: string;
-  author: AdminUser;
+  author: string;
   message: string;
   createdAt?: string;
   updatedAt?: string;

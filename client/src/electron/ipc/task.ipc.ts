@@ -1,8 +1,10 @@
 import { ipcMain, app } from "electron";
 import {
   createTask,
-  updateTask,
   getAllTasks,
+  updateTask,
+  deleteTask,
+  getTopTasks,
 } from "../database/repositories/task.repository.js";
 
 const API_URL = app.isPackaged
@@ -26,6 +28,30 @@ export function registerTaskIPC() {
     }
   });
 
+  //Get all tasks
+  ipcMain.handle("tasks:getAll", async () => {
+    try {
+      const tasks = await getAllTasks();
+      console.log("From main: Tasks fetched: ", tasks);
+      return tasks;
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      throw error;
+    }
+  });
+
+  //Get top tasks
+  ipcMain.handle("tasks:getTopTasks", async (_, userId) => {
+    try {
+      const top_tasks = await getTopTasks(userId);
+      console.log("From main: Tasks fetched: ", top_tasks);
+      return top_tasks;
+    } catch (error) {
+      console.error("Error fetching top tasks:", error);
+      throw error;
+    }
+  });
+
   //Update tasks
   ipcMain.handle("tasks:update", async (_, task) => {
     console.log("TASK UPDATE CALLED: ", task);
@@ -39,14 +65,14 @@ export function registerTaskIPC() {
     }
   });
 
-  //Get all tasks
-  ipcMain.handle("tasks:getAll", async () => {
+  //Delete tasks
+  ipcMain.handle("tasks:delete", async (_, taskId) => {
     try {
-      const tasks = await getAllTasks();
-      console.log("From main: Tasks fetched: ", tasks);
-      return tasks;
+      const task = await deleteTask(taskId);
+      console.log("From main: Task deleted: ", task);
+      return task;
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.error("Error deleting task:", error);
       throw error;
     }
   });

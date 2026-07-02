@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { FaAddressBook } from "react-icons/fa6";
 import type Employee from "../../shared/types/Employee";
-import useAdminUser from "../../store/authStore";
+import useAdminUser from "../../store/auth.store";
 import AddEmployee from "../components/AddEmployee";
 import EmployeeCard from "../components/EmployeeCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";

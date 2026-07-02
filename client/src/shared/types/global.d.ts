@@ -61,7 +61,11 @@ declare global {
 
         update: (task: Task) => Promise<Task>;
 
+        delete: (taskId: string) => Promise<Task>;
+
         getAll: () => Promise<Task[]>;
+
+        getTopTasks: (userId: string) => Promise<Task[]>;
 
         onNew: (callback: (data: Task) => void) => () => void;
       };

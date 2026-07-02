@@ -12,7 +12,7 @@ import { CiCalendarDate, CiClock2 } from "react-icons/ci";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
 import type Leave from "../../shared/types/Leave";
-import useAdminUser from "../../store/authStore";
+import useAdminUser from "../../store/auth.store";
 import EmployeeDashboard from "../components/EmployeeDashboard";
 import TaskSubmissionModal from "../components/TaskSubmissionModal";
 import AdminUser from "../../shared/types/AdminUser";
@@ -20,6 +20,7 @@ import TaskCard from "../components/TaskCard";
 import QuickActions from "../components/QuickActions";
 import TaskDetailsDrawer from "../components/TaskDetailsDrawer";
 import Task from "../../shared/types/Task";
+import useTaskStore from "../../store/task.store";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -27,9 +28,12 @@ const EmployeeAdminPage = () => {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [adminUsersList, setAdminUsersList] = useState<AdminUser[]>([]);
   const [time, setTime] = useState<Date>(new Date());
-  const [tasks, setTasks] = useState<Task[]>([]);
   const user = useAdminUser((store) => store.adminUser);
   const saveNotes = useAdminUser((store) => store.saveNotes);
+  // const loadTasks = useTaskStore((store) => store.loadTasks);
+  const loadTopTasks = useTaskStore((store) => store.loadTopTasks);
+  const deleteTask = useTaskStore((store) => store.deleteTask);
+  const tasks = useTaskStore((store) => store.tasks);
 
   const [notes, setNotes] = useState(user.notes);
 
@@ -76,14 +80,8 @@ const EmployeeAdminPage = () => {
       .then((adminUsers) => {
         console.log("Retrieved admin users: ", adminUsers);
         setAdminUsersList(adminUsers);
-        return window.electron.tasks.getAll();
+        return loadTopTasks(user._id);
       })
-
-      .then((tasks) => {
-        console.log("Retrieved tasks: ", tasks);
-        setTasks(tasks);
-      })
-
       .catch((error) => {
         console.error("An error occured while retrieving data:", error);
       });
@@ -120,12 +118,25 @@ const EmployeeAdminPage = () => {
     onCreateOpen();
   };
 
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    onDetailsOpen();
+  };
+
+  const handleTaskDelete = async (_id: string) => {
+    console.log("ID to delete,", _id);
+    try {
+      const deletedTask = await deleteTask(_id);
+      console.log("Deleted task: ", deletedTask);
+    } catch (e) {
+      console.error("An error occured while deleting the task.", e);
+    }
+  };
+
   //refresh tasks
   const handleTaskRefresh = async () => {
     try {
-      const tasks = await window.electron.tasks.getAll();
-      console.log("Fetched tasks:", tasks);
-      setTasks(tasks);
+      await loadTopTasks(user._id);
     } catch (error) {
       console.log("An error occured while refreshing tasks:", error);
     }
@@ -145,11 +156,6 @@ const EmployeeAdminPage = () => {
       );
   };
 
-  const handleTaskClick = (task: Task) => {
-    setSelectedTask(task);
-    onDetailsOpen();
-  };
-
   return (
     <Flex
       direction="column"
@@ -157,7 +163,7 @@ const EmployeeAdminPage = () => {
       mt="0.5rem"
       mr="0.3rem"
       w="100%"
-      h="94vh"
+      minH="94vh"
       bg="#F8F9FB"
       border="1px solid"
       borderColor="#D1D9E0"
@@ -172,13 +178,16 @@ const EmployeeAdminPage = () => {
         gap={3}
       >
         <Box position="relative" bottom="1rem">
-          <Text fontSize="1.6rem" fontWeight="700" color="#1F2937">
+          <Text
+            fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
+            fontWeight="700"
+            color="#1F2937"
+          >
             Tableau de bord
           </Text>
           <Text
-            fontSize="1rem"
-            fontWeight="600"
-            color="#1F2937"
+            fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
+            color="gray.700"
             position="relative"
             bottom="1.4rem"
           >
@@ -239,29 +248,33 @@ const EmployeeAdminPage = () => {
 
       {/* MAIN GRID */}
       <Grid
-        templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
+        templateColumns={{ base: "1fr", xl: "1.2fr 1fr" }}
         gap={6}
-        flex="4"
-        overflow="auto"
+        flex="1"
+        minH={0}
+        overflow="hidden"
+        mt={6}
       >
         {/* NOTES */}
         <Box
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="12px"
-          boxShadow="0 2px 8px rgba(1,0,1,1)"
           bg="#FFFFFF"
           p={5}
           display="flex"
           flexDir="column"
-          height="22rem"
+          flex={1}
+          minH="18rem"
+          maxH="23rem"
+          mt={6}
+          overflowY="auto"
           position="relative"
-          mt="1.5rem"
         >
           <Flex align="center" gap={2} mb={3}>
             <Text
               color="#1F2937"
-              fontSize="1.3rem"
+              fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.3rem)"
               fontWeight="600"
               position="relative"
               top="0.4rem"
@@ -281,9 +294,10 @@ const EmployeeAdminPage = () => {
               borderColor: "yellow.400",
               boxShadow: "0 0 0 1px #F4C20D",
             }}
-            height="35rem"
+            flex="1"
+            resize="none"
             color="#ffffff"
-            fontSize="1.3rem"
+            fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.3rem)"
             fontWeight="700"
             fontFamily="system-ui"
             _placeholder={{
@@ -300,7 +314,7 @@ const EmployeeAdminPage = () => {
             Rappel
           </Button>
         </Box>
-        <Box>
+        <Box display="flex" flexDir="column" overflowY="auto" minH={0}>
           <TaskSubmissionModal
             isOpen={isCreateOpen}
             onClose={onCreateClose}
@@ -312,23 +326,21 @@ const EmployeeAdminPage = () => {
             task={selectedTask}
             isOpen={isDetailsOpen}
             onClose={onDetailsClose}
+            onRefresh={handleTaskRefresh}
           />
 
           {tasks.map((task) => (
-            <Box
-              key={task._id}
-              onClick={() => handleTaskClick(task)}
-              cursor="pointer"
-              ml="2rem"
-              position="relative"
-              top="2rem"
-            >
-              <TaskCard task={task} />
+            <Box key={task._id} mt={6} ml={{ base: 0, xl: 8 }}>
+              <TaskCard
+                task={task}
+                onTaskClick={handleTaskClick}
+                onTaskDelete={handleTaskDelete}
+              />
             </Box>
           ))}
         </Box>
       </Grid>
-      <Box position="relative" top="1.1rem">
+      <Box mb={10}>
         <QuickActions onTaskCreate={handleTaskCreate} />
       </Box>
     </Flex>

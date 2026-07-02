@@ -1,11 +1,14 @@
-import { VStack, Text, Flex, Box, HStack } from "@chakra-ui/react";
+import { VStack, Text, Flex, Box } from "@chakra-ui/react";
+import { TiDeleteOutline } from "react-icons/ti";
 import Task from "../../shared/types/Task";
 
 interface Props {
   task: Task;
+  onTaskDelete: (_id: string) => void;
+  onTaskClick: (task: Task) => void;
 }
 
-const TaskCard = ({ task }: Props) => {
+const TaskCard = ({ task, onTaskClick, onTaskDelete }: Props) => {
   const taskMapping = (priority: string): string => {
     if (priority === "Haute") return "H";
     if (priority === "Moyenne") return "M";
@@ -29,19 +32,28 @@ const TaskCard = ({ task }: Props) => {
       }}
     >
       <Flex justify="space-between" width="25rem">
-        <Text
+        <Box
           fontFamily="monospace"
           fontSize="1.1rem"
           fontWeight="800"
           mt="0.4rem"
           ml="0.4rem"
+          onClick={() => onTaskClick(task)}
+          cursor="pointer"
         >
-          {task.taskNumber}
-        </Text>
+          {task.taskNumber}-{taskMapping(task.priority)}
+        </Box>
         <Text mt="0.4rem">{task.author.firstName}</Text>
-        <Text fontSize="1.1rem" fontWeight="800" mt="0.3rem" mr="0.5rem">
-          {taskMapping(task.priority)}
-        </Text>
+        <Box
+          fontSize="1.2rem"
+          fontWeight="800"
+          mt="0.3rem"
+          mr="0.5rem"
+          cursor="pointer"
+          onClick={() => onTaskDelete(task._id)}
+        >
+          <TiDeleteOutline />
+        </Box>
       </Flex>
 
       <Flex width="25rem" justifyContent="space-between">

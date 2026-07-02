@@ -18,7 +18,7 @@ import { CiLock } from "react-icons/ci";
 import { FaUnlockAlt } from "react-icons/fa";
 import { IoIosMail } from "react-icons/io";
 import { z } from "zod";
-import useAdminUser from "../../store/authStore";
+import useAdminUser from "../../store/auth.store";
 import logo from "../assets/afritan_logo.png";
 import SignUp from "../components/SignUp";
 import "../styles/App.css";

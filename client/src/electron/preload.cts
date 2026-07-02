@@ -111,6 +111,10 @@ contextBridge.exposeInMainWorld("electron", {
 
     getAll: () => ipcRenderer.invoke("tasks:getAll"),
 
+    getTopTasks:(userId:string)=>ipcRenderer.invoke("tasks:getTopTasks",userId),
+
+    delete: (taskId: string) => ipcRenderer.invoke("tasks:delete", taskId),
+
     onNew: (callback: (data: any) => void) => {
       const handler = (_: any, data: any) => {
         callback(data);

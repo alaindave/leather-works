@@ -17,11 +17,13 @@ export async function createTaskComment(comment: TaskComment) {
       _id,
       taskId,
       author,
-      message
+      message,
+      createdAt,
+      updatedAt
     )
-    VALUES (?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?)
     `,
-    [_id, comment.taskId, comment.author, comment.message]
+    [_id, comment.taskId, comment.author, comment.message, time, time]
   );
 
   const savedTaskComment = {

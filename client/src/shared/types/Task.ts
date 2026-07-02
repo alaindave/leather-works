@@ -1,5 +1,5 @@
 import AdminUser from "./AdminUser.js";
-import TaskComment from "./TaskComment.js";
+import PopulatedTaskComment from "./PopulatedTaskComment.js";
 import User from "./User.js";
 
 type Priority = "Haute" | "Moyenne" | "Basse" | "";
@@ -11,7 +11,7 @@ export default interface Task {
   recipients: AdminUser[];
   subject: string;
   message: string;
-  comments?: TaskComment[];
+  comments?: PopulatedTaskComment[];
   priority: Priority;
   deadline: string;
   isResolved?: number;

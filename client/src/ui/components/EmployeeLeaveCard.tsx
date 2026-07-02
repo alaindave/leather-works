@@ -10,7 +10,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import useAdminUser from "../../store/authStore";
+import useAdminUser from "../../store/auth.store";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { PiDotsThreeOutlineVerticalDuotone } from "react-icons/pi";

@@ -1,4 +1,4 @@
-import { Box, Divider, HStack, Text } from "@chakra-ui/react";
+import { Box, Divider, HStack, Text, Center } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
 import { CiCalendarDate } from "react-icons/ci";
@@ -17,109 +17,165 @@ const QuickActions = ({ onTaskCreate }: Props) => {
       borderRadius="md"
       w="full"
       maxW="1000px"
-      height="110px"
+      h="110px"
       mx="auto"
-      p={{ base: 2, md: 3 }}
+      p={3}
     >
-      <Text ml="0.2rem" mt="0.5rem" fontWeight="600">
+      <Text fontWeight="600" mb={3}>
         Actions rapides
       </Text>
-      <HStack spacing={3}>
-        <HStack flex="1" mb="0.7rem" onClick={onTaskCreate} cursor="pointer">
-          <Box
+
+      <HStack spacing={0} align="center" h="full">
+        {/* CREATE TASK */}
+        <HStack
+          flex="1"
+          spacing={3}
+          px={4}
+          py={2}
+          mb={5}
+          cursor="pointer"
+          onClick={onTaskCreate}
+          _hover={{ bg: "blackAlpha.100", borderRadius: "md" }}
+        >
+          <Center
+            boxSize="1.8rem"
             bg="blue.400"
-            height="1.5rem"
-            width="1.5rem"
-            borderRadius="0.2rem"
-            position="relative"
-            left="0.2rem"
-            bottom="0.5rem"
+            color="white"
+            borderRadius="md"
+            flexShrink={0}
           >
-            <Box mt="0.2rem" ml="0.25rem" color="#ffffff">
-              <FaPlus />
-            </Box>
-          </Box>
-          <Text fontWeight="600" fontSize="1rem">
-            Creer une nouvelle tache
+            <FaPlus size={12} />
+          </Center>
+
+          <Text
+            fontWeight="600"
+            fontSize="0.95rem"
+            whiteSpace={{ base: "normal", lg: "nowrap" }}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            mt={3}
+          >
+            Créer une nouvelle tâche
           </Text>
         </HStack>
+
         <Divider
           orientation="vertical"
-          h="2.5rem"
-          borderColor="gray.500"
-          borderWidth="1px"
-          position="relative"
-          bottom="1rem"
-        />
-        <HStack flex="1" mb="0.7rem">
-          <Box
-            bg="green.400"
-            height="1.5rem"
-            width="1.7rem"
-            borderRadius="0.2rem"
-            position="relative"
-            left="0.2rem"
-            bottom="0.5rem"
-          >
-            <Box mt="0.2rem" ml="0.3rem" color="#ffffff">
-              <FaSearch />
-            </Box>
-          </Box>
-          <Text fontWeight="600" fontSize="1rem">
-            Rechercher un employe
-          </Text>
-        </HStack>
-        <Divider
-          orientation="vertical"
-          h="2.5rem"
-          borderColor="gray.500"
-          borderWidth="1px"
-          position="relative"
-          bottom="1rem"
+          alignSelf="center"
+          borderColor="gray.700"
+          height="60%"
+          mb={10}
         />
 
-        <HStack flex="1" mb="0.7rem">
-          <Box
-            bg="purple.400"
-            height="1.5rem"
-            width="1.5rem"
-            borderRadius="0.2rem"
-            position="relative"
-            left="0.2rem"
-            bottom="0.5rem"
+        {/* SEARCH EMPLOYEE */}
+        <HStack
+          flex="1"
+          spacing={3}
+          px={4}
+          py={2}
+          mb={5}
+          cursor="pointer"
+          _hover={{ bg: "blackAlpha.100", borderRadius: "md" }}
+        >
+          <Center
+            boxSize="1.8rem"
+            bg="green.400"
+            color="white"
+            borderRadius="md"
+            flexShrink={0}
           >
-            <Box mt="0.2rem" ml="0.25rem" color="#ffffff">
-              <CiCalendarDate />
-            </Box>
-          </Box>
-          <Text fontWeight="600" fontSize="1rem">
-            Demande de conge
+            <FaSearch size={12} />
+          </Center>
+
+          <Text
+            fontWeight="600"
+            fontSize="0.95rem"
+            whiteSpace={{ base: "normal", lg: "nowrap" }}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            mt={3}
+          >
+            Rechercher un employé
           </Text>
         </HStack>
+
         <Divider
           orientation="vertical"
-          h="2.5rem"
-          borderColor="gray.500"
-          borderWidth="1px"
-          position="relative"
-          bottom="1rem"
+          alignSelf="center"
+          borderColor="gray.700"
+          height="60%"
+          mb={10}
         />
-        <HStack flex="1" mb="0.7rem">
-          <Box
-            bg="orange.400"
-            height="1.5rem"
-            width="1.5rem"
-            borderRadius="0.2rem"
-            position="relative"
-            left="0.2rem"
-            bottom="0.5rem"
+
+        {/* LEAVE */}
+        <HStack
+          flex="1"
+          spacing={3}
+          px={4}
+          py={2}
+          mb={5}
+          cursor="pointer"
+          _hover={{ bg: "blackAlpha.100", borderRadius: "md" }}
+        >
+          <Center
+            boxSize="1.8rem"
+            bg="purple.400"
+            color="white"
+            borderRadius="md"
+            flexShrink={0}
           >
-            <Box mt="0.2rem" ml="0.25rem" color="#ffffff">
-              <IoStatsChart />
-            </Box>
-          </Box>
-          <Text fontWeight="600" fontSize="1rem">
-            Generer un rapport
+            <CiCalendarDate size={16} />
+          </Center>
+
+          <Text
+            fontWeight="600"
+            fontSize="0.95rem"
+            whiteSpace={{ base: "normal", lg: "nowrap" }}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            mt={3}
+          >
+            Demande de congé
+          </Text>
+        </HStack>
+
+        <Divider
+          orientation="vertical"
+          alignSelf="center"
+          borderColor="gray.700"
+          height="60%"
+          mb={10}
+        />
+
+        {/* REPORT */}
+        <HStack
+          flex="1"
+          spacing={3}
+          px={4}
+          py={2}
+          mb={5}
+          cursor="pointer"
+          _hover={{ bg: "blackAlpha.100", borderRadius: "md" }}
+        >
+          <Center
+            boxSize="1.8rem"
+            bg="orange.400"
+            color="white"
+            borderRadius="md"
+            flexShrink={0}
+          >
+            <IoStatsChart size={14} />
+          </Center>
+
+          <Text
+            fontWeight="600"
+            fontSize="0.95rem"
+            whiteSpace={{ base: "normal", lg: "nowrap" }}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            mt={3}
+          >
+            Générer un rapport
           </Text>
         </HStack>
       </HStack>

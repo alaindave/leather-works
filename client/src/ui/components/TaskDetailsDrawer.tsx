@@ -20,7 +20,8 @@ import {
 } from "@chakra-ui/react";
 import { FiCheckCircle, FiUser } from "react-icons/fi";
 import Task from "../../shared/types/Task";
-import useAdminUser from "../../store/authStore";
+import useAdminUser from "../../store/auth.store";
+import useTaskStore from "../../store/task.store";
 import { useState } from "react";
 import TaskResolutionPopover from "./TaskResolutionPopover";
 import { CiCalendarDate, CiClock2 } from "react-icons/ci";
@@ -29,34 +30,36 @@ interface Props {
   task: Task | null;
   isOpen: boolean;
   onClose: () => void;
+  onRefresh: () => void;
 }
 
-export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
+export default function TaskDetailsDrawer({
+  task,
+  isOpen,
+  onClose,
+  onRefresh,
+}: Props) {
   if (!task) return null;
-  const user = useAdminUser((store) => store.adminUser);
+  const author = useAdminUser((store) => store.adminUser);
+  const addComment = useTaskStore((store: any) => store.addComment);
+  const _task = useTaskStore((s) => s.tasks.find((t) => t._id === task._id));
   const [comment, setComment] = useState("");
 
-  const handleTaskComment = async () => {
-    console.log("Task ID:", task._id);
-    console.log("author name:", user.firstName);
-    console.log("comment:", comment);
-    try {
-      const result = await window.electron.taskComments.create({
-        taskId: task._id,
-        author: user._id,
-        message: comment,
-      });
-      console.log("Comment submission result:", result);
-    } catch (error) {
-      console.error("An error occured during comment submission: ", error);
-    }
-  };
+  console.log("Fetched task from store:", _task);
 
+  const handleTaskComment = async () => {
+    if (!comment.trim()) return;
+    await addComment(task._id, author, comment);
+    onRefresh?.();
+    // if (success) {
+    setComment("");
+    // }
+  };
   const handleResolution = async (
     notes: string | undefined
   ): Promise<boolean> => {
     console.log("Resolution notes to submit:", notes);
-    const resolvedBy = `${user.firstName} ${user.lastName}`;
+    const resolvedBy = `${author.firstName} ${author.lastName}`;
 
     const updatedTask: Task = {
       ...task,
@@ -221,7 +224,7 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
               </Text>
 
               <Stack spacing={3}>
-                {task.recipients.map((user) => (
+                {task.recipients?.map((user) => (
                   <HStack key={user._id}>
                     <Avatar
                       size="sm"
@@ -285,11 +288,11 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
             {/* Comments */}
             <Box>
               <Text fontWeight="bold" mb={4}>
-                Commentaires ({task.comments?.length ?? 0})
+                Commentaires ({_task?.comments?.length ?? 0})
               </Text>
 
               <Stack spacing={4}>
-                {task.comments?.map((comment) => (
+                {_task?.comments?.map((comment) => (
                   <Box key={comment._id} borderWidth="1px" rounded="md" p={3}>
                     <HStack mb={2}>
                       <Avatar
@@ -313,7 +316,12 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
                           fontSize="0.92rem"
                           color="gray.500"
                         >
-                          {new Date(comment.createdAt!).toLocaleString("fr-FR")}
+                          {new Date(comment.createdAt!).toLocaleString(
+                            "fr-FR",
+                            {
+                              timeZone: "Africa/Bujumbura",
+                            }
+                          )}
                         </Text>
                       </Box>
                     </HStack>
@@ -337,7 +345,7 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }: Props) {
         <DrawerFooter borderTopWidth="1px">
           <HStack w="100%">
             <Textarea
-              placeholder="Write a comment..."
+              placeholder="Ecrivez vos commentaires..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />

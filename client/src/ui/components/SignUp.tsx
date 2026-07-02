@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm, type FieldValues } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import useAdminUser from "../../store/authStore";
+import useAdminUser from "../../store/auth.store";
 import {
   Box,
   Button,

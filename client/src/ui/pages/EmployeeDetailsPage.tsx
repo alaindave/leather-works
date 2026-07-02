@@ -25,7 +25,7 @@ import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type Employee from "../../shared/types/Employee";
-import useAdminUser from "../../store/authStore";
+import useAdminUser from "../../store/auth.store";
 import source from "../assets/employee_photos/Jeanne.jpeg";
 import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
 import UpdateEmployee from "../components/UpdateEmployee";

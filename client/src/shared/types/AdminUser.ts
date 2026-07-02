@@ -4,9 +4,9 @@ export default interface AdminUser {
   lastName: string;
   email: string;
   role: "manager" | "admin";
-  createdAt: string;
+  createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;
-  synced: number;
-  isDeleted: number;
+  synced?: number;
+  isDeleted?: number;
 }
