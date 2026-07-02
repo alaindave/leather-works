@@ -51,6 +51,7 @@ export async function createLeave(leave: Partial<Leave>) {
     _id,
     ...leave,
     submittedAt,
+    submittedMonth,
     createdAt: time,
     updatedAt: time,
   };
@@ -285,6 +286,7 @@ export async function deleteLeave(_id: string) {
 
 export async function upsertLeave(leave: Leave) {
   const local = await getLeaveById(leave._id);
+  console.log("pulled leave to sync", leave);
 
   // If local exists, apply conflict rule
   if (local && local.updatedAt && leave.updatedAt) {

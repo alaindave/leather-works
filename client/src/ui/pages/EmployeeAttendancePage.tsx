@@ -200,7 +200,7 @@ const EmployeeAttendancePage = () => {
         mt="0.5rem"
         bg="#F8F9FB"
         height="10rem"
-        width="79vw"
+        width="79.2vw"
       >
         <Flex>
           <Box>
@@ -214,12 +214,12 @@ const EmployeeAttendancePage = () => {
               Présences
             </Text>
             <Text
-              color="#1F2937"
-              fontSize="1rem"
               fontWeight="500"
+              left="0.45rem"
+              fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
+              color="gray.700"
               position="relative"
-              bottom="1.5rem"
-              ml="0.5rem"
+              bottom="1.4rem"
             >
               Gérez la liste de présence
             </Text>

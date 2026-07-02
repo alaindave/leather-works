@@ -81,12 +81,12 @@ const EmployeeListPage = () => {
               Employés
             </Text>
             <Text
-              color="gray.900"
-              fontSize="0.92rem"
               fontWeight="500"
-              position="relative"
               left="0.45rem"
-              bottom="1.5rem"
+              fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
+              color="gray.700"
+              position="relative"
+              bottom="1.4rem"
             >
               Gérez les informations de vos employés
             </Text>
@@ -114,7 +114,7 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} mt="1.35rem">
+          <Flex wrap="wrap" gap={2} mt="1.1rem">
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
@@ -122,8 +122,8 @@ const EmployeeListPage = () => {
             position="relative"
             left="1.1rem"
             wrap="wrap"
-            mt="1rem"
-            mr="1.25rem"
+            mt="0.8rem"
+            mr="1.2rem"
           >
             <SearchBar onSearch={handleOnSearch} />
           </Flex>

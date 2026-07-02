@@ -199,7 +199,7 @@ const EmployeeLeavePage = () => {
     <>
       <Flex direction="column" justify="space-between">
         {/* Header */}
-        <Box mt="0.5rem" ml="0.1rem" bg="#F8F9FB" height="10rem" width="79vw">
+        <Box mt="0.5rem" ml="0.1rem" bg="#F8F9FB" height="10rem" width="79.2vw">
           <Flex>
             <Box>
               <Text

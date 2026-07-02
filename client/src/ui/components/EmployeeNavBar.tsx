@@ -220,24 +220,28 @@ const EmployeeNavBar = () => {
               as={Button}
               rightIcon={<IoIosArrowDown size="18px" />}
             />
-            <MenuList bg="#08162b" position="relative" right="200px">
-              <MenuItem bg="#08162b">
-                <FaUserAlt color="#C7D2FE" />
-                <Text color="#ffffff" ml="12px">
+            <MenuList bg="gray.500" position="relative" right="200px">
+              <MenuItem bg="gray.500" _hover={{ bg: "#e68a00" }}>
+                <FaUserAlt color="#ffffff" />
+                <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
                   Mon profil
                 </Text>
               </MenuItem>
 
-              <MenuItem bg="#08162b">
-                <IoSettings color="#C7D2FE" />
-                <Text color="#ffffff" ml="12px">
+              <MenuItem bg="gray.500" _hover={{ bg: "#e68a00" }}>
+                <IoSettings color="#ffffff" />
+                <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
                   Parametres
                 </Text>
               </MenuItem>
 
-              <MenuItem onClick={handleLogOut}>
-                <FaSignOutAlt color="#C7D2FE" />
-                <Text color="#ffffff" ml="12px">
+              <MenuItem
+                bg="gray.500"
+                _hover={{ bg: "#e68a00" }}
+                onClick={handleLogOut}
+              >
+                <FaSignOutAlt color="#ffffff" />
+                <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
                   Deconnection
                 </Text>
               </MenuItem>

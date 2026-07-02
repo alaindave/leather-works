@@ -253,7 +253,7 @@ const EmployeeAdminPage = () => {
         flex="1"
         minH={0}
         overflow="hidden"
-        mt={6}
+        mt={4}
       >
         {/* NOTES */}
         <Box
@@ -267,7 +267,7 @@ const EmployeeAdminPage = () => {
           flex={1}
           minH="18rem"
           maxH="23rem"
-          mt={6}
+          mt={4}
           overflowY="auto"
           position="relative"
         >
@@ -340,7 +340,7 @@ const EmployeeAdminPage = () => {
           ))}
         </Box>
       </Grid>
-      <Box mb={10}>
+      <Box mb={7}>
         <QuickActions onTaskCreate={handleTaskCreate} />
       </Box>
     </Flex>

@@ -13,6 +13,11 @@ const leaveSchema = new mongoose.Schema({
     required: true,
   },
 
+  submittedMonth: {
+    type: String,
+    required: true,
+  },
+
   startDate: {
     type: Date,
     required: true,
