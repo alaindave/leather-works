@@ -264,7 +264,7 @@ const EmployeeAttendanceCard = ({
       px={4}
       py={5}
       bg="#F8F9FB"
-      border="1px solid #22345F"
+      border="0.3px solid gray"
       width="80vw"
       height="6.3rem"
     >

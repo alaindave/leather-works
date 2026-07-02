@@ -32,7 +32,6 @@ const AdminUserSchema = new mongoose.Schema({
   notes: {
     type: String,
     required: true,
-    default: "Bienvenue à Leather Works. Ecrivez vos notes ici.",
   },
   isDeleted: { type: Boolean, default: false, required: true },
   createdAt: { type: Date, required: true },
