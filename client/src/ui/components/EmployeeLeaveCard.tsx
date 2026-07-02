@@ -1,6 +1,8 @@
 import {
+  Avatar,
   Box,
   Grid,
+  HStack,
   IconButton,
   Menu,
   MenuButton,
@@ -132,20 +134,25 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       width="82vw"
       marginBottom="0.8px"
     >
-      <Box ml="11px">
-        <Text
-          color="gray.800"
-          fontWeight="500"
-          fontSize="1.1rem"
-          whiteSpace="normal"
-          wordBreak="break-word"
-          maxW="8rem"
-          noOfLines={2}
-        >
-          {firstName} {lastName}
-        </Text>
+      <Box>
+        <HStack>
+          <Box mr="0.3rem" mb="0.8rem">
+            <Avatar size="sm" name={`${firstName} ${lastName}`} />
+          </Box>
+          <Text
+            color="gray.800"
+            fontWeight="500"
+            fontSize="1.1rem"
+            whiteSpace="normal"
+            wordBreak="break-word"
+            maxW="8rem"
+            noOfLines={2}
+          >
+            {firstName} {lastName}
+          </Text>
+        </HStack>
       </Box>
-      <Box ml="12px">
+      <Box>
         <Text fontSize="1.1rem" color="gray.800" fontWeight="500">
           {new Date(startDate).toLocaleDateString("fr-FR")}
         </Text>
@@ -188,13 +195,13 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         )}
       </Box>
       <Box>
-        <Text color="gray.800" fontSize="1.1rem" ml="1rem">
+        <Text color="gray.800" fontSize="1.1rem">
           {remainingLeave}
         </Text>
       </Box>
       {adminUser?.role === "manager" ? (
         // Manager area
-        <Box position="relative" left="40px">
+        <Box>
           <Text color="gray.200" fontSize="1.1rem">
             <Menu placement="bottom-end">
               <MenuButton
@@ -305,7 +312,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         </Box>
       ) : (
         // Admin area
-        <Box position="relative" left="40px">
+        <Box>
           <Text color="gray.200" fontSize="1.1rem">
             <Menu placement="bottom-end">
               <MenuButton
@@ -365,12 +372,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                         <MdOutlineDeleteForever color="red.300" size="1.2rem" />
                       }
                     >
-                      <Text
-                        position="relative"
-                        top="0.5rem"
-                        fontWeight="600"
-                        fontSize="1.1rem"
-                      >
+                      <Text fontWeight="600" fontSize="1.1rem">
                         Annuler
                       </Text>
                     </MenuItem>

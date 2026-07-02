@@ -194,7 +194,6 @@ const EmployeeAttendanceCard = ({
         clockOut: clockOutDate.toISOString(),
       });
 
-      toggleOff();
       setLocalAttendance((prev) => {
         if (!prev) return null;
 
@@ -205,6 +204,7 @@ const EmployeeAttendanceCard = ({
       });
 
       setClockOutMode("completed");
+      toggleOff();
     } catch (error) {
       console.error("Error clocking out:", error);
       setClockOutMode("editing");
@@ -238,6 +238,7 @@ const EmployeeAttendanceCard = ({
       });
 
       setLocalAttendance(updatedAttendance);
+      toggleOff();
       return;
     } catch (error) {
       console.error("Error editing clock out:", error);
@@ -421,7 +422,7 @@ const EmployeeAttendanceCard = ({
       </Box>
 
       {/* Actions */}
-      <HStack spacing={1} position="relative" bottom="0.5rem" right="0.6rem">
+      <HStack mr={3}>
         {!localAttendance?.clockOut && (
           <Button
             bg="transparent"
@@ -442,6 +443,7 @@ const EmployeeAttendanceCard = ({
           }}
           color="red.600"
           onClick={onDelete}
+          mr={2}
         >
           <FaWindowClose size="1.1rem" />
         </Button>

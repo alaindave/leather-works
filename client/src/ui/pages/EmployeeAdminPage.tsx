@@ -284,7 +284,7 @@ const EmployeeAdminPage = () => {
           </Flex>
 
           <Textarea
-            placeholder="Écrivez vos notes ici..."
+            placeholder={"Binvenue sur LeatherWorks.\nÉcrivez vos notes ici..."}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             bg="#091735"

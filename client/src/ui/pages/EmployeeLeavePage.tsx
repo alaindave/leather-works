@@ -37,7 +37,7 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
 );
 
 const gridTemplate = `
-1.5fr 1.5fr 1.5fr 1.4fr 1.4fr 1.1fr 1.1fr
+1.6fr 1.6fr 1.6fr 1.5fr 1.5fr 1fr 1fr
 `;
 
 const EmployeeLeavePage = () => {
