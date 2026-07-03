@@ -136,9 +136,6 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
     >
       <Box>
         <HStack>
-          <Box mr="0.3rem" mb="0.8rem">
-            <Avatar size="sm" name={`${firstName} ${lastName}`} />
-          </Box>
           <Text
             color="gray.800"
             fontWeight="500"

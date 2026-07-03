@@ -75,18 +75,12 @@ const EmployeeNavBar = () => {
       borderRadius="0"
       justify="space-between"
     >
-      {/* TOP AREA (UNCHANGED) */}
       <Flex position="relative" left="0.4rem">
         <Box padding="10px" position="relative" bottom="0.8rem" right="0.5rem">
           <Logo text="Gestion de personnel" />
         </Box>
-
-        <Box position="relative" left="0.4rem" top="0.7rem">
-          <SyncButton />
-        </Box>
       </Flex>
 
-      {/* NAV (UNCHANGED) */}
       <Box position="relative" left="1rem">
         <List>
           <ListItem marginBottom="40px">

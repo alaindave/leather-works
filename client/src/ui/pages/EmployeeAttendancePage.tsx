@@ -25,6 +25,7 @@ import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
 import DateDropdown from "../components/DateDropdown";
 import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
+import { FaSyncAlt } from "react-icons/fa";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -111,6 +112,22 @@ const EmployeeAttendancePage = () => {
       .join("\n");
 
     await window.electron.file.save(csv);
+  };
+
+  const handleAttendanceSync = async () => {
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (result.success) {
+        console.log("Sync completed");
+        const attendances = await window.electron.attendance.getAll();
+        console.log("Fetched synced attendances:", attendances);
+      } else {
+        console.error(result.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -204,15 +221,30 @@ const EmployeeAttendancePage = () => {
       >
         <Flex>
           <Box>
-            <Text
-              color="#1F2937"
-              fontSize="1.6rem"
-              fontWeight="700"
-              ml="0.5rem"
-              mt="0.5rem"
-            >
-              Présences
-            </Text>
+            <HStack>
+              <Text
+                color="#1F2937"
+                fontSize="1.6rem"
+                fontWeight="700"
+                ml="0.5rem"
+                mt="0.5rem"
+              >
+                Présences
+              </Text>
+              <Button
+                bg="transparent"
+                isLoading={loading}
+                color="gray.800"
+                _hover={{ bg: "transparent" }}
+                fontSize="1rem"
+                position="relative"
+                bottom="0.2rem"
+                right="1rem"
+                onClick={handleAttendanceSync}
+              >
+                <FaSyncAlt />
+              </Button>
+            </HStack>
             <Text
               fontWeight="500"
               left="0.45rem"

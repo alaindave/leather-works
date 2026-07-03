@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   Grid,
+  HStack,
   Text,
   Textarea,
   useDisclosure,
@@ -21,6 +22,7 @@ import QuickActions from "../components/QuickActions";
 import TaskDetailsDrawer from "../components/TaskDetailsDrawer";
 import Task from "../../shared/types/Task";
 import useTaskStore from "../../store/task.store";
+import { FaSyncAlt } from "react-icons/fa";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -34,7 +36,7 @@ const EmployeeAdminPage = () => {
   const loadTopTasks = useTaskStore((store) => store.loadTopTasks);
   const deleteTask = useTaskStore((store) => store.deleteTask);
   const tasks = useTaskStore((store) => store.tasks);
-
+  const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState(user.notes);
 
   const {
@@ -87,7 +89,7 @@ const EmployeeAdminPage = () => {
       });
 
     return () => clearInterval(interval);
-  }, []);
+  }, [loading]);
 
   //useEffect for personal notes saving
   useEffect(() => {
@@ -178,13 +180,28 @@ const EmployeeAdminPage = () => {
         gap={3}
       >
         <Box position="relative" bottom="1rem">
-          <Text
-            fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
-            fontWeight="700"
-            color="#1F2937"
-          >
-            Tableau de bord
-          </Text>
+          <HStack>
+            <Text
+              fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
+              fontWeight="700"
+              color="#1F2937"
+            >
+              Tableau de bord
+            </Text>
+            <Button
+              bg="transparent"
+              isLoading={loading}
+              color="gray.800"
+              _hover={{ bg: "transparent" }}
+              fontSize="1rem"
+              position="relative"
+              bottom="0.5rem"
+              right="1rem"
+              onClick={() => setLoading(true)}
+            >
+              <FaSyncAlt />
+            </Button>
+          </HStack>
           <Text
             fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
             color="gray.700"

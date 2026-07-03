@@ -25,8 +25,8 @@ interface Props {
 
 type ClockOutMode = "idle" | "editing" | "submitting" | "completed";
 
-const formatTime = (input?: string | Date | null) => {
-  if (!input) return null;
+const formatTime = (input?: string | Date) => {
+  if (!input) return "";
 
   const raw = String(input).trim();
 
@@ -55,7 +55,7 @@ const formatTime = (input?: string | Date | null) => {
       hours > 23 ||
       minutes > 59
     ) {
-      return null;
+      return "";
     }
 
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
@@ -77,7 +77,7 @@ const formatTime = (input?: string | Date | null) => {
       hours > 23 ||
       minutes > 59
     ) {
-      return null;
+      return "";
     }
 
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
@@ -91,7 +91,7 @@ const formatTime = (input?: string | Date | null) => {
   // =========================
   const match = cleaned.match(/^(\d{1,2}):(\d{1,2})$/);
 
-  if (!match) return null;
+  if (!match) return "";
 
   const hours = Number(match[1]);
   const minutes = Number(match[2]);
@@ -102,7 +102,7 @@ const formatTime = (input?: string | Date | null) => {
     hours > 23 ||
     minutes > 59
   ) {
-    return null;
+    return "";
   }
 
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
@@ -124,13 +124,22 @@ const EmployeeAttendanceCard = ({
     useState<AttendanceWithEmployee | null>(attendance);
   const [errorMessage, setErrorMessage] = useState("");
   const [clockOutMode, setClockOutMode] = useState<ClockOutMode>("idle");
+  const [clockOutValue, setClockOutValue] = useState("");
+  const [draftClockOut, setDraftClockOut] = useState("");
 
-  const formattedClockOut = useMemo(() => {
-    return formatTime(localAttendance?.clockOut);
+  // const formattedClockOut = useMemo(() => {
+  //   return formatTime(localAttendance?.clockOut);
+  // }, [localAttendance?.clockOut]);
+
+  // const [clockOutValue, setClockOutValue] = useState(formattedClockOut);
+  // const [draftClockOut, setDraftClockOut] = useState(formatTime(clockOutValue));
+
+  useEffect(() => {
+    const formatted = formatTime(localAttendance?.clockOut);
+
+    setClockOutValue(formatted);
+    setDraftClockOut(formatted);
   }, [localAttendance?.clockOut]);
-
-  const [clockOutValue, setClockOutValue] = useState(formattedClockOut);
-  const [draftClockOut, setDraftClockOut] = useState(formatTime(clockOutValue));
 
   useEffect(() => {
     if (!errorMessage) return;
@@ -325,7 +334,7 @@ const EmployeeAttendanceCard = ({
               position="relative"
               right="0.5rem"
               bottom="0.5rem"
-              value={draftClockOut!}
+              value={draftClockOut ?? ""}
               onChange={setDraftClockOut}
               submitOnBlur={false}
               selectAllOnFocus

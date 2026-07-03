@@ -1,6 +1,8 @@
 import {
   Box,
+  Button,
   Flex,
+  HStack,
   List,
   ListItem,
   Skeleton,
@@ -9,7 +11,6 @@ import {
   Spacer,
   Text,
   VStack,
-  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FaAddressBook } from "react-icons/fa6";
@@ -20,6 +21,7 @@ import EmployeeCard from "../components/EmployeeCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import NotAuthorized from "../components/NotAuthorized";
 import SearchBar from "../components/SearchBar";
+import { FaSyncAlt } from "react-icons/fa";
 
 const EmployeeListPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -58,6 +60,22 @@ const EmployeeListPage = () => {
     setFilter(filter);
   };
 
+  const handleEmployeeSync = async () => {
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (result.success) {
+        console.log("Sync completed");
+        const employees = await window.electron.employees.getAll();
+        console.log("Fetched synced employees:", employees);
+      } else {
+        console.error(result.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Flex direction="column" h="100vh" bg="transparent">
       {/* HEADER */}
@@ -71,15 +89,30 @@ const EmployeeListPage = () => {
       >
         <Flex>
           <Box>
-            <Text
-              color="#1F2937"
-              fontSize="1.6rem"
-              fontWeight="700"
-              mt="0.4rem"
-              ml="0.4rem"
-            >
-              Employés
-            </Text>
+            <HStack>
+              <Text
+                color="#1F2937"
+                fontSize="1.6rem"
+                fontWeight="700"
+                mt="0.4rem"
+                ml="0.4rem"
+              >
+                Employés
+              </Text>
+              <Button
+                bg="transparent"
+                isLoading={loading}
+                color="gray.800"
+                _hover={{ bg: "transparent" }}
+                fontSize="1rem"
+                position="relative"
+                bottom="0.2rem"
+                right="1rem"
+                onClick={handleEmployeeSync}
+              >
+                <FaSyncAlt />
+              </Button>
+            </HStack>
             <Text
               fontWeight="500"
               left="0.45rem"

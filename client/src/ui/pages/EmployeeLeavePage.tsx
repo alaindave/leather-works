@@ -17,6 +17,7 @@ import EmployeeLeaveCard from "../components/EmployeeLeaveCard";
 import MonthDropDown from "../components/MonthDropDown";
 import LeaveSubmissionModal from "../components/LeaveSubmissionModal";
 import DeletionDialog from "../components/DeletionDialog";
+import { FaSyncAlt } from "react-icons/fa";
 
 const shimmerKeyframes = `
 @keyframes shimmer {
@@ -37,7 +38,7 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
 );
 
 const gridTemplate = `
-1.6fr 1.6fr 1.6fr 1.5fr 1.5fr 1fr 1fr
+1.7fr 1.6fr 1.6fr 1.5fr 1.5fr 1fr 1fr
 `;
 
 const EmployeeLeavePage = () => {
@@ -115,6 +116,24 @@ const EmployeeLeavePage = () => {
   const handleDeleteConfirmation = (leave: LeaveWithEmployee) => {
     onConfirmationOpen();
     setLeave(leave);
+  };
+
+  const handleLeaveSync = async () => {
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (result.success) {
+        console.log("Sync completed");
+        const leaves = await window.electron.leave.getLeaveByMonth(
+          submissionMonth
+        );
+        console.log("Fetched synced leaves:", leaves);
+      } else {
+        console.error(result.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // /* ================= LOADING UI ================= */
@@ -202,15 +221,30 @@ const EmployeeLeavePage = () => {
         <Box mt="0.5rem" ml="0.1rem" bg="#F8F9FB" height="10rem" width="79.2vw">
           <Flex>
             <Box>
-              <Text
-                color="#1F2937"
-                fontSize="1.6rem"
-                fontWeight="700"
-                ml="0.5rem"
-                mt="0.5rem"
-              >
-                Congés
-              </Text>
+              <HStack>
+                <Text
+                  color="#1F2937"
+                  fontSize="1.6rem"
+                  fontWeight="700"
+                  ml="0.5rem"
+                  mt="0.5rem"
+                >
+                  Congés
+                </Text>
+                <Button
+                  bg="transparent"
+                  isLoading={loading}
+                  color="gray.800"
+                  _hover={{ bg: "transparent" }}
+                  fontSize="1rem"
+                  position="relative"
+                  bottom="0.2rem"
+                  right="1rem"
+                  onClick={handleLeaveSync}
+                >
+                  <FaSyncAlt />
+                </Button>
+              </HStack>
               <Text
                 color="#1F2937"
                 fontSize="1rem"
