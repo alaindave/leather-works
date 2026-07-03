@@ -92,6 +92,28 @@ const EmployeeLeavePage = () => {
       });
   }, [submissionMonth, refresh]);
 
+  //Leave sync and refresh
+  const handleLeaveSync = async () => {
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (result.success) {
+        console.log("Sync completed");
+        const leaves = await window.electron.leave.getLeaveByMonth(
+          submissionMonth
+        );
+        setLeaves(leaves);
+        console.log(
+          `Fetched leaves for the month of ${submissionMonth}:${leaves}`
+        );
+      } else {
+        console.error(result.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   //Submit leave delete request
   const handleLeaveDelete = async () => {
     console.log("Leave to delete: ", leave);
@@ -116,24 +138,6 @@ const EmployeeLeavePage = () => {
   const handleDeleteConfirmation = (leave: LeaveWithEmployee) => {
     onConfirmationOpen();
     setLeave(leave);
-  };
-
-  const handleLeaveSync = async () => {
-    try {
-      setLoading(true);
-      const result = await window.electron.sync();
-      if (result.success) {
-        console.log("Sync completed");
-        const leaves = await window.electron.leave.getLeaveByMonth(
-          submissionMonth
-        );
-        console.log("Fetched synced leaves:", leaves);
-      } else {
-        console.error(result.message);
-      }
-    } finally {
-      setLoading(false);
-    }
   };
 
   // /* ================= LOADING UI ================= */

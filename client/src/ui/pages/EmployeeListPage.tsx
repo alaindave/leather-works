@@ -30,6 +30,7 @@ const EmployeeListPage = () => {
   const [loading, setLoading] = useState(true);
   const adminUser = useAdminUser((store) => store.adminUser);
 
+  //Initial data fetch
   useEffect(() => {
     window.electron.employees
       .getAll()
@@ -47,6 +48,23 @@ const EmployeeListPage = () => {
         setLoading(false);
       });
   }, []);
+  //Employee sync and refresh
+  const handleEmployeeSync = async () => {
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (result.success) {
+        console.log("Sync completed");
+        const employees = await window.electron.employees.getAll();
+        setEmployees(employees);
+        console.log("Fetched synced employees:", employees);
+      } else {
+        console.error(result.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddEmployee = (employee: Employee) => {
     setEmployees([...employees, employee]);
@@ -58,22 +76,6 @@ const EmployeeListPage = () => {
 
   const handleFilterClicked = (filter: string) => {
     setFilter(filter);
-  };
-
-  const handleEmployeeSync = async () => {
-    try {
-      setLoading(true);
-      const result = await window.electron.sync();
-      if (result.success) {
-        console.log("Sync completed");
-        const employees = await window.electron.employees.getAll();
-        console.log("Fetched synced employees:", employees);
-      } else {
-        console.error(result.message);
-      }
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (

@@ -69,7 +69,7 @@ const EmployeeAttendancePage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  /* ================= FETCH ================= */
+  /* Initial data fetch*/
   useEffect(() => {
     setLoading(true);
     console.log("Selected date:", selectedDate);
@@ -89,6 +89,26 @@ const EmployeeAttendancePage = () => {
         setLoading(false);
       });
   }, [selectedDate]);
+
+  //Attendance sync and refresh
+  const handleAttendanceSync = async () => {
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (result.success) {
+        console.log("Sync completed");
+        const attendances = await window.electron.attendance.getByDate(
+          selectedDate
+        );
+        console.log(`Fetched attendances for ${selectedDate}`, attendances);
+        setAttendances(attendances);
+      } else {
+        console.error(result.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -112,22 +132,6 @@ const EmployeeAttendancePage = () => {
       .join("\n");
 
     await window.electron.file.save(csv);
-  };
-
-  const handleAttendanceSync = async () => {
-    try {
-      setLoading(true);
-      const result = await window.electron.sync();
-      if (result.success) {
-        console.log("Sync completed");
-        const attendances = await window.electron.attendance.getAll();
-        console.log("Fetched synced attendances:", attendances);
-      } else {
-        console.error(result.message);
-      }
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
