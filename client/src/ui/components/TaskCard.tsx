@@ -17,6 +17,7 @@ const TaskCard = ({ task, onTaskClick, onTaskDelete }: Props) => {
 
   return (
     <VStack
+      bg={task.isResolved ? "green.200" : "red.200"}
       border="1px solid black"
       borderRadius="0.4rem"
       mb="0.4rem"

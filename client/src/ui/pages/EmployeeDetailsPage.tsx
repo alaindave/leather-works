@@ -245,7 +245,7 @@ const EmployeeDetailsPage = () => {
               borderRadius="12px"
               boxShadow="0 2px 8px rgba(1,0,1,1)"
               width="27vw"
-              maxH="70vh"
+              maxH="80vh"
               ml="0.3rem"
             >
               <VStack spacing={3} mt="0.rem">

@@ -126,12 +126,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       templateColumns={gridTemplate}
       alignItems="center"
       ml="0.1rem"
-      px={4}
-      py={4}
+      px={3}
+      py={3}
       bg="#F8F9FB"
-      minH="80px"
+      minH="6.3rem"
       border="0.3px solid gray"
-      width="82vw"
+      width="80vw"
       marginBottom="0.8px"
     >
       <Box>

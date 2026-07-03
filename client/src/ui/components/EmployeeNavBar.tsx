@@ -30,13 +30,13 @@ import Logo from "./Logo";
 import useAdminUser from "../../store/auth.store";
 import { ErrorBoundary } from "react-error-boundary";
 import PageErrorFallback from "../pages/PageErrorFallback";
+import { checkOnline } from "../services/connectivity_check.service";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const setLogOut = useAdminUser((store) => store.logout);
   const navigate = useNavigate();
 
-  // ✅ ONLY CHANGE: responsive width (minimal impact)
   const sidebarWidth = useBreakpointValue({
     base: "17rem",
     md: "18rem",
@@ -53,6 +53,11 @@ const EmployeeNavBar = () => {
     } catch (error) {
       console.error("An error occured while logging out:", error);
     }
+  };
+
+  const isOnline = async () => {
+    const online = await checkOnline();
+    return online;
   };
 
   return (

@@ -307,12 +307,7 @@ const EmployeeLeavePage = () => {
                 Actions
               </Text>
             </Grid>
-            <Box
-              height="90vh"
-              width="77.7vw"
-              overflowX="hidden"
-              overflowY="auto"
-            >
+            <Box height="90vh" overflowX="hidden" overflowY="auto">
               {leaves.map((leave, index) => {
                 console.log("Leave at index", index, leave);
                 return (
@@ -333,7 +328,7 @@ const EmployeeLeavePage = () => {
           mb="2.7rem"
           ml="0.15rem"
           height="3.5rem"
-          width="79vw"
+          width="80.5vw"
           justify="space-between"
           bg="#F8F9FB"
         >
