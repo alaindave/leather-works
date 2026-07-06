@@ -33,6 +33,9 @@ interface LoggedUser {
 declare global {
   interface Window {
     electron: {
+      app: {
+        getUserDataPath: () => Promise<String>;
+      };
       file: { save: (data: string) => Promise<SaveFileResult> };
 
       auth: {
@@ -87,6 +90,11 @@ declare global {
 
       employees: {
         create: (employee: Partial<Employee>) => Promise<Employee>;
+        uploadPhoto: (
+          employeeId: string,
+          file: { name: string; buffer: ArrayBuffer }
+        ) => Promise<Employee>;
+        getPhotoUrl: (relativePath: string) => Promise<string>;
         getAll: () => Promise<Employee[]>;
         getById: (_id: string) => Promise<Employee | null>;
         search: (searchTerm: string) => Promise<Employee[]>;

@@ -48,6 +48,7 @@ const EmployeeListPage = () => {
         setLoading(false);
       });
   }, []);
+
   //Employee sync and refresh
   const handleEmployeeSync = async () => {
     try {

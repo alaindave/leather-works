@@ -1,4 +1,6 @@
-import { ipcMain } from "electron";
+import { ipcMain, app } from "electron";
+import path from "path";
+import fs from "fs";
 
 import {
   createEmployee,
@@ -8,6 +10,7 @@ import {
   deleteEmployee,
   searchEmployees,
 } from "../database/repositories/employee.repository.js";
+import { uploadEmployeePhoto } from "../database/repositories/upload_employee_photo.repository.js";
 
 export function registerEmployeeIPC() {
   console.log("REGISTERING EMPLOYEES IPC");
@@ -16,12 +19,24 @@ export function registerEmployeeIPC() {
     return createEmployee(employee);
   });
 
+  ipcMain.handle("employees:uploadPhoto", async (_, employeeId, file) => {
+    console.log("EMPLOYEE PHOTO UPLOAD RECEIVED");
+    const upload_results = await uploadEmployeePhoto(employeeId, file);
+    console.log("Upload results:", upload_results);
+  });
+
   ipcMain.handle("employees:getAll", async () => {
     return getAllEmployees();
   });
 
   ipcMain.handle("employees:getById", async (_, _id) => {
     return getEmployeeById(_id);
+  });
+
+  ipcMain.handle("photos:getUrl", (_, relativePath: string) => {
+    const fullPath = path.join(app.getPath("userData"), relativePath);
+    const buffer = fs.readFileSync(fullPath);
+    return buffer.toString("base64");
   });
 
   ipcMain.handle("employees:update", async (_, _id, employee) => {

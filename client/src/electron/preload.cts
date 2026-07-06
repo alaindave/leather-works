@@ -14,6 +14,9 @@ interface LoginCredentials {
 console.log("PRELOAD LOADED!!!");
 
 contextBridge.exposeInMainWorld("electron", {
+  app: {
+  getUserDataPath: () => ipcRenderer.invoke("app:getUserDataPath"),
+},
   auth: {
     login: (credentials: LoginCredentials) =>
       ipcRenderer.invoke("auth:login", credentials),
@@ -41,6 +44,16 @@ contextBridge.exposeInMainWorld("electron", {
   employees: {
     create: (employee: Partial<Employee>) =>
       ipcRenderer.invoke("employees:create", employee),
+
+    uploadPhoto: (employeeId: string, file: { name: string; buffer: ArrayBuffer }) =>
+  ipcRenderer.invoke("employees:uploadPhoto", employeeId, {
+    name: file.name,
+    buffer: Buffer.from(file.buffer), 
+  }),
+
+ 
+  getPhotoUrl: (relativePath: string) =>
+    ipcRenderer.invoke("photos:getUrl", relativePath),
 
     getAll: () => ipcRenderer.invoke("employees:getAll"),
 

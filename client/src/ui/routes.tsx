@@ -8,6 +8,7 @@ import EmployeeAdminLayout from "./components/EmployeeAdminLayout";
 import EmployeeLeavePage from "./pages/EmployeeLeavePage";
 import EmployeeAttendancePage from "./pages/EmployeeAttendancePage";
 import PageErrorFallback from "./pages/PageErrorFallback";
+import EmployeeAttendanceReport from "./pages/EmployeeAttendanceReport";
 
 const router = createHashRouter([
   {
@@ -40,6 +41,12 @@ const router = createHashRouter([
       {
         path: "employees_list/:_id",
         element: <EmployeeDetailsPage />,
+        errorElement: <PageErrorFallback />,
+      },
+
+      {
+        path: "employees_list/:_id/attendances",
+        element: <EmployeeAttendanceReport />,
         errorElement: <PageErrorFallback />,
       },
       {

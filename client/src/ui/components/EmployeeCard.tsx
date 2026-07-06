@@ -22,6 +22,7 @@ import source from "../assets/employee_photos/Jeanne.jpeg";
 import { useEffect, useState } from "react";
 import "../styles/App.css";
 import AddClockInNotesPopover from "./AddClockInNotesPopover";
+import defaultAvatar from "../assets/default-avatar.jpeg";
 
 interface Props {
   employee: Employee;
@@ -81,7 +82,9 @@ const EmployeeCard = ({ employee }: Props) => {
   const [displayClock, setDisplayClock] = useState(true);
   const [showEditable, setShowEditable] = useState(false);
   const [loadingAttendance, setLoadingAttendance] = useState(true);
+  const [photo_url, setPhotoUrl] = useState("");
 
+  if (employee.photo_path) console.log("Employee:", employee);
   useEffect(() => {
     window.electron.attendance
       .getAttendanceRecord(employee._id, new Date().toISOString().split("T")[0])
@@ -89,12 +92,26 @@ const EmployeeCard = ({ employee }: Props) => {
         setAttendance(attendance);
         console.log("Attendance fetched: ", attendance);
       })
-
       .catch((error) => {
-        console.error("An error occured while fetching attendance: ", error);
+        console.error(
+          "An error occured while fetching attendance data: ",
+          error
+        );
       })
       .finally(() => setLoadingAttendance(false));
   }, []);
+
+  useEffect(() => {
+    async function load() {
+      const base64 = await window.electron.employees.getPhotoUrl(
+        employee.photo_path!
+      );
+      setPhotoUrl(`data:image/jpeg;base64,${base64}`);
+      console.log("Profile pic URL:", `data:image/jpeg;base64,${base64}`);
+    }
+
+    load();
+  }, [employee.photo_path]);
 
   const handleToggleClockInEdit = () => {
     setErrorMessage(false);
@@ -188,7 +205,12 @@ const EmployeeCard = ({ employee }: Props) => {
             pathname: `/employees_admin/employees_list/${employee._id}`,
           }}
         >
-          <Image src={source} boxSize="70px" borderRadius="full" fit="cover" />
+          <Image
+            src={photo_url || defaultAvatar}
+            boxSize="70px"
+            borderRadius="full"
+            fit="cover"
+          />
         </Link>
       </Box>
       <Box position="relative" top="10px">

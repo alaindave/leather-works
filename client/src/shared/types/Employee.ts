@@ -4,6 +4,8 @@ export default interface Employee {
   lastName: string;
   matricule: string;
   idNum: string;
+  photo_path?: string | null;
+  photo_url?: string | null;
   dateBirth: string;
   dateHired: string;
   role: string;

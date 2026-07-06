@@ -17,6 +17,8 @@ import { registerAttendanceExportIPC } from "./ipc/attendance_export.ipc.js";
 import { registerSyncIPC } from "./ipc/sync.ipc.js";
 import { fileURLToPath } from "url";
 import sync from "./services/sync.service.js";
+import { getEmployeePhotosDir } from "./util/getEmployeesPhotoDir.js";
+import { registerAppIPC } from "./ipc/app.ipc.js";
 
 console.log("MAIN STARTED");
 const API_URL = app.isPackaged
@@ -120,7 +122,9 @@ async function bootstrap() {
   registerTaskCommentIPC();
   registerAdminUsersIPC();
   registerSyncIPC();
+  registerAppIPC();
   console.log("After IPC registration");
+  getEmployeePhotosDir();
   await createSplashWindow();
   await createMainWindow();
   await sync();

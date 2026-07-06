@@ -8,6 +8,7 @@ export async function createEmployeesTable() {
       lastName TEXT NOT NULL,
       matricule TEXT NOT NULL UNIQUE,
       idNum TEXT NOT NULL,
+      photo_path TEXT,
       dateBirth TEXT NOT NULL,
       role TEXT NOT NULL,
       dateHired TEXT NOT NULL,

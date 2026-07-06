@@ -2,6 +2,25 @@ import { run, get, all } from "../db.js";
 import { randomUUID } from "crypto";
 import Employee from "../../../shared/types/Employee.js";
 import { addToSyncQueue } from "./sync.repository.js";
+import path from "path";
+import { app } from "electron";
+
+function addPhotoUrl(employee: Employee | null) {
+  if (!employee) return null;
+
+  return {
+    ...employee,
+    photo_url: employee.photo_path
+      ? `file://${path
+          .join(app.getPath("userData"), employee.photo_path)
+          .replace(/\\/g, "/")}`
+      : null,
+  };
+}
+
+function addPhotoUrls(employees: Employee[]) {
+  return employees.map((employee) => addPhotoUrl(employee)!);
+}
 
 export async function createEmployee(
   employee: Omit<
@@ -76,8 +95,8 @@ export async function createEmployee(
   return getEmployeeById(_id);
 }
 
-export function getEmployeeById(_id: string) {
-  return get<Employee>(
+export async function getEmployeeById(_id: string) {
+  const employee = await get<Employee>(
     `
     SELECT *
     FROM employees
@@ -86,10 +105,11 @@ export function getEmployeeById(_id: string) {
     `,
     [_id]
   );
-}
 
-export function getEmployeeByEmployeeID(employeeID: string) {
-  return get<Employee>(
+  return addPhotoUrl(employee);
+}
+export async function getEmployeeByEmployeeID(employeeID: string) {
+  const employee = await get<Employee>(
     `
     SELECT *
     FROM employees
@@ -98,10 +118,12 @@ export function getEmployeeByEmployeeID(employeeID: string) {
     `,
     [employeeID]
   );
+
+  return addPhotoUrl(employee);
 }
 
-export function getAllEmployees() {
-  return all<Employee>(
+export async function getAllEmployees() {
+  const employees = await all<Employee>(
     `
     SELECT *
     FROM employees
@@ -109,6 +131,8 @@ export function getAllEmployees() {
     ORDER BY lastName ASC
     `
   );
+
+  return addPhotoUrls(employees);
 }
 
 export function searchEmployees(searchTerm: string) {

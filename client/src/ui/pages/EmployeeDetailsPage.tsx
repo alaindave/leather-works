@@ -33,6 +33,7 @@ import ComponentErrorFallback from "./ComponentErrorFallback";
 import NotAuthorized from "../components/NotAuthorized";
 import { CiCalendarDate } from "react-icons/ci";
 import { FaRegClock } from "react-icons/fa";
+import EmployeePhotoUpload from "../components/EmployeePhotoUpload";
 
 const EmployeeDetailsPage = () => {
   const [employee, setEmployee] = useState<Employee | null>({} as Employee);
@@ -185,20 +186,26 @@ const EmployeeDetailsPage = () => {
               </Box>
             </HStack>
             <HStack>
-              <HStack
-                cursor="pointer"
-                bg="gray.100"
-                border="1px solid rgba(255,255,255,0.12)"
-                boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-                borderRadius="0.4rem"
-                padding="0.4rem"
+              <Link
+                to={{
+                  pathname: `/employees_admin/employees_list/${_id}/attendances`,
+                }}
+                state={{ employee }}
               >
-                <FaRegClock size="1.3rem" color="purple" />
-                <Text color="gray.900" position="relative" top="0.4rem">
-                  Presence
-                </Text>
-              </HStack>
-
+                <HStack
+                  cursor="pointer"
+                  bg="gray.100"
+                  border="1px solid rgba(255,255,255,0.12)"
+                  boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+                  borderRadius="0.4rem"
+                  padding="0.4rem"
+                >
+                  <FaRegClock size="1.3rem" color="purple" />
+                  <Text color="gray.900" position="relative" top="0.4rem">
+                    Presence
+                  </Text>
+                </HStack>
+              </Link>
               <HStack
                 cursor="pointer"
                 bg="gray.100"
@@ -249,13 +256,16 @@ const EmployeeDetailsPage = () => {
               ml="0.3rem"
             >
               <VStack spacing={3} mt="0.rem">
-                <Image
-                  src={source}
-                  boxSize="7rem"
-                  borderRadius="full"
-                  objectFit="cover"
-                  mt="0.5rem"
-                />
+                <HStack>
+                  <Image
+                    src={source}
+                    boxSize="7rem"
+                    borderRadius="full"
+                    objectFit="cover"
+                    mt="0.5rem"
+                  />
+                  <EmployeePhotoUpload employeeId={_id!} />
+                </HStack>
 
                 <Text
                   fontSize="1.2rem"
