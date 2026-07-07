@@ -30,6 +30,33 @@ const employeeSchema = new mongoose.Schema({
   createdAt: { type: Date, required: true },
   updatedAt: { type: Date, required: true },
   isDeleted: { type: Number, default: 0, required: true },
+  photo_filename: {
+    type: String,
+    default: null,
+  },
+
+  photo_path: {
+    type: String,
+    default: null,
+  },
+  photo_version: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
+  photo_hash: {
+    type: String,
+    default: null,
+  },
+  photo_mime_type: {
+    type: String,
+    enum: ["image/jpeg", "image/png", "image/webp", null],
+    default: null,
+  },
+  photo_last_modified: {
+    type: Date,
+    default: null,
+  },
 });
 
 const Employee = mongoose.model("Employees", employeeSchema);

@@ -9,7 +9,6 @@ import {
   Button,
   Divider,
   HStack,
-  Image,
   Stack,
   Text,
   VStack,
@@ -23,10 +22,9 @@ import { GoDotFill } from "react-icons/go";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import type Employee from "../../shared/types/Employee";
 import useAdminUser from "../../store/auth.store";
-import source from "../assets/employee_photos/Jeanne.jpeg";
 import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
 import UpdateEmployee from "../components/UpdateEmployee";
 import ComponentErrorFallback from "./ComponentErrorFallback";
@@ -34,6 +32,10 @@ import NotAuthorized from "../components/NotAuthorized";
 import { CiCalendarDate } from "react-icons/ci";
 import { FaRegClock } from "react-icons/fa";
 import EmployeePhotoUpload from "../components/EmployeePhotoUpload";
+
+type PhotoState = {
+  photo_url?: string;
+};
 
 const EmployeeDetailsPage = () => {
   const [employee, setEmployee] = useState<Employee | null>({} as Employee);
@@ -43,8 +45,8 @@ const EmployeeDetailsPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const adminUser = useAdminUser((store) => store.adminUser);
-
-  console.log("Employee ID:", _id);
+  const location = useLocation();
+  const { photo_url } = (location.state as PhotoState) || "";
 
   useEffect(() => {
     if (!_id) return;
@@ -190,7 +192,7 @@ const EmployeeDetailsPage = () => {
                 to={{
                   pathname: `/employees_admin/employees_list/${_id}/attendances`,
                 }}
-                state={{ employee }}
+                state={{ employee, photo_url }}
               >
                 <HStack
                   cursor="pointer"
@@ -255,16 +257,20 @@ const EmployeeDetailsPage = () => {
               maxH="80vh"
               ml="0.3rem"
             >
-              <VStack spacing={3} mt="0.rem">
+              <VStack spacing={3} mt="1rem">
                 <HStack>
-                  <Image
-                    src={source}
+                  {/* <Image
+                    src={photo_url}
                     boxSize="7rem"
                     borderRadius="full"
                     objectFit="cover"
                     mt="0.5rem"
+                  /> */}
+                  <EmployeePhotoUpload
+                    employeeId={_id!}
+                    currentPhoto={photo_url}
+                    onUploaded={refreshEmployee}
                   />
-                  <EmployeePhotoUpload employeeId={_id!} />
                 </HStack>
 
                 <Text

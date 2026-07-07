@@ -4,14 +4,16 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const employees = require("./routes/employeeRoute.js");
-const attendances = require("./routes/attendanceRoute.js");
-const leaves = require("./routes/leaveRoute.js");
-const adminUser = require("./routes/adminUserRoute.js");
-const sync = require("./routes/syncRoute.js");
-const auth = require("./routes/authenticate.js");
-const tasks = require("./routes/taskRoute.js");
+const employees = require("./routes/employee.route.js");
+const attendances = require("./routes/attendance.route.js");
+const leaves = require("./routes/leave.route.js");
+const adminUser = require("./routes/admin_user.route.js");
+const sync = require("./routes/sync.route.js");
+const auth = require("./routes/authenticate.route.js");
+const tasks = require("./routes/task.route.js");
+const { ensureEmployeePhotoDirectory } = require("./utils/employees_photos.js");
 const app = express();
+const { PHOTO_DIR } = require("./utils/employees_photos.js");
 
 const requiredEnvVars = [
   { key: "JWT_PRIVATE_KEY", name: "JWT Private Key" },
@@ -32,10 +34,10 @@ for (const item of requiredEnvVars) {
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("Connected to Afritan database");
+    console.log("CONNECTED TO AFRITAN DATABASE");
   })
   .catch((error) =>
-    console.error("Unable to connect to the database: ", error)
+    console.error("UNABLE TO CONNECT TO AFRITAN DATABASE: ", error)
   );
 
 //Create socket.io connection
@@ -46,9 +48,9 @@ const io = new Server(server, {
   },
 });
 io.on("connection", (socket) => {
-  console.log("Socket connection... Server connected:", socket.id);
+  console.log("SOCKET CONNECTION... SERVER CONNECTED:", socket.id);
   socket.on("disconnect", () => {
-    console.log("Socket disconnection...Client disconnected");
+    console.log("SOCKET DISCONNECTION...CLIENT DISCONNECTED");
   });
 });
 app.set("io", io);
@@ -61,6 +63,8 @@ app.use("/adminUsers", adminUser);
 app.use("/tasks", tasks);
 app.use("/auth", auth);
 app.use("/sync", sync);
+app.use("/employees_photos", express.static(PHOTO_DIR));
+ensureEmployeePhotoDirectory();
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -71,4 +75,4 @@ app.get("/health", (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Listening on port ${PORT}...`));
+server.listen(PORT, () => console.log(`LISTENING ON PORT ${PORT}...`));

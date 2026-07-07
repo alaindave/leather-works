@@ -204,6 +204,7 @@ const EmployeeCard = ({ employee }: Props) => {
           to={{
             pathname: `/employees_admin/employees_list/${employee._id}`,
           }}
+          state={{ photo_url }}
         >
           <Image
             src={photo_url || defaultAvatar}

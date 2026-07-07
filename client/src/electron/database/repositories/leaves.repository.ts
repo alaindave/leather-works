@@ -1,7 +1,7 @@
 import type Leave from "../../../shared/types/Leave.js";
 import { randomUUID } from "crypto";
 import { all, get, run } from "../db.js";
-import { getEmployeeById } from "./employee.repository.js";
+import { getEmployeeById } from "./employees.repository.js";
 import { addToSyncQueue } from "./sync.repository.js";
 
 export async function createLeave(leave: Partial<Leave>) {

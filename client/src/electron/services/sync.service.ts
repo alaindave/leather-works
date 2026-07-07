@@ -16,7 +16,7 @@ export default async function sync() {
   try {
     try {
       const result = await axios.get(`${API_URL}/health`);
-      console.log("BACKEND AVAILABLE: ", result);
+      console.log("BACKEND AVAILABLE: ", result.status);
     } catch (error) {
       console.error("BACKEND UNAVAILABLE: ", error);
       return;

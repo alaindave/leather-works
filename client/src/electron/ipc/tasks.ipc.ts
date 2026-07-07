@@ -5,7 +5,7 @@ import {
   updateTask,
   deleteTask,
   getTopTasks,
-} from "../database/repositories/task.repository.js";
+} from "../database/repositories/tasks.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"

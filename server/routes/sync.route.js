@@ -1,11 +1,13 @@
 const express = require("express");
 const router = express.Router();
+const upload = require("../middleware/sync_upload");
 const {
   syncEmployee,
   syncAttendance,
   syncLeave,
   syncTask,
   syncUserNotes,
+  syncEmployeePhoto,
 } = require("../sync");
 const Employee = require("../models/employeeModel");
 const Attendance = require("../models/attendanceModel");
@@ -14,10 +16,14 @@ const Task = require("../models/taskModel");
 const { AdminUser } = require("../models/adminUserModel");
 
 //Push sync
-router.post("/push", async (req, res) => {
+router.post("/push", upload.array("employee_photos"), async (req, res) => {
   try {
-    const { items } = req.body;
+    const items = JSON.parse(req.body.items);
+
+    const files = req.files || [];
+
     const synced = [];
+
     for (const item of items) {
       const { queueId, entity, operation, data } = item;
 
@@ -43,20 +49,32 @@ router.post("/push", async (req, res) => {
             await syncUserNotes(data);
             break;
 
+          case "employee_photo":
+            const file = files.find(
+              (f) => f.originalname === data.photo_filename
+            );
+
+            await syncEmployeePhoto(data, file);
+
+            break;
+
           default:
             continue;
         }
+
         synced.push(queueId);
       } catch (error) {
         console.error(`Push failed for ${entity}`, error);
       }
     }
+
     return res.json({
       success: true,
       synced,
     });
   } catch (error) {
     console.error(error);
+
     return res.status(500).json({
       success: false,
       message: "Push sync failed",

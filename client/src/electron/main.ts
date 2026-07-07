@@ -3,24 +3,29 @@ import { BrowserWindow, app } from "electron";
 import path from "path";
 import { getPreloadPath } from "./pathResolver.js";
 import { createSocket } from "./socket.js";
-import { isDev } from "./util/env-util.js";
+import { isDev } from "./util/env.util.js";
 import { initializeDatabase } from "./database/initializeDatabase.js";
 import { registerAdminUsersIPC } from "./ipc/admin_users.ipc.js";
-import { registerEmployeeIPC } from "./ipc/employee.ipc.js";
-import { registerAttendanceIPC } from "./ipc/attendance.ipc.js";
-import { registerLeaveIPC } from "./ipc/leave.ipc.js";
-import { registerTaskIPC } from "./ipc/task.ipc.js";
-import { registerTaskCommentIPC } from "./ipc/task_comments.ipc.js";
+import { registerEmployeeIPC } from "./ipc/employees.ipc.js";
+import { registerAttendanceIPC } from "./ipc/attendances.ipc.js";
+import { registerLeaveIPC } from "./ipc/leaves.ipc.js";
+import { registerTaskIPC } from "./ipc/tasks.ipc.js";
+import { registerTaskCommentIPC } from "./ipc/tasks_comments.ipc.js";
 import { registerOfflineUsersIPC } from "./ipc/offline_users.ipc.js";
 import { registerAuthIPC } from "./ipc/auth.ipc.js";
-import { registerAttendanceExportIPC } from "./ipc/attendance_export.ipc.js";
+import { registerAttendanceExportIPC } from "./ipc/attendances_export.ipc.js";
 import { registerSyncIPC } from "./ipc/sync.ipc.js";
 import { fileURLToPath } from "url";
 import sync from "./services/sync.service.js";
-import { getEmployeePhotosDir } from "./util/getEmployeesPhotoDir.js";
+import { getEmployeesPhotosDir } from "./util/getEmployeesPhotosDir.util.js";
 import { registerAppIPC } from "./ipc/app.ipc.js";
 
+const environment = isDev() ? "Development" : "Production";
+
 console.log("MAIN STARTED");
+
+console.log("ENVIRONMENT:", environment);
+
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
@@ -97,8 +102,6 @@ const createMainWindow = async () => {
     mainWindow.show();
   });
 
-  console.log("Is it development?: ", isDev());
-
   if (isDev()) {
     await mainWindow.loadURL("http://localhost:5173");
   } else {
@@ -124,7 +127,7 @@ async function bootstrap() {
   registerSyncIPC();
   registerAppIPC();
   console.log("After IPC registration");
-  getEmployeePhotosDir();
+  getEmployeesPhotosDir();
   await createSplashWindow();
   await createMainWindow();
   await sync();

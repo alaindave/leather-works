@@ -1,11 +1,11 @@
-import { Box, Image, Text, VStack } from "@chakra-ui/react";
-import { useState } from "react";
+import { Box, Image, VStack } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import defaultAvatar from "../assets/default-avatar.jpeg";
 
 interface Props {
   employeeId: string;
   currentPhoto?: string | null;
-  onUploaded?: (newPath: string) => void;
+  onUploaded?: () => void;
 }
 
 export default function EmployeePhotoUpload({
@@ -16,15 +16,19 @@ export default function EmployeePhotoUpload({
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  useEffect(() => {
+    if (currentPhoto) {
+      setPreview(null);
+    }
+  }, [currentPhoto]);
+
   async function upload(file: File) {
     const arrayBuffer = await file.arrayBuffer();
-    const result = await window.electron.employees.uploadPhoto(employeeId, {
+    await window.electron.employees.uploadPhoto(employeeId, {
       name: file.name,
       buffer: arrayBuffer,
     });
-
-    setPreview(null);
-    onUploaded?.(result.photo_path!);
+    onUploaded?.();
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -53,7 +57,7 @@ export default function EmployeePhotoUpload({
         h="140px"
         borderRadius="full"
         overflow="hidden"
-        border="2px dashed"
+        border="1px solid"
         borderColor={isDragging ? "blue.400" : "gray.300"}
         display="flex"
         alignItems="center"
@@ -86,10 +90,6 @@ export default function EmployeePhotoUpload({
           objectFit="cover"
         />
       </Box>
-
-      <Text fontSize="sm" color="gray.500">
-        Drag & drop or click to upload
-      </Text>
     </VStack>
   );
 }

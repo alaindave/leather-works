@@ -38,3 +38,8 @@ lerna-debug.log*
 *.sln
 *.sw?
 employees.json
+# Storage
+storage/
+storage/scanned_ids/
+storage/contracts/
+storage/employees_photos/

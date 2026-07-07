@@ -19,7 +19,7 @@ type Migration = {
 // =====================
 const dbPath: string = path.join(app.getPath("userData"), "hr.sqlite");
 
-console.log("Database path:", dbPath);
+console.log("DATABASE PATH:", dbPath);
 
 // =====================
 // CONNECTION

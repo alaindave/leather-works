@@ -7,7 +7,7 @@ import {
   getOngoingLeaves,
   updateLeave,
   deleteLeave,
-} from "../database/repositories/leave.repository.js";
+} from "../database/repositories/leaves.repository.js";
 import Leave from "../../shared/types/Leave.js";
 
 export function registerLeaveIPC() {

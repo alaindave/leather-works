@@ -2,7 +2,7 @@ import { app } from "electron";
 import fs from "fs";
 import path from "path";
 
-export function getEmployeePhotosDir() {
+export function getEmployeesPhotosDir() {
   const userData = app.getPath("userData");
   const photosDir = path.join(userData, "employee_photos");
 
@@ -10,6 +10,6 @@ export function getEmployeePhotosDir() {
     fs.mkdirSync(photosDir, { recursive: true });
   }
 
-  console.log("EMPLOYEE PHOTO DIRECTORY:", photosDir);
+  console.log("EMPLOYEES PHOTO DIRECTORY:", photosDir);
   return photosDir;
 }

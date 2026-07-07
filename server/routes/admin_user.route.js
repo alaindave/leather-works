@@ -8,7 +8,7 @@ const {
   getAdminUserByID,
   getAllAdmins,
   getAdminUserByEmail,
-} = require("../db");
+} = require("../db.js");
 const _ = require("lodash");
 const bcrypt = require("bcrypt");
 

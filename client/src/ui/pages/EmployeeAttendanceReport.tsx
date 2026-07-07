@@ -6,14 +6,19 @@ import source from "../assets/employee_photos/Jeanne.jpeg";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { MdOutlineChevronRight } from "react-icons/md";
 
-type LocationState = {
+type EmployeeState = {
   employee?: Employee;
+};
+
+type PhotoState = {
+  photo_url?: string;
 };
 
 const EmployeeAttendanceReport = () => {
   //   const { _id } = useParams();
   const location = useLocation();
-  const { employee } = (location.state as LocationState) || {};
+  const { employee } = (location.state as EmployeeState) || {};
+  const { photo_url } = (location.state as PhotoState) || "";
   //   useEffect(() => {
   //     if (!_id)
   //   }, [_id]);
@@ -28,7 +33,12 @@ const EmployeeAttendanceReport = () => {
     >
       {/* Header */}
       <HStack mt="0.6rem">
-        <Link to="/employees_admin/employees_list">
+        <Link
+          to={{
+            pathname: `/employees_admin/employees_list/${employee?._id}`,
+          }}
+          state={{ photo_url }}
+        >
           <Box
             ml="1rem"
             mb="2rem"
@@ -71,7 +81,7 @@ const EmployeeAttendanceReport = () => {
         width="30rem"
       >
         <Image
-          src={source}
+          src={photo_url}
           boxSize="8rem"
           borderRadius="full"
           objectFit="cover"

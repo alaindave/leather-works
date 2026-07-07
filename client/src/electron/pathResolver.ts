@@ -1,6 +1,6 @@
 import path from "path";
 import { app } from "electron";
-import { isDev } from "./util/env-util.js";
+import { isDev } from "./util/env.util.js";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);

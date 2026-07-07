@@ -9,8 +9,8 @@ import {
   updateEmployee,
   deleteEmployee,
   searchEmployees,
-} from "../database/repositories/employee.repository.js";
-import { uploadEmployeePhoto } from "../database/repositories/upload_employee_photo.repository.js";
+} from "../database/repositories/employees.repository.js";
+import { uploadEmployeePhoto } from "../database/repositories/employees_photos.repository.js";
 
 export function registerEmployeeIPC() {
   console.log("REGISTERING EMPLOYEES IPC");
@@ -22,7 +22,8 @@ export function registerEmployeeIPC() {
   ipcMain.handle("employees:uploadPhoto", async (_, employeeId, file) => {
     console.log("EMPLOYEE PHOTO UPLOAD RECEIVED");
     const upload_results = await uploadEmployeePhoto(employeeId, file);
-    console.log("Upload results:", upload_results);
+    console.log("UPLOAD RESULTS:", upload_results);
+    return upload_results;
   });
 
   ipcMain.handle("employees:getAll", async () => {

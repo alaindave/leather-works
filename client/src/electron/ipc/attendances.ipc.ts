@@ -9,7 +9,7 @@ import {
   updateAttendance,
   deleteAttendance,
   getAttendanceRecord,
-} from "../database/repositories/attendance.repository.js";
+} from "../database/repositories/attendances.repository.js";
 import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee.js";
 
 export function registerAttendanceIPC() {
