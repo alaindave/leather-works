@@ -103,11 +103,12 @@ const EmployeeCard = ({ employee }: Props) => {
 
   useEffect(() => {
     async function load() {
+      if (!employee.photo_path) return;
       const base64 = await window.electron.employees.getPhotoUrl(
-        employee.photo_path!
+        employee.photo_path
       );
       setPhotoUrl(`data:image/jpeg;base64,${base64}`);
-      console.log("Profile pic URL:", `data:image/jpeg;base64,${base64}`);
+      console.log("PROFILE PIC URL:", `data:image/jpeg;base64,${base64}`);
     }
 
     load();
