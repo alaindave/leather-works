@@ -49,7 +49,7 @@ export async function uploadEmployeePhoto(
   // Hash of image contents
   const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
-  const lastModified = new Date().toISOString();
+  const CURRENT_TIMESTAMP = new Date().toISOString();
 
   // Delete previous photo if the filename changed
   if (employee.photo_path && employee.photo_path !== relativePath) {
@@ -85,9 +85,9 @@ export async function uploadEmployeePhoto(
       relativePath,
       photoVersion,
       hash,
-      lastModified,
+      CURRENT_TIMESTAMP,
       mimeType,
-      lastModified,
+      CURRENT_TIMESTAMP,
       employeeId,
     ]
   );
@@ -98,8 +98,9 @@ export async function uploadEmployeePhoto(
     photo_path: relativePath,
     photo_version: photoVersion,
     photo_hash: hash,
-    photo_last_modified: lastModified,
+    photo_last_modified: CURRENT_TIMESTAMP,
     photo_mime_type: mimeType,
+    updatedAt: CURRENT_TIMESTAMP,
   };
 
   console.log("PHOTO TO ADD TO SYNC QUEUE:", syncPayload);

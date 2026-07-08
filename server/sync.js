@@ -132,6 +132,8 @@ async function syncEmployeePhoto(data, file) {
 
   employee.photo_version = data.photo_version;
 
+  employee.updatedAt = data.updatedAt;
+
   await employee.save();
 
   return employee;
