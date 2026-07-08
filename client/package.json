@@ -1,7 +1,7 @@
 {
   "name": "leather-works",
   "private": true,
-  "version": "1.0.7",
+  "version": "0.1.0",
   "type": "module",
   "main": "dist-electron/electron/main.js",
   "repository": {
