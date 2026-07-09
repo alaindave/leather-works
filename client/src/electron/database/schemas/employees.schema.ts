@@ -25,7 +25,8 @@ export async function createEmployeesTable() {
       relationship TEXT NOT NULL,
       contactPhone TEXT NOT NULL,
       salary INTEGER NOT NULL,
-      status TEXT NOT NULL DEFAULT 'actif',
+      status TEXT NOT NULL DEFAULT 'ACTIF'
+          CHECK (status IN ('ACTIF', 'INACTIF', 'CONGÉ')),     
       remainingLeave INTEGER NOT NULL DEFAULT 20,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,

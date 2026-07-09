@@ -18,8 +18,8 @@ const employeeSchema = new mongoose.Schema({
   remainingLeave: { type: Number, default: 20, required: true },
   status: {
     type: String,
-    enum: ["actif", "inactif"],
-    default: "actif",
+    enum: ["ACTIF", "INACTIF", "CONGÉ"],
+    default: "ACTIF",
     required: true,
   },
   telephone: { type: String, required: true },

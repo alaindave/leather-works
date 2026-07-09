@@ -9,30 +9,25 @@ export async function createAttendance(employeeId: string, clockIn: string) {
   if (!employee) {
     throw new Error("No employee found with the given ID");
   }
+
+  const _id = randomUUID();
   const now = new Date();
   const time = now.toISOString();
   const date = now.toISOString().split("T")[0];
   const existingAttendance = await getAttendanceRecord(employeeId, date);
-
   console.log("Existing attendance:", existingAttendance);
+
   if (existingAttendance) {
     throw new Error("The employee has already clocked in");
   }
 
   const clockInDate = new Date(clockIn);
-
   const scheduledHour = 8;
   const scheduledMinute = 0;
-
   const expectedMinutes = scheduledHour * 60 + scheduledMinute;
-
   const actualMinutes = clockInDate.getHours() * 60 + clockInDate.getMinutes();
-
   const lateMinutes = Math.max(0, actualMinutes - expectedMinutes);
-
-  const status = lateMinutes > 0 ? "retard" : "ponctuel";
-
-  const _id = randomUUID();
+  const status = lateMinutes > 0 ? "RETARD" : "PONCTUEL";
 
   await run(
     `
@@ -181,7 +176,7 @@ export async function updateAttendance(
       clockInDate.getHours() * 60 + clockInDate.getMinutes();
 
     const lateMinutes = Math.max(0, actualMinutes - expectedMinutes);
-    const status = lateMinutes > 0 ? "retard" : "ponctuel";
+    const status = lateMinutes > 0 ? "RETARD" : "PONCTUEL";
 
     fields.push("clockIn = ?");
     values.push(updates.clockIn);

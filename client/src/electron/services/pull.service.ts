@@ -140,7 +140,7 @@ async function syncEmployeePhotos(employees: Employee[]) {
       // Skip if local photo is already newer or equal
       if (localPhotoVersion >= employee.photo_version) {
         console.log(
-          `PHOTO ALREADY UP TO DATE FOR  ${employee.firstName}${employee.lastName}`
+          `PHOTO ALREADY UP TO DATE FOR  ${employee.firstName} ${employee.lastName}`
         );
         continue;
       }

@@ -13,12 +13,19 @@ const attendanceSchema = new mongoose.Schema({
     required: true,
   },
 
-  clockIn: { type: Date, required: true },
+  source: {
+    type: String,
+    default: "MANUAL",
+    enum: ["MANUAL", "AUTOMATIC"],
+    required: true,
+  },
+
+  clockIn: { type: Date },
   clockOut: { type: Date },
 
   status: {
     type: String,
-    enum: ["ponctuel", "retard", "absent", "congé"],
+    enum: ["PONCTUEL", "RETARD", "ABSENT"],
     required: true,
   },
 

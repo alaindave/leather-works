@@ -9,7 +9,7 @@ import {
   Text,
   Tooltip,
 } from "@chakra-ui/react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
 import ClockIn from "./ClockIn";
@@ -126,13 +126,6 @@ const EmployeeAttendanceCard = ({
   const [clockOutMode, setClockOutMode] = useState<ClockOutMode>("idle");
   const [clockOutValue, setClockOutValue] = useState("");
   const [draftClockOut, setDraftClockOut] = useState("");
-
-  // const formattedClockOut = useMemo(() => {
-  //   return formatTime(localAttendance?.clockOut);
-  // }, [localAttendance?.clockOut]);
-
-  // const [clockOutValue, setClockOutValue] = useState(formattedClockOut);
-  // const [draftClockOut, setDraftClockOut] = useState(formatTime(clockOutValue));
 
   useEffect(() => {
     const formatted = formatTime(localAttendance?.clockOut);

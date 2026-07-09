@@ -1,14 +1,15 @@
 import {
-  Avatar,
   Badge,
   Box,
   Button,
   Editable,
   EditableInput,
   EditablePreview,
+  Flex,
   HStack,
   Image,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { CiClock2 } from "react-icons/ci";
@@ -17,7 +18,6 @@ import { GoDotFill } from "react-icons/go";
 import { Link } from "react-router-dom";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
-import source from "../assets/employee_photos/Jeanne.jpeg";
 // @ts-ignore
 import { useEffect, useState } from "react";
 import "../styles/App.css";
@@ -84,7 +84,7 @@ const EmployeeCard = ({ employee }: Props) => {
   const [loadingAttendance, setLoadingAttendance] = useState(true);
   const [photo_url, setPhotoUrl] = useState("");
 
-  if (employee.photo_path) console.log("Employee:", employee);
+  //Fetch attendance r
   useEffect(() => {
     window.electron.attendance
       .getAttendanceRecord(employee._id, new Date().toISOString().split("T")[0])
@@ -101,6 +101,7 @@ const EmployeeCard = ({ employee }: Props) => {
       .finally(() => setLoadingAttendance(false));
   }, []);
 
+  //Fetch employee photos URL
   useEffect(() => {
     async function load() {
       if (!employee.photo_path) return;
@@ -108,7 +109,6 @@ const EmployeeCard = ({ employee }: Props) => {
         employee.photo_path
       );
       setPhotoUrl(`data:image/jpeg;base64,${base64}`);
-      console.log("PROFILE PIC URL:", `data:image/jpeg;base64,${base64}`);
     }
 
     load();
@@ -140,7 +140,7 @@ const EmployeeCard = ({ employee }: Props) => {
     const [hours, minutes] = formatted.split(":").map(Number);
     const clockIn = new Date();
     clockIn.setHours(hours, minutes, 0, 0);
-    console.log("clock In to submit", clockIn.toISOString());
+    console.log("Clock In to submit", clockIn.toISOString());
     await window.electron.attendance
       .create(employee._id, clockIn.toISOString())
       .then((attendance) => {
@@ -159,7 +159,6 @@ const EmployeeCard = ({ employee }: Props) => {
       if (!attendance?._id) {
         throw new Error("Attendance record not found");
       }
-
       const updatedAttendance = await window.electron.attendance.update(
         attendance._id,
         { lateNotes }
@@ -190,17 +189,15 @@ const EmployeeCard = ({ employee }: Props) => {
 `;
 
   return (
-    <HStack
+    <Flex
       bg="#ffffff"
-      height="80px"
+      height="5.2rem"
       w="80vw"
-      padding="10px"
-      position="relative"
-      right="20px"
-      spacing={4}
-      borderRadius="8px"
+      padding="0.3rem"
+      justify="space-between"
     >
-      <Box ml="1.3rem">
+      {/* Employee info */}
+      <Flex justify="space-between">
         <Link
           to={{
             pathname: `/employees_admin/employees_list/${employee._id}`,
@@ -212,57 +209,63 @@ const EmployeeCard = ({ employee }: Props) => {
             boxSize="70px"
             borderRadius="full"
             fit="cover"
+            mt="0.1rem"
+            ml="0.4rem"
           />
         </Link>
-      </Box>
-      <Box position="relative" top="10px">
-        <Text
-          color="gray.900"
-          fontWeight="600"
-          fontSize="23px"
-          fontFamily="revert-layer"
-          position="relative"
-          left="30px"
-        >
-          {employee.firstName} {employee.lastName}
-        </Text>
-
-        <HStack position="relative" left="30px" bottom="12px">
-          <Text color="gray.700" fontSize="16px" fontWeight="500">
-            {employee.role}
-          </Text>{" "}
-          <Box color="green" fontSize="14px" position="relative" bottom="7px">
-            <GoDotFill />
-          </Box>
-          <Text color="gray.800" fontWeight="500">
-            {employee.department}
+        <Box ml="1.8rem">
+          <Text
+            color="gray.900"
+            fontWeight="600"
+            fontSize="23px"
+            fontFamily="revert-layer"
+          >
+            {employee.firstName} {employee.lastName}
           </Text>
-        </HStack>
-      </Box>
-      <Box position="relative" left="10rem" top="0.3rem">
+
+          <HStack position="relative" bottom="0.95rem">
+            <Text color="gray.700" fontSize="16px" fontWeight="500">
+              {employee.role}
+            </Text>{" "}
+            <Box
+              color="green"
+              fontSize="14px"
+              position="relative"
+              bottom="0.5rem"
+            >
+              <GoDotFill />
+            </Box>
+            <Text color="gray.800" fontWeight="500">
+              {employee.department}
+            </Text>
+          </HStack>
+        </Box>
+      </Flex>
+
+      {/* Clock In Info */}
+      <Flex justify="space-between" mt="0.5rem" mr="9rem">
         {errorMessage && (
-          <Text color="red.400" fontSize="1rem" fontWeight="500">
+          <Text color="red.400" mt="1rem" fontSize="1.2rem" fontWeight="500">
             Veuillez entrer une heure valide!
           </Text>
         )}
-      </Box>
-      <Box>
-        <Box>
+        <VStack>
           <Box
             opacity={attendance ? 1 : 0}
             pointerEvents={attendance ? "auto" : "none"}
             animation={
-              attendance && attendance?.status !== "ponctuel"
+              attendance && attendance?.status !== "PONCTUEL"
                 ? `${flashLate} 1.5s ease-in-out 2`
                 : undefined
             }
-            position="absolute"
-            top="15px"
-            right="13rem"
           >
-            {!loadingAttendance && attendance?.status === "ponctuel" ? (
+            {!loadingAttendance && attendance?.status === "PONCTUEL" ? (
               <Badge bg="#123D2B" color="#5EF29B" fontSize="14px">
                 A l'heure
+              </Badge>
+            ) : !loadingAttendance && attendance?.status === "ABSENT" ? (
+              <Badge mt="1rem" bg="red.900" color="red.200" fontSize="14px">
+                Absence
               </Badge>
             ) : (
               <AddClockInNotesPopover
@@ -271,58 +274,54 @@ const EmployeeCard = ({ employee }: Props) => {
               />
             )}
           </Box>
-          <Box
-            opacity={attendance ? 1 : 0}
-            pointerEvents={attendance ? "auto" : "none"}
-            position="absolute"
-            top="1.3rem"
-            right="6.1rem"
-          >
-            <CiClock2 color="#967103" size="22px" />
-          </Box>
-
-          <Text
-            opacity={attendance ? 1 : 0}
-            pointerEvents={attendance ? "auto" : "none"}
-            position="absolute"
-            top="18px"
-            right="2.5rem"
-            color="gray.900"
-            fontSize="17px"
-            fontWeight="500"
-          >
-            {attendance?.clockIn &&
-              String(new Date(attendance.clockIn).getHours()).padStart(2, "0")}
-            :
-            {attendance?.clockIn &&
-              String(new Date(attendance.clockIn).getMinutes()).padStart(
-                2,
-                "0"
-              )}
-          </Text>
-        </Box>
-        <Box>
+          <HStack>
+            <Box
+              opacity={attendance && attendance.status !== "ABSENT" ? 1 : 0}
+              pointerEvents={attendance ? "auto" : "none"}
+            >
+              <CiClock2 color="#967103" size="22px" />
+            </Box>
+            <Box
+              opacity={attendance && attendance.status !== "ABSENT" ? 1 : 0}
+              pointerEvents={attendance ? "auto" : "none"}
+              color="gray.900"
+              fontSize="17px"
+              fontWeight="500"
+            >
+              {attendance?.clockIn &&
+                String(new Date(attendance.clockIn).getHours()).padStart(
+                  2,
+                  "0"
+                )}
+              :
+              {attendance?.clockIn &&
+                String(new Date(attendance.clockIn).getMinutes()).padStart(
+                  2,
+                  "0"
+                )}
+            </Box>
+          </HStack>
+        </VStack>
+        <HStack
+        //  position="relative" left="3rem"
+        >
           {!attendance && displayClock ? (
             <Button
-              position="absolute"
-              top="18px"
-              right="5rem"
               color="#c89704"
               backgroundColor="transparent"
               _hover={{ bg: "transparent" }}
               onClick={handleToggleClockInEdit}
+              mr="1rem"
             >
               <GiClockwork className="fa-3x" size="2rem" />
             </Button>
           ) : null}
 
-          {showEditable && (
-            <Box>
+          <Box width="4rem">
+            {showEditable && (
               <Editable
-                width="65px"
-                position="absolute"
-                right="9rem"
-                bottom="1.5rem"
+                visibility={showEditable ? "visible" : "hidden"}
+                pointerEvents={showEditable ? "auto" : "none"}
                 defaultValue={_clockIn}
                 onChange={(clockIn) => setClockIn(clockIn)}
                 onFocus={() => setErrorMessage(false)}
@@ -352,11 +351,11 @@ const EmployeeCard = ({ employee }: Props) => {
                 />
                 <EditableInput color="gray.700" />
               </Editable>
-            </Box>
-          )}
-        </Box>
-      </Box>
-    </HStack>
+            )}
+          </Box>
+        </HStack>
+      </Flex>
+    </Flex>
   );
 };
 

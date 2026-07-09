@@ -17,7 +17,7 @@ async function syncEmployee(operation, data) {
         upsert: true,
       });
       const updated = await Employee.findById(data._id);
-      console.log("UPDATED EMPLOYEE:", updated);
+      console.log("SYNCED EMPLOYEE:", updated);
       break;
 
     case "delete":
@@ -36,10 +36,10 @@ async function syncAttendance(operation, data) {
   switch (operation) {
     case "create":
     case "update":
-      console.log("Attendance to sync to server:", data);
+      console.log("ATTENDANCE TO SYNC TO SERVERr:", data);
       await Attendance.updateOne({ _id: data._id }, data, { upsert: true });
       const updated = await Attendance.findById(data._id);
-      console.log("Updated attendance:", updated);
+      console.log("SYNCED ATTENDANCE:", updated);
       break;
 
     case "delete":
@@ -56,12 +56,12 @@ async function syncLeave(operation, data) {
   switch (operation) {
     case "create":
     case "update":
-      console.log("Leave to sync to server:", data);
+      console.log("LEAVE TO SYNC TO SERVER:", data);
       await Leave.updateOne({ _id: data._id }, data, {
         upsert: true,
       });
       const updated = await Leave.findById(data._id);
-      console.log("Updated leave:", updated);
+      console.log("SYNCED LEAVE TO SERVER:", updated);
       break;
 
     case "delete":
@@ -78,12 +78,12 @@ async function syncTask(operation, data) {
   switch (operation) {
     case "create":
     case "update":
-      console.log("Task to sync to server:", data);
+      console.log("TASK TO SYNC TO SERVER:", data);
       await Task.updateOne({ _id: data._id }, data, {
         upsert: true,
       });
       const updated = await Task.findById(data._id);
-      console.log("Updated task:", updated);
+      console.log("SYNCED TASK:", updated);
       break;
 
     case "delete":
@@ -97,10 +97,10 @@ async function syncTask(operation, data) {
 
 //sync user notes
 async function syncUserNotes(data) {
-  console.log("User notes to sync to server:", data);
+  console.log("USER NOTES TO SYNC TO SERVER:", data);
   await AdminUser.updateOne({ _id: data._id }, data, { upsert: true });
   const updated = await AdminUser.findById(data._id);
-  console.log("Updated admin user:", updated);
+  console.log("SYNCED NOTES:", updated);
 }
 
 //sync employee photos

@@ -59,7 +59,7 @@ export async function pushPendingChanges() {
   const response = await axios.post(`${API_URL}/sync/push`, form, {
     headers: form.getHeaders(),
   });
-  console.log("SYNC PUSH RESULT", response);
+  console.log("SYNC PUSH RESULT", response.status);
 
   await markManySynced(response.data.synced);
 

@@ -18,7 +18,7 @@ export default interface Employee {
   department: string;
   salary: number;
   remainingLeave: number;
-  status: "actif" | "inactif";
+  status: "ACTIF" | "INACTIF" | "CONGÉ";
   telephone: string;
   address: string;
   emergencyContact: string;

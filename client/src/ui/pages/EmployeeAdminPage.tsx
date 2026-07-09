@@ -89,7 +89,7 @@ const EmployeeAdminPage = () => {
       });
 
     return () => clearInterval(interval);
-  }, [loading]);
+  }, []);
 
   //useEffect for personal notes saving
   useEffect(() => {
@@ -103,17 +103,35 @@ const EmployeeAdminPage = () => {
     return () => clearTimeout(timeout);
   }, [notes]);
 
-  //useEffect to fetch live tasks
-  // useEffect(() => {
-  //   const unsubscribe = window.electron.tasks.onNew((task) => {
-  //     setTasks([...tasks, task]);
-  //     console.log("Live tasks: ", task);
-  //   });
-
-  //   return () => unsubscribe();
-  // }, []);
-
-  //Handle task create
+  const handleDataSync = async () => {
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (result.success) {
+        console.log("Sync completed");
+        const employees = await window.electron.employees.getAll();
+        setEmployees(employees);
+        console.log("Fetched synced employees:", employees);
+        const attendances = await window.electron.attendance.getByDate(
+          new Date().toISOString().split("T")[0]
+        );
+        setAttendances(attendances);
+        console.log("Fetched synced attendances:", attendances);
+        const leaves = await window.electron.leave.getOngoingLeaves();
+        setLeaves(leaves);
+        console.log("Fetched synced leaves:", leaves);
+        const admin_users = await window.electron.adminUsers.getAll();
+        setAdminUsersList(admin_users);
+        console.log("Fetched admin users", admin_users);
+        const top_tasks = await loadTopTasks(user._id);
+        console.log("Fetched top tasks:", top_tasks);
+      } else {
+        console.error(result.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTaskCreate = () => {
     console.log("Task create clicked");
@@ -197,7 +215,7 @@ const EmployeeAdminPage = () => {
               position="relative"
               bottom="0.5rem"
               right="1rem"
-              onClick={() => setLoading(true)}
+              onClick={handleDataSync}
             >
               <FaSyncAlt />
             </Button>

@@ -340,6 +340,7 @@ const EmployeeAttendancePage = () => {
           </Text>
         ) : (
           attendances
+            .filter((a) => a.status !== "ABSENT")
             .filter((a) => !filter || a.department === filter)
             .filter((a) =>
               `${a.firstName} ${a.lastName}`

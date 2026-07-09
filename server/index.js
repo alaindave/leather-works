@@ -40,6 +40,9 @@ mongoose
     console.error("UNABLE TO CONNECT TO AFRITAN DATABASE: ", error)
   );
 
+//Initialize employee absence cron jon
+require("./jobs/markEmployeeAbsent.cron.js");
+
 //Create socket.io connection
 const server = http.createServer(app);
 const io = new Server(server, {
