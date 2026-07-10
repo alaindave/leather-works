@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { GiClockwork } from "react-icons/gi";
 import { GoDotFill } from "react-icons/go";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import type Attendance from "../../shared/types/Attendance";
 import type Employee from "../../shared/types/Employee";
@@ -170,57 +171,65 @@ const EmployeeCard = ({ employee }: Props) => {
 
   return (
     <Flex
-      ml="20rem"
-      w="80rem"
+      w="70rem"
+      bg="#ffffff"
       height="5.2rem"
+      mr="2rem"
       padding="0.3rem"
       position="relative"
+      // overflowX="hidden"
+      // overflowY="hidden"
+      justify="space-between"
     >
-      <Link
-        to={{
-          pathname: `/employees_admin/employees_list/${employee._id}`,
-        }}
-        state={{ photo_url, attendance }}
-      >
-        <Image
-          src={photo_url || defaultAvatar}
-          boxSize="70px"
-          borderRadius="full"
-          fit="cover"
-          mt="0.1rem"
-          ml="0.4rem"
-        />
-      </Link>
-      <Box ml="1.8rem">
-        <Text
-          color="gray.900"
-          fontWeight="600"
-          fontSize="23px"
-          fontFamily="revert-layer"
+      {/* Employee info */}
+      <Flex width="50rem" justify="space-between">
+        <Link
+          to={{
+            pathname: `/employees_admin/employees_list/${employee._id}`,
+          }}
+          state={{ photo_url, attendance }}
         >
-          {employee.firstName} {employee.lastName}
-        </Text>
-
-        <HStack width="23rem" position="relative" bottom="0.95rem">
-          <Text color="gray.700" fontSize="16px" fontWeight="500">
-            {employee.role}
-          </Text>{" "}
-          <Box
-            color="green"
-            fontSize="14px"
-            position="relative"
-            bottom="0.5rem"
+          <Image
+            src={photo_url || defaultAvatar}
+            boxSize="70px"
+            borderRadius="full"
+            fit="cover"
+            mt="0.15rem"
+            ml="1rem"
+          />
+        </Link>
+        <Box ml="1rem" mt="0.3rem">
+          <Text
+            color="gray.900"
+            fontWeight="600"
+            fontSize="23px"
+            fontFamily="revert-layer"
           >
-            <GoDotFill />
-          </Box>
-          <Text color="gray.800" fontWeight="500">
-            {employee.department}
+            {employee.firstName} {employee.lastName}
           </Text>
+
+          <HStack width="25rem" position="relative" bottom="0.95rem">
+            <Text color="gray.700" fontSize="16px" fontWeight="500">
+              {employee.role}
+            </Text>{" "}
+            <Box
+              color="green"
+              fontSize="14px"
+              position="relative"
+              bottom="0.5rem"
+            >
+              <GoDotFill />
+            </Box>
+            <Text color="gray.800" fontWeight="500">
+              {employee.department}
+            </Text>
+          </HStack>
+        </Box>
+        {/* Attendance status */}
+        <Box>
           {!loadingAttendance && attendance?.status === "CONGÉ" ? (
             <Badge
-              position="absolute"
-              right="1rem"
-              bottom="1rem"
+              mt="2rem"
               bg="#3182CE"
               color="gray.200"
               fontSize="14px"
@@ -230,9 +239,7 @@ const EmployeeCard = ({ employee }: Props) => {
             </Badge>
           ) : !loadingAttendance && attendance?.status === "ABSENT" ? (
             <Badge
-              position="absolute"
-              right="1rem"
-              bottom="1rem"
+              mt="2rem"
               ml="1rem"
               bg="#E53E3E"
               color="gray.200"
@@ -241,76 +248,74 @@ const EmployeeCard = ({ employee }: Props) => {
               Absent
             </Badge>
           ) : null}
-          <Box>
-            {!loadingAttendance && attendance?.status === "PONCTUEL" ? (
-              <Badge
-                position="absolute"
-                bottom="1rem"
-                right="1rem"
-                bg="#38A169"
-                color="gray.200"
-                fontSize="14px"
-              >
-                A l'heure
-              </Badge>
-            ) : !loadingAttendance && attendance?.status === "RETARD" ? (
-              <Box position="absolute" bottom="1rem" right="1rem">
-                <AddClockInNotesPopover
-                  existingNotes={attendance?.lateNotes}
-                  onSubmit={handleLateNotes}
-                />
-              </Box>
-            ) : null}
-          </Box>
-          <HStack position="relative" left="1rem" bottom="0.7rem">
-            {!attendance && displayClock ? (
-              <Button
-                color="#c89704"
-                backgroundColor="transparent"
-                _hover={{ bg: "transparent" }}
-                onClick={handleToggleClockInEdit}
-              >
-                <GiClockwork className="fa-3x" size="2rem" />
-              </Button>
-            ) : null}
-            <Box width="4rem">
-              {showEditable && (
-                <Editable
-                  visibility={showEditable ? "visible" : "hidden"}
-                  pointerEvents={showEditable ? "auto" : "none"}
-                  defaultValue={_clockIn}
-                  onChange={(clockIn) => setClockIn(clockIn)}
-                  onFocus={() => setErrorMessage(false)}
-                  submitOnBlur={false}
-                  onSubmit={handleClockInSubmit}
-                >
-                  <EditablePreview
-                    color="red.600"
-                    fontSize="18px"
-                    animation="pulse 1.7s infinite"
-                    _focus={{
-                      animation: "none",
-                    }}
-                    sx={{
-                      "@keyframes pulse": {
-                        "0%": {
-                          opacity: 1,
-                        },
-                        "50%": {
-                          opacity: 0.3,
-                        },
-                        "100%": {
-                          opacity: 1,
-                        },
-                      },
-                    }}
-                  />
-                  <EditableInput color="gray.700" />
-                </Editable>
-              )}
+
+          {!loadingAttendance && attendance?.status === "PONCTUEL" ? (
+            <Badge mt="2rem" bg="#38A169" color="gray.200" fontSize="14px">
+              A l'heure
+            </Badge>
+          ) : !loadingAttendance && attendance?.status === "RETARD" ? (
+            <Box mt="1.5rem">
+              <AddClockInNotesPopover
+                existingNotes={attendance?.lateNotes}
+                onSubmit={handleLateNotes}
+              />
             </Box>
-          </HStack>
+          ) : null}
+        </Box>
+
+        {/* Clock In button and Editable */}
+        <HStack position="relative" right="3rem">
+          {!attendance && displayClock ? (
+            <Button
+              color="#c89704"
+              backgroundColor="transparent"
+              _hover={{ bg: "transparent" }}
+              onClick={handleToggleClockInEdit}
+            >
+              <GiClockwork className="fa-3x" size="2rem" />
+            </Button>
+          ) : null}
+          <Box ml="1.2rem" width="4rem">
+            {showEditable && (
+              <Editable
+                visibility={showEditable ? "visible" : "hidden"}
+                pointerEvents={showEditable ? "auto" : "none"}
+                defaultValue={_clockIn}
+                onChange={(clockIn) => setClockIn(clockIn)}
+                onFocus={() => setErrorMessage(false)}
+                submitOnBlur={false}
+                onSubmit={handleClockInSubmit}
+              >
+                <EditablePreview
+                  color="red.600"
+                  fontSize="18px"
+                  animation="pulse 1.7s infinite"
+                  _focus={{
+                    animation: "none",
+                  }}
+                  sx={{
+                    "@keyframes pulse": {
+                      "0%": {
+                        opacity: 1,
+                      },
+                      "50%": {
+                        opacity: 0.3,
+                      },
+                      "100%": {
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+                <EditableInput color="gray.700" />
+              </Editable>
+            )}
+          </Box>
         </HStack>
+      </Flex>
+
+      <Box fontSize="1.5rem" mt="1.2rem" mr="5rem">
+        <BsThreeDotsVertical />
       </Box>
     </Flex>
   );

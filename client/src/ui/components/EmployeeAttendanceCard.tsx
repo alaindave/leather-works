@@ -8,12 +8,15 @@ import {
   HStack,
   Text,
   Tooltip,
+  Image,
 } from "@chakra-ui/react";
 import { memo, useEffect, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
 import ClockIn from "./ClockIn";
 import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
+import Employee from "../../shared/types/Employee";
+import defaultAvatar from "../assets/default-avatar.jpeg";
 
 interface Props {
   attendance: AttendanceWithEmployee | null;
@@ -119,13 +122,16 @@ const EmployeeAttendanceCard = ({
   toggleOff,
 }: Props) => {
   if (!attendance) return null;
-  const { _id, firstName, lastName, matricule, role, department } = attendance;
+  const { _id, employeeId, firstName, lastName, matricule, role, department } =
+    attendance;
   const [localAttendance, setLocalAttendance] =
     useState<AttendanceWithEmployee | null>(attendance);
   const [errorMessage, setErrorMessage] = useState("");
   const [clockOutMode, setClockOutMode] = useState<ClockOutMode>("idle");
   const [clockOutValue, setClockOutValue] = useState("");
   const [draftClockOut, setDraftClockOut] = useState("");
+  const [employee, setEmployee] = useState<Employee>({} as Employee);
+  const [photo_url, setPhotoUrl] = useState("");
 
   useEffect(() => {
     const formatted = formatTime(localAttendance?.clockOut);
@@ -133,6 +139,32 @@ const EmployeeAttendanceCard = ({
     setClockOutValue(formatted);
     setDraftClockOut(formatted);
   }, [localAttendance?.clockOut]);
+
+  //Fetch employee
+  useEffect(() => {
+    async function fetchEmployee() {
+      try {
+        const employee = await window.electron.employees.getById(employeeId);
+        setEmployee(employee);
+      } catch (e) {
+        console.error("AN ERROR OCCURED WHILE FETCHING THE EMPLOYEE.", e);
+      }
+    }
+    fetchEmployee();
+  }, []);
+
+  //Fetch employee photos URL
+  useEffect(() => {
+    async function load() {
+      if (!employee.photo_path) return;
+      const base64 = await window.electron.employees.getPhotoUrl(
+        employee.photo_path
+      );
+      setPhotoUrl(`data:image/jpeg;base64,${base64}`);
+    }
+
+    load();
+  }, [employee.photo_path]);
 
   useEffect(() => {
     if (!errorMessage) return;
@@ -266,34 +298,47 @@ const EmployeeAttendanceCard = ({
       px={4}
       py={5}
       bg="#ffffff"
-      border="0.3px solid gray"
-      width="80.5vw"
+      borderWidth="0.3px"
+      border="1px solid #E2E8F0"
+      boxShadow="0 2px 10px rgba(15,23,42,.06)"
+      width="80vw"
       minH="6.3rem"
+      ml="0.5rem"
+      mr="0.5rem"
     >
       {/* Employee Name */}
-      <Text
-        color="gray.800"
-        fontWeight="500"
-        fontSize="18px"
-        whiteSpace="normal"
-        wordBreak="break-word"
-        maxW="140px"
-      >
-        {firstName} {lastName}
-      </Text>
+      <HStack>
+        <Image
+          src={photo_url || defaultAvatar}
+          boxSize="70px"
+          borderRadius="full"
+          fit="cover"
+        />
+        <Text
+          color="gray.800"
+          fontWeight="600"
+          fontSize="1.3rem"
+          whiteSpace="normal"
+          wordBreak="break-word"
+          maxW="8rem"
+          noOfLines={2}
+        >
+          {firstName} {lastName}
+        </Text>
+      </HStack>
 
       {/* Employee ID */}
-      <Text color="gray.800" fontWeight="500" fontSize="18px">
+      <Text color="gray.600" fontWeight="500" fontSize="1.1rem">
         {matricule}
       </Text>
 
       {/* Role */}
-      <Text color="gray.800" fontWeight="500" fontSize="18px">
+      <Text color="gray.600" fontWeight="500" fontSize="1.1rem">
         {role}
       </Text>
 
       {/* Department */}
-      <Text color="gray.800" fontWeight="500" fontSize="1.1rem">
+      <Text color="gray.600" fontWeight="500" fontSize="1.1rem">
         {department}
       </Text>
 

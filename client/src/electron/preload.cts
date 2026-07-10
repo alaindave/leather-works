@@ -51,7 +51,6 @@ contextBridge.exposeInMainWorld("electron", {
     buffer: Buffer.from(file.buffer), 
   }),
 
- 
   getPhotoUrl: (relativePath: string) =>
     ipcRenderer.invoke("photos:getUrl", relativePath),
 

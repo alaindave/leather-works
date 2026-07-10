@@ -17,8 +17,20 @@ ul {
 li {
   margin-bottom: 10px;
 }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: #334155;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
 .nav-button {
-  color: "#e68a00";
+  color: #334155;
   font-size: 1.55rem;
   font-weight: 500;
   text-decoration: none;
@@ -27,12 +39,21 @@ li {
 }
 
 .nav-button:hover {
-  color: #e68a00;
+  background-color: #eef2ff;
+  color: #0f172a;
+  width: 220px;
 }
 
 .nav-button.active {
-  color: #e68a00;
+  background-color: #eef2ff;
+  border-radius: 12px;
+  width: 220px;
+  color: #4f46e5;
   font-weight: 600;
+}
+
+.nav-button.active i {
+  color: #4f46e5;
 }
 
 /* Employee details page styling  */

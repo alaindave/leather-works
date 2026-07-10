@@ -96,7 +96,7 @@ declare global {
         ) => Promise<Employee>;
         getPhotoUrl: (relativePath: string) => Promise<string>;
         getAll: () => Promise<Employee[]>;
-        getById: (_id: string) => Promise<Employee | null>;
+        getById: (_id: string) => Promise<Employee>;
         search: (searchTerm: string) => Promise<Employee[]>;
         update: (
           _id: string,

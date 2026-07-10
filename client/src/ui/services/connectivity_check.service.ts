@@ -1,4 +1,4 @@
-export const checkOnline = async () => {
+export const checkOnline = async (): Promise<boolean> => {
   try {
     await fetch("https://clients3.google.com/generate_204", {
       method: "GET",

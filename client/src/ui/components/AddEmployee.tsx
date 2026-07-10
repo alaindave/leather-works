@@ -97,10 +97,11 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
   return (
     <>
       <Button
-        colorScheme="yellow"
+        bg="#4F46E5"
+        color="#ffffff"
         padding="16px"
         _hover={{
-          bg: "brown",
+          bg: "#4338CA",
           color: "#e6e6e6",
           transform: "scale(1.05)",
         }}

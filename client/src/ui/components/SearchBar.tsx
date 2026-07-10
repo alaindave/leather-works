@@ -16,15 +16,19 @@ const SearchBar = ({ onSearch }: Props) => {
       }}
     >
       <InputGroup>
-        <InputLeftElement children={<SlMagnifier color="#ffffff" />} />
+        <InputLeftElement
+          mt="0.2rem"
+          children={<SlMagnifier size="1.2rem" color="gray" />}
+        />
         <Input
           ref={ref}
           borderRadius="5px"
           borderWidth="0.3px"
-          borderColor="gray.600"
+          border="1px solid #E2E8F0"
+          boxShadow="0 2px 10px rgba(15,23,42,.06)"
           bg="#FFFFFF"
           placeholder="Rechercher un employé"
-          _placeholder={{ color: "black", fontSize: "1rem", fontWeight: "500" }}
+          _placeholder={{ color: "gray", fontSize: "1rem", fontWeight: "500" }}
           variant="filled"
           width="34vw"
           height="45px"

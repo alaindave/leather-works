@@ -4,6 +4,7 @@ import type Employee from "../../shared/types/Employee";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { MdOutlineChevronRight } from "react-icons/md";
 import Attendance from "../../shared/types/Attendance";
+import { GoDotFill } from "react-icons/go";
 
 type EmployeeState = {
   employee?: Employee;
@@ -137,10 +138,39 @@ const EmployeeAttendanceReport = () => {
           width="22rem"
         >
           <Text fontWeight="600" fontSize="1.1rem" ml="1rem" mt="0.5rem">
-            Aujurdui-{new Date().toLocaleDateString("fr-FR")}
+            Aujurdui-
+            {new Date().toLocaleDateString("fr-FR", {
+              weekday: "short",
+              day: "2-digit",
+              month: "short",
+            })}
           </Text>
-          <Box>
-            <Text>{attendance?.status}</Text>
+          <Box
+            ml="1rem"
+            bg="green.100"
+            borderRadius="0.2rem"
+            height="2rem"
+            width="20rem"
+          >
+            <HStack>
+              <Box
+                color="green"
+                fontSize="1.4rem"
+                position="relative"
+                bottom="0.5rem"
+              >
+                <GoDotFill />
+              </Box>
+              <Text color="green.700" fontWeight="600">
+                {attendance?.status === "PONCTUEL"
+                  ? "A l'heure"
+                  : attendance?.status === "RETARD"
+                  ? "En retard"
+                  : attendance?.status === "CONGÉ"
+                  ? "En conge"
+                  : "Absent"}
+              </Text>
+            </HStack>
           </Box>
         </Box>
       </Flex>

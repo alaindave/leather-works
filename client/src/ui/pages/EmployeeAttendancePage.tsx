@@ -61,7 +61,7 @@ const EmployeeAttendancePage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const gridTemplate = `
-  1.5fr 1.5fr 1.3fr 1.3fr 1fr 1fr 0.8fr
+  1.6fr 1.5fr 1.3fr 1.3fr 1fr 1fr 0.8fr
 `;
   /* ================= CLOCK ================= */
   useEffect(() => {
@@ -135,7 +135,14 @@ const EmployeeAttendancePage = () => {
   };
 
   return (
-    <Flex direction="column" ml="0.02rem" mr="0.5rem">
+    <Flex
+      direction="column"
+      ml="0.02rem"
+      mr="0.5rem"
+      width="100vw"
+      h="95.1vh"
+      bg="#F8FAFC"
+    >
       {/* ================= ALERT DIALOG ================= */}
       <AlertDialog
         isOpen={isOpen}
@@ -216,22 +223,16 @@ const EmployeeAttendancePage = () => {
       </AlertDialog>
 
       {/* ================= HEADER ================= */}
-      <Flex
-        direction="column"
-        mt="0.5rem"
-        bg="#F8F9FB"
-        height="10rem"
-        width="79.2vw"
-      >
+      <Flex direction="column" bg="#F8F9FB" height="10rem" width="80vw">
         <Flex>
           <Box>
             <HStack>
               <Text
                 color="#1F2937"
-                fontSize="1.6rem"
+                fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
                 fontWeight="700"
                 ml="0.5rem"
-                mt="0.5rem"
+                mt="0.7rem"
               >
                 Présences
               </Text>
@@ -253,7 +254,7 @@ const EmployeeAttendancePage = () => {
               fontWeight="500"
               left="0.45rem"
               fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
-              color="gray.700"
+              color="gray.500"
               position="relative"
               bottom="1.4rem"
             >
@@ -263,18 +264,24 @@ const EmployeeAttendancePage = () => {
 
           <Spacer />
 
-          <Button bg="#F2B705" onClick={handleExport} mt="0.5rem" mr="1.3rem">
+          <Button
+            bg="#4F46E5"
+            color="#ffffff"
+            onClick={handleExport}
+            mt="0.5rem"
+            mr="1.3rem"
+          >
             <HiOutlineDownload /> Exporter
           </Button>
         </Flex>
 
         <Flex>
-          <Box mt="0.3rem">
+          <Box ml="0.5rem">
             <EmployeeFilterMenu onFilterClicked={setFilter} />
           </Box>
 
           <Spacer />
-          <Box mr="0.05rem">
+          <Box>
             <SearchBar onSearch={setSearchText} />
           </Box>
         </Flex>
@@ -286,12 +293,15 @@ const EmployeeAttendancePage = () => {
         px={10}
         fontWeight="600"
         bg="#F8F9FB"
-        mt="0.03rem"
-        mb="0.03rem"
+        borderWidth="0.3px"
+        border="1px solid #E2E8F0"
+        boxShadow="0 2px 10px rgba(15,23,42,.06)"
         height="4.7rem"
         width="80vw"
         overflowY="hidden"
         overflowX="hidden"
+        mt="1rem"
+        ml="0.5rem"
       >
         <Text color="gray.800" fontSize="1.1rem" mt="0.7rem">
           Employé
@@ -365,12 +375,17 @@ const EmployeeAttendancePage = () => {
 
       {/* ================= FOOTER  ================= */}
       <Flex
-        bg="#F8F9FB"
-        mb="2.7rem"
+        bg="linear-gradient(
+        135deg,
+        rgba(255,255,255,0.08),
+        rgba(255,255,255,0.03)
+      )"
+        boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+        // mb="2.7rem"
         mr="0.15rem"
         height="5.5rem"
         justify="space-between"
-        width="79vw"
+        width="81vw"
       >
         <Box
           mt="0.6rem"
@@ -396,7 +411,7 @@ const EmployeeAttendancePage = () => {
           fontSize="24px"
           fontWeight="600"
           mt="0.6rem"
-          mr="1.3rem"
+          mr="1.5rem"
         >
           {String(time.getHours()).padStart(2, "0")}:
           {String(time.getMinutes()).padStart(2, "0")}:

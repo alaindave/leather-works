@@ -184,9 +184,7 @@ const EmployeeAdminPage = () => {
   return (
     <Flex
       direction="column"
-      ml="0.05rem"
-      mt="0.5rem"
-      mr="0.3rem"
+      ml="0.01rem"
       w="100%"
       minH="94vh"
       bg="#ffffff"
@@ -202,7 +200,7 @@ const EmployeeAdminPage = () => {
         flexDir={{ base: "column", md: "row" }}
         gap={3}
       >
-        <Box position="relative" bottom="1rem">
+        <Box position="relative" bottom="0.7rem">
           <HStack>
             <Text
               fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
@@ -227,7 +225,7 @@ const EmployeeAdminPage = () => {
           </HStack>
           <Text
             fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
-            color="gray.700"
+            color="gray.500"
             position="relative"
             bottom="1.4rem"
           >

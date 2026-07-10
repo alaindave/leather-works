@@ -10,6 +10,7 @@ import {
   Textarea,
   Button,
   useDisclosure,
+  Portal,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 
@@ -80,38 +81,44 @@ const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
           En retard
         </Badge>
       </PopoverTrigger>
+      <Portal>
+        <PopoverContent
+          bg="#0E1E47"
+          borderColor="#22345F"
+          color="white"
+          w="320px"
+        >
+          <PopoverArrow />
 
-      <PopoverContent bg="#0E1E47" borderColor="#22345F" color="white">
-        <PopoverArrow />
+          <PopoverHeader>Ajouter une note</PopoverHeader>
 
-        <PopoverHeader>Ajouter une note</PopoverHeader>
+          <PopoverBody>
+            <Textarea
+              ref={textareaRef}
+              value={lateNote ?? ""}
+              onChange={(e) => setLateNote(e.target.value)}
+              placeholder="Raison du retard..."
+              bg="#08162b"
+              color="white"
+              resize="none"
+              minH="100px"
+            />
 
-        <PopoverBody>
-          <Textarea
-            ref={textareaRef}
-            value={lateNote ?? ""}
-            onChange={(e) => setLateNote(e.target.value)}
-            placeholder="Raison du retard..."
-            bg="#08162b"
-            color="white"
-            resize="none"
-            minH="100px"
-          />
-
-          <Button
-            mt={3}
-            size="sm"
-            colorScheme="yellow"
-            onClick={handleSave}
-            isLoading={isSubmitting}
-            loadingText="Patientez..."
-            spinnerPlacement="start"
-            isDisabled={isSubmitting}
-          >
-            Sauvegarder
-          </Button>
-        </PopoverBody>
-      </PopoverContent>
+            <Button
+              mt={3}
+              size="sm"
+              colorScheme="yellow"
+              onClick={handleSave}
+              isLoading={isSubmitting}
+              loadingText="Patientez..."
+              spinnerPlacement="start"
+              isDisabled={isSubmitting}
+            >
+              Sauvegarder
+            </Button>
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
     </Popover>
   );
 };

@@ -5,14 +5,13 @@ import EmployeeNavBar from "./EmployeeNavBar";
 const EmployeeAdminLayout = () => {
   return (
     <Flex
-      margin="0"
       height="100vh"
       width="100%"
       bg="gray.800"
       overflowY="hidden"
       overflowX="hidden"
     >
-      <Box ml={1.5}>
+      <Box>
         <EmployeeNavBar />
       </Box>
       <Outlet />

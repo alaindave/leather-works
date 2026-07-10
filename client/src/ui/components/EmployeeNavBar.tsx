@@ -30,16 +30,26 @@ import useAdminUser from "../../store/auth.store";
 import { ErrorBoundary } from "react-error-boundary";
 import PageErrorFallback from "../pages/PageErrorFallback";
 import { checkOnline } from "../services/connectivity_check.service";
+import { useEffect, useState } from "react";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const setLogOut = useAdminUser((store) => store.logout);
   const navigate = useNavigate();
+  const [online, setOnline] = useState<boolean>(false);
 
+  useEffect(() => {
+    async function check() {
+      const result = await checkOnline();
+      setOnline(result);
+    }
+
+    check();
+  }, []);
   const sidebarWidth = useBreakpointValue({
-    base: "17rem",
-    md: "18rem",
-    lg: "19.3rem",
+    base: "14rem",
+    md: "15rem",
+    lg: "17rem",
   });
 
   const handleLogOut = async () => {
@@ -54,18 +64,16 @@ const EmployeeNavBar = () => {
     }
   };
 
-  const isOnline = async () => {
-    const online = await checkOnline();
-    return online;
-  };
+  // const isOnline = async () => {
+  //   const online = await checkOnline();
+  //   return online;
+  // };
 
   return (
     <Flex
       position="relative"
       direction="column"
-      mt="0.5rem"
-      padding="8px"
-      height="94vh"
+      height="95.1vh"
       width={sidebarWidth}
       bg="#F8F9FB"
       borderRight="1px solid"
@@ -75,101 +83,140 @@ const EmployeeNavBar = () => {
       justify="space-between"
     >
       <Flex position="relative" left="0.4rem">
-        <Box padding="10px" position="relative" bottom="0.8rem" right="0.5rem">
+        <Box padding="10px">
           <Logo text="Gestion de personnel" />
         </Box>
       </Flex>
 
       <Box position="relative" left="1rem">
         <List>
-          <ListItem marginBottom="40px">
+          <ListItem marginBottom="10px">
             <HStack position="relative" right="1.5rem">
-              <FaHome size="1.7rem" />
               <NavLink className="nav-button" end to="/employees_admin">
-                Tableau de bord
+                <HStack>
+                  <Box ml="1rem">
+                    <FaHome size="1.4rem" />
+                  </Box>
+                  <Text mt="1rem" fontSize="1.3rem">
+                    Tableau de bord
+                  </Text>
+                </HStack>
               </NavLink>
             </HStack>
           </ListItem>
 
-          <ListItem marginBottom="40px">
+          <ListItem marginBottom="10px">
             <HStack position="relative" right="1.5rem">
-              <IoPeopleSharp size="1.5rem" />
               <ErrorBoundary FallbackComponent={PageErrorFallback}>
                 <NavLink
                   to="/employees_admin/employees_list"
                   className="nav-button"
                 >
-                  Employés
+                  <HStack>
+                    <Box ml="1rem">
+                      <IoPeopleSharp size="1.4rem" />
+                    </Box>
+                    <Text mt="1rem" fontSize="1.3rem">
+                      Employés
+                    </Text>
+                  </HStack>
                 </NavLink>
               </ErrorBoundary>
             </HStack>
           </ListItem>
 
-          <ListItem marginBottom="40px">
+          <ListItem marginBottom="10px">
             <HStack position="relative" right="1.5rem">
-              <FaRegClock size="1.5rem" />
               <ErrorBoundary FallbackComponent={PageErrorFallback}>
                 <NavLink
                   className="nav-button"
                   to="/employees_admin/attendances"
                 >
-                  Présence
+                  <HStack>
+                    <Box ml="1rem">
+                      <FaRegClock size="1.4rem" />
+                    </Box>
+                    <Text mt="1rem" fontSize="1.3rem">
+                      Présence
+                    </Text>
+                  </HStack>
                 </NavLink>
               </ErrorBoundary>
             </HStack>
           </ListItem>
 
-          <ListItem marginBottom="40px">
+          <ListItem marginBottom="10px">
             <HStack position="relative" right="1.5rem">
-              <FaRegCalendarAlt size="1.5rem" />
               <ErrorBoundary FallbackComponent={PageErrorFallback}>
                 <NavLink className="nav-button" to="/employees_admin/leaves">
-                  Congés
+                  <HStack>
+                    <Box ml="1rem">
+                      <FaRegCalendarAlt size="1.4rem" />
+                    </Box>
+                    <Text mt="1rem" fontSize="1.3rem">
+                      Congés
+                    </Text>
+                  </HStack>
                 </NavLink>
               </ErrorBoundary>
             </HStack>
           </ListItem>
 
-          <ListItem marginBottom="40px">
+          <ListItem marginBottom="10px">
             <HStack position="relative" right="1.4rem">
-              <FaFileSignature size="1.5rem" />
               <NavLink className="nav-button" to="/admin">
-                Fiches de paye
+                <HStack>
+                  <Box ml="1rem">
+                    <FaFileSignature size="1.4rem" />
+                  </Box>
+                  <Text mt="1rem" fontSize="1.3rem">
+                    Fiches de paye
+                  </Text>
+                </HStack>
               </NavLink>
             </HStack>
           </ListItem>
 
-          <ListItem marginBottom="40px">
+          <ListItem marginBottom="10px">
             <HStack position="relative" right="1.4rem">
-              <IoStatsChartSharp size="1.5rem" />
               <NavLink className="nav-button" to="/admin">
-                Rapports
+                <HStack>
+                  <Box ml="1rem">
+                    <IoStatsChartSharp size="1.4rem" />
+                  </Box>
+                  <Text mt="1rem" fontSize="1.3rem">
+                    Rapports
+                  </Text>
+                </HStack>
               </NavLink>
             </HStack>
           </ListItem>
 
-          <ListItem marginBottom="40px">
+          <ListItem marginBottom="20px">
             <HStack position="relative" right="1.4rem">
-              <FaFileSignature size="1.5rem" />
               <NavLink className="nav-button" to="/admin">
-                Taches
+                <HStack>
+                  <Box ml="1rem">
+                    <FaFileSignature size="1.4rem" />
+                  </Box>
+                  <Text mt="1rem" fontSize="1.3rem">
+                    Taches
+                  </Text>
+                </HStack>
               </NavLink>
             </HStack>
           </ListItem>
         </List>
       </Box>
 
-      {/* ADMIN USER AREA (UNCHANGED EXACT STYLE) */}
+      {/* ADMIN USER AREA */}
       <Flex
-        borderWidth="2.5px"
-        borderColor="gray.900"
-        borderRadius="0.1rem"
-        position="absolute"
-        left="0.001rem"
-        bottom="0.001rem"
+        border="1px solid #E2E8F0"
+        bg="gray.100"
+        boxShadow="0 2px 10px rgba(15,23,42,.06)"
+        borderRadius="0.5rem"
         height="3.9rem"
         width={sidebarWidth}
-        right="7px"
         justify="space-evenly"
       >
         <Flex
@@ -179,30 +226,30 @@ const EmployeeNavBar = () => {
           borderRadius="20px"
           bg="#ffffff"
           borderColor="blue"
-          position="relative"
-          top="0.4rem"
           justifyContent="center"
           alignItems="center"
           ml="0.2rem"
+          mt="0.5rem"
         >
-          <MdPersonOutline
-            color={adminUser?.role === "manager" ? "blue" : "#0078D4"}
-            size="2rem"
-          />
+          <MdPersonOutline color="blue" size="2rem" />
         </Flex>
 
-        <Box position="relative" left="0.5rem" bottom="1rem">
+        <Box>
           <Text
+            mt="0.2rem"
             color="gray.800"
             fontSize="1rem"
             fontWeight={700}
-            position="relative"
-            top="1rem"
             padding="2px"
           >
             {adminUser?.firstName} {adminUser?.lastName}
           </Text>
-          <Text color="gray.700" fontWeight="500">
+          <Text
+            position="relative"
+            bottom="1.1rem"
+            color="gray.400"
+            fontWeight="500"
+          >
             {adminUser?.email}
           </Text>
         </Box>
@@ -248,13 +295,12 @@ const EmployeeNavBar = () => {
         </Box>
       </Flex>
 
-      {/* LOWER BAR (UNCHANGED EXACT POSITION + STYLE) */}
+      {/*Lower bar*/}
       <Flex
         position="relative"
         top="3.7rem"
-        right="0.3rem"
-        width="99.4vw"
-        height="6vh"
+        width="100vw"
+        height="6.5vh"
         bg="gray.200"
         justify="space-between"
       >
@@ -274,7 +320,7 @@ const EmployeeNavBar = () => {
             >
               <GoDotFill size="1.3rem" />
             </Box>
-            <Text>Connecté</Text>
+            <Text>{online ? "Connecté" : "Deconnecté"}</Text>
           </HStack>
         </HStack>
       </Flex>

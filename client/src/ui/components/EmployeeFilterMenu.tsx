@@ -8,7 +8,9 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { FaChevronCircleDown } from "react-icons/fa";
+import { IoIosArrowDown } from "react-icons/io";
+import { FaSlidersH } from "react-icons/fa";
+
 import { BsPeopleFill } from "react-icons/bs";
 import { GiOfficeChair } from "react-icons/gi";
 import { GiFactory } from "react-icons/gi";
@@ -29,10 +31,10 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
         bg="#FFFFFF"
         width="300px"
         as={Button}
-        rightIcon={<FaChevronCircleDown color="black" />}
-        borderWidth="0.5px"
-        borderRadius="3px"
-        borderColor="gray.600"
+        leftIcon={<FaSlidersH color="black" />}
+        rightIcon={<IoIosArrowDown color="black" />}
+        border="1px solid #E2E8F0"
+        boxShadow="0 2px 10px rgba(15,23,42,.06)"
         _hover={{ bg: "transparent" }}
       >
         <Text color="gray.800" position="relative" top="8px">
@@ -40,19 +42,23 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
         </Text>
       </MenuButton>
       <MenuList
-        backgroundColor="#07182F"
+        backgroundColor="#ffffff"
         borderColor="rgba(255,196,0,0.18)"
         borderRadius="18px"
-        maxH="165px"
+        maxH="160px"
         ml="3rem"
+        position="relative"
+        left="17rem"
+        bottom="9.5rem"
         overflowY="auto"
         _hover={{ color: "yellow" }}
       >
         <MenuItem
-          color="#DBE7FF"
-          backgroundColor="#07182F"
+          color="gray.800"
+          fontSize="1.1rem"
+          backgroundColor="#ffffff"
           _hover={{
-            color: "#FFC400",
+            color: "#4F46E5",
             backgroundColor: "rgba(255,196,0,0.14)",
           }}
           onClick={() => {
@@ -69,10 +75,11 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
           </Text>
         </MenuItem>
         <MenuItem
-          color="#DBE7FF"
-          backgroundColor="#07182F"
+          color="gray.800"
+          fontSize="1.1rem"
+          backgroundColor="#ffffff"
           _hover={{
-            color: "#FFC400",
+            color: "#4F46E5",
             backgroundColor: "rgba(255,196,0,0.14)",
           }}
           onClick={() => {
@@ -88,10 +95,11 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
           </Text>
         </MenuItem>
         <MenuItem
-          color="#DBE7FF"
-          backgroundColor="#07182F"
+          color="gray.800"
+          fontSize="1.1rem"
+          backgroundColor="#ffffff"
           _hover={{
-            color: "#FFC400",
+            color: "#4F46E5",
             backgroundColor: "rgba(255,196,0,0.14)",
           }}
           onClick={() => {
@@ -107,10 +115,11 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
           </Text>
         </MenuItem>
         <MenuItem
-          color="#DBE7FF"
-          backgroundColor="#07182F"
+          color="gray.800"
+          fontSize="1.1rem"
+          backgroundColor="#ffffff"
           _hover={{
-            color: "#FFC400",
+            color: "#4F46E5",
             backgroundColor: "rgba(255,196,0,0.14)",
           }}
           onClick={() => {
@@ -127,10 +136,11 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
           </Text>
         </MenuItem>
         <MenuItem
-          color="#DBE7FF"
-          backgroundColor="#07182F"
+          color="gray.800"
+          fontSize="1.1rem"
+          backgroundColor="#ffffff"
           _hover={{
-            color: "#FFC400",
+            color: "#4F46E5",
             backgroundColor: "rgba(255,196,0,0.14)",
           }}
           onClick={() => {
@@ -146,10 +156,11 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
           </Text>
         </MenuItem>
         <MenuItem
-          color="#DBE7FF"
-          backgroundColor="#07182F"
+          color="gray.800"
+          fontSize="1.1rem"
+          backgroundColor="#ffffff"
           _hover={{
-            color: "#FFC400",
+            color: "#4F46E5",
             backgroundColor: "rgba(255,196,0,0.14)",
           }}
           onClick={() => {

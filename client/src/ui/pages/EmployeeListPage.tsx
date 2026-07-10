@@ -80,7 +80,7 @@ const EmployeeListPage = () => {
   };
 
   return (
-    <Flex direction="column" h="100vh" bg="transparent">
+    <Flex direction="column" h="95.1vh" width="100vw" bg="#F8FAFC">
       {/* HEADER */}
       <Flex
         direction="column"
@@ -94,8 +94,8 @@ const EmployeeListPage = () => {
           <Box>
             <HStack>
               <Text
-                color="#1F2937"
-                fontSize="1.6rem"
+                color="gray.800"
+                fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
                 fontWeight="700"
                 mt="0.4rem"
                 ml="0.4rem"
@@ -105,9 +105,9 @@ const EmployeeListPage = () => {
               <Button
                 bg="transparent"
                 isLoading={loading}
-                color="gray.800"
+                color="gray.700"
                 _hover={{ bg: "transparent" }}
-                fontSize="1rem"
+                fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
                 position="relative"
                 bottom="0.2rem"
                 right="1rem"
@@ -120,7 +120,7 @@ const EmployeeListPage = () => {
               fontWeight="500"
               left="0.45rem"
               fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
-              color="gray.700"
+              color="gray.500"
               position="relative"
               bottom="1.4rem"
             >
@@ -129,7 +129,7 @@ const EmployeeListPage = () => {
           </Box>
           <Spacer />
           {adminUser?.role === "manager" ? (
-            <Box mt="0.75rem" mr="0.5rem">
+            <Box mt="0.75rem" mr="2.3rem">
               <AddEmployee onAddEmployee={handleAddEmployee} />
             </Box>
           ) : (
@@ -150,17 +150,11 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} ml="0.05rem" mt="1.05rem">
+          <Flex wrap="wrap" gap={2} ml="1rem">
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
-          <Flex
-            position="relative"
-            left="1.1rem"
-            wrap="wrap"
-            mt="0.7rem"
-            mr="2.2rem"
-          >
+          <Flex position="relative" left="1.1rem" wrap="wrap" mr="3.5rem">
             <SearchBar onSearch={handleOnSearch} />
           </Flex>
         </Flex>
@@ -223,9 +217,14 @@ const EmployeeListPage = () => {
                 .map((employee) => (
                   <ListItem
                     key={employee._id}
+                    border="1px solid #E2E8F0"
+                    borderRadius="0.5rem"
+                    boxShadow="0 2px 10px rgba(15,23,42,.06)"
+                    margin="0.1rem"
+                    width="75vw"
                     bg="#ffffff"
-                    borderBottom="1px solid #1E355A"
-                    margin="0.05rem"
+                    ml="1.5rem"
+                    overflowX="hidden"
                   >
                     <EmployeeCard employee={employee} />
                   </ListItem>
@@ -234,15 +233,6 @@ const EmployeeListPage = () => {
           )}
         </Box>
       </Flex>
-
-      {/* FOOTER SPACER  */}
-      <Box
-        h="2.5rem"
-        bg="black"
-        borderRadius="12px"
-        ml="0.2rem"
-        mb="0.5rem"
-      ></Box>
     </Flex>
   );
 };
