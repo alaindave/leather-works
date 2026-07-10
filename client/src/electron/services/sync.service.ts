@@ -2,6 +2,7 @@ import axios from "axios";
 import { app } from "electron";
 import { pushPendingChanges } from "./push.service.js";
 import { pullLatestChanges } from "./pull.service.js";
+import { markEmployeesOnLeave } from "./markEmployeesOnLeave.service.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -36,6 +37,7 @@ export default async function sync() {
     try {
       const result = await pullLatestChanges();
       console.log("PULL RESULTS: ", result.status);
+      await markEmployeesOnLeave();
     } catch (error) {
       console.error("PULL FAILED:", error);
     }

@@ -24,7 +24,6 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { IoStatsChartSharp } from "react-icons/io5";
 import { NavLink, useNavigate } from "react-router-dom";
 import { GoDotFill } from "react-icons/go";
-import SyncButton from "./SyncButton";
 import "../styles/App.css";
 import Logo from "./Logo";
 import useAdminUser from "../../store/auth.store";
@@ -68,7 +67,7 @@ const EmployeeNavBar = () => {
       padding="8px"
       height="94vh"
       width={sidebarWidth}
-      bg="#FFFFFF"
+      bg="#F8F9FB"
       borderRight="1px solid"
       borderColor="#D1D9E0"
       boxShadow="2px 0 8px rgba(0,0,0,0.04)"
@@ -254,7 +253,7 @@ const EmployeeNavBar = () => {
         position="relative"
         top="3.7rem"
         right="0.3rem"
-        width="99.2vw"
+        width="99.4vw"
         height="6vh"
         bg="gray.200"
         justify="space-between"

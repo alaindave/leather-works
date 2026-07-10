@@ -36,7 +36,7 @@ type TaskRow = {
 export async function createTask(task: Task) {
   console.log("Task to create:", task);
   const _id = randomUUID();
-  const taskNumber = generateTaskNumber();
+  const taskNumber = generateTaskNumber(task.priority);
   const today = new Date();
   const submittedAt = today.toISOString().split("T")[0];
   const time = today.toISOString();
@@ -675,8 +675,15 @@ export async function upsertTask(task: Task) {
   }
 }
 
+//Map task priorities to single letters
+function taskMapping(task_priority: string): string {
+  if (task_priority === "Haute") return "H";
+  if (task_priority === "Moyenne") return "M";
+  return "B";
+}
+
 //Generate task numbers
-function generateTaskNumber() {
+function generateTaskNumber(task_priority: string) {
   const now = new Date();
 
   const date =
@@ -693,5 +700,7 @@ function generateTaskNumber() {
     .toString()
     .padStart(3, "0");
 
-  return `TACHE-${date}-${time}-${random}`;
+  const priority_letter = taskMapping(task_priority);
+
+  return `TACHE-${date}-${time}-${random}-${priority_letter}`;
 }

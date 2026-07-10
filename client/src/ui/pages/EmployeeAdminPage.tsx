@@ -54,7 +54,12 @@ const EmployeeAdminPage = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const lateCount = attendances.filter(
-    (attendance) => attendance.status === "retard"
+    (attendance) => attendance.status === "RETARD"
+  );
+
+  const dailyAttendance = attendances.filter(
+    (attendance) =>
+      attendance.status === "PONCTUEL" || attendance.status === "RETARD"
   );
 
   //useEffect for initial data fetch and live clock
@@ -179,12 +184,12 @@ const EmployeeAdminPage = () => {
   return (
     <Flex
       direction="column"
-      ml="0.3rem"
+      ml="0.05rem"
       mt="0.5rem"
       mr="0.3rem"
       w="100%"
       minH="94vh"
-      bg="#F8F9FB"
+      bg="#ffffff"
       border="1px solid"
       borderColor="#D1D9E0"
       overflow="hidden"
@@ -275,7 +280,7 @@ const EmployeeAdminPage = () => {
       <Box>
         <EmployeeDashboard
           employeeCount={employees.length}
-          attendanceCount={attendances.length}
+          attendanceCount={dailyAttendance.length}
           leaveCount={leaves.length}
           lateCount={lateCount.length}
         />

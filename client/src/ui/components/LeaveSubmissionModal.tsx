@@ -175,14 +175,14 @@ const LeaveSubmissionModal = ({
             </HStack>
           </ModalHeader>
           <ModalCloseButton onClick={handleFormClose} />
-          <ModalBody bg="#ffffff">
+          <ModalBody>
             <FormControl>
               <VStack spacing="10px">
                 <HStack>
                   <Box>
                     <HStack>
                       <FormLabel
-                        color="gray.600"
+                        color="#e6ebfe"
                         marginBottom="10px"
                         fontSize="1.1rem"
                       >
@@ -191,18 +191,17 @@ const LeaveSubmissionModal = ({
                     </HStack>
                     <Input
                       type="text"
-                      color="gray.900"
+                      color="#e6ebfe"
                       fontSize="1.1rem"
                       width="250px"
                       value={employee?.lastName || ""}
                       isReadOnly
-                      borderColor="gray.900"
                     />
                   </Box>
                   <Box>
                     <HStack>
                       <FormLabel
-                        color="gray.600"
+                        color="#e6ebfe"
                         marginBottom="10px"
                         fontSize="1.1rem"
                       >
@@ -212,18 +211,17 @@ const LeaveSubmissionModal = ({
                     </HStack>
                     <Input
                       type="text"
-                      color="gray.900"
+                      color="#e6ebfe"
                       fontSize="1.1rem"
                       width="250px"
                       value={employee?.firstName || ""}
                       isReadOnly
-                      borderColor="gray.900"
                     />
                   </Box>
                   <Box>
                     <HStack>
                       <FormLabel
-                        color="gray.600"
+                        color="#e6ebfe"
                         marginBottom="10px"
                         fontSize="1.1rem"
                       >
@@ -233,12 +231,11 @@ const LeaveSubmissionModal = ({
                     </HStack>
                     <Input
                       type="text"
-                      color="gray.900"
+                      color="#e6ebfe"
                       fontSize="1.1rem"
                       width="250px"
                       value={employee?.role || ""}
                       isReadOnly
-                      borderColor="gray.900"
                     />
                   </Box>
                 </HStack>
@@ -247,7 +244,7 @@ const LeaveSubmissionModal = ({
                   <Box>
                     <HStack>
                       <FormLabel
-                        color="gray.600"
+                        color="#e6ebfe"
                         marginBottom="10px"
                         fontSize="1.1rem"
                       >
@@ -256,11 +253,10 @@ const LeaveSubmissionModal = ({
                       </FormLabel>
                     </HStack>
                     <Input
-                      color="gray.900"
+                      color="#e6ebfe"
                       fontSize="1.1rem"
                       type="text"
                       width="250px"
-                      borderColor="gray.900"
                       value={employee?.department || ""}
                       isReadOnly
                     />
@@ -268,7 +264,7 @@ const LeaveSubmissionModal = ({
                   <Box>
                     <HStack>
                       <FormLabel
-                        color="gray.600"
+                        color="#e6ebfe"
                         marginBottom="10px"
                         fontSize="1.1rem"
                       >
@@ -304,11 +300,9 @@ const LeaveSubmissionModal = ({
                           yearDropdownItemNumber={100}
                           customInput={
                             <Input
-                              color="gray.900"
+                              color="#e6ebfe"
                               fontSize="1.1rem"
                               width="300px"
-                              bg="#ffffff"
-                              borderColor="gray.900"
                               borderWidth="1px"
                             />
                           }
@@ -324,7 +318,7 @@ const LeaveSubmissionModal = ({
                   <Box>
                     <HStack>
                       <FormLabel
-                        color="gray.600"
+                        color="#e6ebfe"
                         marginBottom="10px"
                         fontSize="1.1rem"
                       >
@@ -360,11 +354,9 @@ const LeaveSubmissionModal = ({
                           yearDropdownItemNumber={100}
                           customInput={
                             <Input
-                              color="gray.900"
+                              color="#e6ebfe"
                               fontSize="1.1rem"
                               width="300px"
-                              bg="#ffffff"
-                              borderColor="gray.900"
                               borderWidth="1px"
                             />
                           }
@@ -382,7 +374,7 @@ const LeaveSubmissionModal = ({
                   <Box>
                     <HStack>
                       <FormLabel
-                        color="gray.600"
+                        color="#e6ebfe"
                         marginBottom="10px"
                         fontSize="1.1rem"
                       >
@@ -392,11 +384,9 @@ const LeaveSubmissionModal = ({
                     </HStack>
                     <Input
                       height="40px"
-                      color="gray.900"
+                      color="#e6ebfe"
                       fontSize="1.1rem"
                       width="300px"
-                      bg="#ffffff"
-                      borderColor="gray.900"
                       borderWidth="1px"
                       {...register("subject")}
                     />
@@ -409,7 +399,7 @@ const LeaveSubmissionModal = ({
                   <Box>
                     <HStack>
                       <FormLabel
-                        color="gray.600"
+                        color="#e6ebfe"
                         marginBottom="10px"
                         fontSize="1.1rem"
                       >
@@ -418,10 +408,8 @@ const LeaveSubmissionModal = ({
                       </FormLabel>
                     </HStack>
                     <Textarea
-                      color="gray.900"
+                      color="#e6ebfe"
                       fontSize="1.1rem"
-                      borderColor="gray.900"
-                      bg="#ffffff"
                       height="300px"
                       width="350px"
                       resize="none"

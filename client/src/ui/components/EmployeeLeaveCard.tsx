@@ -72,7 +72,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         console.log("Updated employee: ", employee);
         console.log("ID of leave to update:", leave._id);
         return window.electron.leave.update(leave._id, {
-          status: "Approuvé",
+          status: "APPROUVÉ",
         });
       })
       .then((leave) => {
@@ -87,7 +87,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   const handleDeny = () => {
     window.electron.leave
       .update(leave._id, {
-        status: "Refusé",
+        status: "REFUSÉ",
       })
 
       .then((leave) => {
@@ -103,7 +103,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   const handleCancel = () => {
     window.electron.leave
       .update(leave._id, {
-        status: "Annulé",
+        status: "ANNULÉ",
       })
 
       .then((leave) => {
@@ -125,10 +125,10 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
     <Grid
       templateColumns={gridTemplate}
       alignItems="center"
-      ml="0.1rem"
+      ml="0.02rem"
       px={3}
       py={3}
-      bg="#F8F9FB"
+      bg="#ffffff"
       minH="6.3rem"
       border="0.3px solid gray"
       width="80vw"
@@ -163,7 +163,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         <LeaveNotesPopover subject={subject} notes={notes} />
       </Box>
       <Box width="7rem">
-        {status === "En attente d'approbation" ? (
+        {status === "EN ATTENTE D'APPROBATION" ? (
           <Text
             color="yellow.600"
             fontWeight="600"
@@ -176,9 +176,9 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         ) : (
           <Text
             color={
-              status === "Approuvé"
+              status === "APPROUVÉ"
                 ? "green.700"
-                : status === "Refusé"
+                : status === "REFUSÉ"
                 ? "#FC8181"
                 : "yellow.500"
             }
@@ -230,7 +230,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 p="6px"
                 boxShadow="0 8px 30px rgba(0,0,0,0.35)"
               >
-                {status === "En attente d'approbation" ? (
+                {status === "EN ATTENTE D'APPROBATION" ? (
                   <>
                     <MenuItem
                       fontWeight="600"
@@ -339,7 +339,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 p="6px"
                 boxShadow="0 8px 30px rgba(0,0,0,0.35)"
               >
-                {status === "En attente d'approbation" ? (
+                {status === "EN ATTENTE D'APPROBATION" ? (
                   <>
                     <MenuItem
                       icon={<FaRegEdit color="orange.300" size="1rem" />}

@@ -87,9 +87,18 @@ export default function TaskDetailsDrawer({
           <VStack align="start" spacing={1} position="relative">
             <Flex justify="space-between">
               <Box>
-                <Text fontWeight="bold" fontFamily="monospace">
-                  {task.taskNumber}
-                </Text>
+                <HStack>
+                  <Text fontWeight="bold" fontFamily="monospace">
+                    {task.taskNumber}
+                  </Text>
+                  <Badge
+                    colorScheme={task.isResolved ? "green" : "yellow"}
+                    mb="1rem"
+                    ml="2rem"
+                  >
+                    {task.isResolved ? "Resolue" : "Ouverte"}
+                  </Badge>
+                </HStack>
                 <HStack position="relative" bottom="1rem">
                   <Avatar
                     size="sm"
@@ -103,27 +112,6 @@ export default function TaskDetailsDrawer({
                 </HStack>
               </Box>
 
-              <HStack
-                position="relative"
-                left="2.2rem"
-                bottom="1.8rem"
-                spacing={2}
-              >
-                <Badge
-                  colorScheme={
-                    task.priority === "Haute"
-                      ? "red"
-                      : task.priority === "Moyenne"
-                      ? "orange"
-                      : "green"
-                  }
-                >
-                  {task.priority}
-                </Badge>
-                <Badge colorScheme={task.isResolved ? "green" : "yellow"}>
-                  {task.isResolved ? "Resolue" : "Ouverte"}
-                </Badge>
-              </HStack>
               {!task.isResolved && (
                 <Box position="absolute" right="0.2rem">
                   <TaskResolutionPopover onSubmit={handleResolution} />

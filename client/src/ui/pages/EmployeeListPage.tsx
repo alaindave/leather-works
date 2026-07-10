@@ -88,7 +88,7 @@ const EmployeeListPage = () => {
         bg="#F8F9FB"
         height="10rem"
         mt="0.5rem"
-        ml="0.2rem"
+        ml="0.05rem"
       >
         <Flex>
           <Box>
@@ -150,7 +150,7 @@ const EmployeeListPage = () => {
           justify="space-between"
           gap={3}
         >
-          <Flex wrap="wrap" gap={2} mt="1.1rem">
+          <Flex wrap="wrap" gap={2} ml="0.05rem" mt="1.05rem">
             <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
           </Flex>
 
@@ -158,8 +158,8 @@ const EmployeeListPage = () => {
             position="relative"
             left="1.1rem"
             wrap="wrap"
-            mt="0.8rem"
-            mr="1.2rem"
+            mt="0.7rem"
+            mr="2.2rem"
           >
             <SearchBar onSearch={handleOnSearch} />
           </Flex>
@@ -167,7 +167,13 @@ const EmployeeListPage = () => {
       </Flex>
 
       {/* LIST AREA */}
-      <Flex flex="1" overflow="hidden" bg="transparent" mt="0.3rem" ml="0.3rem">
+      <Flex
+        flex="1"
+        overflow="hidden"
+        bg="transparent"
+        mt="0.1rem"
+        ml="0.05rem"
+      >
         <Box w="100%" h="100%" overflowY="auto" borderRadius="inherit">
           {loading ? (
             <VStack spacing={0}>
@@ -219,7 +225,7 @@ const EmployeeListPage = () => {
                     key={employee._id}
                     bg="#ffffff"
                     borderBottom="1px solid #1E355A"
-                    margin="0.1rem"
+                    margin="0.05rem"
                   >
                     <EmployeeCard employee={employee} />
                   </ListItem>

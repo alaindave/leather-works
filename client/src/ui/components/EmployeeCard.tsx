@@ -9,10 +9,7 @@ import {
   HStack,
   Image,
   Text,
-  VStack,
 } from "@chakra-ui/react";
-import { keyframes } from "@emotion/react";
-import { CiClock2 } from "react-icons/ci";
 import { GiClockwork } from "react-icons/gi";
 import { GoDotFill } from "react-icons/go";
 import { Link } from "react-router-dom";
@@ -84,7 +81,7 @@ const EmployeeCard = ({ employee }: Props) => {
   const [loadingAttendance, setLoadingAttendance] = useState(true);
   const [photo_url, setPhotoUrl] = useState("");
 
-  //Fetch attendance r
+  //Fetch attendance
   useEffect(() => {
     window.electron.attendance
       .getAttendanceRecord(employee._id, new Date().toISOString().split("T")[0])
@@ -171,190 +168,150 @@ const EmployeeCard = ({ employee }: Props) => {
     }
   };
 
-  const flashLate = keyframes`
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.2;
-    transform: scale(1.08);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-`;
-
   return (
     <Flex
-      bg="#ffffff"
+      ml="20rem"
+      w="80rem"
       height="5.2rem"
-      w="80vw"
       padding="0.3rem"
-      justify="space-between"
+      position="relative"
     >
-      {/* Employee info */}
-      <Flex justify="space-between">
-        <Link
-          to={{
-            pathname: `/employees_admin/employees_list/${employee._id}`,
-          }}
-          state={{ photo_url }}
+      <Link
+        to={{
+          pathname: `/employees_admin/employees_list/${employee._id}`,
+        }}
+        state={{ photo_url, attendance }}
+      >
+        <Image
+          src={photo_url || defaultAvatar}
+          boxSize="70px"
+          borderRadius="full"
+          fit="cover"
+          mt="0.1rem"
+          ml="0.4rem"
+        />
+      </Link>
+      <Box ml="1.8rem">
+        <Text
+          color="gray.900"
+          fontWeight="600"
+          fontSize="23px"
+          fontFamily="revert-layer"
         >
-          <Image
-            src={photo_url || defaultAvatar}
-            boxSize="70px"
-            borderRadius="full"
-            fit="cover"
-            mt="0.1rem"
-            ml="0.4rem"
-          />
-        </Link>
-        <Box ml="1.8rem">
-          <Text
-            color="gray.900"
-            fontWeight="600"
-            fontSize="23px"
-            fontFamily="revert-layer"
-          >
-            {employee.firstName} {employee.lastName}
-          </Text>
+          {employee.firstName} {employee.lastName}
+        </Text>
 
-          <HStack position="relative" bottom="0.95rem">
-            <Text color="gray.700" fontSize="16px" fontWeight="500">
-              {employee.role}
-            </Text>{" "}
-            <Box
-              color="green"
-              fontSize="14px"
-              position="relative"
-              bottom="0.5rem"
-            >
-              <GoDotFill />
-            </Box>
-            <Text color="gray.800" fontWeight="500">
-              {employee.department}
-            </Text>
-          </HStack>
-        </Box>
-      </Flex>
-
-      {/* Clock In Info */}
-      <Flex justify="space-between" mt="0.5rem" mr="9rem">
-        {errorMessage && (
-          <Text color="red.400" mt="1rem" fontSize="1.2rem" fontWeight="500">
-            Veuillez entrer une heure valide!
-          </Text>
-        )}
-        <VStack>
+        <HStack width="23rem" position="relative" bottom="0.95rem">
+          <Text color="gray.700" fontSize="16px" fontWeight="500">
+            {employee.role}
+          </Text>{" "}
           <Box
-            opacity={attendance ? 1 : 0}
-            pointerEvents={attendance ? "auto" : "none"}
-            animation={
-              attendance && attendance?.status !== "PONCTUEL"
-                ? `${flashLate} 1.5s ease-in-out 2`
-                : undefined
-            }
+            color="green"
+            fontSize="14px"
+            position="relative"
+            bottom="0.5rem"
           >
+            <GoDotFill />
+          </Box>
+          <Text color="gray.800" fontWeight="500">
+            {employee.department}
+          </Text>
+          {!loadingAttendance && attendance?.status === "CONGÉ" ? (
+            <Badge
+              position="absolute"
+              right="1rem"
+              bottom="1rem"
+              bg="#3182CE"
+              color="gray.200"
+              fontSize="14px"
+              height="22px"
+            >
+              En Congé
+            </Badge>
+          ) : !loadingAttendance && attendance?.status === "ABSENT" ? (
+            <Badge
+              position="absolute"
+              right="1rem"
+              bottom="1rem"
+              ml="1rem"
+              bg="#E53E3E"
+              color="gray.200"
+              fontSize="14px"
+            >
+              Absent
+            </Badge>
+          ) : null}
+          <Box>
             {!loadingAttendance && attendance?.status === "PONCTUEL" ? (
-              <Badge bg="#123D2B" color="#5EF29B" fontSize="14px">
+              <Badge
+                position="absolute"
+                bottom="1rem"
+                right="1rem"
+                bg="#38A169"
+                color="gray.200"
+                fontSize="14px"
+              >
                 A l'heure
               </Badge>
-            ) : !loadingAttendance && attendance?.status === "ABSENT" ? (
-              <Badge mt="1rem" bg="red.900" color="red.200" fontSize="14px">
-                Absence
-              </Badge>
-            ) : (
-              <AddClockInNotesPopover
-                existingNotes={attendance?.lateNotes}
-                onSubmit={handleLateNotes}
-              />
-            )}
+            ) : !loadingAttendance && attendance?.status === "RETARD" ? (
+              <Box position="absolute" bottom="1rem" right="1rem">
+                <AddClockInNotesPopover
+                  existingNotes={attendance?.lateNotes}
+                  onSubmit={handleLateNotes}
+                />
+              </Box>
+            ) : null}
           </Box>
-          <HStack>
-            <Box
-              opacity={attendance && attendance.status !== "ABSENT" ? 1 : 0}
-              pointerEvents={attendance ? "auto" : "none"}
-            >
-              <CiClock2 color="#967103" size="22px" />
-            </Box>
-            <Box
-              opacity={attendance && attendance.status !== "ABSENT" ? 1 : 0}
-              pointerEvents={attendance ? "auto" : "none"}
-              color="gray.900"
-              fontSize="17px"
-              fontWeight="500"
-            >
-              {attendance?.clockIn &&
-                String(new Date(attendance.clockIn).getHours()).padStart(
-                  2,
-                  "0"
-                )}
-              :
-              {attendance?.clockIn &&
-                String(new Date(attendance.clockIn).getMinutes()).padStart(
-                  2,
-                  "0"
-                )}
+          <HStack position="relative" left="1rem" bottom="0.7rem">
+            {!attendance && displayClock ? (
+              <Button
+                color="#c89704"
+                backgroundColor="transparent"
+                _hover={{ bg: "transparent" }}
+                onClick={handleToggleClockInEdit}
+              >
+                <GiClockwork className="fa-3x" size="2rem" />
+              </Button>
+            ) : null}
+            <Box width="4rem">
+              {showEditable && (
+                <Editable
+                  visibility={showEditable ? "visible" : "hidden"}
+                  pointerEvents={showEditable ? "auto" : "none"}
+                  defaultValue={_clockIn}
+                  onChange={(clockIn) => setClockIn(clockIn)}
+                  onFocus={() => setErrorMessage(false)}
+                  submitOnBlur={false}
+                  onSubmit={handleClockInSubmit}
+                >
+                  <EditablePreview
+                    color="red.600"
+                    fontSize="18px"
+                    animation="pulse 1.7s infinite"
+                    _focus={{
+                      animation: "none",
+                    }}
+                    sx={{
+                      "@keyframes pulse": {
+                        "0%": {
+                          opacity: 1,
+                        },
+                        "50%": {
+                          opacity: 0.3,
+                        },
+                        "100%": {
+                          opacity: 1,
+                        },
+                      },
+                    }}
+                  />
+                  <EditableInput color="gray.700" />
+                </Editable>
+              )}
             </Box>
           </HStack>
-        </VStack>
-        <HStack
-        //  position="relative" left="3rem"
-        >
-          {!attendance && displayClock ? (
-            <Button
-              color="#c89704"
-              backgroundColor="transparent"
-              _hover={{ bg: "transparent" }}
-              onClick={handleToggleClockInEdit}
-              mr="1rem"
-            >
-              <GiClockwork className="fa-3x" size="2rem" />
-            </Button>
-          ) : null}
-
-          <Box width="4rem">
-            {showEditable && (
-              <Editable
-                visibility={showEditable ? "visible" : "hidden"}
-                pointerEvents={showEditable ? "auto" : "none"}
-                defaultValue={_clockIn}
-                onChange={(clockIn) => setClockIn(clockIn)}
-                onFocus={() => setErrorMessage(false)}
-                submitOnBlur={false}
-                onSubmit={handleClockInSubmit}
-              >
-                <EditablePreview
-                  color="red.600"
-                  fontSize="18px"
-                  animation="pulse 1.7s infinite"
-                  _focus={{
-                    animation: "none",
-                  }}
-                  sx={{
-                    "@keyframes pulse": {
-                      "0%": {
-                        opacity: 1,
-                      },
-                      "50%": {
-                        opacity: 0.3,
-                      },
-                      "100%": {
-                        opacity: 1,
-                      },
-                    },
-                  }}
-                />
-                <EditableInput color="gray.700" />
-              </Editable>
-            )}
-          </Box>
         </HStack>
-      </Flex>
+      </Box>
     </Flex>
   );
 };

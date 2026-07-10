@@ -31,7 +31,7 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
     borderRadius="6px"
     height={height}
     width={width}
-    background="linear-gradient(90deg, #0A1F57 25%, #132C68 37%, #0A1F57 63%)"
+    bg="gray.300"
     backgroundSize="400% 100%"
     animation="shimmer 1.4s ease infinite"
   />
@@ -152,7 +152,7 @@ const EmployeeLeavePage = () => {
             position="relative"
             top="0.5rem"
             ml="3px"
-            bg="#03143B"
+            bg="gray.300"
             height="200px"
             width="80vw"
             borderRadius="20px"
@@ -171,7 +171,7 @@ const EmployeeLeavePage = () => {
           {/* TABLE HEADER */}
           <Grid
             templateColumns={gridTemplate}
-            bg="#08162b"
+            bg="gray.300"
             mt="0.5rem"
             ml="0.3rem"
             mr="0.3rem"
@@ -192,7 +192,7 @@ const EmployeeLeavePage = () => {
               <Grid
                 key={i}
                 templateColumns={gridTemplate}
-                bg="#0A1F57"
+                bg="gray.300"
                 borderBottom="1px solid #1E355A"
                 alignItems="center"
                 px={6}
@@ -213,7 +213,7 @@ const EmployeeLeavePage = () => {
           </Box>
 
           {/* FOOTER */}
-          <Box bg="#08162b" height="80px" width="80vw" mb="1rem" />
+          <Box bg="gray.300" height="80px" width="80vw" mb="1rem" />
         </VStack>
       </>
     );
@@ -222,7 +222,13 @@ const EmployeeLeavePage = () => {
     <>
       <Flex direction="column" justify="space-between">
         {/* Header */}
-        <Box mt="0.5rem" ml="0.1rem" bg="#F8F9FB" height="10rem" width="79.2vw">
+        <Box
+          mt="0.5rem"
+          ml="0.05rem"
+          bg="#F8F9FB"
+          height="10rem"
+          width="79.2vw"
+        >
           <Flex>
             <Box>
               <HStack>
@@ -304,9 +310,9 @@ const EmployeeLeavePage = () => {
               fontWeight="600"
               bg="#F8F9FB"
               height="5rem"
-              mt="0.2rem"
-              ml="0.1rem"
-              mb="0.2rem"
+              mt="0.05rem"
+              ml="0.05rem"
+              mb="0.05rem"
               width="79vw"
               overflowY="hidden"
               overflowX="hidden"
@@ -320,7 +326,7 @@ const EmployeeLeavePage = () => {
               <Text color="gray.800" fontSize="1.1rem" mt={4}>
                 Fin de congé
               </Text>
-              <Text mt={4} color="gray.800" fontSize="1.1rem">
+              <Text mt={4} ml={2} color="gray.800" fontSize="1.1rem">
                 Motif
               </Text>
               <Text color="gray.800" fontSize="1.1rem" mt={4}>
@@ -364,7 +370,7 @@ const EmployeeLeavePage = () => {
         {/* Footer */}
         <Flex
           mb="2.7rem"
-          ml="0.15rem"
+          ml="0.01rem"
           height="3.5rem"
           width="80.5vw"
           justify="space-between"

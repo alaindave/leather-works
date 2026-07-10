@@ -9,6 +9,7 @@ export async function createLeave(leave: Partial<Leave>) {
   if (!employee) {
     throw new Error("No employee found with the given ID");
   }
+  console.log("LEAVE TO CREATE:", leave);
   const today = new Date();
   const submittedAt = today.toISOString().split("T")[0];
   const time = today.toISOString();
@@ -122,13 +123,14 @@ export async function getLeaveByEmployee(employeeId: string) {
   );
 }
 
-export async function getOngoingLeaves() {
+export async function getOngoingLeaves(): Promise<Leave[]> {
   return all(
     `
 SELECT * 
 FROM leaves 
 WHERE startDate <= date('now') 
-  AND endDate >= date('now');
+  AND endDate >= date('now')
+  AND status = 'APPROUVÉ';
 
     `
   );

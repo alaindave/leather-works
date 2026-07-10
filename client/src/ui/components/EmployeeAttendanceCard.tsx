@@ -265,7 +265,7 @@ const EmployeeAttendanceCard = ({
       alignItems="center"
       px={4}
       py={5}
-      bg="#F8F9FB"
+      bg="#ffffff"
       border="0.3px solid gray"
       width="80.5vw"
       minH="6.3rem"
@@ -423,9 +423,9 @@ const EmployeeAttendanceCard = ({
         )}
       </Box>
 
-      {/* Actions */}
-      <HStack mr={3}>
-        {!localAttendance?.clockOut && (
+      {/* Action buttons */}
+      <Box position="absolute" mb="1rem" right="3rem">
+        {!localAttendance?.clockOut ? (
           <Button
             bg="transparent"
             _hover={{
@@ -436,20 +436,19 @@ const EmployeeAttendanceCard = ({
           >
             <GiClockwork size="1.8rem" />
           </Button>
+        ) : (
+          <Button
+            bg="transparent"
+            _hover={{
+              bg: "transparent",
+            }}
+            color="red.600"
+            onClick={onDelete}
+          >
+            <FaWindowClose size="1.1rem" />
+          </Button>
         )}
-
-        <Button
-          bg="transparent"
-          _hover={{
-            bg: "transparent",
-          }}
-          color="red.600"
-          onClick={onDelete}
-          mr={2}
-        >
-          <FaWindowClose size="1.1rem" />
-        </Button>
-      </HStack>
+      </Box>
     </Grid>
   );
 };

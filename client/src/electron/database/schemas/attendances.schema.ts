@@ -11,7 +11,7 @@ export async function createAttendancesTable() {
       clockIn TEXT ,
       clockOut TEXT,
       status TEXT NOT NULL
-        CHECK(status IN ('PONCTUEL', 'RETARD', 'ABSENT')),
+        CHECK(status IN ('PONCTUEL', 'RETARD', 'ABSENT','CONGÉ')),
       lateMinutes INTEGER ,
       lateNotes TEXT,
       createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

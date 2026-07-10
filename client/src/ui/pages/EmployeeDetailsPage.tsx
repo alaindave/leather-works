@@ -32,9 +32,14 @@ import NotAuthorized from "../components/NotAuthorized";
 import { CiCalendarDate } from "react-icons/ci";
 import { FaRegClock } from "react-icons/fa";
 import EmployeePhotoUpload from "../components/EmployeePhotoUpload";
+import Attendance from "../../shared/types/Attendance";
 
 type PhotoState = {
   photo_url?: string;
+};
+
+type AttendanceState = {
+  attendance?: Attendance;
 };
 
 const EmployeeDetailsPage = () => {
@@ -47,6 +52,7 @@ const EmployeeDetailsPage = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const location = useLocation();
   const { photo_url } = (location.state as PhotoState) || "";
+  const { attendance } = (location.state as AttendanceState) || {};
 
   useEffect(() => {
     if (!_id) return;
@@ -192,7 +198,7 @@ const EmployeeDetailsPage = () => {
                 to={{
                   pathname: `/employees_admin/employees_list/${_id}/attendances`,
                 }}
-                state={{ employee, photo_url }}
+                state={{ employee, photo_url, attendance }}
               >
                 <HStack
                   cursor="pointer"
@@ -259,13 +265,6 @@ const EmployeeDetailsPage = () => {
             >
               <VStack spacing={3} mt="1rem">
                 <HStack>
-                  {/* <Image
-                    src={photo_url}
-                    boxSize="7rem"
-                    borderRadius="full"
-                    objectFit="cover"
-                    mt="0.5rem"
-                  /> */}
                   <EmployeePhotoUpload
                     employeeId={_id!}
                     currentPhoto={photo_url}

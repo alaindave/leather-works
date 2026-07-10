@@ -9,12 +9,6 @@ interface Props {
 }
 
 const TaskCard = ({ task, onTaskClick, onTaskDelete }: Props) => {
-  const taskMapping = (priority: string): string => {
-    if (priority === "Haute") return "H";
-    if (priority === "Moyenne") return "M";
-    return "B";
-  };
-
   return (
     <VStack
       bg={task.isResolved ? "green.200" : "red.200"}
@@ -42,7 +36,7 @@ const TaskCard = ({ task, onTaskClick, onTaskDelete }: Props) => {
           onClick={() => onTaskClick(task)}
           cursor="pointer"
         >
-          {task.taskNumber}-{taskMapping(task.priority)}
+          {task.taskNumber}
         </Box>
         <Text mt="0.4rem">{task.author.firstName}</Text>
         <Box

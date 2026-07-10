@@ -61,7 +61,7 @@ const EmployeeAttendancePage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const gridTemplate = `
-  1.5fr 1.5fr 1.3fr 1.3fr 1fr 1fr 1fr
+  1.5fr 1.5fr 1.3fr 1.3fr 1fr 1fr 0.8fr
 `;
   /* ================= CLOCK ================= */
   useEffect(() => {
@@ -135,7 +135,7 @@ const EmployeeAttendancePage = () => {
   };
 
   return (
-    <Flex direction="column" ml="0.2rem" mr="0.5rem">
+    <Flex direction="column" ml="0.02rem" mr="0.5rem">
       {/* ================= ALERT DIALOG ================= */}
       <AlertDialog
         isOpen={isOpen}
@@ -286,8 +286,8 @@ const EmployeeAttendancePage = () => {
         px={10}
         fontWeight="600"
         bg="#F8F9FB"
-        mt="0.12rem"
-        mb="0.12rem"
+        mt="0.03rem"
+        mb="0.03rem"
         height="4.7rem"
         width="80vw"
         overflowY="hidden"
@@ -340,7 +340,7 @@ const EmployeeAttendancePage = () => {
           </Text>
         ) : (
           attendances
-            .filter((a) => a.status !== "ABSENT")
+            .filter((a) => a.status !== "ABSENT" && a.status !== "CONGÉ")
             .filter((a) => !filter || a.department === filter)
             .filter((a) =>
               `${a.firstName} ${a.lastName}`

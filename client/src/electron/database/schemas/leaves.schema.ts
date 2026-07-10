@@ -11,8 +11,8 @@ export async function createLeavesTable() {
       endDate TEXT NOT NULL,
       subject TEXT NOT NULL,
       notes TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'En attente d''approbation'
-        CHECK(status IN ('Approuvé', 'Refusé', 'En attente d''approbation','Annulé')),
+      status TEXT NOT NULL DEFAULT 'EN ATTENTE D''APPROBATION'
+        CHECK(status IN ('APPROUVÉ', 'REFUSÉ', 'EN ATTENTE D''APPROBATION','ANNULÉ')),
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       lastSyncedAt DATETIME,

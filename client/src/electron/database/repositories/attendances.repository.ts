@@ -255,6 +255,26 @@ export async function updateAttendance(
   return getAttendanceById(_id);
 }
 
+export async function createLeaveAttendance(employeeId: string, date: string) {
+  const now = new Date().toISOString();
+
+  return run(
+    `
+      INSERT INTO attendances (
+        employeeId,
+        date,
+        status,
+        createdAt,
+        updatedAt,
+        synced,
+        lastSyncedAt
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `,
+    [employeeId, date, "CONGÉ", now, now, 0, now]
+  );
+}
+
 export async function deleteAttendance(_id: string) {
   await run(
     `

@@ -11,6 +11,7 @@ import {
   Button,
   useDisclosure,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
 
 interface Props {
   onSubmit: (notes: string | undefined) => Promise<boolean>;
@@ -42,17 +43,40 @@ const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
     }
   };
 
+  const flashLate = keyframes`
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.2;
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
   return (
     <Popover
       isOpen={isOpen}
       onOpen={onOpen}
       onClose={onClose}
-      placement="left"
+      placement="right"
       closeOnBlur={false}
       initialFocusRef={textareaRef}
     >
       <PopoverTrigger>
-        <Badge bg="red.500" color="gray.900" fontSize="14px" cursor="pointer">
+        <Badge
+          animation={`${flashLate} 1.5s ease-in-out 2`}
+          bg="#DD6B20"
+          color="gray.200"
+          fontSize="14px"
+          cursor="pointer"
+        >
           En retard
         </Badge>
       </PopoverTrigger>

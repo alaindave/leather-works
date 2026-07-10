@@ -26,7 +26,7 @@ const SearchBar = ({ onSearch }: Props) => {
           placeholder="Rechercher un employé"
           _placeholder={{ color: "black", fontSize: "1rem", fontWeight: "500" }}
           variant="filled"
-          width="40vw"
+          width="34vw"
           height="45px"
           textColor="black"
           _focus={{ bg: "#FFFFFF" }}

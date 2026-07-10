@@ -43,10 +43,8 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
         backgroundColor="#07182F"
         borderColor="rgba(255,196,0,0.18)"
         borderRadius="18px"
-        position="relative"
-        left="19rem"
-        bottom="1rem"
         maxH="165px"
+        ml="3rem"
         overflowY="auto"
         _hover={{ color: "yellow" }}
       >

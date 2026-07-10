@@ -19,6 +19,7 @@ import { fileURLToPath } from "url";
 import sync from "./services/sync.service.js";
 import { getEmployeesPhotosDir } from "./util/getEmployeesPhotosDir.util.js";
 import { registerAppIPC } from "./ipc/app.ipc.js";
+import { markEmployeesOnLeave } from "./services/markEmployeesOnLeave.service.js";
 
 const environment = isDev() ? "Development" : "Production";
 
@@ -133,6 +134,8 @@ async function bootstrap() {
   await sync();
   // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
   // Menu.setApplicationMenu(mainMenu);
+  // Create CONGE attendances for today's approved leaves
+  await markEmployeesOnLeave();
 }
 
 bootstrap().catch((error) => {
