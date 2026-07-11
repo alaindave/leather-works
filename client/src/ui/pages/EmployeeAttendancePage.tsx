@@ -134,6 +134,10 @@ const EmployeeAttendancePage = () => {
     await window.electron.file.save(csv);
   };
 
+  //Get attendances without leaves
+  const attendancesWithoutLeaves = attendances?.filter(
+    (a) => a.status != "CONGÉ"
+  );
   return (
     <Flex
       direction="column"
@@ -337,12 +341,12 @@ const EmployeeAttendancePage = () => {
               ))}
             </VStack>
           </>
-        ) : attendances.length === 0 ? (
+        ) : attendancesWithoutLeaves.length === 0 ? (
           <Text
             position="relative"
-            top="15rem"
+            top="12rem"
             left="20rem"
-            color="#ffffff"
+            color="gray.700"
             fontSize="2.1rem"
             fontWeight="500"
           >
@@ -381,7 +385,6 @@ const EmployeeAttendancePage = () => {
         rgba(255,255,255,0.03)
       )"
         boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-        // mb="2.7rem"
         mr="0.15rem"
         height="5.5rem"
         justify="space-between"

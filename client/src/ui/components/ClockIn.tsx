@@ -23,7 +23,7 @@ interface Props {
   isUnlocked: boolean;
 }
 
-const formatLateMinutes = (lateMinutes: number): string => {
+export const formatLateMinutes = (lateMinutes: number): string => {
   if (lateMinutes < 60) {
     return `${lateMinutes} min`;
   }

@@ -320,7 +320,7 @@ const EmployeeAttendanceCard = ({
           fontSize="1.3rem"
           whiteSpace="normal"
           wordBreak="break-word"
-          maxW="8rem"
+          maxW="7rem"
           noOfLines={2}
         >
           {firstName} {lastName}
@@ -370,7 +370,7 @@ const EmployeeAttendanceCard = ({
           >
             <Editable
               position="relative"
-              right="0.5rem"
+              right="1rem"
               bottom="0.5rem"
               value={draftClockOut ?? ""}
               onChange={setDraftClockOut}
@@ -462,14 +462,14 @@ const EmployeeAttendanceCard = ({
             </Editable>
           </Tooltip>
         ) : (
-          <Text color="gray.400" width="80px" fontSize="18px" px={2}>
+          <Text color="gray.400" width="80px" fontSize="18px">
             --:--
           </Text>
         )}
       </Box>
 
       {/* Action buttons */}
-      <Box position="absolute" mb="1rem" right="3rem">
+      <Box position="relative" right="1rem" mb="1rem">
         {!localAttendance?.clockOut ? (
           <Button
             bg="transparent"

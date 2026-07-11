@@ -23,6 +23,7 @@ import TaskDetailsDrawer from "../components/TaskDetailsDrawer";
 import Task from "../../shared/types/Task";
 import useTaskStore from "../../store/task.store";
 import { FaSyncAlt } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -320,7 +321,6 @@ const EmployeeAdminPage = () => {
               Notes
             </Text>
           </Flex>
-
           <Textarea
             placeholder={
               "Bienvenue sur LeatherWorks.\nÉcrivez vos notes ici..."
@@ -346,11 +346,14 @@ const EmployeeAdminPage = () => {
           />
           <Button
             position="absolute"
-            right="0.5rem"
+            right="1.3rem"
             colorScheme="blue"
-            width="5rem"
+            width="6rem"
             height="3rem"
           >
+            <Box mr="0.4rem">
+              <FaBell />
+            </Box>
             Rappel
           </Button>
         </Box>

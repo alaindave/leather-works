@@ -28,6 +28,9 @@ import Employee from "../../shared/types/Employee";
 import DatePicker from "react-datepicker";
 import { FaSave } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
+import { MdFactory, MdOutlineNumbers, MdPerson2, MdWork } from "react-icons/md";
+import { FaCalendarDays } from "react-icons/fa6";
+import { FaRegNoteSticky } from "react-icons/fa6";
 
 interface Props {
   isOpen: boolean;
@@ -149,7 +152,7 @@ const LeaveSubmissionModal = ({
                       </HStack>
                     ) : (
                       <p style={{ color: "#ffffff", fontSize: "16px" }}>
-                        Choisissez un employé
+                        Cliquez ici pour choisir un employé
                       </p>
                     )}
                   </MenuButton>
@@ -181,6 +184,9 @@ const LeaveSubmissionModal = ({
                 <HStack>
                   <Box>
                     <HStack>
+                      <Box marginBottom="10px">
+                        <MdPerson2 color="#F2B705" size="1.3rem" />
+                      </Box>
                       <FormLabel
                         color="#e6ebfe"
                         marginBottom="10px"
@@ -200,6 +206,9 @@ const LeaveSubmissionModal = ({
                   </Box>
                   <Box>
                     <HStack>
+                      <Box marginBottom="10px">
+                        <MdPerson2 color="#F2B705" size="1.3rem" />
+                      </Box>
                       <FormLabel
                         color="#e6ebfe"
                         marginBottom="10px"
@@ -220,6 +229,9 @@ const LeaveSubmissionModal = ({
                   </Box>
                   <Box>
                     <HStack>
+                      <Box marginBottom="10px">
+                        <MdWork color="#F2B705" size="1.3rem" />
+                      </Box>
                       <FormLabel
                         color="#e6ebfe"
                         marginBottom="10px"
@@ -243,6 +255,9 @@ const LeaveSubmissionModal = ({
                 <HStack>
                   <Box>
                     <HStack>
+                      <Box marginBottom="10px">
+                        <MdFactory color="#F2B705" size="1.3rem" />
+                      </Box>
                       <FormLabel
                         color="#e6ebfe"
                         marginBottom="10px"
@@ -263,6 +278,9 @@ const LeaveSubmissionModal = ({
                   </Box>
                   <Box>
                     <HStack>
+                      <Box marginBottom="10px">
+                        <FaCalendarDays color="#F2B705" size="1.3rem" />
+                      </Box>
                       <FormLabel
                         color="#e6ebfe"
                         marginBottom="10px"
@@ -317,6 +335,9 @@ const LeaveSubmissionModal = ({
                   </Box>
                   <Box>
                     <HStack>
+                      <Box marginBottom="10px">
+                        <FaCalendarDays color="#F2B705" size="1.3rem" />
+                      </Box>
                       <FormLabel
                         color="#e6ebfe"
                         marginBottom="10px"
@@ -373,6 +394,9 @@ const LeaveSubmissionModal = ({
                 <VStack>
                   <Box>
                     <HStack>
+                      <Box marginBottom="10px">
+                        <FaRegNoteSticky color="#F2B705" size="1.3rem" />
+                      </Box>
                       <FormLabel
                         color="#e6ebfe"
                         marginBottom="10px"
@@ -398,6 +422,9 @@ const LeaveSubmissionModal = ({
                   </Box>
                   <Box>
                     <HStack>
+                      <Box marginBottom="10px">
+                        <FaRegNoteSticky color="#F2B705" size="1.3rem" />
+                      </Box>
                       <FormLabel
                         color="#e6ebfe"
                         marginBottom="10px"

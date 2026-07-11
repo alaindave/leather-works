@@ -38,7 +38,7 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
 );
 
 const gridTemplate = `
-1.7fr 1.6fr 1.6fr 1.5fr 1.5fr 1fr 1fr
+1.8fr 1.6fr 1.6fr 1.5fr 1.5fr 1fr 1fr
 `;
 
 const EmployeeLeavePage = () => {
@@ -220,74 +220,70 @@ const EmployeeLeavePage = () => {
 
   return (
     <>
-      <Flex direction="column" justify="space-between">
+      <Flex
+        direction="column"
+        bg="#F8FAFC"
+        justify="space-between"
+        width="100vw"
+      >
         {/* Header */}
-        <Box
-          mt="0.5rem"
-          ml="0.05rem"
-          bg="#F8F9FB"
-          height="10rem"
-          width="79.2vw"
-        >
-          <Flex>
-            <Box>
-              <HStack>
-                <Text
-                  color="#1F2937"
-                  fontSize="1.6rem"
-                  fontWeight="700"
-                  ml="0.5rem"
-                  mt="0.5rem"
-                >
-                  Congés
-                </Text>
-                <Button
-                  bg="transparent"
-                  isLoading={loading}
-                  color="gray.800"
-                  _hover={{ bg: "transparent" }}
-                  fontSize="1rem"
-                  position="relative"
-                  bottom="0.2rem"
-                  right="1rem"
-                  onClick={handleLeaveSync}
-                >
-                  <FaSyncAlt />
-                </Button>
-              </HStack>
+        <Flex ml="0.05rem" height="10rem" width="80vw">
+          <Box>
+            <HStack>
               <Text
                 color="#1F2937"
-                fontSize="1rem"
-                fontWeight="500"
-                position="relative"
-                bottom="1.5rem"
+                fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
+                fontWeight="700"
                 ml="0.5rem"
+                mt="0.7rem"
               >
-                Gérez les demandes de congés
+                Congés
               </Text>
-            </Box>
-            <Spacer />
-            <Button
-              backgroundColor="#F2B705"
-              color="black"
-              size="md"
-              onClick={onOpen}
-              zIndex="1"
-              mt="0.7rem"
-              mr="1.3rem"
-            >
-              <FaCirclePlus />{" "}
-              <Text
+              <Button
+                bg="transparent"
+                isLoading={loading}
+                color="gray.800"
+                _hover={{ bg: "transparent" }}
+                fontSize="1rem"
                 position="relative"
-                top="0.5rem"
-                fontSize="1.1rem"
-                left="0.5rem"
+                bottom="0.2rem"
+                right="1rem"
+                onClick={handleLeaveSync}
               >
-                Soumettre une demande
-              </Text>
-            </Button>
-          </Flex>
-        </Box>
+                <FaSyncAlt />
+              </Button>
+            </HStack>
+            <Text
+              fontWeight="500"
+              left="0.45rem"
+              fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
+              color="gray.500"
+              position="relative"
+              bottom="1.4rem"
+            >
+              Gérez les demandes de congés
+            </Text>
+          </Box>
+          <Spacer />
+          <Button
+            bg="#4F46E5"
+            color="#ffffff"
+            size="md"
+            onClick={onOpen}
+            zIndex="1"
+            mt="1rem"
+            mr="1rem"
+            _hover={{ backgroundColor: "#4F46E5" }}
+          >
+            <Box mr="0.5rem">
+              {" "}
+              <FaCirclePlus size="1.2rem" />
+            </Box>
+            <Text bg="#4F46E5" fontSize="1.1rem" color="#ffffff" mt="0.8rem">
+              Soumettre une demande
+            </Text>
+          </Button>
+        </Flex>
 
         {/* Main area */}
         {leaves.length === 0 ? (
@@ -296,7 +292,7 @@ const EmployeeLeavePage = () => {
               fontSize="2rem"
               fontStyle="revert"
               fontWeight="600"
-              color="gray.200"
+              color="gray.600"
               position="relative"
               left="20rem"
             >
@@ -309,13 +305,15 @@ const EmployeeLeavePage = () => {
               templateColumns={gridTemplate}
               fontWeight="600"
               bg="#F8F9FB"
-              height="5rem"
-              mt="0.05rem"
-              ml="0.05rem"
-              mb="0.05rem"
-              width="79vw"
+              borderWidth="0.3px"
+              border="1px solid #E2E8F0"
+              boxShadow="0 2px 10px rgba(15,23,42,.06)"
+              height="4.7rem"
+              width="80vw"
               overflowY="hidden"
               overflowX="hidden"
+              mt="0.3rem"
+              ml="0.4rem"
             >
               <Text color="gray.800" fontSize="1.1rem" ml={8} mt={4}>
                 Employé
@@ -369,12 +367,15 @@ const EmployeeLeavePage = () => {
 
         {/* Footer */}
         <Flex
+          bg="#F8F9FB"
+          borderWidth="0.3px"
+          border="1px solid #E2E8F0"
+          boxShadow="0 2px 10px rgba(15,23,42,.06)"
           mb="2.7rem"
           ml="0.01rem"
           height="3.5rem"
-          width="80.5vw"
+          width="82vw"
           justify="space-between"
-          bg="#F8F9FB"
         >
           <Box
             mt="0.47rem"

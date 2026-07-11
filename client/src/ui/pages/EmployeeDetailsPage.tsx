@@ -147,15 +147,12 @@ const EmployeeDetailsPage = () => {
       {/* PAGE CONTAINER */}
       <Box
         position="relative"
-        marginTop="10px"
         bg="#F8F9FB"
         w="100%"
         maxW="1400px"
         mx="auto"
-        ml="0.3rem"
-        mr="0.3rem"
-        mb="1rem"
-        height="93.5vh"
+        ml="0.01rem"
+        height="95.1vh"
       >
         <VStack spacing={4} align="stretch">
           {/* HEADER */}

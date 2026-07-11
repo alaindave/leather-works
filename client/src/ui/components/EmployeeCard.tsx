@@ -177,8 +177,8 @@ const EmployeeCard = ({ employee }: Props) => {
       mr="2rem"
       padding="0.3rem"
       position="relative"
-      // overflowX="hidden"
-      // overflowY="hidden"
+      overflowX="hidden"
+      overflowY="hidden"
       justify="space-between"
     >
       {/* Employee info */}

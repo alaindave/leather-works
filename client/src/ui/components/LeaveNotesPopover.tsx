@@ -20,7 +20,7 @@ const LeaveNotesPopover = ({ subject, notes }: Props) => {
     <Popover trigger="hover" placement="right">
       <PopoverTrigger>
         <Text
-          color="gray.800"
+          color="gray.600"
           fontWeight="500"
           fontSize="1.1rem"
           cursor="pointer"

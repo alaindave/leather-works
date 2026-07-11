@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Image,
   Box,
   Grid,
   HStack,
@@ -11,7 +12,7 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useAdminUser from "../../store/auth.store";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { MdOutlineDeleteForever } from "react-icons/md";
@@ -21,6 +22,8 @@ import { FaRegEdit } from "react-icons/fa";
 import LeaveNotesPopover from "./LeaveNotesPopover";
 import LeaveEdit from "./LeaveEdit";
 import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
+import defaultAvatar from "../assets/default-avatar.jpeg";
+import Employee from "../../shared/types/Employee";
 
 interface Props {
   leave: LeaveWithEmployee;
@@ -30,7 +33,9 @@ interface Props {
 
 const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   const [localLeave, setLocalLeave] = useState<LeaveWithEmployee>(leave);
+  const [employee, setEmployee] = useState<Employee>({} as Employee);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [photo_url, setPhotoUrl] = useState("");
 
   const {
     _id,
@@ -46,6 +51,34 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   } = localLeave;
 
   const adminUser = useAdminUser((store) => store.adminUser);
+
+  //Fetch employee
+  useEffect(() => {
+    async function fetchEmployee() {
+      try {
+        const employee = await window.electron.employees.getById(
+          leave.employeeId
+        );
+        setEmployee(employee);
+      } catch (e) {
+        console.error("AN ERROR OCCURED WHILE FETCHING THE EMPLOYEE.", e);
+      }
+    }
+    fetchEmployee();
+  }, []);
+
+  //Fetch employee photos URL
+  useEffect(() => {
+    async function load() {
+      if (!employee.photo_path) return;
+      const base64 = await window.electron.employees.getPhotoUrl(
+        employee.photo_path
+      );
+      setPhotoUrl(`data:image/jpeg;base64,${base64}`);
+    }
+
+    load();
+  }, [employee.photo_path]);
 
   // //Handle leave approval
   const handleApprove = () => {
@@ -125,19 +158,28 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
     <Grid
       templateColumns={gridTemplate}
       alignItems="center"
-      ml="0.02rem"
+      ml="0.5rem"
       px={3}
       py={3}
       bg="#ffffff"
+      border="1px solid #E2E8F0"
+      borderWidth="0.3px"
+      boxShadow="0 2px 10px rgba(15,23,42,.06)"
       minH="6.3rem"
-      border="0.3px solid gray"
       width="80vw"
       marginBottom="0.8px"
     >
       <Box>
         <HStack>
+          <Image
+            src={photo_url || defaultAvatar}
+            boxSize="70px"
+            borderRadius="full"
+            fit="cover"
+          />
           <Text
             color="gray.800"
+            mt="0.6rem"
             fontWeight="500"
             fontSize="1.1rem"
             whiteSpace="normal"
@@ -150,12 +192,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         </HStack>
       </Box>
       <Box>
-        <Text fontSize="1.1rem" color="gray.800" fontWeight="500">
+        <Text color="gray.600" fontWeight="500" fontSize="1.1rem">
           {new Date(startDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
       <Box>
-        <Text fontSize="1.1rem" color="gray.800" fontWeight="500">
+        <Text color="gray.600" fontWeight="500" fontSize="1.1rem">
           {new Date(endDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>
@@ -191,7 +233,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           </Text>
         )}
       </Box>
-      <Box>
+      <Box position="relative" left="1rem">
         <Text color="gray.800" fontSize="1.1rem">
           {remainingLeave}
         </Text>
@@ -220,6 +262,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 aria-label="Actions"
                 position="relative"
                 top="1rem"
+                left="2rem"
               />
 
               <MenuList
