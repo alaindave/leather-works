@@ -211,6 +211,8 @@ const EmployeeNavBar = () => {
 
       {/* ADMIN USER AREA */}
       <Flex
+        position="absolute"
+        bottom="0.3rem"
         border="1px solid #E2E8F0"
         bg="gray.100"
         boxShadow="0 2px 10px rgba(15,23,42,.06)"
@@ -247,7 +249,7 @@ const EmployeeNavBar = () => {
           <Text
             position="relative"
             bottom="1.1rem"
-            color="gray.400"
+            color="gray.500"
             fontWeight="500"
           >
             {adminUser?.email}
@@ -298,17 +300,17 @@ const EmployeeNavBar = () => {
       {/*Lower bar*/}
       <Flex
         position="relative"
-        top="3.7rem"
+        top="3rem"
         width="100vw"
         height="6.5vh"
         bg="gray.200"
         justify="space-between"
       >
-        <Text ml="1rem" mt="0.6rem" fontSize="1rem" color="gray.600">
+        <Text ml="1rem" mt="0.2rem" fontSize="1rem" color="gray.600">
           Afritan-Gestion de personnel
         </Text>
 
-        <HStack mr="2rem" mt="0.6rem" fontSize="1rem" color="gray.600">
+        <HStack mr="2rem" fontSize="1rem" color="gray.600">
           <Text>Version 1.0.0</Text>
           <Divider orientation="vertical" h="1.3rem" borderColor="gray.500" />
           <HStack>

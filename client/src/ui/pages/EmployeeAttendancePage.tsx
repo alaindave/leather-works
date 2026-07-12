@@ -139,14 +139,7 @@ const EmployeeAttendancePage = () => {
     (a) => a.status != "CONGÉ"
   );
   return (
-    <Flex
-      direction="column"
-      ml="0.02rem"
-      mr="0.5rem"
-      width="100vw"
-      h="95.1vh"
-      bg="#F8FAFC"
-    >
+    <Flex direction="column" ml="0.02rem" width="100vw" h="95.1vh" bg="#F8FAFC">
       {/* ================= ALERT DIALOG ================= */}
       <AlertDialog
         isOpen={isOpen}

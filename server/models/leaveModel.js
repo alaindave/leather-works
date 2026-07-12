@@ -37,7 +37,7 @@ const leaveSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: [`EN ATTENTE D''APPROBATION`, "APPROUVÉ", "REFUSÉ"],
+    enum: [`EN ATTENTE D''APPROBATION`, "APPROUVÉ", "REFUSÉ", "ANNULÉ"],
     default: `EN ATTENTE D''APPROBATION`,
   },
   isDeleted: { type: Number, default: 0, required: true },
