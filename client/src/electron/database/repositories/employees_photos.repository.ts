@@ -44,7 +44,7 @@ export async function uploadEmployeePhoto(
   const fileName = `${employeeId}${ext}`;
 
   const absolutePath = path.join(EMPLOYEE_PHOTO_DIR, fileName);
-  const relativePath = path.join("employee_photos", fileName);
+  const relativePath = path.join("afritan_employees_photos", fileName);
 
   // Hash of image contents
   const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");

@@ -111,7 +111,7 @@ async function syncEmployeePhoto(data, file) {
   console.log("PHOTO FILE:", file);
 
   if (!employee) {
-    throw new Error(`Employee ${data.employeeId} not found`);
+    throw new Error(`EMPLOYEE ${data.employeeId} NOT FOUND`);
   }
 
   if (!file) {
@@ -123,7 +123,7 @@ async function syncEmployeePhoto(data, file) {
 
   // Upload photo to Supabase Storage
   const { error } = await supabase.storage
-    .from("employee_photos")
+    .from("afritan_employees_photos")
     .upload(objectPath, file.buffer, {
       contentType: data.photo_mime_type,
       upsert: true,

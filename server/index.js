@@ -11,9 +11,8 @@ const adminUser = require("./routes/admin_user.route.js");
 const sync = require("./routes/sync.route.js");
 const auth = require("./routes/authenticate.route.js");
 const tasks = require("./routes/task.route.js");
-const { ensureEmployeePhotoDirectory } = require("./utils/employees_photos.js");
+const jobsRouter = require("./routes/jobs");
 const app = express();
-const { PHOTO_DIR } = require("./utils/employees_photos.js");
 
 const requiredEnvVars = [
   { key: "JWT_PRIVATE_KEY", name: "JWT Private Key" },
@@ -66,8 +65,7 @@ app.use("/adminUsers", adminUser);
 app.use("/tasks", tasks);
 app.use("/auth", auth);
 app.use("/sync", sync);
-app.use("/employees_photos", express.static(PHOTO_DIR));
-ensureEmployeePhotoDirectory();
+app.use("/api/jobs", jobsRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

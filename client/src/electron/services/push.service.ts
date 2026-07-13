@@ -46,9 +46,13 @@ export async function pushPendingChanges() {
       const photoPath = path.join(app.getPath("userData"), data.photo_path);
 
       if (fs.existsSync(photoPath)) {
-        form.append("employee_photos", fs.createReadStream(photoPath), {
-          filename: data.photo_filename,
-        });
+        form.append(
+          "afritan_employees_photos",
+          fs.createReadStream(photoPath),
+          {
+            filename: data.photo_filename,
+          }
+        );
       } else {
         console.error("PHOTO FILE MISSING:", photoPath);
       }
