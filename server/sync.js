@@ -5,7 +5,7 @@ const Task = require("./models/taskModel.js");
 const { AdminUser } = require("./models/adminUserModel.js");
 const fs = require("fs/promises");
 const path = require("path");
-const { PHOTO_DIR } = require("./utils/employees_photos.js");
+const supabase = require("./services/supabase.service.js");
 
 //sync employees
 async function syncEmployee(operation, data) {
@@ -106,8 +106,10 @@ async function syncUserNotes(data) {
 //sync employee photos
 async function syncEmployeePhoto(data, file) {
   const employee = await Employee.findById(data.employeeId);
+
   console.log("PHOTO METADATA:", data);
   console.log("PHOTO FILE:", file);
+
   if (!employee) {
     throw new Error(`Employee ${data.employeeId} not found`);
   }
@@ -116,22 +118,28 @@ async function syncEmployeePhoto(data, file) {
     throw new Error("PHOTO FILE MISSING");
   }
 
-  const serverPath = path.join(PHOTO_DIR, data.photo_filename);
+  // Store each employee's photos in their own folder
+  const objectPath = `${employee._id}/${data.photo_filename}`;
 
-  await fs.writeFile(serverPath, file.buffer);
+  // Upload photo to Supabase Storage
+  const { error } = await supabase.storage
+    .from("employee_photos")
+    .upload(objectPath, file.buffer, {
+      contentType: data.photo_mime_type,
+      upsert: true,
+    });
 
+  if (error) {
+    throw new Error(`Supabase upload failed: ${error.message}`);
+  }
+
+  // Update photo metadata
   employee.photo_filename = data.photo_filename;
-
-  employee.photo_path = `/employee_photos/${data.photo_filename}`;
-
+  employee.photo_path = objectPath;
   employee.photo_hash = data.photo_hash;
-
   employee.photo_mime_type = data.photo_mime_type;
-
   employee.photo_last_modified = new Date(data.photo_last_modified);
-
   employee.photo_version = data.photo_version;
-
   employee.updatedAt = data.updatedAt;
 
   await employee.save();

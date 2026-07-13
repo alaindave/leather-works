@@ -306,11 +306,11 @@ const EmployeeNavBar = () => {
         bg="gray.200"
         justify="space-between"
       >
-        <Text ml="1rem" mt="0.2rem" fontSize="1rem" color="gray.800">
+        <Text ml="1rem" mt="0.4rem" fontSize="1rem" color="gray.800">
           Afritan-Gestion de personnel
         </Text>
 
-        <HStack mr="2rem" fontSize="1rem" color="gray.600">
+        <HStack mt="0.3rem" mr="2rem" fontSize="1rem" color="gray.600">
           <Text color="gray.800">Version 1.0.0</Text>
           <Divider orientation="vertical" h="1.3rem" borderColor="gray.500" />
           <HStack>
