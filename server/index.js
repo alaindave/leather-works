@@ -11,7 +11,7 @@ const adminUser = require("./routes/admin_user.route.js");
 const sync = require("./routes/sync.route.js");
 const auth = require("./routes/authenticate.route.js");
 const tasks = require("./routes/task.route.js");
-const jobsRouter = require("./routes/jobs");
+const jobsRouter = require("./routes/jobs.route.js");
 const app = express();
 
 const requiredEnvVars = [
