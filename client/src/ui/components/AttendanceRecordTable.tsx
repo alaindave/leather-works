@@ -81,7 +81,8 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
 
               <Td>
                 <Badge
-                  colorScheme={getStatusColor(record.status)}
+                  bg={getStatusColor(record.status)}
+                  color="#ffffff"
                   px={3}
                   py={1}
                   borderRadius="full"

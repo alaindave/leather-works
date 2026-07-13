@@ -3,6 +3,7 @@ import { ipcMain } from "electron";
 import {
   createLeave,
   getLeaveById,
+  getLeaveByEmployeeId,
   getLeaveByMonth,
   getOngoingLeaves,
   updateLeave,
@@ -15,6 +16,13 @@ export function registerLeaveIPC() {
   ipcMain.handle("leave:create", async (_, leave: Partial<Leave>) => {
     return createLeave(leave);
   });
+
+  ipcMain.handle(
+    "leave:getLeaveByEmployeeId",
+    async (_, employeeId: string) => {
+      return getLeaveByEmployeeId(employeeId);
+    }
+  );
 
   ipcMain.handle("leave:getLeaveById", async (_, _id: string) => {
     return getLeaveById(_id);

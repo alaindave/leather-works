@@ -126,6 +126,8 @@ declare global {
       leave: {
         create: (leave: Partial<Leave>) => Promise<LeaveWithEmployee>;
 
+        getLeaveByEmployeeId: (employeeId: string) => Promise<Leave[]>;
+
         getLeaveById: (_id: string) => Promise<LeaveWithEmployee>;
 
         getOngoingLeaves: () => Promise<LeaveWithEmployee[]>;

@@ -249,7 +249,7 @@ const EmployeeNavBar = () => {
           <Text
             position="relative"
             bottom="1.1rem"
-            color="gray.500"
+            color="gray.600"
             fontWeight="500"
           >
             {adminUser?.email}
@@ -306,23 +306,23 @@ const EmployeeNavBar = () => {
         bg="gray.200"
         justify="space-between"
       >
-        <Text ml="1rem" mt="0.2rem" fontSize="1rem" color="gray.600">
+        <Text ml="1rem" mt="0.2rem" fontSize="1rem" color="gray.800">
           Afritan-Gestion de personnel
         </Text>
 
         <HStack mr="2rem" fontSize="1rem" color="gray.600">
-          <Text>Version 1.0.0</Text>
+          <Text color="gray.800">Version 1.0.0</Text>
           <Divider orientation="vertical" h="1.3rem" borderColor="gray.500" />
           <HStack>
             <Box
-              color="green.400"
+              color="green.600"
               position="relative"
               left="0.4rem"
               bottom="0.4rem"
             >
               <GoDotFill size="1.3rem" />
             </Box>
-            <Text>{online ? "Connecté" : "Deconnecté"}</Text>
+            <Text color="gray.800">{online ? "Connecté" : "Deconnecté"}</Text>
           </HStack>
         </HStack>
       </Flex>

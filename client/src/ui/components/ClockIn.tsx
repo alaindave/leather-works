@@ -240,7 +240,7 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked }: Props) => {
           <PopoverContent
             onMouseEnter={onOpen}
             onMouseLeave={onClose}
-            bg="#08162b"
+            bg="#F8F9FB"
             borderColor="#22345F"
             color="white"
             position="relative"
@@ -252,14 +252,14 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked }: Props) => {
               <VStack>
                 <HStack>
                   {attendance?.lateMinutes && (
-                    <Text color="red.300">
+                    <Text color="red.700">
                       {formatLateMinutes(attendance?.lateMinutes)}
                     </Text>
                   )}
-                  <Text>de retard</Text>
+                  <Text color="gray.800">de retard</Text>
                 </HStack>
                 {attendance?.lateNotes && (
-                  <Text position="relative" bottom="1rem">
+                  <Text position="relative" bottom="1rem" color="gray.700">
                     <strong>Justification:</strong> {attendance?.lateNotes}
                   </Text>
                 )}

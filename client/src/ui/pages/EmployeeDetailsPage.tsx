@@ -168,21 +168,21 @@ const EmployeeDetailsPage = () => {
                   p={2}
                   border="1px solid #14376b"
                   borderRadius="10px"
-                  ml="0.2rem"
+                  ml="0.5rem"
                   mb="1.3rem"
                 >
                   <FaArrowLeftLong color="black" />
                 </Box>
               </Link>
 
-              <Box mt="0.5rem">
+              <Box ml="0.5rem" mt="0.8rem">
                 <Text fontSize="1.4rem" fontWeight="600" color="#1F2937">
                   Détails de l'employé
                 </Text>
                 <Text
                   fontSize="1rem"
                   fontWeight="500"
-                  color="#1F2937"
+                  color="gray.500"
                   position="relative"
                   bottom="1.4rem"
                 >
@@ -207,23 +207,30 @@ const EmployeeDetailsPage = () => {
                 >
                   <FaRegClock size="1.3rem" color="purple" />
                   <Text color="gray.900" position="relative" top="0.4rem">
-                    Presence
+                    Présence
                   </Text>
                 </HStack>
               </Link>
-              <HStack
-                cursor="pointer"
-                bg="gray.100"
-                border="1px solid rgba(255,255,255,0.12)"
-                boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-                borderRadius="0.4rem"
-                padding="0.4rem"
+              <Link
+                to={{
+                  pathname: `/employees_admin/employees_list/${_id}/leaves`,
+                }}
+                state={{ employee, photo_url }}
               >
-                <CiCalendarDate size="1.3rem" color="purple" />
-                <Text position="relative" top="0.4rem">
-                  Conges
-                </Text>
-              </HStack>
+                <HStack
+                  cursor="pointer"
+                  bg="gray.100"
+                  border="1px solid rgba(255,255,255,0.12)"
+                  boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+                  borderRadius="0.4rem"
+                  padding="0.4rem"
+                >
+                  <CiCalendarDate size="1.3rem" color="purple" />
+                  <Text position="relative" top="0.4rem">
+                    Congés
+                  </Text>
+                </HStack>
+              </Link>
             </HStack>
             {adminUser?.role === "manager" ? (
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>

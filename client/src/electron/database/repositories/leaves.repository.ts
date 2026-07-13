@@ -110,14 +110,14 @@ export async function getAllLeave() {
   `);
 }
 
-export async function getLeaveByEmployee(employeeId: string) {
+export async function getLeaveByEmployeeId(employeeId: string) {
   return all(
     `
     SELECT *
     FROM leaves
     WHERE employeeId = ?
       AND isDeleted = 0
-    ORDER BY date DESC
+    ORDER BY submittedAt DESC
     `,
     [employeeId]
   );

@@ -24,9 +24,9 @@ const Logo = ({ text }: Props) => {
           position="relative"
           left="0.1rem"
           bottom="1.5rem"
-          fontSize="0.92rem"
-          color="gray.900"
-          fontWeight="500"
+          fontSize="0.96rem"
+          color="gray.600"
+          fontWeight="300"
           whiteSpace="nowrap"
         >
           {text}

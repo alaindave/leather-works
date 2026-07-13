@@ -36,7 +36,7 @@ const LeaveNotesPopover = ({ subject, notes }: Props) => {
       </PopoverTrigger>
 
       <PopoverContent
-        bg="#08162b"
+        bg="#F8F9FB"
         borderColor="#22345F"
         color="white"
         width="320px"
@@ -45,7 +45,7 @@ const LeaveNotesPopover = ({ subject, notes }: Props) => {
 
         <PopoverBody>
           <Text
-            color="gray.200"
+            color="gray.800"
             fontSize="1.1rem"
             whiteSpace="normal"
             wordBreak="break-word"

@@ -100,8 +100,13 @@ contextBridge.exposeInMainWorld("electron", {
         "leave:create",
        leave
       ),
+
+      
     getLeaveById: (_id: string) =>
       ipcRenderer.invoke("leave:getLeaveById", _id),
+
+    getLeaveByEmployeeId: (employeeId: string) =>
+      ipcRenderer.invoke("leave:getLeaveByEmployeeId", employeeId),
 
     getOngoingLeaves:()=>ipcRenderer.invoke("leave:getOnGoing"),
 

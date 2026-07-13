@@ -69,7 +69,7 @@ const EmployeeAttendanceReport = () => {
         </Link>
         <Box mt="0.3rem">
           <Text ml="1rem" fontSize="1.4rem" fontWeight="600">
-            Details de la présence
+            Details de présence
           </Text>
           <HStack ml="1rem" position="relative" bottom="1rem">
             <Text>Employés</Text>
@@ -207,7 +207,7 @@ const EmployeeAttendanceReport = () => {
             </Text>
           </HStack>
           <HStack mt="1.5rem">
-            <Text ml="1rem">Entree</Text>
+            <Text ml="1rem">Entrée</Text>
             <Spacer />
             <Text
               mr="1rem"
