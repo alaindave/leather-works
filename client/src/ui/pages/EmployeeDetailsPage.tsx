@@ -152,7 +152,7 @@ const EmployeeDetailsPage = () => {
         maxW="1400px"
         mx="auto"
         ml="0.01rem"
-        height="95.1vh"
+        height="94.8vh"
       >
         <VStack spacing={4} align="stretch">
           {/* HEADER */}
@@ -249,6 +249,7 @@ const EmployeeDetailsPage = () => {
                   icon={FaUserEdit}
                   placement="left"
                   width="13rem"
+                  color="#4F46E5"
                 />
               </Box>
             )}
@@ -265,7 +266,7 @@ const EmployeeDetailsPage = () => {
               boxShadow="0 2px 8px rgba(1,0,1,1)"
               width="27vw"
               maxH="80vh"
-              ml="0.3rem"
+              ml="1rem"
             >
               <VStack spacing={3} mt="1rem">
                 <HStack>
@@ -326,6 +327,7 @@ const EmployeeDetailsPage = () => {
                     icon={FaRegTrashCan}
                     placement="bottom"
                     width="13rem"
+                    color="red"
                   />
                 )}
               </VStack>

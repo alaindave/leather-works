@@ -2,7 +2,7 @@ export default interface TaskComment {
   _id: string;
   taskId: string;
   author: string;
-  message: string;
+  comment: string;
   createdAt?: string;
   updatedAt?: string;
   synced?: number;

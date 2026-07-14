@@ -36,7 +36,7 @@ export const db = new sqlite3.Database(dbPath, (err: Error | null) => {
     db.run("PRAGMA foreign_keys = ON");
     db.run("PRAGMA journal_mode = WAL");
     db.run("PRAGMA synchronous = NORMAL");
-    db.run("PRAGMA busy_timeout = 10000");
+    db.run("PRAGMA busy_timeout = 5000");
   });
 });
 
@@ -147,20 +147,29 @@ export async function transaction<T>(callback: () => Promise<T>): Promise<T> {
     () =>
       new Promise<T>((resolve, reject) => {
         db.serialize(() => {
-          db.run("BEGIN TRANSACTION");
+          db.run("BEGIN TRANSACTION", (beginErr) => {
+            if (beginErr) {
+              reject(beginErr);
+              return;
+            }
 
-          callback()
-            .then((result) => {
-              db.run("COMMIT", (err: Error | null) => {
-                if (err) return reject(err);
-                resolve(result);
+            callback()
+              .then((result) => {
+                db.run("COMMIT", (commitErr) => {
+                  if (commitErr) {
+                    reject(commitErr);
+                    return;
+                  }
+
+                  resolve(result);
+                });
+              })
+              .catch((err) => {
+                db.run("ROLLBACK", () => {
+                  reject(err);
+                });
               });
-            })
-            .catch((err) => {
-              db.run("ROLLBACK", () => {
-                reject(err);
-              });
-            });
+          });
         });
       })
   );

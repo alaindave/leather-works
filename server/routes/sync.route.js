@@ -6,6 +6,7 @@ const {
   syncAttendance,
   syncLeave,
   syncTask,
+  syncTaskComment,
   syncUserNotes,
   syncEmployeePhoto,
 } = require("../sync");
@@ -43,6 +44,10 @@ router.post("/push", upload.array("employee_photos"), async (req, res) => {
 
           case "task":
             await syncTask(operation, data);
+            break;
+
+          case "task_comment":
+            await syncTaskComment(operation, data);
             break;
 
           case "user_notes":

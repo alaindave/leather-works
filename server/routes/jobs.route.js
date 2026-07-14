@@ -37,6 +37,7 @@ router.post("/mark-absent", async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.error("AN ERROR OCCURED WHILE MARKING EMPLOYEES ABSENT:", error);
     await SystemJob.findOneAndUpdate(
       {
         job: "markAbsentEmployees",

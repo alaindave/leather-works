@@ -561,118 +561,109 @@ export async function markTaskSynced(_id: string) {
 }
 
 export async function upsertTask(task: Task) {
-  console.log("Task to upsert:", task);
-  await run("BEGIN TRANSACTION");
+  console.log("TASK TO UPSERT:", task);
 
-  try {
-    // Check if task already exists locally
-    const existing = await all<{ updatedAt: string | null }>(
-      `
-      SELECT updatedAt
-      FROM tasks
-      WHERE _id = ?
-      `,
-      [task._id]
-    );
+  // Check if task already exists locally
+  const existing = await all<{ updatedAt: string | null }>(
+    `
+    SELECT updatedAt
+    FROM tasks
+    WHERE _id = ?
+    `,
+    [task._id]
+  );
 
-    // Local version is newer -> don't overwrite it
-    if (
-      existing.length &&
-      existing[0].updatedAt &&
-      task.updatedAt &&
-      new Date(existing[0].updatedAt).getTime() >
-        new Date(task.updatedAt).getTime()
-    ) {
-      await run("ROLLBACK");
-      return getTaskById(task._id);
-    }
+  // Local version is newer -> don't overwrite it
+  if (
+    existing.length &&
+    existing[0].updatedAt &&
+    task.updatedAt &&
+    new Date(existing[0].updatedAt).getTime() >
+      new Date(task.updatedAt).getTime()
+  ) {
+    return getTaskById(task._id);
+  }
 
+  await run(
+    `
+    INSERT INTO tasks (
+      _id,
+      taskNumber,
+      author,
+      subject,
+      message,
+      priority,
+      deadline,
+      isResolved,
+      resolutionNotes,
+      resolvedBy,
+      resolvedAt,
+      submittedAt,
+      createdAt,
+      updatedAt,
+      lastSyncedAt,
+      synced,
+      isDeleted
+    )
+    VALUES (
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+    )
+    ON CONFLICT(_id) DO UPDATE SET
+      taskNumber = excluded.taskNumber,
+      author = excluded.author,
+      subject = excluded.subject,
+      message = excluded.message,
+      priority = excluded.priority,
+      deadline = excluded.deadline,
+      isResolved = excluded.isResolved,
+      resolutionNotes = excluded.resolutionNotes,
+      resolvedBy = excluded.resolvedBy,
+      resolvedAt = excluded.resolvedAt,
+      submittedAt = excluded.submittedAt,
+      createdAt = excluded.createdAt,
+      updatedAt = excluded.updatedAt,
+      lastSyncedAt = excluded.lastSyncedAt,
+      synced = 1,
+      isDeleted = excluded.isDeleted
+    `,
+    [
+      task._id,
+      task.taskNumber,
+      task.author,
+      task.subject,
+      task.message,
+      task.priority,
+      task.deadline,
+      task.isResolved ?? 0,
+      task.resolutionNotes ?? null,
+      task.resolvedBy ?? null,
+      task.resolvedAt ?? null,
+      task.submittedAt ?? null,
+      task.createdAt ?? null,
+      task.updatedAt ?? null,
+      task.lastSyncedAt ?? new Date().toISOString(),
+      1,
+      task.isDeleted ?? 0,
+    ]
+  );
+
+  // Replace recipients
+  await run(`DELETE FROM task_recipients WHERE taskId = ?`, [task._id]);
+
+  for (const recipient of task.recipients) {
     await run(
       `
-      INSERT INTO tasks (
-        _id,
-        taskNumber,
-        author,
-        subject,
-        message,
-        priority,
-        deadline,
-        isResolved,
-        resolutionNotes,
-        resolvedBy,
-        resolvedAt,
-        submittedAt,
-        createdAt,
-        updatedAt,
-        lastSyncedAt,
-        synced,
-        isDeleted
+      INSERT INTO task_recipients (
+        taskId,
+        recipient
       )
-      VALUES (
-        ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
-      )
-      ON CONFLICT(_id) DO UPDATE SET
-        taskNumber = excluded.taskNumber,
-        author = excluded.author,
-        subject = excluded.subject,
-        message = excluded.message,
-        priority = excluded.priority,
-        deadline = excluded.deadline,
-        isResolved = excluded.isResolved,
-        resolutionNotes = excluded.resolutionNotes,
-        resolvedBy = excluded.resolvedBy,
-        resolvedAt = excluded.resolvedAt,
-        submittedAt = excluded.submittedAt,
-        createdAt = excluded.createdAt,
-        updatedAt = excluded.updatedAt,
-        lastSyncedAt = excluded.lastSyncedAt,
-        synced = 1,
-        isDeleted = excluded.isDeleted
+      VALUES (?, ?)
       `,
-      [
-        task._id,
-        task.taskNumber,
-        task.author,
-        task.subject,
-        task.message,
-        task.priority,
-        task.deadline,
-        task.isResolved ?? 0,
-        task.resolutionNotes ?? null,
-        task.resolvedBy ?? null,
-        task.resolvedAt ?? null,
-        task.submittedAt ?? null,
-        task.createdAt ?? null,
-        task.updatedAt ?? null,
-        task.lastSyncedAt ?? new Date().toISOString(),
-        1,
-        task.isDeleted ?? 0,
-      ]
+      [task._id, recipient]
     );
-
-    // Replace recipients
-    await run(`DELETE FROM task_recipients WHERE taskId = ?`, [task._id]);
-
-    for (const recipient of task.recipients) {
-      await run(
-        `
-        INSERT INTO task_recipients (
-          taskId,
-          recipient
-        )
-        VALUES (?, ?)
-        `,
-        [task._id, recipient]
-      );
-    }
-
-    await run("COMMIT");
-
-    return getTaskById(task._id);
-  } catch (err) {
-    await run("ROLLBACK");
-    throw err;
   }
+
+  return getTaskById(task._id);
 }
 
 //Map task priorities to single letters

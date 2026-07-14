@@ -40,7 +40,7 @@ export async function createTasksTables() {
     _id TEXT PRIMARY KEY,
     taskId TEXT NOT NULL,
     author TEXT NOT NULL,
-    message TEXT NOT NULL,
+    comment TEXT NOT NULL,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL,
     lastSyncedAt DATETIME,

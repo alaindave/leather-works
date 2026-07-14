@@ -36,12 +36,13 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
     <TableContainer
       borderWidth="1px"
       borderRadius="xl"
-      overflow="hidden"
       bg="white"
       boxShadow="sm"
+      overflowY="auto"
+      maxH="450px"
     >
       <Table variant="simple" size="md">
-        <Thead bg="gray.50">
+        <Thead position="sticky" top={0} zIndex={1} bg="gray.50">
           <Tr>
             <Th>Date</Th>
             <Th>Pointage entrée</Th>
@@ -86,7 +87,7 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
                   px={3}
                   py={1}
                   borderRadius="full"
-                  fontSize="0.85em"
+                  fontSize="0.7rem"
                 >
                   {record.status}
                 </Badge>

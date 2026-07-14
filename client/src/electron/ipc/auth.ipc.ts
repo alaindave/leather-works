@@ -29,7 +29,7 @@ export function registerAuthIPC() {
     try {
       const res = await axios.post(`${API_URL}/auth`, { email, password });
       await saveToken(res.headers["x-auth-token"]);
-      console.log("ONLINE LOGIN SUCCESS:", res.data);
+      console.log("ONLINE LOGIN:", res.data);
       return res.data;
     } catch (error) {
       console.error("ERROR OCCURED DURING ONLINE LOGIN:", error);

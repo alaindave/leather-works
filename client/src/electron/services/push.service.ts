@@ -13,6 +13,8 @@ import { markEmployeeSynced } from "../database/repositories/employees.repositor
 import { markAttendanceSynced } from "../database/repositories/attendances.repository.js";
 import { markLeaveSynced } from "../database/repositories/leaves.repository.js";
 import { markTaskSynced } from "../database/repositories/tasks.repository.js";
+import { markTaskCommentsSynced } from "../database/repositories/tasks_comments.repository.js";
+import { markEmployeePhotoSynced } from "../database/repositories/employees_photos.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -65,6 +67,7 @@ export async function pushPendingChanges() {
   });
   console.log("SYNC PUSH RESULT", response.status);
 
+  // Mark entities synced in sync queue
   await markManySynced(response.data.synced);
 
   // Mark entities synced locally
@@ -77,6 +80,10 @@ export async function pushPendingChanges() {
           await markEmployeeSynced(data._id);
           break;
 
+        case "employee_photo":
+          await markEmployeePhotoSynced(data.employeeId);
+          break;
+
         case "attendance":
           await markAttendanceSynced(data._id);
           break;
@@ -87,6 +94,10 @@ export async function pushPendingChanges() {
 
         case "task":
           await markTaskSynced(data._id);
+          break;
+
+        case "task_comment":
+          await markTaskCommentsSynced(data._id);
           break;
       }
     }

@@ -47,9 +47,9 @@ const EmployeeNavBar = () => {
     check();
   }, []);
   const sidebarWidth = useBreakpointValue({
-    base: "14rem",
-    md: "15rem",
-    lg: "17rem",
+    base: "15rem",
+    md: "17rem",
+    lg: "18rem",
   });
 
   const handleLogOut = async () => {
@@ -212,7 +212,7 @@ const EmployeeNavBar = () => {
       {/* ADMIN USER AREA */}
       <Flex
         position="absolute"
-        bottom="0.3rem"
+        bottom="0.4rem"
         border="1px solid #E2E8F0"
         bg="gray.100"
         boxShadow="0 2px 10px rgba(15,23,42,.06)"

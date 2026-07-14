@@ -321,7 +321,7 @@ export default function TaskDetailsDrawer({
                       position="relative"
                       bottom="0.6rem"
                     >
-                      {comment.message}
+                      {comment.comment}
                     </Text>
                   </Box>
                 ))}

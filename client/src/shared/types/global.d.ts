@@ -77,7 +77,7 @@ declare global {
         create: (payload: {
           taskId: string;
           author: string;
-          message: string;
+          comment: string;
         }) => Promise<TaskComment>;
 
         getByTaskId: (taskId: string) => Promise<TaskComment>;

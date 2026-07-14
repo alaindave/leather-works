@@ -150,3 +150,15 @@ export async function updateEmployeePhotoMetadata(
     ]
   );
 }
+
+export async function markEmployeePhotoSynced(employeeId: string) {
+  await run(
+    `
+    UPDATE employees
+    SET
+      photo_needs_upload = 0
+    WHERE _id = ?
+    `,
+    [employeeId]
+  );
+}

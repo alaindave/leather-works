@@ -95,6 +95,67 @@ async function syncTask(operation, data) {
   }
 }
 
+// sync task comments
+async function syncTaskComment(operation, data) {
+  console.log("TASK COMMENT TO SYNC:", data);
+
+  const task = await Task.findById(data.taskId);
+
+  if (!task) {
+    throw new Error(`TASK ${data.taskId} NOT FOUND`);
+  }
+
+  switch (operation) {
+    case "create": {
+      const exists = task.comments.some((comment) => comment._id === data._id);
+
+      if (!exists) {
+        task.comments.push(data);
+      }
+
+      break;
+    }
+
+    case "update": {
+      const comment = task.comments.find((comment) => comment._id === data._id);
+
+      if (!comment) {
+        throw new Error(`COMMENT ${data._id} NOT FOUND`);
+      }
+
+      comment.author = data.author;
+      comment.comment = data.comment;
+      comment.updatedAt = data.updatedAt;
+      comment.isDeleted = data.isDeleted;
+
+      break;
+    }
+
+    case "delete": {
+      const comment = task.comments.find((comment) => comment._id === data._id);
+
+      if (!comment) {
+        throw new Error(`COMMENT ${data._id} NOT FOUND`);
+      }
+
+      // Soft delete
+      comment.isDeleted = 1;
+      comment.updatedAt = new Date();
+
+      break;
+    }
+
+    default:
+      throw new Error(`UNSUPPORTED OPERATION: ${operation}`);
+  }
+
+  task.updatedAt = new Date(data.updatedAt);
+  await task.save();
+  console.log("SYNCED TASK COMMENT:", data._id);
+
+  return task;
+}
+
 //sync user notes
 async function syncUserNotes(data) {
   console.log("USER NOTES TO SYNC TO SERVER:", data);
@@ -152,6 +213,7 @@ module.exports = {
   syncAttendance,
   syncLeave,
   syncTask,
+  syncTaskComment,
   syncUserNotes,
   syncEmployeePhoto,
 };

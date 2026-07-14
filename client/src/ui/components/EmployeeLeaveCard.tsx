@@ -184,7 +184,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
             fontSize="1.1rem"
             whiteSpace="normal"
             wordBreak="break-word"
-            maxW="8rem"
+            maxW="7rem"
             noOfLines={2}
           >
             {firstName} {lastName}

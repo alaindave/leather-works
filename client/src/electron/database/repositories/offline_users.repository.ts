@@ -3,7 +3,7 @@ import { get, all, run } from "../db.js";
 import { addToSyncQueue } from "./sync.repository.js";
 
 export async function createOrUpdateOfflineUser(user: OfflineUser) {
-  console.log("OFFLINE USER: ", user);
+  console.log("OFFLINE USER TO CREATE OR UPDATE: ", user);
 
   await run(
     `

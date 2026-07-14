@@ -17,17 +17,18 @@ export async function createTaskComment(comment: TaskComment) {
       _id,
       taskId,
       author,
-      message,
+      comment,
       createdAt,
       updatedAt
     )
     VALUES (?, ?, ?, ?, ?, ?)
     `,
-    [_id, comment.taskId, comment.author, comment.message, time, time]
+    [_id, comment.taskId, comment.author, comment.comment, time, time]
   );
 
   const savedTaskComment = {
     ...comment,
+    _id,
     submittedAt,
     createdAt: time,
     updatedAt: time,
@@ -46,15 +47,15 @@ export async function createTaskComment(comment: TaskComment) {
 }
 
 //Get task comments
-export async function getTaskComments(taskId: string) {
+export async function getTaskComments(taskId: string): Promise<TaskComment[]> {
   return all(
     `
     SELECT 
-      c._id,
-      c.taskId,
-      c.message,
-      c.createdAt,
-      c.updatedAt,
+      tc._id,
+      tc.taskId,
+      tc.comment,
+      tc.createdAt,
+      tc.updatedAt,
 
       a._id AS author,
       a.firstName,
@@ -62,10 +63,10 @@ export async function getTaskComments(taskId: string) {
       a.email,
       a.role
 
-    FROM task_comments c
-    JOIN admin_users a ON a._id = c.author
-    WHERE c.taskId = ?
-    ORDER BY c.createdAt ASC
+    FROM task_comments tc
+    JOIN admin_users a ON a._id = tc.author
+    WHERE tc.taskId = ?
+    ORDER BY tc.createdAt ASC
     `,
     [taskId]
   );
@@ -78,7 +79,7 @@ export async function getTaskCommentsWithAuthor(taskId: string) {
   return rows.map((r: any) => ({
     _id: r._id,
     taskId: r.taskId,
-    message: r.message,
+    comment: r.comment,
     createdAt: r.createdAt,
 
     author: {
@@ -116,4 +117,52 @@ export async function deleteTaskComment(_id: string) {
     `,
     [_id]
   );
+}
+
+export async function upsertTaskComment(comment: TaskComment) {
+  await run(
+    `
+    INSERT INTO task_comments (
+      _id,
+      taskId,
+      author,
+      comment,
+      createdAt,
+      updatedAt,
+      isDeleted
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+
+    ON CONFLICT(_id)
+    DO UPDATE SET
+      author = excluded.author,
+      comment = excluded.comment,
+      updatedAt = excluded.updatedAt,
+      isDeleted = excluded.isDeleted
+    `,
+    [
+      comment._id,
+      comment.taskId,
+      comment.author,
+      comment.comment,
+      comment.createdAt,
+      comment.updatedAt,
+      comment.isDeleted,
+    ]
+  );
+}
+
+export async function markTaskCommentsSynced(_id: string) {
+  await run(
+    `
+    UPDATE task_comments
+    SET
+      synced = 1,
+      lastSyncedAt = CURRENT_TIMESTAMP
+    WHERE _id = ?
+    `,
+    [_id]
+  );
+
+  return true;
 }

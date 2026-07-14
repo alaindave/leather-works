@@ -80,7 +80,7 @@ const EmployeeListPage = () => {
   };
 
   return (
-    <Flex direction="column" h="95.1vh" width="100vw" bg="#F8FAFC">
+    <Flex direction="column" h="94vh" width="100vw" bg="#F8FAFC">
       {/* HEADER */}
       <Flex
         direction="column"
@@ -139,6 +139,7 @@ const EmployeeListPage = () => {
                 icon={FaAddressBook}
                 placement="left"
                 width="13rem"
+                color="#4F46E5"
               />
             </Box>
           )}
@@ -206,7 +207,7 @@ const EmployeeListPage = () => {
               ))}
             </VStack>
           ) : (
-            <List position="relative" bottom="0.2rem" right="2.2rem">
+            <List position="relative" bottom="0.5rem" right="2.2rem">
               {employees
                 .filter((employee) => !filter || employee.department === filter)
                 .filter((employee) =>

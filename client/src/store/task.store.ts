@@ -127,12 +127,12 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
-  addComment: async (taskId, author, message) => {
+  addComment: async (taskId, author, comment) => {
     const tempId = crypto.randomUUID();
     const optimisticComment: PopulatedTaskComment = {
       _id: tempId,
       taskId,
-      message,
+      comment,
       createdAt: new Date().toISOString(),
       author: {
         _id: author._id,
@@ -155,7 +155,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const savedComment = await window.electron.taskComments.create({
         taskId,
         author: author._id,
-        message,
+        comment,
       });
 
       set((state) => ({

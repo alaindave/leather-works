@@ -20,22 +20,30 @@ interface Props {
   placement: PlacementWithLogical;
   icon?: IconType;
   width: string;
+  color: string;
 }
 
-const NotAuthorized = ({ buttonText, icon, placement, width }: Props) => {
+const NotAuthorized = ({
+  buttonText,
+  icon,
+  placement,
+  width,
+  color,
+}: Props) => {
   const [buttonClicked, setButtonClicked] = useState(false);
 
   return (
     <Popover placement={placement} trigger="click">
       <PopoverTrigger>
         <Button
-          colorScheme={buttonClicked ? "red" : "yellow"}
+          color="#ffffff"
+          bg={buttonClicked ? "red" : color}
           w={width}
           mt={4}
           leftIcon={
             <ChakraIcon
               as={icon}
-              color="gray.800"
+              color="#ffffff"
               boxSize="1.3rem"
               mr="0.5rem"
             />

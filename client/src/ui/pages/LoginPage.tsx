@@ -77,6 +77,7 @@ const LoginPage = () => {
 
       //Online login
       const adminUser = await window.electron.auth.login(credentials);
+      console.log("ADMIN USER:", adminUser);
       if (adminUser) {
         const offlineUser = await window.electron.offlineUsers.save({
           _id: adminUser._id,
@@ -103,7 +104,7 @@ const LoginPage = () => {
         navigate("/admin", { replace: true });
       }
     } catch (error) {
-      console.log("Login failed: ", error);
+      console.log("LOGIN FAILED: ", error);
       setErrorMessage("Email et/ou mot de passe incorrect.");
     } finally {
       setIsLoggingIn(false);

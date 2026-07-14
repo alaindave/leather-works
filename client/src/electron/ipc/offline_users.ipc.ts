@@ -9,23 +9,32 @@ import {
   getAllOfflineUsers,
   deleteOfflineUser,
 } from "../database/repositories/offline_users.repository.js";
-import OfflineUser from "../../shared/types/OfflineUser.js";
 
 export function registerOfflineUsersIPC() {
   console.log("REGISTERING OFFLINE USERS IPC");
 
-  ipcMain.handle("offline-users:save", async (_, user: OfflineUser) => {
-    const password = await bcrypt.hash(user.password, 12);
-    return createOrUpdateOfflineUser({
-      _id: user._id,
-      email: user.email,
-      password,
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      notes: user.notes,
-      lastVerifiedAt: new Date().toISOString(),
-    });
+  ipcMain.handle("offline-users:save", async (_, user) => {
+    try {
+      if (!user.password) {
+        throw new Error("Password missing");
+      }
+      const password = await bcrypt.hash(user.password, 12);
+      const offline_user = await createOrUpdateOfflineUser({
+        _id: user._id,
+        email: user.email,
+        password,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        notes: user.notes,
+        lastVerifiedAt: new Date().toISOString(),
+      });
+      console.log("OFFLINE USER UPDATED:", offline_user);
+      return offline_user;
+    } catch (error) {
+      console.error("offline-users:save failed", error);
+      throw error;
+    }
   });
 
   ipcMain.handle("offline-users:login", async (_, credentials) => {

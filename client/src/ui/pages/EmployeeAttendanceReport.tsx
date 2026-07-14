@@ -151,7 +151,7 @@ const EmployeeAttendanceReport = () => {
           borderColor="#D1D9E0"
           borderRadius="8px"
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-          ml="2.5rem"
+          ml="3rem"
           height="13rem"
           width="22rem"
         >
@@ -242,7 +242,7 @@ const EmployeeAttendanceReport = () => {
           </HStack>
         </Flex>
       </Flex>
-      <Box ml="5rem" mt="5rem">
+      <Box ml="5rem" mt="3rem">
         <AttendanceTable records={attendances} />
       </Box>
     </Flex>
