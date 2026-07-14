@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const {
+  markAbsentEmployees,
+} = require("../services/markEmployeeAbsent.service");
 
 router.post("/mark-absent", async (req, res) => {
   const secret = req.headers["x-cron-secret"];
