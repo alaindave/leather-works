@@ -324,13 +324,14 @@ export async function upsertAttendance(attendance: Attendance) {
       clockIn,
       clockOut,
       status,
+      source,
       lateMinutes,
       lateNotes,
       isDeleted,
       createdAt,
       updatedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(_id)
     DO UPDATE SET
       employeeId = excluded.employeeId,
@@ -338,6 +339,7 @@ export async function upsertAttendance(attendance: Attendance) {
       clockIn = excluded.clockIn,
       clockOut = excluded.clockOut,
       status = excluded.status,
+      source = excluded.source,
       lateMinutes = excluded.lateMinutes,
       lateNotes = excluded.lateNotes,
       isDeleted = excluded.isDeleted,
@@ -351,6 +353,7 @@ export async function upsertAttendance(attendance: Attendance) {
       attendance.clockIn,
       attendance.clockOut,
       attendance.status,
+      attendance.source,
       attendance.lateMinutes,
       attendance.lateNotes,
       attendance.isDeleted ?? 0,

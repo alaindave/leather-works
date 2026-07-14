@@ -11,8 +11,6 @@ async function markAbsentEmployees() {
     status: "ACTIF",
   });
 
-  console.log("FETCHED ACTIVE EMPLOYEES:", employees);
-
   for (const employee of employees) {
     const attendance = await Attendance.findOne({
       employeeId: employee._id,
@@ -29,8 +27,6 @@ async function markAbsentEmployees() {
         createdAt: CURRENT_TIMESTAMP,
         updatedAt: CURRENT_TIMESTAMP,
       });
-
-      console.log("ABSENT ATTENDANCE CREATED:", absent_attendance);
     }
   }
 }

@@ -5,6 +5,8 @@ import {
   FormLabel,
   HStack,
   Input,
+  InputGroup,
+  InputLeftElement,
   Menu,
   MenuButton,
   MenuItem,
@@ -27,7 +29,11 @@ import { z } from "zod";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { FaSave } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
+import { MdTask } from "react-icons/md";
 import { TiDelete } from "react-icons/ti";
+import { GoTag } from "react-icons/go";
+import { LuFlag } from "react-icons/lu";
+
 import AdminUser from "../../shared/types/AdminUser";
 import DatePicker from "react-datepicker";
 import User from "../../shared/types/User";
@@ -119,17 +125,37 @@ const TaskSubmissionModal = ({
   };
 
   return (
-    <Modal size="3xl" isOpen={isOpen} onClose={onClose}>
+    <Modal size="4xl" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
-      <ModalContent bg="#F8F9FB">
+      <ModalContent bg="gray.100">
         <form
           onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))}
         >
           <ModalHeader color="#ffffff">
             <Flex justify="space-between">
+              {/* Header */}
               <Box>
-                <Text color="brown" fontFamily="heading" fontSize="1.6rem">
-                  Nouvelle tache
+                <HStack>
+                  <Box
+                    position="relative"
+                    bottom="0.5rem"
+                    color="blue.700"
+                    fontSize="1.6rem"
+                  >
+                    <MdTask />
+                  </Box>
+                  <Text color="blue.700" fontFamily="heading" fontSize="1.6rem">
+                    Nouvelle tache
+                  </Text>
+                </HStack>
+                <Text
+                  position="relative"
+                  left="2rem"
+                  bottom="1.3rem"
+                  color="gray.500"
+                  fontSize="1rem"
+                >
+                  Creer une nouvelle tache
                 </Text>
               </Box>
               <Box position="relative" left="3rem">
@@ -197,31 +223,35 @@ const TaskSubmissionModal = ({
             </Flex>
           </ModalHeader>
           <ModalCloseButton onClick={handleFormClose} />
-          <ModalBody bg="#F8F9FB" height="30rem">
+          <ModalBody bg="#ffffff" height="30rem">
             <HStack position="relative" left="1rem" bottom="1.2rem">
               {/* Subject */}
-              <VStack>
-                <FormLabel position="relative" top="1.5rem">
-                  <Text fontWeight="600" fontSize="1.1rem">
+              <Box>
+                <FormLabel position="relative" top="0.5rem">
+                  <Text fontWeight="600" fontSize="1rem">
                     Sujet
                   </Text>
                 </FormLabel>
-
                 <Input
                   color="gray.800"
                   fontWeight="800"
                   fontSize="1.2rem"
                   width="20rem"
                   height="40px"
-                  border="2px solid gray"
-                  position="relative"
+                  border="1px solid #E2E8F0"
+                  placeholder="Ex:Preparer rapport de caisse"
+                  _placeholder={{
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                    color: "gray.400",
+                  }}
                   {...register("subject")}
                 />
-              </VStack>
-              <VStack>
+              </Box>
+              <Box>
                 {/* Deadline */}
-                <FormLabel position="relative" top="1.5rem">
-                  <Text fontWeight="600" fontSize="1.1rem">
+                <FormLabel position="relative" top="0.5rem">
+                  <Text fontWeight="600" fontSize="1rem">
                     {" "}
                     Date limite
                   </Text>
@@ -255,47 +285,55 @@ const TaskSubmissionModal = ({
                       yearDropdownItemNumber={80}
                       customInput={
                         <Input
-                          color="gray.900"
-                          fontWeight="600"
-                          width="15rem"
-                          bg="#ffffff"
-                          borderColor="gray.800"
-                          borderWidth="1.5px"
+                          position="relative"
+                          color="gray.600"
+                          fontWeight="800"
+                          fontSize="1.2rem"
+                          width="20rem"
+                          height="40px"
+                          border="1px solid #E2E8F0"
+                          placeholder="Selectionner une date"
+                          _placeholder={{
+                            fontSize: "1rem",
+                            fontWeight: "500",
+                            color: "gray.700",
+                          }}
                         />
                       }
                     />
                   )}
                 />
-              </VStack>
+              </Box>
 
               {/* Priority */}
-              <VStack>
+              <Box>
                 <FormLabel>
                   <Text
                     position="relative"
-                    top="2.1rem"
-                    left="0.3rem"
+                    top="1.1rem"
                     fontWeight="600"
-                    fontSize="1.1rem"
+                    fontSize="1rem"
                   >
                     Priorite
                   </Text>
                 </FormLabel>
                 <Menu>
                   <MenuButton>
-                    <Text
-                      position="relative"
-                      top="0.2rem"
-                      right="0.14rem"
-                      fontWeight="600"
-                      border="1.5px solid black"
-                      padding="0.5rem"
-                      borderRadius="0.5rem"
-                      mt="0.4rem"
-                      ml="0.1rem"
-                    >
-                      {priority}
-                    </Text>
+                    <HStack>
+                      <Text
+                        position="relative"
+                        top="0.2rem"
+                        fontWeight="600"
+                        border="1px solid #E2E8F0"
+                        borderRadius="0.5rem"
+                        padding="0.5rem"
+                        mt="0.4rem"
+                        ml="0.1rem"
+                        width="150px"
+                      >
+                        {priority}
+                      </Text>
+                    </HStack>
                   </MenuButton>
                   <MenuList>
                     <MenuItem onClick={() => setPriority("Haute")}>
@@ -309,18 +347,26 @@ const TaskSubmissionModal = ({
                     </MenuItem>
                   </MenuList>
                 </Menu>
-              </VStack>
+              </Box>
             </HStack>
             {/* Task text */}
+            <FormLabel>
+              <Text
+                position="relative"
+                top="0.5rem"
+                fontWeight="600"
+                fontSize="1rem"
+              >
+                Description de la tache
+              </Text>
+            </FormLabel>
             <Textarea
               flex="1"
               height="20rem"
-              placeholder="Creer une tache ici..."
+              placeholder="Decrivez la tache en detail..."
               resize="none"
-              bg="#091735"
-              position="relative"
-              top="2rem"
-              border="1px solid rgba(255,255,255,0.1)"
+              bg="#ffffff"
+              border="1px solid #E2E8F0"
               color="gray.200"
               fontWeight="600"
               fontSize="1.2rem"
@@ -333,7 +379,7 @@ const TaskSubmissionModal = ({
             />
           </ModalBody>
 
-          <ModalFooter bg="#F8F9FB">
+          <ModalFooter bg="gray.100">
             <VStack>
               <Text
                 fontWeight="500"
