@@ -30,6 +30,7 @@ import {
 } from "../database/repositories/tasks.repository.js";
 import { downloadEmployeePhoto } from "../util/downloadEmployeePhoto.util.js";
 import { updateEmployeePhotoMetadata } from "../database/repositories/employees_photos.repository.js";
+import { upsertTaskComment } from "../database/repositories/tasks_comments.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -77,7 +78,7 @@ async function syncEmployees(employees: Employee[]) {
       await upsertEmployee(employee);
       await markEmployeeSynced(employee._id);
     } catch (error) {
-      console.error("Failed to sync pulled employee:", employee._id, error);
+      console.error("FAILED TO SYNC PULLED EMPLOYEE:", employee._id, error);
     }
   }
 }
@@ -88,7 +89,7 @@ async function syncAttendances(attendances: Attendance[]) {
       await upsertAttendance(attendance);
       await markAttendanceSynced(attendance._id);
     } catch (error) {
-      console.error("Failed to sync pulled attendance:", attendance._id, error);
+      console.error("FAILED TO SYNC PULLED ATTENDANCE:", attendance._id, error);
     }
   }
 }
@@ -99,7 +100,7 @@ async function syncLeaves(leaves: Leave[]) {
       await upsertLeave(leave);
       await markLeaveSynced(leave._id);
     } catch (error) {
-      console.error("Failed to sync pulled leave:", leave._id, error);
+      console.error("FAILED TO SYNC PULLED LEAVE:", leave._id, error);
     }
   }
 }
@@ -108,9 +109,16 @@ async function syncTasks(tasks: Task[]) {
   for (const task of tasks) {
     try {
       await upsertTask(task);
+
+      if (task.comments?.length) {
+        await Promise.all(
+          task.comments.map((comment) => upsertTaskComment(comment))
+        );
+      }
+
       await markTaskSynced(task._id);
     } catch (error) {
-      console.error("Failed to sync pulled task:", task._id, error);
+      console.error("FAILED TO SYNC PULLED TASK:", task._id, error);
     }
   }
 }
@@ -120,7 +128,7 @@ async function syncAdminUsers(adminUsers: AdminUser[]) {
     try {
       await upsertAdminUser(adminUser);
     } catch (error) {
-      console.error("Failed to sync pulled admin users:", adminUser._id, error);
+      console.error("FAILED TO SYNC PULLED ADMIN USERS:", adminUser._id, error);
     }
   }
 }

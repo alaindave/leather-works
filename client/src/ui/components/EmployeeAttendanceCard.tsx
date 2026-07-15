@@ -348,6 +348,11 @@ const EmployeeAttendanceCard = ({
           isUnlocked={isUnlocked}
           attendance={localAttendance}
           onRefresh={refreshAttendance}
+          awayStatus={
+            attendance.status === "ABSENT" || attendance.status === "CONGÉ"
+              ? attendance.status
+              : null
+          }
         />
       </Box>
 
@@ -470,7 +475,9 @@ const EmployeeAttendanceCard = ({
 
       {/* Action buttons */}
       <Box position="relative" right="1rem" mb="1rem">
-        {!localAttendance?.clockOut ? (
+        {!localAttendance?.clockOut &&
+        localAttendance?.status !== "ABSENT" &&
+        localAttendance?.status !== "CONGÉ" ? (
           <Button
             bg="transparent"
             _hover={{

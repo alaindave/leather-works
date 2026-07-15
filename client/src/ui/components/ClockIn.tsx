@@ -13,6 +13,7 @@ import {
   Tooltip,
   Box,
   useDisclosure,
+  Badge,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
@@ -21,6 +22,7 @@ interface Props {
   attendance?: AttendanceWithEmployee | null;
   onRefresh?: () => void;
   isUnlocked: boolean;
+  awayStatus?: "ABSENT" | "CONGÉ" | null;
 }
 
 export const formatLateMinutes = (lateMinutes: number): string => {
@@ -121,7 +123,7 @@ const formatTime = (input?: string | Date | null) => {
   )}`;
 };
 
-const ClockIn = ({ attendance, onRefresh, isUnlocked }: Props) => {
+const ClockIn = ({ attendance, onRefresh, isUnlocked, awayStatus }: Props) => {
   if (!attendance) return;
   const [clockInValue, setClockInValue] = useState(
     formatTime(attendance?.clockIn)
@@ -170,19 +172,127 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked }: Props) => {
   };
 
   return (
-    <Box>
-      {(attendance?.lateMinutes ?? 0) > 0 ? (
-        <Popover isOpen={isOpen} onClose={onClose} placement="left">
-          <PopoverTrigger>
-            <Text
-              fontSize="18px"
-              color="#FF8787"
-              cursor="pointer"
-              _hover={{
-                color: "#F2B705",
-              }}
-              onMouseEnter={onOpen}
-              onMouseLeave={onClose}
+    <>
+      {awayStatus ? (
+        <Badge
+          mr="0.3rem"
+          mb="1rem"
+          bg={awayStatus === "CONGÉ" ? "#3182CE" : "#E53E3E"}
+          color="gray.200"
+          fontSize="14px"
+        >
+          {awayStatus}
+        </Badge>
+      ) : (
+        <Box>
+          {(attendance?.lateMinutes ?? 0) > 0 ? (
+            <Popover isOpen={isOpen} onClose={onClose} placement="left">
+              <PopoverTrigger>
+                <Text
+                  fontSize="18px"
+                  color="#FF8787"
+                  cursor="pointer"
+                  _hover={{
+                    color: "#F2B705",
+                  }}
+                  onMouseEnter={onOpen}
+                  onMouseLeave={onClose}
+                >
+                  <Tooltip
+                    label={errorMessage}
+                    bg="red.600"
+                    color="white"
+                    hasArrow
+                    placement="top"
+                    isOpen={!!errorMessage}
+                  >
+                    <Editable
+                      position="relative"
+                      right="1rem"
+                      value={draftClockIn!}
+                      onChange={setDraftClockIn}
+                      submitOnBlur={false}
+                      width="80px"
+                      selectAllOnFocus
+                      onSubmit={handleEditClockIn}
+                      isDisabled={isUnlocked ? false : true}
+                    >
+                      <EditablePreview
+                        color="red.600"
+                        fontSize="18px"
+                        fontWeight="500"
+                        px={2}
+                        borderRadius="6px"
+                        transition="0.2s"
+                        cursor={isUnlocked ? "pointer" : "default"}
+                        _hover={{
+                          bg: "rgba(255,255,255,0.05)",
+
+                          cursor: isUnlocked ? "pointer" : "default",
+                        }}
+                      />
+
+                      <EditableInput
+                        color="brown"
+                        fontSize="18px"
+                        width="80px"
+                        onFocus={() => {
+                          setErrorMessage("");
+                          setDraftClockIn(formatTime(clockInValue));
+                        }}
+                        onBlur={() => {
+                          if (!formatTime(draftClockIn)) {
+                            setErrorMessage("");
+                            setDraftClockIn(formatTime(clockInValue));
+                          }
+                        }}
+                      />
+                    </Editable>
+                  </Tooltip>
+                </Text>
+              </PopoverTrigger>
+              <PopoverContent
+                onMouseEnter={onOpen}
+                onMouseLeave={onClose}
+                bg="#F8F9FB"
+                borderColor="#22345F"
+                color="white"
+                position="relative"
+                right="1rem"
+              >
+                <PopoverArrow bg="#08162b" />
+
+                <PopoverBody>
+                  <VStack>
+                    <HStack>
+                      {attendance?.lateMinutes && (
+                        <Text color="red.700">
+                          {formatLateMinutes(attendance?.lateMinutes)}
+                        </Text>
+                      )}
+                      <Text color="gray.800">de retard</Text>
+                    </HStack>
+                    {attendance?.lateNotes && (
+                      <Text position="relative" bottom="1rem" color="gray.700">
+                        <strong>Justification:</strong> {attendance?.lateNotes}
+                      </Text>
+                    )}
+                  </VStack>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <Editable
+              position="relative"
+              right="0.5rem"
+              bottom="0.5rem"
+              value={draftClockIn!}
+              onChange={setDraftClockIn}
+              submitOnBlur={false}
+              width="80px"
+              selectAllOnFocus
+              onSubmit={handleEditClockIn}
+              isDisabled={isUnlocked ? false : true}
             >
               <Tooltip
                 label={errorMessage}
@@ -192,136 +302,42 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked }: Props) => {
                 placement="top"
                 isOpen={!!errorMessage}
               >
-                <Editable
-                  position="relative"
-                  right="1rem"
-                  value={draftClockIn!}
-                  onChange={setDraftClockIn}
-                  submitOnBlur={false}
-                  width="80px"
-                  selectAllOnFocus
-                  onSubmit={handleEditClockIn}
-                  isDisabled={isUnlocked ? false : true}
-                >
-                  <EditablePreview
-                    color="red.600"
-                    fontSize="18px"
-                    fontWeight="500"
-                    px={2}
-                    borderRadius="6px"
-                    transition="0.2s"
-                    cursor={isUnlocked ? "pointer" : "default"}
-                    _hover={{
-                      bg: "rgba(255,255,255,0.05)",
+                <EditablePreview
+                  color="green.700"
+                  fontSize="18px"
+                  fontWeight="500"
+                  px={2}
+                  borderRadius="6px"
+                  transition="0.2s"
+                  cursor={isUnlocked ? "pointer" : "default"}
+                  _hover={{
+                    bg: "rgba(255,255,255,0.05)",
 
-                      cursor: isUnlocked ? "pointer" : "default",
-                    }}
-                  />
-
-                  <EditableInput
-                    color="brown"
-                    fontSize="18px"
-                    width="80px"
-                    onFocus={() => {
-                      setErrorMessage("");
-                      setDraftClockIn(formatTime(clockInValue));
-                    }}
-                    onBlur={() => {
-                      if (!formatTime(draftClockIn)) {
-                        setErrorMessage("");
-                        setDraftClockIn(formatTime(clockInValue));
-                      }
-                    }}
-                  />
-                </Editable>
+                    cursor: isUnlocked ? "pointer" : "default",
+                  }}
+                />
               </Tooltip>
-            </Text>
-          </PopoverTrigger>
-          <PopoverContent
-            onMouseEnter={onOpen}
-            onMouseLeave={onClose}
-            bg="#F8F9FB"
-            borderColor="#22345F"
-            color="white"
-            position="relative"
-            right="1rem"
-          >
-            <PopoverArrow bg="#08162b" />
 
-            <PopoverBody>
-              <VStack>
-                <HStack>
-                  {attendance?.lateMinutes && (
-                    <Text color="red.700">
-                      {formatLateMinutes(attendance?.lateMinutes)}
-                    </Text>
-                  )}
-                  <Text color="gray.800">de retard</Text>
-                </HStack>
-                {attendance?.lateNotes && (
-                  <Text position="relative" bottom="1rem" color="gray.700">
-                    <strong>Justification:</strong> {attendance?.lateNotes}
-                  </Text>
-                )}
-              </VStack>
-            </PopoverBody>
-          </PopoverContent>
-        </Popover>
-      ) : (
-        <Editable
-          position="relative"
-          right="0.5rem"
-          bottom="0.5rem"
-          value={draftClockIn!}
-          onChange={setDraftClockIn}
-          submitOnBlur={false}
-          width="80px"
-          selectAllOnFocus
-          onSubmit={handleEditClockIn}
-          isDisabled={isUnlocked ? false : true}
-        >
-          <Tooltip
-            label={errorMessage}
-            bg="red.600"
-            color="white"
-            hasArrow
-            placement="top"
-            isOpen={!!errorMessage}
-          >
-            <EditablePreview
-              color="green.700"
-              fontSize="18px"
-              fontWeight="500"
-              px={2}
-              borderRadius="6px"
-              transition="0.2s"
-              cursor={isUnlocked ? "pointer" : "default"}
-              _hover={{
-                bg: "rgba(255,255,255,0.05)",
-
-                cursor: isUnlocked ? "pointer" : "default",
-              }}
-            />
-          </Tooltip>
-
-          <EditableInput
-            color="brown"
-            fontSize="1.1rem"
-            width="80px"
-            onFocus={() => {
-              setErrorMessage("");
-              setDraftClockIn(formatTime(clockInValue));
-            }}
-            onBlur={() => {
-              if (!formatTime(draftClockIn)) {
-                setErrorMessage("");
-                setDraftClockIn(formatTime(clockInValue));
-              }
-            }}
-          />
-        </Editable>
+              <EditableInput
+                color="brown"
+                fontSize="1.1rem"
+                width="80px"
+                onFocus={() => {
+                  setErrorMessage("");
+                  setDraftClockIn(formatTime(clockInValue));
+                }}
+                onBlur={() => {
+                  if (!formatTime(draftClockIn)) {
+                    setErrorMessage("");
+                    setDraftClockIn(formatTime(clockInValue));
+                  }
+                }}
+              />
+            </Editable>
+          )}
+        </Box>
       )}
-    </Box>
+    </>
   );
 };
 

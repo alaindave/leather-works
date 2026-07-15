@@ -135,9 +135,10 @@ const EmployeeAttendancePage = () => {
   };
 
   //Get attendances without leaves
-  const attendancesWithoutLeaves = attendances?.filter(
-    (a) => a.status != "CONGÉ"
-  );
+  // const attendancesWithoutLeaves = attendances?.filter(
+  //   (a) => a.status != "CONGÉ" && a.status != "ABSENT"
+  // );
+
   return (
     <Flex direction="column" ml="0.02rem" width="100vw" h="95.1vh" bg="#F8FAFC">
       {/* ================= ALERT DIALOG ================= */}
@@ -334,7 +335,7 @@ const EmployeeAttendancePage = () => {
               ))}
             </VStack>
           </>
-        ) : attendancesWithoutLeaves.length === 0 ? (
+        ) : attendances.length === 0 ? (
           <Text
             position="relative"
             top="12rem"
@@ -347,7 +348,7 @@ const EmployeeAttendancePage = () => {
           </Text>
         ) : (
           attendances
-            .filter((a) => a.status !== "ABSENT" && a.status !== "CONGÉ")
+            // .filter((a) => a.status !== "ABSENT" && a.status !== "CONGÉ")
             .filter((a) => !filter || a.department === filter)
             .filter((a) =>
               `${a.firstName} ${a.lastName}`

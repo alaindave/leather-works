@@ -2,6 +2,7 @@ import TaskComment from "../../../shared/types/TaskComment.js";
 import { randomUUID } from "crypto";
 import { run, all } from "../db.js";
 import { addToSyncQueue } from "./sync.repository.js";
+import PopulatedTaskComment from "../../../shared/types/PopulatedTaskComment.js";
 
 //Create task comment
 export async function createTaskComment(comment: TaskComment) {
@@ -119,7 +120,7 @@ export async function deleteTaskComment(_id: string) {
   );
 }
 
-export async function upsertTaskComment(comment: TaskComment) {
+export async function upsertTaskComment(comment: PopulatedTaskComment) {
   await run(
     `
     INSERT INTO task_comments (
@@ -150,6 +151,8 @@ export async function upsertTaskComment(comment: TaskComment) {
       comment.isDeleted,
     ]
   );
+
+  console.log("COMMENT UPSERTED:", comment);
 }
 
 export async function markTaskCommentsSynced(_id: string) {
