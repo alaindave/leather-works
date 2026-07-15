@@ -14,7 +14,7 @@ interface Props {
 
 const EmployeeDetailsTab = ({ employee }: Props) => {
   return (
-    <Box maxH="80vh" w="47vw">
+    <Box maxH="90vh" w="47vw">
       <Tabs variant="enclosed" h="100%" display="flex" flexDirection="column">
         <TabList
           borderBottomColor="rgba(255,255,255,0.08)"
@@ -80,6 +80,23 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             }}
           >
             Contact
+          </Tab>
+          <Tab
+            flexShrink={0}
+            color="gray.600"
+            fontSize={{ base: "sm", md: "md", lg: "lg" }}
+            fontWeight="600"
+            px={{ base: 3, md: 5 }}
+            _selected={{
+              color: "purple.600",
+              borderColor: "#F2B705",
+              bg: "transparent",
+            }}
+            _hover={{
+              color: "purple.600",
+            }}
+          >
+            Documents
           </Tab>
         </TabList>
 

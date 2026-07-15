@@ -20,7 +20,7 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
       bg="#F8F9FB"
       borderRadius="12px"
       borderWidth="2px"
-      borderColor="gray.600"
+      borderColor="gray.200"
     >
       <Box
         p={3}

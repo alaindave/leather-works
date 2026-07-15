@@ -7,7 +7,6 @@ import {
   AlertDialogOverlay,
   Box,
   Button,
-  Divider,
   HStack,
   Stack,
   Text,
@@ -256,66 +255,73 @@ const EmployeeDetailsPage = () => {
           </Stack>
 
           {/* MAIN CONTENT */}
-          <Stack direction={{ base: "column", lg: "row" }} spacing={4}>
+          <Stack
+            mt="1rem"
+            direction={{ base: "column", lg: "row" }}
+            spacing={4}
+          >
             {/* LEFT PANEL */}
-            <Box
-              bg="#F8F9FB"
-              border="1px solid"
-              borderColor="#D1D9E0"
-              borderRadius="12px"
-              boxShadow="0 2px 8px rgba(1,0,1,1)"
-              width="27vw"
-              maxH="80vh"
-              ml="1rem"
-            >
-              <VStack spacing={3} mt="1rem">
-                <HStack>
+            <Box>
+              <Box
+                border="1px solid"
+                borderColor="#D1D9E0"
+                boxShadow="0 2px 8px rgba(1,0,1,1)"
+                borderRadius="0.5rem"
+                width="27vw"
+                ml="1rem"
+                bg="#ffffff"
+              >
+                <Box bg="purple.700" height="8rem" borderRadius="0.5rem" />
+                <Box
+                  height="15vh"
+                  bg="#ffffff"
+                  borderRadius="0.5rem"
+                  position="relative"
+                >
                   <EmployeePhotoUpload
                     employeeId={_id!}
                     currentPhoto={photo_url}
                     onUploaded={refreshEmployee}
                   />
-                </HStack>
-
-                <Text
-                  fontSize="1.2rem"
-                  fontWeight="700"
-                  color="gray.700"
-                  textAlign="center"
-                >
-                  {employee?.firstName} {employee?.lastName}
-                </Text>
-
-                <HStack bg="green.100" px={3} py={1} borderRadius="1.1rem">
-                  <GoDotFill color="green" size="1.3rem" />
-                  <Text
-                    color="green.700"
-                    position="relative"
-                    top="0.4rem"
-                    right="0.3rem"
-                    fontSize="1rem"
-                  >
-                    Actif
-                  </Text>
-                </HStack>
-
-                <Divider borderColor="gray.500" />
-
-                <Box textAlign="center">
-                  <Text color="gray.800" fontWeight="700" fontSize="1.1rem">
-                    Matricule
-                  </Text>
-                  <Text color="gray.800" fontWeight="500">
-                    {employee?.matricule}
-                  </Text>
                 </Box>
+                <VStack
+                  position="relative"
+                  bottom="3rem"
+                  bg="#ffffff"
+                  spacing={3}
+                >
+                  <Text
+                    fontSize="1.2rem"
+                    fontWeight="700"
+                    color="gray.700"
+                    textAlign="center"
+                  >
+                    {employee?.firstName} {employee?.lastName}
+                  </Text>
+                  <HStack bg="green.100" px={3} py={1} borderRadius="1.1rem">
+                    <GoDotFill color="green" size="1.3rem" />
+                    <Text
+                      color="green.700"
+                      position="relative"
+                      top="0.4rem"
+                      right="0.3rem"
+                      fontSize="1rem"
+                    >
+                      Actif
+                    </Text>
+                  </HStack>
+                </VStack>
+              </Box>
+              <Box bg="transparent">
                 {adminUser?.role === "manager" ? (
                   <Button
-                    bg="yellow.200"
+                    bg="red.100"
+                    color="red.600"
                     width="12rem"
                     height="3rem"
                     onClick={onOpen}
-                    fontSize="1.1rem"
+                    fontSize="1rem"
+                    ml="6rem"
                     mt={4}
                     leftIcon={<FaRegTrashCan fontSize="1.3rem" />}
                   >
@@ -330,7 +336,7 @@ const EmployeeDetailsPage = () => {
                     color="red"
                   />
                 )}
-              </VStack>
+              </Box>
             </Box>
 
             {/* RIGHT PANEL */}
@@ -341,6 +347,7 @@ const EmployeeDetailsPage = () => {
               borderRadius="12px"
               boxShadow="0 2px 8px rgba(1,0,1,1)"
               overflowY="auto"
+              maxHeight="70vh"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <EmployeeDetailsTab employee={employee} />

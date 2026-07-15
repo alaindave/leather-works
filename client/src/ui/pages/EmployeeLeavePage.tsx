@@ -373,7 +373,7 @@ const EmployeeLeavePage = () => {
           boxShadow="0 2px 10px rgba(15,23,42,.06)"
           mb="2.7rem"
           ml="0.01rem"
-          height="3.5rem"
+          height="4.5rem"
           width="82vw"
           justify="space-between"
         >

@@ -17,9 +17,9 @@ import { registerAttendanceExportIPC } from "./ipc/attendances_export.ipc.js";
 import { registerSyncIPC } from "./ipc/sync.ipc.js";
 import { fileURLToPath } from "url";
 import sync from "./services/sync.service.js";
-import { getEmployeesPhotosDir } from "./util/getEmployeesPhotosDir.util.js";
 import { registerAppIPC } from "./ipc/app.ipc.js";
 import { markEmployeesOnLeave } from "./services/markEmployeesOnLeave.service.js";
+import { ensureStorageDirectories } from "./storage/directories.js";
 
 const environment = isDev() ? "Development" : "Production";
 
@@ -128,7 +128,7 @@ async function bootstrap() {
   registerSyncIPC();
   registerAppIPC();
   console.log("After IPC registration");
-  getEmployeesPhotosDir();
+  await ensureStorageDirectories();
   await createSplashWindow();
   await createMainWindow();
   await sync();

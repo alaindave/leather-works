@@ -34,7 +34,7 @@ export async function createTaskComment(comment: TaskComment) {
     updatedAt: time,
   };
 
-  console.log("Task to save to sync queue", savedTaskComment);
+  console.log("Task comment to save to sync queue", savedTaskComment);
 
   await addToSyncQueue({
     entity: "task_comment",

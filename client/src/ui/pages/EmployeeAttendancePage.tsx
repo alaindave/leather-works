@@ -379,7 +379,7 @@ const EmployeeAttendancePage = () => {
       )"
         boxShadow="0 2px 8px rgba(0,0,0,0.5)"
         mr="0.15rem"
-        height="5.5rem"
+        height="6rem"
         justify="space-between"
         width="81vw"
       >

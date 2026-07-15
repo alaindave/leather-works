@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Image,
   Box,
   Grid,

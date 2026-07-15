@@ -435,7 +435,7 @@ const LeaveSubmissionModal = ({
                       </FormLabel>
                     </HStack>
                     <Textarea
-                      color="#e6ebfe"
+                      color="black"
                       fontSize="1.1rem"
                       height="300px"
                       width="350px"

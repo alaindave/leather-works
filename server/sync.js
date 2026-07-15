@@ -164,7 +164,7 @@ async function syncUserNotes(data) {
   console.log("SYNCED NOTES:", updated);
 }
 
-//sync employee photos
+//Sync employee photos
 async function syncEmployeePhoto(data, file) {
   const employee = await Employee.findById(data.employeeId);
 
@@ -194,7 +194,7 @@ async function syncEmployeePhoto(data, file) {
     throw new Error(`Supabase upload failed: ${error.message}`);
   }
 
-  // Update photo metadata
+  //Update photo metadata
   employee.photo_filename = data.photo_filename;
   employee.photo_path = objectPath;
   employee.photo_hash = data.photo_hash;

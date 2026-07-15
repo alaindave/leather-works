@@ -45,16 +45,14 @@ export async function pushPendingChanges() {
   for (const item of pending) {
     if (item.entity === "employee_photo") {
       const data = JSON.parse(item.payload);
+      console.log("DATA", data);
       const photoPath = path.join(app.getPath("userData"), data.photo_path);
+      console.log("PHOTO PATH", photoPath);
 
       if (fs.existsSync(photoPath)) {
-        form.append(
-          "afritan_employees_photos",
-          fs.createReadStream(photoPath),
-          {
-            filename: data.photo_filename,
-          }
-        );
+        form.append("employees_photos", fs.createReadStream(photoPath), {
+          filename: data.photo_filename,
+        });
       } else {
         console.error("PHOTO FILE MISSING:", photoPath);
       }

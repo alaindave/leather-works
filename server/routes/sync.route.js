@@ -17,7 +17,7 @@ const Task = require("../models/taskModel");
 const { AdminUser } = require("../models/adminUserModel");
 
 //Push sync
-router.post("/push", upload.array("employee_photos"), async (req, res) => {
+router.post("/push", upload.array("employees_photos"), async (req, res) => {
   try {
     const items = JSON.parse(req.body.items);
 
@@ -59,6 +59,7 @@ router.post("/push", upload.array("employee_photos"), async (req, res) => {
               (f) => f.originalname === data.photo_filename
             );
 
+            console.log("TESTING PHOTO FILE NAME:", file);
             await syncEmployeePhoto(data, file);
 
             break;

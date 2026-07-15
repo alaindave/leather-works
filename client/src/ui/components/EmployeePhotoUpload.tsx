@@ -51,7 +51,7 @@ export default function EmployeePhotoUpload({
   }
 
   return (
-    <VStack spacing={3}>
+    <VStack spacing={3} position="relative" bottom="4rem">
       <Box
         w="140px"
         h="140px"

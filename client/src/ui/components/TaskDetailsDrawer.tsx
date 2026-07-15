@@ -51,9 +51,7 @@ export default function TaskDetailsDrawer({
     if (!comment.trim()) return;
     await addComment(task._id, author, comment);
     onRefresh?.();
-    // if (success) {
     setComment("");
-    // }
   };
   const handleResolution = async (
     notes: string | undefined
@@ -72,6 +70,7 @@ export default function TaskDetailsDrawer({
     try {
       const result = await window.electron.tasks.update(updatedTask);
       console.log("Task update result", result);
+      onRefresh?.();
       return true;
     } catch (error) {
       console.error("An error occured during task update:", error);
