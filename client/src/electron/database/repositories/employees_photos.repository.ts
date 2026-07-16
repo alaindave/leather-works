@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { get, run } from "../db.js";
-import { getEmployeesPhotosDir } from "../../util/getEmployeesPhotosDir.util.js";
+import { EMPLOYEE_PHOTO_DIR } from "../../storage/directories.js";
 import Employee from "../../../shared/types/Employee.js";
 import { addToSyncQueue } from "./sync.repository.js";
 
@@ -10,8 +10,6 @@ type UploadFile = {
   name: string;
   buffer: Buffer;
 };
-
-const EMPLOYEE_PHOTO_DIR = getEmployeesPhotosDir();
 
 export async function uploadEmployeePhoto(
   employeeId: string,

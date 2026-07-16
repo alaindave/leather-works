@@ -382,7 +382,7 @@ const EmployeeAttendancePage = () => {
         mr="0.15rem"
         height="6rem"
         justify="space-between"
-        width="81vw"
+        width="82vw"
       >
         <Box
           mt="0.6rem"
@@ -408,7 +408,7 @@ const EmployeeAttendancePage = () => {
           fontSize="24px"
           fontWeight="600"
           mt="0.6rem"
-          mr="1.5rem"
+          mr="2rem"
         >
           {String(time.getHours()).padStart(2, "0")}:
           {String(time.getMinutes()).padStart(2, "0")}:

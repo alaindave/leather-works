@@ -7,7 +7,7 @@ const EmployeeAdminLayout = () => {
     <Flex
       height="100vh"
       width="100%"
-      bg="gray.800"
+      bg="#F8FAFC"
       overflowY="hidden"
       overflowX="hidden"
     >

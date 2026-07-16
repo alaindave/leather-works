@@ -130,7 +130,8 @@ SELECT *
 FROM leaves 
 WHERE startDate <= date('now') 
   AND endDate >= date('now')
-  AND status = 'APPROUVÉ';
+  AND status = 'APPROUVÉ'
+  AND isDeleted = 0
 
     `
   );

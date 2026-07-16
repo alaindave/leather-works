@@ -11,6 +11,7 @@ const adminUser = require("./routes/admin_user.route.js");
 const sync = require("./routes/sync.route.js");
 const auth = require("./routes/authenticate.route.js");
 const tasks = require("./routes/task.route.js");
+const employee_photos = require("./routes/employees_photos.route.js");
 const jobsRouter = require("./routes/jobs.route.js");
 const app = express();
 
@@ -59,6 +60,7 @@ app.set("io", io);
 app.use(express.json());
 app.use(cors());
 app.use("/employees", employees);
+app.use("/photos", employee_photos);
 app.use("/attendances", attendances);
 app.use("/leaves", leaves);
 app.use("/adminUsers", adminUser);

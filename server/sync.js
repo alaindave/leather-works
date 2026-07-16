@@ -180,7 +180,7 @@ async function syncEmployeePhoto(data, file) {
   }
 
   // Store each employee's photos in their own folder
-  const objectPath = `${employee._id}/${data.photo_filename}`;
+  const objectPath = `${employee._id}/photo`;
 
   // Upload photo to Supabase Storage
   const { error } = await supabase.storage

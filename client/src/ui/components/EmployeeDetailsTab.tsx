@@ -7,6 +7,8 @@ import { MdAttachMoney, MdWork } from "react-icons/md";
 
 import type Employee from "../../shared/types/Employee";
 import EmployeeDetailsCard from "./EmployeeDetailsCard";
+import DocumentBinderUpload from "./PdfUpload";
+import PdfUpload from "./PdfUpload";
 
 interface Props {
   employee: Employee | null;
@@ -135,7 +137,6 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               icon={FaCalendarAlt}
             />
           </TabPanel>
-
           <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Poste"
@@ -170,7 +171,6 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               icon={FaCalendarAlt}
             />
           </TabPanel>
-
           <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Adresse"
@@ -201,6 +201,9 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               value={employee?.contactPhone || "N.D."}
               icon={GiRotaryPhone}
             />
+          </TabPanel>
+          <TabPanel p={0}>
+            <PdfUpload />
           </TabPanel>
         </TabPanels>
       </Tabs>

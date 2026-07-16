@@ -15,6 +15,7 @@ async function markAbsentEmployees() {
     const attendance = await Attendance.findOne({
       employeeId: employee._id,
       date,
+      isDeleted: 0,
     });
 
     if (!attendance) {
@@ -27,6 +28,8 @@ async function markAbsentEmployees() {
         createdAt: CURRENT_TIMESTAMP,
         updatedAt: CURRENT_TIMESTAMP,
       });
+
+      console.log("ABSENT ATTENDANCE CREATED:", absent_attendance);
     }
   }
 }

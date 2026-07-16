@@ -153,11 +153,11 @@ async function syncEmployeePhotos(employees: Employee[]) {
       }
 
       // Download photo from server
-      await downloadEmployeePhoto(employee.photo_filename);
+      await downloadEmployeePhoto(employee._id, employee.photo_filename);
 
       // Save local photo metadata
       await updateEmployeePhotoMetadata(employee._id, {
-        photo_path: path.join("employee_photos", employee.photo_filename),
+        photo_path: path.join("employees_photos", employee.photo_filename),
         photo_filename: employee.photo_filename,
         photo_version: employee.photo_version,
         photo_hash: employee.photo_hash,
@@ -166,10 +166,10 @@ async function syncEmployeePhotos(employees: Employee[]) {
       });
 
       console.log(
-        `Downloaded new photo for ${employee.firstName} ${employee.lastName}. Version ${employee.photo_version}`
+        `DOWNLOADED NEW PHOTO FOR ${employee.firstName} ${employee.lastName}. Version ${employee.photo_version}`
       );
     } catch (error) {
-      console.error(`Failed to sync photo for employee ${employee._id}`, error);
+      console.error(`FAILED TO SYNC PHOTO FOR EMPLOYEE ${employee._id}`, error);
     }
   }
 }
