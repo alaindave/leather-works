@@ -1,20 +1,68 @@
-import { Box, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { FaBuilding, FaCalendarAlt, FaHashtag } from "react-icons/fa";
 import { FaHouseChimneyWindow } from "react-icons/fa6";
 import { GiRelationshipBounds, GiRotaryPhone } from "react-icons/gi";
 import { IoPerson } from "react-icons/io5";
 import { MdAttachMoney, MdWork } from "react-icons/md";
+import { LuPaperclip } from "react-icons/lu";
 
+import useAdminUser from "../../store/auth.store";
 import type Employee from "../../shared/types/Employee";
 import EmployeeDetailsCard from "./EmployeeDetailsCard";
-import DocumentBinderUpload from "./PdfUpload";
-import PdfUpload from "./PdfUpload";
+import { useEffect, useState } from "react";
+import { EmployeeDocument } from "../../shared/types/EmployeeDocuments";
+import EmployeeDocumentsList from "./EmployeeDocumentsList";
+import UploadDocumentModal from "./UploadDocumentModal";
 
 interface Props {
   employee: Employee | null;
 }
 
 const EmployeeDetailsTab = ({ employee }: Props) => {
+  const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  console.log("EMPLOYEE PROP", employee);
+
+  useEffect(() => {
+    if (!employee) return;
+    console.log("EMPLOYEE ID TESTING", employee._id);
+    window.electron.employees_documents
+      .getByEmployee(employee._id)
+      .then((documents) => {
+        setDocuments(documents);
+        console.log("DOCUMENTS FETCHED: ", documents);
+      })
+      .catch((error) => {
+        console.error("ERROR FETCHING DOCUMENT:", error);
+      });
+  }, [employee]);
+
+  const user = useAdminUser((store) => store.adminUser);
+
+  const handleRefresh = () => {
+    if (!employee) return;
+    window.electron.employees_documents
+      .getByEmployee(employee._id)
+      .then((documents) => {
+        setDocuments(documents);
+        console.log("DOCUMENTS FETCHED: ", documents);
+      })
+      .catch((error) => {
+        console.error("ERROR FETCHING DOCUMENT:", error);
+      });
+  };
+
+  if (!employee) return null;
+
   return (
     <Box maxH="90vh" w="47vw">
       <Tabs variant="enclosed" h="100%" display="flex" flexDirection="column">
@@ -203,7 +251,25 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             />
           </TabPanel>
           <TabPanel p={0}>
-            <PdfUpload />
+            {" "}
+            {/* <PdfUpload
+              employeeId={employee?._id}
+              uploadedBy={user._id}
+              documentType="EMPLOYMENT_CONTRACT"
+              onUploaded={handleDocumentUpload}
+            /> */}
+            <Button onClick={onOpen} bg="transparent" fontSize="1.2rem">
+              <LuPaperclip />
+            </Button>
+            <UploadDocumentModal
+              isOpen={isOpen}
+              onClose={onClose}
+              employeeId={employee._id}
+              uploadedBy={user._id}
+              documentType="EMPLOYMENT_CONTRACT"
+              onRefresh={handleRefresh}
+            />
+            <EmployeeDocumentsList documents={documents} />
           </TabPanel>
         </TabPanels>
       </Tabs>

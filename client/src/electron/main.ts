@@ -15,6 +15,7 @@ import { registerOfflineUsersIPC } from "./ipc/offline_users.ipc.js";
 import { registerAuthIPC } from "./ipc/auth.ipc.js";
 import { registerAttendanceExportIPC } from "./ipc/attendances_export.ipc.js";
 import { registerSyncIPC } from "./ipc/sync.ipc.js";
+import { registerEmployeeDocumentIPC } from "./ipc/employees_documents.ipc.js";
 import { fileURLToPath } from "url";
 import sync from "./services/sync.service.js";
 import { registerAppIPC } from "./ipc/app.ipc.js";
@@ -119,6 +120,7 @@ async function bootstrap() {
   registerAuthIPC();
   registerOfflineUsersIPC();
   registerEmployeeIPC();
+  registerEmployeeDocumentIPC();
   registerAttendanceIPC();
   registerAttendanceExportIPC();
   registerLeaveIPC();

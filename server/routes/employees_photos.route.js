@@ -2,9 +2,8 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../services/supabase.service");
 
-console.log("Employee photos router loaded");
-
 router.get("/:employeeId", async (req, res) => {
+  console.log("Photo route hit:", req.params.employeeId);
   try {
     const { employeeId } = req.params;
 

@@ -6,10 +6,12 @@ import { createTasksTables } from "./schemas/tasks.schema.js";
 import { createOfflineUsersTable } from "./schemas/offline_users.schema.js";
 import { createSyncTable } from "./schemas/sync.schema.js";
 import { createSettingsTable } from "./schemas/settings.schema.js";
+import { createEmployeesDocumentsTable } from "./schemas/employees_documents.schema.js";
 
 export async function initializeDatabase() {
   await createOfflineUsersTable();
   await createEmployeesTable();
+  await createEmployeesDocumentsTable();
   await createAttendancesTable();
   await createLeavesTable();
   await createTasksTables();

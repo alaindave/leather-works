@@ -4,6 +4,8 @@ type Employee = import("../shared/types/Employee", { with: { "resolution-mode": 
 type AttendanceWithEmployee = import("../shared/types/AttendanceWithEmployee", { with: { "resolution-mode": "require" } }).default;
 type Leave = import("../shared/types/Leave", { with: { "resolution-mode": "require" } }).default;
 type Task = import("../shared/types/Task", { with: { "resolution-mode": "require" } }).default;
+type EmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
+type UploadedEmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
 
 
 interface LoginCredentials {
@@ -65,6 +67,53 @@ contextBridge.exposeInMainWorld("electron", {
 
     search: (searchTerm: string) =>
       ipcRenderer.invoke("employees:search", searchTerm),
+  },
+
+  employees_documents:{
+    
+  upload: (document: UploadedEmployeeDocument) =>
+      ipcRenderer.invoke(
+        "employees-documents:upload",
+        document
+      ),
+
+  create: (document: EmployeeDocument) =>
+    ipcRenderer.invoke("employees-documents:create", document),
+ 
+  getAll: () =>
+    ipcRenderer.invoke("employees-documents:get-all"),
+
+  getById: (id: string) =>
+    ipcRenderer.invoke("employees-documents:get-by-id", id),
+
+  getByEmployee: (employeeId: string) =>
+    ipcRenderer.invoke("employees-documents:get-by-employee", employeeId),
+
+  getByType: (
+    employeeId: string,
+    documentType: string
+  ) =>
+    ipcRenderer.invoke(
+      "employees-documents:get-by-type",
+      employeeId,
+      documentType
+    ),
+
+  update: (document: EmployeeDocument) =>
+    ipcRenderer.invoke("employees-documents:update", document),
+
+  delete: (id: string) =>
+    ipcRenderer.invoke("employees-documents:delete", id),
+
+  getUnsynced: () =>
+    ipcRenderer.invoke("employees-documents:get-unsynced"),
+
+  markSynced: (id: string) =>
+    ipcRenderer.invoke("employees-documents:mark-synced", id),
+
+  upsert: (document: EmployeeDocument) =>
+    ipcRenderer.invoke("employees-documents:upsert", document),
+
   },
 
   attendance: {

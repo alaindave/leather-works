@@ -105,6 +105,34 @@ declare global {
         delete: (_id: string) => Promise<void>;
       };
 
+      employees_documents: {
+        upload: (
+          document: UploadedEmployeeDocument
+        ) => Promise<EmployeeDocument>;
+        create: (document: EmployeeDocument) => Promise<EmployeeDocument>;
+
+        getAll: () => Promise<EmployeeDocument[]>;
+
+        getById: (id: string) => Promise<EmployeeDocument>;
+
+        getByEmployee: (employeeId: string) => Promise<EmployeeDocument[]>;
+
+        getByType: (
+          employeeId: string,
+          documentType: string
+        ) => Promise<EmployeeDocument>;
+
+        update: (document: EmployeeDocument) => Promise<EmployeeDocument>;
+
+        delete: (id: string) => Promise<EmployeeDocument>;
+
+        getUnsynced: () => Promise<EmployeeDocument>;
+
+        markSynced: (id: string) => Promise<EmployeeDocument>;
+
+        upsert: (document: EmployeeDocument) => Promise<EmployeeDocument>;
+      };
+
       attendance: {
         create: (employeeID: string, clockIn: string) => Promise<Attendance>;
         getAll: () => Promise<AttendanceWithEmployee[]>;

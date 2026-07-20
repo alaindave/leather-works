@@ -59,7 +59,7 @@ const EmployeeDetailsPage = () => {
       .getById(_id)
       .then((employee) => {
         setEmployee(employee);
-        console.log("Employee fetched: ", employee);
+        console.log("EMPLOYEE FETCHED: ", employee);
       })
       .catch((error) => {
         console.error("Error fetching employee:", error);

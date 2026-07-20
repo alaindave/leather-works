@@ -343,7 +343,7 @@ const EmployeeAttendanceCard = ({
       </Text>
 
       {/* Clock In */}
-      <Box ml="0.3rem">
+      <Box>
         <ClockIn
           isUnlocked={isUnlocked}
           attendance={localAttendance}
