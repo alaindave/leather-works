@@ -1,6 +1,18 @@
-import { Box, Button, Flex, Icon, Input, Text, VStack } from "@chakra-ui/react";
-
-import { FiFileText, FiUpload, FiTrash2 } from "react-icons/fi";
+import {
+  Box,
+  Flex,
+  Icon,
+  Input,
+  Text,
+  VStack,
+  SimpleGrid,
+} from "@chakra-ui/react";
+import {
+  FiFileText,
+  FiUpload,
+  FiCreditCard,
+  FiCheckCircle,
+} from "react-icons/fi";
 import { useRef, useState } from "react";
 import { EmployeeDocumentType } from "../../shared/types/EmployeeDocuments";
 
@@ -9,17 +21,19 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 interface PdfUploadProps {
   employeeId: string;
   uploadedBy?: string;
-  documentType: EmployeeDocumentType;
   onUploaded?: (uploaded: boolean) => void;
 }
 
 export default function PdfUpload({
   employeeId,
   uploadedBy,
-  documentType,
   onUploaded,
 }: PdfUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [documentType, setDocumentType] = useState<EmployeeDocumentType>(
+    "EMPLOYMENT_CONTRACT"
+  );
 
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -51,13 +65,22 @@ export default function PdfUpload({
   const handleFile = async (selected: File | null) => {
     if (!selected) return;
 
-    if (selected.type !== "application/pdf") {
-      alert("Veuillez sélectionner un document PDF");
-      return;
+    if (documentType === "EMPLOYMENT_CONTRACT") {
+      if (selected.type !== "application/pdf") {
+        alert("Veuillez sélectionner un document PDF.");
+        return;
+      }
+    } else {
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+
+      if (!allowedTypes.includes(selected.type)) {
+        alert("Veuillez sélectionner un fichier PDF ou une image JPG/JPEG.");
+        return;
+      }
     }
 
     if (selected.size > MAX_FILE_SIZE) {
-      alert("Taille maximale: 10MB.");
+      alert("Taille maximale : 10 MB.");
       return;
     }
 
@@ -66,10 +89,83 @@ export default function PdfUpload({
 
   return (
     <>
+      <SimpleGrid columns={2} gap={4} mb={6}>
+        <Box
+          p={5}
+          borderWidth="2px"
+          borderRadius="xl"
+          cursor="pointer"
+          transition="all .2s"
+          borderColor={
+            documentType === "EMPLOYMENT_CONTRACT" ? "yellow.400" : "gray.600"
+          }
+          bg={
+            documentType === "EMPLOYMENT_CONTRACT" ? "yellow.400" : "gray.800"
+          }
+          color={documentType === "EMPLOYMENT_CONTRACT" ? "black" : "white"}
+          onClick={() => setDocumentType("EMPLOYMENT_CONTRACT")}
+          _hover={{
+            borderColor: "yellow.300",
+            transform: "translateY(-2px)",
+          }}
+        >
+          <VStack gap={2}>
+            <Icon as={FiFileText} boxSize={8} />
+
+            <Text fontWeight="bold">Contrat de travail</Text>
+
+            {documentType === "EMPLOYMENT_CONTRACT" && (
+              <Flex align="center" gap={1} mt={2}>
+                <Icon as={FiCheckCircle} />
+                <Text fontSize="sm" fontWeight="bold">
+                  Sélectionné
+                </Text>
+              </Flex>
+            )}
+          </VStack>
+        </Box>
+
+        <Box
+          p={5}
+          borderWidth="2px"
+          borderRadius="xl"
+          cursor="pointer"
+          transition="all .2s"
+          borderColor={
+            documentType === "NATIONAL_ID" ? "yellow.400" : "gray.600"
+          }
+          bg={documentType === "NATIONAL_ID" ? "yellow.400" : "gray.800"}
+          color={documentType === "NATIONAL_ID" ? "black" : "white"}
+          onClick={() => setDocumentType("NATIONAL_ID")}
+          _hover={{
+            borderColor: "yellow.300",
+            transform: "translateY(-2px)",
+          }}
+        >
+          <VStack gap={2}>
+            <Icon as={FiCreditCard} boxSize={8} />
+            <Text fontWeight="bold">Carte d'identité</Text>
+
+            {documentType === "NATIONAL_ID" && (
+              <Flex align="center" gap={1} mt={2}>
+                <Icon as={FiCheckCircle} />
+                <Text fontSize="sm" fontWeight="bold">
+                  Sélectionné
+                </Text>
+              </Flex>
+            )}
+          </VStack>
+        </Box>
+      </SimpleGrid>
+
       <Input
         ref={inputRef}
         type="file"
-        accept="application/pdf"
+        accept={
+          documentType === "EMPLOYMENT_CONTRACT"
+            ? "application/pdf"
+            : "application/pdf,image/jpeg,image/jpg,image/png"
+        }
         display="none"
         onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
       />
@@ -78,58 +174,61 @@ export default function PdfUpload({
         <Box
           border="2px dashed"
           borderColor="gray.500"
-          borderRadius="lg"
-          p={8}
-          cursor="pointer"
+          borderRadius="xl"
+          p={10}
+          cursor={uploading ? "default" : "pointer"}
           textAlign="center"
-          onClick={() => inputRef.current?.click()}
+          onClick={() => !uploading && inputRef.current?.click()}
           _hover={{
             borderColor: "yellow.400",
             bg: "whiteAlpha.50",
           }}
         >
-          <VStack gap={3}>
-            <Icon as={FiUpload} boxSize={10} color="yellow.400" />
+          <VStack gap={4}>
+            <Icon as={FiUpload} boxSize={12} color="yellow.400" />
 
-            <Text fontWeight="bold">Ajouter un document</Text>
+            <Text fontWeight="bold" fontSize="lg">
+              {documentType === "EMPLOYMENT_CONTRACT"
+                ? "Ajouter un contrat de travail"
+                : "Ajouter une carte d'identité"}
+            </Text>
 
             <Text color="gray.400" fontSize="sm">
-              Cliquez ici pour sélectionner un PDF
+              {documentType === "EMPLOYMENT_CONTRACT"
+                ? "Cliquez ici pour sélectionner un document PDF"
+                : "Cliquez ici pour sélectionner un document PDF ou JPG"}
             </Text>
 
             <Text fontSize="xs" color="gray.500">
-              Taille maximale: 10 MB
+              Taille maximale : 10 MB
             </Text>
           </VStack>
         </Box>
       ) : (
-        <Box borderWidth="1px" borderRadius="lg" p={4} bg="gray.800">
-          <Flex justify="space-between" align="center">
-            <Flex align="center" gap={3}>
-              <Icon as={FiFileText} color="red.400" boxSize={7} />
+        <Flex
+          borderWidth="1px"
+          borderRadius="xl"
+          p={5}
+          bg="gray.800"
+          align="center"
+          gap={4}
+        >
+          <Icon as={FiFileText} color="yellow.400" boxSize={8} />
 
-              <Box>
-                <Text fontWeight="medium">{file.name}</Text>
+          <Box flex={1}>
+            <Text fontWeight="bold" color="white">
+              {file.name}
+            </Text>
 
-                <Text fontSize="sm" color="gray.400">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </Text>
-              </Box>
-            </Flex>
+            <Text fontSize="sm" color="gray.400">
+              {(file.size / 1024 / 1024).toFixed(2)} MB
+            </Text>
+          </Box>
 
-            <Button
-              size="sm"
-              colorScheme="red"
-              leftIcon={<FiTrash2 />}
-              isLoading={uploading}
-              onClick={() => {
-                setFile(null);
-              }}
-            >
-              Retirer
-            </Button>
-          </Flex>
-        </Box>
+          <Text color="green.400" fontWeight="bold">
+            Téléversé ✓
+          </Text>
+        </Flex>
       )}
     </>
   );

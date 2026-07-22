@@ -1,4 +1,10 @@
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Button,
   Tab,
@@ -6,6 +12,7 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
+  useToast,
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaBuilding, FaCalendarAlt, FaHashtag } from "react-icons/fa";
@@ -14,11 +21,10 @@ import { GiRelationshipBounds, GiRotaryPhone } from "react-icons/gi";
 import { IoPerson } from "react-icons/io5";
 import { MdAttachMoney, MdWork } from "react-icons/md";
 import { LuPaperclip } from "react-icons/lu";
-
 import useAdminUser from "../../store/auth.store";
 import type Employee from "../../shared/types/Employee";
 import EmployeeDetailsCard from "./EmployeeDetailsCard";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { EmployeeDocument } from "../../shared/types/EmployeeDocuments";
 import EmployeeDocumentsList from "./EmployeeDocumentsList";
 import UploadDocumentModal from "./UploadDocumentModal";
@@ -30,8 +36,15 @@ interface Props {
 const EmployeeDetailsTab = ({ employee }: Props) => {
   const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  console.log("EMPLOYEE PROP", employee);
-
+  const {
+    isOpen: isDeletionOpen,
+    onOpen: onDeletionOpen,
+    onClose: onDeletionClose,
+  } = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const [documentToDelete, setDocumentToDelete] =
+    useState<EmployeeDocument | null>(null);
+  const toast = useToast();
   useEffect(() => {
     if (!employee) return;
     console.log("EMPLOYEE ID TESTING", employee._id);
@@ -59,6 +72,51 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
       .catch((error) => {
         console.error("ERROR FETCHING DOCUMENT:", error);
       });
+  };
+
+  const handleView = async (document: EmployeeDocument) => {
+    await window.electron.employees_documents.view(document.localPath);
+  };
+
+  const handleDownload = async (document: EmployeeDocument) => {
+    await window.electron.employees_documents.download(document);
+
+    toast({
+      title: "Telechargement",
+      status: "success",
+    });
+  };
+
+  const handleDelete = (document: EmployeeDocument) => {
+    setDocumentToDelete(document);
+    onDeletionOpen();
+  };
+
+  const confirmDelete = async () => {
+    if (!documentToDelete) return;
+
+    try {
+      await window.electron.employees_documents.delete(documentToDelete._id);
+
+      setDocuments((prev) =>
+        prev.filter((d) => d._id !== documentToDelete._id)
+      );
+
+      toast({
+        title: "Document supprimé",
+        status: "success",
+      });
+
+      onDeletionClose();
+    } catch (error) {
+      toast({
+        title: "Suppression echouée",
+        status: "error",
+      });
+    } finally {
+      setDocumentToDelete(null);
+      onClose();
+    }
   };
 
   if (!employee) return null;
@@ -251,16 +309,6 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             />
           </TabPanel>
           <TabPanel p={0}>
-            {" "}
-            {/* <PdfUpload
-              employeeId={employee?._id}
-              uploadedBy={user._id}
-              documentType="EMPLOYMENT_CONTRACT"
-              onUploaded={handleDocumentUpload}
-            /> */}
-            <Button onClick={onOpen} bg="transparent" fontSize="1.2rem">
-              <LuPaperclip />
-            </Button>
             <UploadDocumentModal
               isOpen={isOpen}
               onClose={onClose}
@@ -269,10 +317,71 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               documentType="EMPLOYMENT_CONTRACT"
               onRefresh={handleRefresh}
             />
-            <EmployeeDocumentsList documents={documents} />
+            <EmployeeDocumentsList
+              documents={documents}
+              onView={handleView}
+              onDownload={handleDownload}
+              onDelete={handleDelete}
+            />
+            <Button
+              position="absolute"
+              top="3rem"
+              right="0.01rem"
+              onClick={onOpen}
+              bg="transparent"
+              fontSize="1.4rem"
+              _hover={{ bg: "transparent" }}
+            >
+              <LuPaperclip />
+            </Button>
           </TabPanel>
         </TabPanels>
       </Tabs>
+      <AlertDialog
+        isOpen={isDeletionOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => {
+          setDocumentToDelete(null);
+          onDeletionClose();
+        }}
+      >
+        <AlertDialogOverlay backdropFilter="auto" backdropBlur="0.5rem">
+          <AlertDialogContent
+            bg="#08162b"
+            color="white"
+            mx={4}
+            position="relative"
+            top="8rem"
+          >
+            <AlertDialogHeader>Supprimer le document</AlertDialogHeader>
+
+            <AlertDialogBody>
+              {documentToDelete ? (
+                <>
+                  Êtes vous sur de vouloir supprimer{" "}
+                  <strong style={{ color: "#F2B705" }}>
+                    {documentToDelete.originalName}
+                  </strong>
+                  ?
+                  <br />
+                </>
+              ) : (
+                "Êtes vous sur de vouloir supprimer ce document"
+              )}
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onDeletionClose}>
+                Annuler
+              </Button>
+
+              <Button colorScheme="red" ml={3} onClick={confirmDelete}>
+                Supprimer
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 };

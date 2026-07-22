@@ -1,8 +1,6 @@
-import { ipcMain } from "electron";
-
+import { ipcMain, shell, dialog } from "electron";
+import fs from "fs/promises";
 import {
-  createEmployeeDocument,
-  upsertEmployeeDocument,
   updateEmployeeDocument,
   deleteEmployeeDocument,
   getEmployeeDocumentById,
@@ -13,23 +11,37 @@ import {
   markEmployeeDocumentUploaded,
   uploadEmployeeDocument,
 } from "../../electron/database/repositories/employees_documents.repository.js";
-import { EmployeeDocumentType } from "../../shared/types/EmployeeDocuments.js";
+import {
+  EmployeeDocument,
+  EmployeeDocumentType,
+} from "../../shared/types/EmployeeDocuments.js";
 
 export function registerEmployeeDocumentIPC() {
   console.log("REGISTERING EMPLOYEES DOCUMENTS IPC");
+  //View document
+  ipcMain.handle("employee_documents:view", async (_, localPath: string) => {
+    await shell.openPath(localPath);
+  });
+
+  //Download document
+  ipcMain.handle(
+    "employee_documents:download",
+    async (_, document: EmployeeDocument) => {
+      const result = await dialog.showSaveDialog({
+        defaultPath: document.originalName,
+      });
+
+      if (result.canceled || !result.filePath) return false;
+
+      await fs.copyFile(document.localPath, result.filePath);
+
+      return true;
+    }
+  );
+
   // Upload document
   ipcMain.handle("employees-documents:upload", async (_, document) => {
     return await uploadEmployeeDocument(document);
-  });
-
-  // Create document
-  ipcMain.handle("employees-documents:create", async (_, document) => {
-    return await createEmployeeDocument(document);
-  });
-
-  //  Upsert document
-  ipcMain.handle("employees-documents:upsert", async (_, document) => {
-    return await upsertEmployeeDocument(document);
   });
 
   //  Update document
@@ -38,8 +50,16 @@ export function registerEmployeeDocumentIPC() {
   });
 
   // Delete
-  ipcMain.handle("employees-documents:delete", async (_, id: string) => {
-    return await deleteEmployeeDocument(id);
+  ipcMain.handle("employee_documents:delete", async (_, _id: string) => {
+    const document = await getEmployeeDocumentById(_id);
+    if (!document) return false;
+    try {
+      await fs.unlink(document.localPath);
+    } catch {
+      // ignore if already removed
+    }
+    await deleteEmployeeDocument(_id);
+    return true;
   });
 
   // Read

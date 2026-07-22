@@ -31,35 +31,39 @@ export default function UploadDocumentModal({
 }: UploadDocumentModalProps) {
   const [uploaded, setUploaded] = useState<boolean>(false);
   const handleClose = () => {
-    if (!uploaded) return;
+    if (!uploaded) onClose();
     onRefresh?.();
     onClose();
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
-      <ModalOverlay />
+      <ModalOverlay backdropFilter="blur(0.5rem)">
+        <ModalContent>
+          <ModalHeader>Type de documents</ModalHeader>
 
-      <ModalContent>
-        <ModalHeader>Documents</ModalHeader>
+          <ModalCloseButton />
 
-        <ModalCloseButton />
+          <ModalBody pb={6}>
+            <PdfUpload
+              employeeId={employeeId}
+              uploadedBy={uploadedBy}
+              onUploaded={(uploaded) => setUploaded(uploaded)}
+            />
+          </ModalBody>
 
-        <ModalBody pb={6}>
-          <PdfUpload
-            employeeId={employeeId}
-            uploadedBy={uploadedBy}
-            documentType={documentType}
-            onUploaded={(uploaded) => setUploaded(uploaded)}
-          />
-        </ModalBody>
-
-        <ModalFooter>
-          <Button variant="ghost" onClick={handleClose}>
-            Fermer
-          </Button>
-        </ModalFooter>
-      </ModalContent>
+          <ModalFooter>
+            <Button
+              color="#ffffff"
+              bg="red.500"
+              onClick={handleClose}
+              _hover={{ bg: "red.500" }}
+            >
+              Fermer
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </ModalOverlay>
     </Modal>
   );
 }

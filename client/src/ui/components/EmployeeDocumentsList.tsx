@@ -30,6 +30,8 @@ export default function EmployeeDocumentsList({
   if (documents.length === 0) {
     return (
       <Box
+        position="relative"
+        top="1rem"
         borderWidth="1px"
         borderRadius="lg"
         p={10}

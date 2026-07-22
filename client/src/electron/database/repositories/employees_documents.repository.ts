@@ -9,47 +9,7 @@ import {
   EmployeeDocumentType,
   UploadedEmployeeDocument,
 } from "../../../shared/types/EmployeeDocuments.js";
-
-// Create
-export async function createEmployeeDocument(document: EmployeeDocument) {
-  await run(
-    `
-    INSERT INTO employees_documents (
-      _id,
-      employeeId,
-      uploadedBy,
-      documentType,
-      originalName,
-      fileName,
-      localPath,
-      mimeType,
-      fileSize,
-      hash,
-      version,
-      needsUpload,
-      createdAt,
-      updatedAt
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `,
-    [
-      document._id,
-      document.employeeId,
-      document.uploadedBy,
-      document.documentType,
-      document.originalName,
-      document.fileName,
-      document.localPath,
-      document.mimeType,
-      document.fileSize,
-      document.hash,
-      document.version,
-      document.needsUpload ? 1 : 0,
-      document.createdAt,
-      document.updatedAt,
-    ]
-  );
-}
+import { addToSyncQueue } from "./sync.repository.js";
 
 // Upload employee document
 export async function uploadEmployeeDocument(
@@ -62,7 +22,11 @@ export async function uploadEmployeeDocument(
 
   const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
-  const employeeFolder = path.join(EMPLOYEE_DOCUMENTS_DIR, file.employeeId);
+  const employeeFolder = path.join(
+    EMPLOYEE_DOCUMENTS_DIR,
+    file.employeeId,
+    file.documentType
+  );
 
   await fs.mkdir(employeeFolder, {
     recursive: true,
@@ -86,9 +50,7 @@ export async function uploadEmployeeDocument(
     }
   }
 
-  const fileName = `${file.documentType}_${
-    new Date().toISOString().split("T")[0]
-  }${extension}`;
+  const fileName = `${file.employeeId}_${file.documentType}${extension}`;
 
   const localPath = path.join(employeeFolder, fileName);
 
@@ -114,12 +76,31 @@ export async function uploadEmployeeDocument(
     updatedAt: now,
   };
 
-  console.log({
-    employeeId: document.employeeId,
-    uploadedBy: document.uploadedBy,
-  });
-
   await upsertEmployeeDocument(document);
+
+  const syncPayload = {
+    _id,
+    employeeId: file.employeeId,
+    uploadedBy: file.uploadedBy,
+    documentType: file.documentType,
+    localPath,
+    originalName: file.name,
+    fileName,
+    mimeType: file.mimeType,
+    fileSize: file.buffer.length,
+    hash,
+    version,
+    isDeleted: 0,
+    createdAt,
+    updatedAt: now,
+  };
+
+  await addToSyncQueue({
+    entity: "employee_document",
+    entityId: document._id,
+    operation: "create",
+    payload: JSON.stringify(syncPayload),
+  });
 
   return document;
 }
@@ -211,6 +192,7 @@ export async function getEmployeeDocumentsByEmployee(employeeId: string) {
     SELECT *
     FROM employees_documents
     WHERE employeeId = ?
+      AND isDeleted = 0
     ORDER BY createdAt DESC
     `,
     [employeeId]
@@ -327,6 +309,19 @@ export async function markEmployeeDocumentNeedsUpload(id: string) {
     WHERE _id = ?
     `,
     [id]
+  );
+}
+
+export async function markEmployeeDocumentSynced(_id: string) {
+  await run(
+    `
+      UPDATE employees_documents
+      SET
+        needsUpload = 0,
+        lastSyncedAt = CURRENT_TIMESTAMP
+      WHERE _id = ?
+    `,
+    [_id]
   );
 }
 

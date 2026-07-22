@@ -2,6 +2,7 @@ const Employee = require("./models/employeeModel.js");
 const Attendance = require("./models/attendanceModel.js");
 const Leave = require("./models/leaveModel.js");
 const Task = require("./models/taskModel.js");
+const EmployeesDocuments = require("./models/employeesDocumentsModel.js");
 const { AdminUser } = require("./models/adminUserModel.js");
 const fs = require("fs/promises");
 const path = require("path");
@@ -191,7 +192,7 @@ async function syncEmployeePhoto(data, file) {
     });
 
   if (error) {
-    throw new Error(`Supabase upload failed: ${error.message}`);
+    throw new Error(`SUPABASE UPLOAD FAILED: ${error.message}`);
   }
 
   //Update photo metadata
@@ -208,6 +209,76 @@ async function syncEmployeePhoto(data, file) {
   return employee;
 }
 
+// Sync employee documents
+async function syncEmployeeDocument(operation, data, file) {
+  console.log("DOCUMENT METADATA:", data);
+  console.log("DOCUMENT FILE:", file);
+
+  switch (operation) {
+    case "create":
+    case "update": {
+      if (!file) {
+        throw new Error("DOCUMENT FILE MISSING");
+      }
+
+      // Store each employee's documents in their own folder
+      const objectPath = `${data.employeeId}_${data.documentType}_${data.fileName}`;
+
+      // Upload document to Supabase Storage
+      const { error } = await supabase.storage
+        .from("afritan_employees_documents")
+        .upload(objectPath, file.buffer, {
+          contentType: data.mimeType,
+          upsert: true,
+        });
+
+      if (error) {
+        throw new Error(`SUPABASE UPLOAD FAILED: ${error.message}`);
+      }
+
+      await EmployeesDocuments.updateOne(
+        { _id: data._id },
+        {
+          ...data,
+          storagePath: objectPath,
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      const updated = await EmployeesDocuments.findById(data._id);
+
+      console.log("SYNCED EMPLOYEE DOCUMENT:", updated);
+
+      return updated;
+    }
+
+    case "delete": {
+      const existing = await EmployeesDocuments.findById(data._id);
+
+      if (existing?.storagePath) {
+        await supabase.storage
+          .from("afritan_employees_documents")
+          .remove([existing.storagePath]);
+      }
+
+      await EmployeesDocuments.updateOne(
+        { _id: data._id },
+        {
+          isDeleted: 1,
+          updatedAt: new Date(),
+        }
+      );
+
+      break;
+    }
+
+    default:
+      throw new Error(`UNSUPPORTED OPERATION: ${operation}`);
+  }
+}
+
 module.exports = {
   syncEmployee,
   syncAttendance,
@@ -216,4 +287,5 @@ module.exports = {
   syncTaskComment,
   syncUserNotes,
   syncEmployeePhoto,
+  syncEmployeeDocument,
 };

@@ -106,6 +106,8 @@ declare global {
       };
 
       employees_documents: {
+        view: (localPath: string) => Promise<EmployeeDocument>;
+        download: (document: EmployeeDocument) => Promise<EmployeeDocument>;
         upload: (
           document: UploadedEmployeeDocument
         ) => Promise<EmployeeDocument>;

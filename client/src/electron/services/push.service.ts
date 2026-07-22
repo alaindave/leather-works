@@ -15,6 +15,7 @@ import { markLeaveSynced } from "../database/repositories/leaves.repository.js";
 import { markTaskSynced } from "../database/repositories/tasks.repository.js";
 import { markTaskCommentsSynced } from "../database/repositories/tasks_comments.repository.js";
 import { markEmployeePhotoSynced } from "../database/repositories/employees_photos.repository.js";
+import { markEmployeeDocumentSynced } from "../database/repositories/employees_documents.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -27,7 +28,7 @@ export async function pushPendingChanges() {
 
   if (!pending.length) return;
 
-  console.log("ITEMS TO PUSH SYNC: ", pending);
+  console.log("ITEMS TO PUSH SYNC:", pending);
 
   const form = new FormData();
 
@@ -38,66 +39,93 @@ export async function pushPendingChanges() {
     data: JSON.parse(item.payload),
   }));
 
-  // Add sync metadata
+  // Sync metadata
   form.append("items", JSON.stringify(items));
 
-  // Add photo files
+  // Attach files (photos + documents)
   for (const item of pending) {
-    if (item.entity === "employee_photo") {
-      const data = JSON.parse(item.payload);
-      console.log("DATA", data);
-      const photoPath = path.join(app.getPath("userData"), data.photo_path);
-      console.log("PHOTO PATH", photoPath);
+    const data = JSON.parse(item.payload);
 
-      if (fs.existsSync(photoPath)) {
-        form.append("employees_photos", fs.createReadStream(photoPath), {
-          filename: data.photo_filename,
-        });
-      } else {
-        console.error("PHOTO FILE MISSING:", photoPath);
+    switch (item.entity) {
+      case "employee_photo": {
+        const photoPath = path.join(app.getPath("userData"), data.photo_path);
+
+        if (fs.existsSync(photoPath)) {
+          form.append("employees_photos", fs.createReadStream(photoPath), {
+            filename: data.photo_filename,
+            contentType: data.photo_mime_type,
+          });
+        } else {
+          console.error("PHOTO FILE MISSING:", photoPath);
+        }
+
+        break;
+      }
+
+      case "employee_document": {
+        if (fs.existsSync(data.localPath)) {
+          form.append(
+            "employees_documents",
+            fs.createReadStream(data.localPath),
+            {
+              filename: data.fileName,
+              contentType: data.mimeType,
+            }
+          );
+        } else {
+          console.error("DOCUMENT FILE MISSING:", data.localPath);
+        }
+
+        break;
       }
     }
   }
 
   console.log("FORM TO SEND TO BACKEND:", form);
+
   const response = await axios.post(`${API_URL}/sync/push`, form, {
     headers: form.getHeaders(),
   });
-  console.log("SYNC PUSH RESULT", response.status);
 
-  // Mark entities synced in sync queue
+  console.log("SYNC PUSH RESULT:", response.status);
+
+  // Mark sync queue items as synced
   await markManySynced(response.data.synced);
 
-  // Mark entities synced locally
+  // Mark local entities as synced
   for (const item of pending) {
-    if (response.data.synced.includes(item._id)) {
-      const data = JSON.parse(item.payload);
+    if (!response.data.synced.includes(item._id)) continue;
 
-      switch (item.entity) {
-        case "employee":
-          await markEmployeeSynced(data._id);
-          break;
+    const data = JSON.parse(item.payload);
 
-        case "employee_photo":
-          await markEmployeePhotoSynced(data.employeeId);
-          break;
+    switch (item.entity) {
+      case "employee":
+        await markEmployeeSynced(data._id);
+        break;
 
-        case "attendance":
-          await markAttendanceSynced(data._id);
-          break;
+      case "employee_photo":
+        await markEmployeePhotoSynced(data.employeeId);
+        break;
 
-        case "leave":
-          await markLeaveSynced(data._id);
-          break;
+      case "employee_document":
+        await markEmployeeDocumentSynced(data._id);
+        break;
 
-        case "task":
-          await markTaskSynced(data._id);
-          break;
+      case "attendance":
+        await markAttendanceSynced(data._id);
+        break;
 
-        case "task_comment":
-          await markTaskCommentsSynced(data._id);
-          break;
-      }
+      case "leave":
+        await markLeaveSynced(data._id);
+        break;
+
+      case "task":
+        await markTaskSynced(data._id);
+        break;
+
+      case "task_comment":
+        await markTaskCommentsSynced(data._id);
+        break;
     }
   }
 

@@ -7,7 +7,8 @@ export default interface SyncQueueItem {
     | "task"
     | "task_comment"
     | "user_notes"
-    | "employee_photo";
+    | "employee_photo"
+    | "employee_document";
   entityId: string;
   operation: "create" | "update" | "delete";
   payload: string;

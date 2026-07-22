@@ -70,50 +70,35 @@ contextBridge.exposeInMainWorld("electron", {
   },
 
   employees_documents:{
-    
-  upload: (document: UploadedEmployeeDocument) =>
-      ipcRenderer.invoke(
-        "employees-documents:upload",
-        document
-      ),
-
-  create: (document: EmployeeDocument) =>
+    view:(localPath: string)=> 
+    ipcRenderer.invoke("employee_documents:view",localPath),
+    download:(document: EmployeeDocument) =>
+    ipcRenderer.invoke("employee_documents:download",document),
+    delete:(_id: string) =>
+    ipcRenderer.invoke("employee_documents:delete",_id),
+    upload: (document: UploadedEmployeeDocument) =>
+    ipcRenderer.invoke("employees-documents:upload",document),
+    create: (document: EmployeeDocument) =>
     ipcRenderer.invoke("employees-documents:create", document),
- 
-  getAll: () =>
+    getAll: () =>
     ipcRenderer.invoke("employees-documents:get-all"),
-
-  getById: (id: string) =>
-    ipcRenderer.invoke("employees-documents:get-by-id", id),
-
-  getByEmployee: (employeeId: string) =>
+    getById: (_id: string) =>
+    ipcRenderer.invoke("employees-documents:get-by-id", _id),
+    getByEmployee: (employeeId: string) =>
     ipcRenderer.invoke("employees-documents:get-by-employee", employeeId),
-
-  getByType: (
-    employeeId: string,
-    documentType: string
-  ) =>
-    ipcRenderer.invoke(
-      "employees-documents:get-by-type",
+    getByType: (employeeId: string,documentType: string) =>
+     ipcRenderer.invoke("employees-documents:get-by-type",
       employeeId,
       documentType
     ),
-
-  update: (document: EmployeeDocument) =>
+    update: (document: EmployeeDocument) =>
     ipcRenderer.invoke("employees-documents:update", document),
-
-  delete: (id: string) =>
-    ipcRenderer.invoke("employees-documents:delete", id),
-
-  getUnsynced: () =>
+    getUnsynced: () =>
     ipcRenderer.invoke("employees-documents:get-unsynced"),
-
-  markSynced: (id: string) =>
+    markSynced: (id: string) =>
     ipcRenderer.invoke("employees-documents:mark-synced", id),
-
-  upsert: (document: EmployeeDocument) =>
+    upsert: (document: EmployeeDocument) =>
     ipcRenderer.invoke("employees-documents:upsert", document),
-
   },
 
   attendance: {

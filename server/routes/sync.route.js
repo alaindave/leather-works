@@ -9,6 +9,7 @@ const {
   syncTaskComment,
   syncUserNotes,
   syncEmployeePhoto,
+  syncEmployeeDocument,
 } = require("../sync");
 const Employee = require("../models/employeeModel");
 const Attendance = require("../models/attendanceModel");
@@ -17,76 +18,95 @@ const Task = require("../models/taskModel");
 const { AdminUser } = require("../models/adminUserModel");
 
 //Push sync
-router.post("/push", upload.array("employees_photos"), async (req, res) => {
-  try {
-    const items = JSON.parse(req.body.items);
+router.post(
+  "/push",
+  upload.fields([
+    { name: "employees_photos" },
+    { name: "employees_documents" },
+  ]),
+  async (req, res) => {
+    try {
+      const items = JSON.parse(req.body.items);
 
-    const files = req.files || [];
+      console.log("REQ FILES:", req.files);
 
-    const synced = [];
+      const photoFiles = req.files?.employees_photos || [];
 
-    for (const item of items) {
-      const { queueId, entity, operation, data } = item;
+      const documentFiles = req.files?.employees_documents || [];
 
-      try {
-        switch (entity) {
-          case "employee":
-            await syncEmployee(operation, data);
-            break;
+      const synced = [];
 
-          case "attendance":
-            await syncAttendance(operation, data);
-            break;
+      for (const item of items) {
+        const { queueId, entity, operation, data } = item;
 
-          case "leave":
-            await syncLeave(operation, data);
-            break;
+        try {
+          switch (entity) {
+            case "employee":
+              await syncEmployee(operation, data);
+              break;
 
-          case "task":
-            await syncTask(operation, data);
-            break;
+            case "attendance":
+              await syncAttendance(operation, data);
+              break;
 
-          case "task_comment":
-            await syncTaskComment(operation, data);
-            break;
+            case "leave":
+              await syncLeave(operation, data);
+              break;
 
-          case "user_notes":
-            await syncUserNotes(data);
-            break;
+            case "task":
+              await syncTask(operation, data);
+              break;
 
-          case "employee_photo":
-            const file = files.find(
-              (f) => f.originalname === data.photo_filename
-            );
+            case "task_comment":
+              await syncTaskComment(operation, data);
+              break;
 
-            console.log("TESTING PHOTO FILE NAME:", file);
-            await syncEmployeePhoto(data, file);
+            case "user_notes":
+              await syncUserNotes(data);
+              break;
 
-            break;
+            case "employee_photo": {
+              const file = photoFiles.find(
+                (f) => f.originalname === data.photo_filename
+              );
 
-          default:
-            continue;
+              await syncEmployeePhoto(data, file);
+              break;
+            }
+
+            case "employee_document": {
+              const file = documentFiles.find(
+                (f) => f.originalname === data.fileName
+              );
+
+              await syncEmployeeDocument(operation, data, file);
+              break;
+            }
+
+            default:
+              continue;
+          }
+
+          synced.push(queueId);
+        } catch (error) {
+          console.error(`Push failed for ${entity}`, error);
         }
-
-        synced.push(queueId);
-      } catch (error) {
-        console.error(`Push failed for ${entity}`, error);
       }
+
+      return res.json({
+        success: true,
+        synced,
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Push sync failed",
+      });
     }
-
-    return res.json({
-      success: true,
-      synced,
-    });
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Push sync failed",
-    });
   }
-});
+);
 
 //Pull sync
 router.get("/pull", async (req, res) => {

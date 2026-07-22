@@ -7,12 +7,21 @@ import {
   AlertDialogOverlay,
   Box,
   Button,
+  Flex,
   HStack,
+  Icon,
   Stack,
   Text,
   VStack,
   useDisclosure,
 } from "@chakra-ui/react";
+import {
+  FiCheckCircle,
+  FiUserCheck,
+  FiClock,
+  FiBriefcase,
+  FiCalendar,
+} from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { FaArrowLeftLong } from "react-icons/fa6";
@@ -255,11 +264,7 @@ const EmployeeDetailsPage = () => {
           </Stack>
 
           {/* MAIN CONTENT */}
-          <Stack
-            mt="1rem"
-            direction={{ base: "column", lg: "row" }}
-            spacing={4}
-          >
+          <Stack direction={{ base: "column", lg: "row" }} spacing={4}>
             {/* LEFT PANEL */}
             <Box>
               <Box
@@ -298,6 +303,7 @@ const EmployeeDetailsPage = () => {
                   >
                     {employee?.firstName} {employee?.lastName}
                   </Text>
+                  <Text color="purple.500">{employee?.role}</Text>
                   <HStack bg="green.100" px={3} py={1} borderRadius="1.1rem">
                     <GoDotFill color="green" size="1.3rem" />
                     <Text
@@ -312,6 +318,118 @@ const EmployeeDetailsPage = () => {
                   </HStack>
                 </VStack>
               </Box>
+              {/* Quick info */}
+              <VStack spacing={4} align="stretch" ml={4} mt={1}>
+                <Box
+                  borderWidth="1px"
+                  borderColor="gray.200"
+                  borderRadius="0.5rem"
+                  p={4}
+                  bg="white"
+                  boxShadow="sm"
+                >
+                  <VStack spacing={4} align="stretch">
+                    {/* Department */}
+                    <Flex justify="space-between" align="center">
+                      <HStack spacing={3}>
+                        <Flex
+                          w="42px"
+                          h="42px"
+                          borderRadius="0.5rem"
+                          bg="purple.50"
+                          justify="center"
+                          align="center"
+                        >
+                          <Icon
+                            as={FiBriefcase}
+                            color="purple.500"
+                            boxSize={5}
+                          />
+                        </Flex>
+
+                        <Box>
+                          <Text fontWeight="bold">Département</Text>
+                        </Box>
+                      </HStack>
+
+                      <Text fontWeight="400">{employee?.department}</Text>
+                    </Flex>
+
+                    {/* Hire Date */}
+                    <Flex justify="space-between" align="center">
+                      <HStack spacing={3}>
+                        <Flex
+                          w="42px"
+                          h="42px"
+                          borderRadius="full"
+                          bg="purple.50"
+                          justify="center"
+                          align="center"
+                        >
+                          <Icon
+                            as={FiCalendar}
+                            color="purple.500"
+                            boxSize={5}
+                          />
+                        </Flex>
+
+                        <Box>
+                          <Text fontWeight="bold">Date d'embauche</Text>
+                        </Box>
+                      </HStack>
+
+                      <Text fontWeight="400">
+                        {employee?.dateHired &&
+                          new Date(employee?.dateHired).toLocaleDateString(
+                            "fr-FR"
+                          )}
+                      </Text>
+                    </Flex>
+                  </VStack>
+                </Box>
+                {/* Attendance status */}
+                <Box
+                  borderWidth="1px"
+                  borderColor="gray.200"
+                  borderRadius="xl"
+                  p={4}
+                  bg="white"
+                  boxShadow="sm"
+                >
+                  <Flex justify="space-between" align="center">
+                    <HStack spacing={3}>
+                      <Flex
+                        w="4px"
+                        h="44px"
+                        borderRadius="full"
+                        bg="green.50"
+                        justify="center"
+                        align="center"
+                      ></Flex>
+
+                      <Box>
+                        <HStack spacing={1} color="gray.500" fontSize="sm">
+                          <Icon as={FiClock} />
+                          <Text>
+                            Arrivée à{" "}
+                            {attendance?.clockIn &&
+                              new Date(attendance?.clockIn).toLocaleTimeString(
+                                "fr-FR"
+                              )}
+                          </Text>
+                        </HStack>
+                      </Box>
+                    </HStack>
+
+                    <HStack spacing={2}>
+                      <Text fontWeight="bold" color="green.500">
+                        {attendance?.status}
+                      </Text>
+                    </HStack>
+                  </Flex>
+                </Box>
+              </VStack>
+
               <Box bg="transparent">
                 {adminUser?.role === "manager" ? (
                   <Button

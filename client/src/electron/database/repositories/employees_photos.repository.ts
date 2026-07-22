@@ -11,6 +11,7 @@ type UploadFile = {
   buffer: Buffer;
 };
 
+//Upload employee photo
 export async function uploadEmployeePhoto(
   employeeId: string,
   file: UploadFile
@@ -35,12 +36,11 @@ export async function uploadEmployeePhoto(
       ? "image/webp"
       : "image/jpeg";
 
-  // Increment version
+  //Increment version
   const photoVersion = (employee.photo_version ?? 0) + 1;
 
-  //  Filename
-  const fileName = `${employeeId}${ext}`;
-
+  // Filename
+  const fileName = `${employeeId}_photo${ext}`;
   const absolutePath = path.join(EMPLOYEE_PHOTO_DIR, fileName);
   const relativePath = path.join("employees_photos", fileName);
 
