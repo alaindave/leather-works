@@ -64,11 +64,6 @@ const EmployeeNavBar = () => {
     }
   };
 
-  // const isOnline = async () => {
-  //   const online = await checkOnline();
-  //   return online;
-  // };
-
   return (
     <Flex
       position="relative"
@@ -164,7 +159,10 @@ const EmployeeNavBar = () => {
 
           <ListItem marginBottom="10px">
             <HStack position="relative" right="1.4rem">
-              <NavLink className="nav-button" to="/admin">
+              <NavLink
+                className="nav-button"
+                to="/employees_admin/payroll_settings"
+              >
                 <HStack>
                   <Box ml="1rem">
                     <FaFileSignature size="1.4rem" />

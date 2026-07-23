@@ -178,6 +178,37 @@ declare global {
         delete: (_id: string) => Promise<LeaveWithEmployee>;
       };
 
+      payrollComponents: {
+        create: (component: PayrollComponent) => Promise<PayrollComponent>;
+
+        getAll: (type?: "EARNING" | "DEDUCTION") => Promise<PayrollComponent[]>;
+
+        getEnabled: (
+          type?: "EARNING" | "DEDUCTION"
+        ) => Promise<PayrollComponent[]>;
+
+        getById: (id: string) => Promise<PayrollComponent | null>;
+
+        update: (
+          component: PayrollComponent
+        ) => Promise<PayrollComponent | null>;
+
+        delete: (id: string) => Promise<void>;
+
+        setEnabled: (
+          id: string,
+          enabled: boolean
+        ) => Promise<PayrollComponent | null>;
+
+        upsert: (
+          component: PayrollComponent
+        ) => Promise<PayrollComponent | null>;
+
+        getUnsynced: () => Promise<PayrollComponent[]>;
+
+        markSynced: (id: string) => Promise<PayrollComponent | null>;
+      };
+
       sync: () => Promise<{
         success: boolean;
         message?: string;

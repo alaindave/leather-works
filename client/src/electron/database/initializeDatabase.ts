@@ -7,6 +7,7 @@ import { createOfflineUsersTable } from "./schemas/offline_users.schema.js";
 import { createSyncTable } from "./schemas/sync.schema.js";
 import { createSettingsTable } from "./schemas/settings.schema.js";
 import { createEmployeesDocumentsTable } from "./schemas/employees_documents.schema.js";
+import { createPayrollTables } from "./schemas/payroll.schema.js";
 
 export async function initializeDatabase() {
   await createOfflineUsersTable();
@@ -18,5 +19,6 @@ export async function initializeDatabase() {
   await createAdminUsersTable();
   await createSyncTable();
   await createSettingsTable();
+  await createPayrollTables();
   console.log("Database initialized");
 }

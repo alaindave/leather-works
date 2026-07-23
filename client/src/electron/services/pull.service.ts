@@ -24,6 +24,7 @@ import Attendance from "../../shared/types/Attendance.js";
 import Leave from "../../shared/types/Leave.js";
 import AdminUser from "../../shared/types/AdminUser.js";
 import Task from "../../shared/types/Task.js";
+import PayrollComponent from "../../shared/types/payroll/PayrollComponent.js";
 import {
   markTaskSynced,
   upsertTask,
@@ -31,6 +32,18 @@ import {
 import { downloadEmployeePhoto } from "../util/downloadEmployeePhoto.util.js";
 import { updateEmployeePhotoMetadata } from "../database/repositories/employees_photos.repository.js";
 import { upsertTaskComment } from "../database/repositories/tasks_comments.repository.js";
+import {
+  getEmployeeDocument,
+  upsertEmployeeDocument,
+  markEmployeeDocumentSynced,
+} from "../database/repositories/employees_documents.repository.js";
+
+import { downloadEmployeeDocument } from "../util/downloadEmployeeDocument.util.js";
+import { EmployeeDocument } from "../../shared/types/EmployeeDocuments.js";
+import {
+  upsertPayrollComponent,
+  markPayrollComponentSynced,
+} from "../database/repositories/payroll_components.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -48,22 +61,34 @@ export async function pullLatestChanges() {
       },
     });
 
-    const { adminUsers, employees, attendances, leaves, tasks, serverTime } =
-      response.data;
+    const {
+      adminUsers,
+      employees,
+      employeesDocuments,
+      attendances,
+      leaves,
+      tasks,
+      payrollComponents,
+      serverTime,
+    } = response.data;
     console.log("PULLED ITEMS FROM SERVER");
     console.log("---------------------------");
+    console.log("FETCHED ADMIN USERS:", adminUsers);
     console.log("FETCHED EMPLOYEES:", employees);
+    console.log("FETCHED EMPLOYEES DOCUMENTS:", employeesDocuments);
     console.log("FETCHED ATTENDANCES:", attendances);
     console.log("FETCHED LEAVES:", leaves);
     console.log("FETCHED TASKS:", tasks);
-    console.log("FETCHED ADMIN USERS:", adminUsers);
+    console.log("FETCHED PAYROLL COMPONENTS:", payrollComponents);
 
+    await syncAdminUsers(adminUsers);
     await syncEmployees(employees);
     await syncEmployeePhotos(employees);
+    await syncEmployeeDocuments(employeesDocuments);
     await syncAttendances(attendances);
     await syncLeaves(leaves);
     await syncTasks(tasks);
-    await syncAdminUsers(adminUsers);
+    await syncPayrollComponents(payrollComponents);
     await setSetting("lastSync", serverTime);
 
     return response;
@@ -147,7 +172,7 @@ async function syncEmployeePhotos(employees: Employee[]) {
       // Skip if local photo is already newer or equal
       if (localPhotoVersion >= employee.photo_version) {
         console.log(
-          `PHOTO ALREADY UP TO DATE FOR  ${employee.firstName} ${employee.lastName}`
+          `PHOTO ALREADY UP TO DATE FOR ${employee.firstName} ${employee.lastName}`
         );
         continue;
       }
@@ -155,9 +180,19 @@ async function syncEmployeePhotos(employees: Employee[]) {
       // Download photo from server
       await downloadEmployeePhoto(employee._id, employee.photo_filename);
 
+      // Folder name
+      const employeeFolderName =
+        `${employee.firstName}_${employee.lastName}_${employee._id}`
+          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+          .replace(/\s+/g, "_");
+
       // Save local photo metadata
       await updateEmployeePhotoMetadata(employee._id, {
-        photo_path: path.join("employees_photos", employee.photo_filename),
+        photo_path: path.join(
+          "employees_photos",
+          employeeFolderName,
+          employee.photo_filename
+        ),
         photo_filename: employee.photo_filename,
         photo_version: employee.photo_version,
         photo_hash: employee.photo_hash,
@@ -170,6 +205,77 @@ async function syncEmployeePhotos(employees: Employee[]) {
       );
     } catch (error) {
       console.error(`FAILED TO SYNC PHOTO FOR EMPLOYEE ${employee._id}`, error);
+    }
+  }
+}
+async function syncEmployeeDocuments(employeeDocuments: EmployeeDocument[]) {
+  for (const document of employeeDocuments) {
+    try {
+      const localDocument = await getEmployeeDocument(
+        document.employeeId,
+        document.documentType
+      );
+
+      const localVersion = localDocument?.version ?? 0;
+
+      // Already up to date
+      if (localVersion >= document.version) {
+        console.log(
+          `DOCUMENT ALREADY UP TO DATE: ${document.employeeId} (${document.documentType})`
+        );
+        continue;
+      }
+
+      const employee = await getEmployeeById(document.employeeId);
+
+      if (!employee) {
+        throw new Error(
+          `Employee ${document.employeeId} not found while syncing document`
+        );
+      }
+
+      // Download latest document
+      await downloadEmployeeDocument(employee, document);
+
+      // Folder name
+      const employeeFolderName =
+        `${employee.firstName}_${employee.lastName}_${employee._id}`
+          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+          .replace(/\s+/g, "_");
+
+      // Update local metadata
+      await upsertEmployeeDocument({
+        ...document,
+        localPath: path.join(
+          "employees_documents",
+          employeeFolderName,
+          document.documentType,
+          document.fileName
+        ),
+      });
+
+      await markEmployeeDocumentSynced(document._id);
+
+      console.log(
+        `DOWNLOADED ${document.documentType} FOR ${employee.firstName} ${employee.lastName} (v${document.version})`
+      );
+    } catch (error) {
+      console.error(`FAILED TO SYNC DOCUMENT ${document._id}`, error);
+    }
+  }
+}
+
+async function syncPayrollComponents(payrollComponents: PayrollComponent[]) {
+  for (const component of payrollComponents) {
+    try {
+      await upsertPayrollComponent(component);
+      await markPayrollComponentSynced(component._id);
+    } catch (error) {
+      console.error(
+        "FAILED TO SYNC PULLED PAYROLL COMPONENT:",
+        component._id,
+        error
+      );
     }
   }
 }

@@ -3,6 +3,7 @@ const Attendance = require("./models/attendanceModel.js");
 const Leave = require("./models/leaveModel.js");
 const Task = require("./models/taskModel.js");
 const EmployeesDocuments = require("./models/employeesDocumentsModel.js");
+const PayrollComponent = require("./models/payrollComponentModel.js");
 const { AdminUser } = require("./models/adminUserModel.js");
 const fs = require("fs/promises");
 const path = require("path");
@@ -180,8 +181,13 @@ async function syncEmployeePhoto(data, file) {
     throw new Error("PHOTO FILE MISSING");
   }
 
-  // Store each employee's photos in their own folder
-  const objectPath = `${employee._id}/photo`;
+  // subfolder name
+  const employeeFolderName =
+    `${employee.firstName}_${employee.lastName}_${employee._id}`
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+      .replace(/\s+/g, "_");
+
+  const objectPath = `${employeeFolderName}/photo`;
 
   // Upload photo to Supabase Storage
   const { error } = await supabase.storage
@@ -214,6 +220,8 @@ async function syncEmployeeDocument(operation, data, file) {
   console.log("DOCUMENT METADATA:", data);
   console.log("DOCUMENT FILE:", file);
 
+  const employee = await Employee.findById(data.employeeId);
+
   switch (operation) {
     case "create":
     case "update": {
@@ -222,7 +230,7 @@ async function syncEmployeeDocument(operation, data, file) {
       }
 
       // Store each employee's documents in their own folder
-      const objectPath = `${data.employeeId}_${data.documentType}_${data.fileName}`;
+      const objectPath = `${employee.firstName}_${employee.lastName}_${employee._id}/${data.documentType}`;
 
       // Upload document to Supabase Storage
       const { error } = await supabase.storage
@@ -279,6 +287,35 @@ async function syncEmployeeDocument(operation, data, file) {
   }
 }
 
+//Sync payroll components
+async function syncPayrollComponent(operation, data) {
+  switch (operation) {
+    case "CREATE":
+      await PayrollComponent.updateOne(
+        { _id: data._id },
+        { $setOnInsert: data },
+        { upsert: true }
+      );
+      break;
+
+    case "UPDATE":
+      await PayrollComponent.updateOne({ _id: data._id }, { $set: data });
+      break;
+
+    case "DELETE":
+      await PayrollComponent.updateOne(
+        { _id: data._id },
+        {
+          $set: {
+            isDeleted: 1,
+            updatedAt: new Date(),
+          },
+        }
+      );
+      break;
+  }
+}
+
 module.exports = {
   syncEmployee,
   syncAttendance,
@@ -288,4 +325,5 @@ module.exports = {
   syncUserNotes,
   syncEmployeePhoto,
   syncEmployeeDocument,
+  syncPayrollComponent,
 };

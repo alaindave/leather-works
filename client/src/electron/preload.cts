@@ -6,6 +6,8 @@ type Leave = import("../shared/types/Leave", { with: { "resolution-mode": "requi
 type Task = import("../shared/types/Task", { with: { "resolution-mode": "require" } }).default;
 type EmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
 type UploadedEmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
+type CreatePayrollComponentDto = import("../shared/types/payroll/CreatePayrollComponentDto", { with: { "resolution-mode": "require" } }).default;
+type PayrollComponent = import("../shared/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
 
 
 interface LoginCredentials {
@@ -200,4 +202,40 @@ contextBridge.exposeInMainWorld("electron", {
   file: { save: (data: string) => ipcRenderer.invoke("save-file", data) },
 
   sync: () => ipcRenderer.invoke("sync:run"),
+
+
+ payrollComponents: {
+  create: (component:CreatePayrollComponentDto) =>
+    ipcRenderer.invoke("payroll-components:create", component),
+
+  getAll: (type?: "EARNING" | "DEDUCTION") =>
+    ipcRenderer.invoke("payroll-components:getAll", type),
+
+  getEnabled: (type?: "EARNING" | "DEDUCTION") =>
+    ipcRenderer.invoke("payroll-components:getEnabled", type),
+
+  getById: (id: string) =>
+    ipcRenderer.invoke("payroll-components:getById", id),
+
+  update: (component:PayrollComponent) =>
+    ipcRenderer.invoke("payroll-components:update", component),
+
+  delete: (id: string) =>
+    ipcRenderer.invoke("payroll-components:delete", id),
+
+  enable: (id: string) =>
+    ipcRenderer.invoke("payroll-components:enable", id),
+
+  disable: (id: string) =>
+    ipcRenderer.invoke("payroll-components:disable", id),
+
+  upsert: (component:PayrollComponent) =>
+    ipcRenderer.invoke("payroll-components:upsert", component),
+
+  getUnsynced: () =>
+    ipcRenderer.invoke("payroll-components:getUnsynced"),
+
+  markSynced: (id: string) =>
+    ipcRenderer.invoke("payroll-components:markSynced", id),
+},
 }) satisfies Window["electron"];

@@ -10,12 +10,15 @@ const {
   syncUserNotes,
   syncEmployeePhoto,
   syncEmployeeDocument,
+  syncPayrollComponent,
 } = require("../sync");
 const Employee = require("../models/employeeModel");
 const Attendance = require("../models/attendanceModel");
 const Leave = require("../models/leaveModel");
 const Task = require("../models/taskModel");
 const { AdminUser } = require("../models/adminUserModel");
+const EmployeeDocuments = require("../models/employeesDocumentsModel");
+const PayrollComponent = require("../models/payrollComponentModel");
 
 //Push sync
 router.post(
@@ -83,6 +86,10 @@ router.post(
               break;
             }
 
+            case "payroll_component":
+              await syncPayrollComponent(operation, data);
+              break;
+
             default:
               continue;
           }
@@ -116,37 +123,54 @@ router.get("/pull", async (req, res) => {
       return res.status(400).send("Missing since parameter");
     }
     const date = new Date(since);
-    const [adminUsers, employees, attendances, leaves, tasks] =
-      await Promise.all([
-        AdminUser.find({
-          updatedAt: { $gt: date },
-        })
-          .select("-password -notes")
-          .lean(),
+    const [
+      adminUsers,
+      employees,
+      employeesDocuments,
+      attendances,
+      leaves,
+      tasks,
+      payrollComponents,
+    ] = await Promise.all([
+      AdminUser.find({
+        updatedAt: { $gt: date },
+      })
+        .select("-password -notes")
+        .lean(),
 
-        Employee.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      Employee.find({
+        updatedAt: { $gt: date },
+      }).lean(),
 
-        Attendance.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      EmployeeDocuments.find({
+        updatedAt: { $gt: date },
+      }).lean(),
 
-        Leave.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      Attendance.find({
+        updatedAt: { $gt: date },
+      }).lean(),
 
-        Task.find({
-          updatedAt: { $gt: date },
-        }).lean(),
-      ]);
+      Leave.find({
+        updatedAt: { $gt: date },
+      }).lean(),
+
+      Task.find({
+        updatedAt: { $gt: date },
+      }).lean(),
+
+      PayrollComponent.find({
+        updatedAt: { $gt: date },
+      }).lean(),
+    ]);
     return res.send({
       success: true,
       adminUsers,
       employees,
+      employeesDocuments,
       attendances,
       leaves,
       tasks,
+      payrollComponents,
       serverTime: new Date().toISOString(),
     });
   } catch (error) {

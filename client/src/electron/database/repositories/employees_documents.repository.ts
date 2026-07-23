@@ -10,6 +10,7 @@ import {
   UploadedEmployeeDocument,
 } from "../../../shared/types/EmployeeDocuments.js";
 import { addToSyncQueue } from "./sync.repository.js";
+import { getEmployeeById } from "./employees.repository.js";
 
 // Upload employee document
 export async function uploadEmployeeDocument(
@@ -21,6 +22,8 @@ export async function uploadEmployeeDocument(
   );
 
   const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
+
+  const employee = await getEmployeeById(file.employeeId);
 
   const employeeFolder = path.join(
     EMPLOYEE_DOCUMENTS_DIR,
@@ -50,7 +53,7 @@ export async function uploadEmployeeDocument(
     }
   }
 
-  const fileName = `${file.employeeId}_${file.documentType}${extension}`;
+  const fileName = `${employee?.firstName}_${employee?.lastName}_${file.documentType}${extension}`;
 
   const localPath = path.join(employeeFolder, fileName);
 

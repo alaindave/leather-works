@@ -46,12 +46,9 @@ type PhotoState = {
   photo_url?: string;
 };
 
-type AttendanceState = {
-  attendance?: Attendance;
-};
-
 const EmployeeDetailsPage = () => {
   const [employee, setEmployee] = useState<Employee | null>({} as Employee);
+  const [attendance, setAttendance] = useState<Attendance | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { _id } = useParams();
   const navigate = useNavigate();
@@ -60,7 +57,6 @@ const EmployeeDetailsPage = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const location = useLocation();
   const { photo_url } = (location.state as PhotoState) || "";
-  const { attendance } = (location.state as AttendanceState) || {};
 
   useEffect(() => {
     if (!_id) return;
@@ -69,9 +65,17 @@ const EmployeeDetailsPage = () => {
       .then((employee) => {
         setEmployee(employee);
         console.log("EMPLOYEE FETCHED: ", employee);
+        return window.electron.attendance.getAttendanceRecord(
+          employee._id,
+          new Date().toISOString().split("T")[0]
+        );
+      })
+      .then((attendance) => {
+        setAttendance(attendance);
+        console.log("ATTENDANCE FETCHED: ", attendance);
       })
       .catch((error) => {
-        console.error("Error fetching employee:", error);
+        console.error("ERROR FETCHING DATA:", error);
       });
   }, [_id]);
 
@@ -80,9 +84,9 @@ const EmployeeDetailsPage = () => {
       if (!_id) return;
       const updatedEmployee = await window.electron.employees.getById(_id);
       setEmployee(updatedEmployee);
-      console.log("Fetched updated employee:", updatedEmployee);
+      console.log("FETCHED UPDATED EMPLOYEE:", updatedEmployee);
     } catch (error) {
-      console.error("An error occured while refreshing employee data", error);
+      console.error("AN ERROR OCCURED WHILE FETCHING EMPLOYEE", error);
     }
   };
 
@@ -93,7 +97,7 @@ const EmployeeDetailsPage = () => {
       await window.electron.employees.delete(_id);
       navigate("/employees_admin/employees_list");
     } catch (error) {
-      console.error("Unable to delete employee:", error);
+      console.error("UNABLE TO DELETE EMPLOYEE:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -270,19 +274,12 @@ const EmployeeDetailsPage = () => {
               <Box
                 border="1px solid"
                 borderColor="#D1D9E0"
-                boxShadow="0 2px 8px rgba(1,0,1,1)"
-                borderRadius="0.5rem"
                 width="27vw"
                 ml="1rem"
                 bg="#ffffff"
               >
-                <Box bg="purple.700" height="8rem" borderRadius="0.5rem" />
-                <Box
-                  height="15vh"
-                  bg="#ffffff"
-                  borderRadius="0.5rem"
-                  position="relative"
-                >
+                <Box bg="purple.700" height="8rem" />
+                <Box height="15vh" bg="#ffffff" position="relative">
                   <EmployeePhotoUpload
                     employeeId={_id!}
                     currentPhoto={photo_url}
@@ -319,11 +316,17 @@ const EmployeeDetailsPage = () => {
                 </VStack>
               </Box>
               {/* Quick info */}
-              <VStack spacing={4} align="stretch" ml={4} mt={1}>
+              <VStack
+                spacing={4}
+                align="stretch"
+                ml={4}
+                mt={1}
+                position="relative"
+                bottom="0.3rem"
+              >
                 <Box
                   borderWidth="1px"
                   borderColor="gray.200"
-                  borderRadius="0.5rem"
                   p={4}
                   bg="white"
                   boxShadow="sm"
@@ -335,7 +338,6 @@ const EmployeeDetailsPage = () => {
                         <Flex
                           w="42px"
                           h="42px"
-                          borderRadius="0.5rem"
                           bg="purple.50"
                           justify="center"
                           align="center"
@@ -361,7 +363,6 @@ const EmployeeDetailsPage = () => {
                         <Flex
                           w="42px"
                           h="42px"
-                          borderRadius="full"
                           bg="purple.50"
                           justify="center"
                           align="center"
@@ -391,41 +392,60 @@ const EmployeeDetailsPage = () => {
                 <Box
                   borderWidth="1px"
                   borderColor="gray.200"
-                  borderRadius="xl"
                   p={4}
                   bg="white"
                   boxShadow="sm"
+                  position="relative"
+                  bottom="1rem"
                 >
                   <Flex justify="space-between" align="center">
-                    <HStack spacing={3}>
-                      <Flex
-                        w="4px"
-                        h="44px"
-                        borderRadius="full"
-                        bg="green.50"
-                        justify="center"
-                        align="center"
-                      ></Flex>
+                    {attendance?.status === "CONGÉ" ||
+                    attendance?.status === "ABSENT" ? (
+                      <HStack spacing={2}>
+                        <Text
+                          fontWeight="bold"
+                          color={
+                            attendance.status === "CONGÉ"
+                              ? "blue.500"
+                              : "red.500"
+                          }
+                          position="relative"
+                          left="8rem"
+                          fontSize="1.1rem"
+                        >
+                          {attendance?.status === "CONGÉ"
+                            ? "En congé"
+                            : "Absent"}
+                        </Text>
+                      </HStack>
+                    ) : (
+                      <>
+                        <HStack spacing={3}>
+                          <Box>
+                            <HStack spacing={1} color="gray.500" fontSize="sm">
+                              <Icon
+                                as={FiClock}
+                                fontSize="1.1rem"
+                                color="purple.500"
+                              />
+                              <Text mt="1rem" fontSize="0.95rem">
+                                Arrivée à{" "}
+                                {attendance?.clockIn &&
+                                  new Date(
+                                    attendance?.clockIn
+                                  ).toLocaleTimeString("fr-FR")}
+                              </Text>
+                            </HStack>
+                          </Box>
+                        </HStack>
 
-                      <Box>
-                        <HStack spacing={1} color="gray.500" fontSize="sm">
-                          <Icon as={FiClock} />
-                          <Text>
-                            Arrivée à{" "}
-                            {attendance?.clockIn &&
-                              new Date(attendance?.clockIn).toLocaleTimeString(
-                                "fr-FR"
-                              )}
+                        <HStack spacing={2}>
+                          <Text fontWeight="bold" color="green.500">
+                            {attendance?.status}
                           </Text>
                         </HStack>
-                      </Box>
-                    </HStack>
-
-                    <HStack spacing={2}>
-                      <Text fontWeight="bold" color="green.500">
-                        {attendance?.status}
-                      </Text>
-                    </HStack>
+                      </>
+                    )}
                   </Flex>
                 </Box>
               </VStack>
@@ -440,7 +460,6 @@ const EmployeeDetailsPage = () => {
                     onClick={onOpen}
                     fontSize="1rem"
                     ml="6rem"
-                    mt={4}
                     leftIcon={<FaRegTrashCan fontSize="1.3rem" />}
                   >
                     Supprimer
@@ -462,10 +481,8 @@ const EmployeeDetailsPage = () => {
               bg="#F8F9FB"
               border="1px solid"
               borderColor="#D1D9E0"
-              borderRadius="12px"
-              boxShadow="0 2px 8px rgba(1,0,1,1)"
               overflowY="auto"
-              maxHeight="70vh"
+              height="70.5vh"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <EmployeeDetailsTab employee={employee} />

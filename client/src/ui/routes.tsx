@@ -10,6 +10,7 @@ import EmployeeAttendancePage from "./pages/EmployeeAttendancePage";
 import PageErrorFallback from "./pages/PageErrorFallback";
 import EmployeeAttendanceReport from "./pages/EmployeeAttendanceReport";
 import EmployeeLeaveReport from "./pages/EmployeeLeaveReport";
+import PayrollSettingsPage from "./pages/payroll/PayrollSettingsPage";
 
 const router = createHashRouter([
   {
@@ -65,6 +66,11 @@ const router = createHashRouter([
       {
         path: "leaves",
         element: <EmployeeLeavePage />,
+        errorElement: <PageErrorFallback />,
+      },
+      {
+        path: "payroll_settings",
+        element: <PayrollSettingsPage />,
         errorElement: <PageErrorFallback />,
       },
     ],

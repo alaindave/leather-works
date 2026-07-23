@@ -12,7 +12,9 @@ const sync = require("./routes/sync.route.js");
 const auth = require("./routes/authenticate.route.js");
 const tasks = require("./routes/task.route.js");
 const employee_photos = require("./routes/employees_photos.route.js");
+const employee_documents = require("./routes/employees_documents.route.js");
 const jobsRouter = require("./routes/jobs.route.js");
+const seedPayrollComponents = require("./seeds/payroll-component.seed.js");
 const app = express();
 
 const requiredEnvVars = [
@@ -33,11 +35,13 @@ for (const item of requiredEnvVars) {
 //Connect to MongoDB database
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log("CONNECTED TO AFRITAN DATABASE");
+    const payroll_seed = await seedPayrollComponents();
+    console.log("PAYROLL COMPONENTS SEEDED");
   })
   .catch((error) =>
-    console.error("UNABLE TO CONNECT TO AFRITAN DATABASE: ", error)
+    console.error("AN ERROR OCCURED DURING DATABASE INITIALIZATION: ", error)
   );
 
 //Initialize employee absence cron jon
@@ -60,6 +64,7 @@ app.set("io", io);
 app.use(express.json());
 app.use(cors());
 app.use("/employees", employees);
+app.use("/documents", employee_documents);
 app.use("/photos", employee_photos);
 app.use("/attendances", attendances);
 app.use("/leaves", leaves);

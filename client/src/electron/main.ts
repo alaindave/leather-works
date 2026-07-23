@@ -21,6 +21,7 @@ import sync from "./services/sync.service.js";
 import { registerAppIPC } from "./ipc/app.ipc.js";
 import { markEmployeesOnLeave } from "./services/markEmployeesOnLeave.service.js";
 import { ensureStorageDirectories } from "./storage/directories.js";
+import { registerPayrollComponentIPC } from "./ipc/payroll_components.ipc.js";
 
 const environment = isDev() ? "Development" : "Production";
 
@@ -129,6 +130,7 @@ async function bootstrap() {
   registerAdminUsersIPC();
   registerSyncIPC();
   registerAppIPC();
+  registerPayrollComponentIPC();
   console.log("After IPC registration");
   await ensureStorageDirectories();
   await createSplashWindow();
