@@ -8,6 +8,7 @@ type EmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with:
 type UploadedEmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
 type CreatePayrollComponentDto = import("../shared/types/payroll/CreatePayrollComponentDto", { with: { "resolution-mode": "require" } }).default;
 type PayrollComponent = import("../shared/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
+type EmployeePayrollProfile = import("../shared/types/payroll/PayrollEmployeeProfile", { with: { "resolution-mode": "require" } }).default;
 
 
 interface LoginCredentials {
@@ -217,8 +218,8 @@ contextBridge.exposeInMainWorld("electron", {
   getById: (id: string) =>
     ipcRenderer.invoke("payroll-components:getById", id),
 
-  update: (component:PayrollComponent) =>
-    ipcRenderer.invoke("payroll-components:update", component),
+  update: (components:PayrollComponent[]) =>
+    ipcRenderer.invoke("payroll-components:update", components),
 
   delete: (id: string) =>
     ipcRenderer.invoke("payroll-components:delete", id),
@@ -238,4 +239,143 @@ contextBridge.exposeInMainWorld("electron", {
   markSynced: (id: string) =>
     ipcRenderer.invoke("payroll-components:markSynced", id),
 },
+
+employeePayrollProfiles: {
+  create: (profile: EmployeePayrollProfile) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:create",
+      profile
+    ),
+
+  createMany: (profiles: EmployeePayrollProfile[]) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:createMany",
+      profiles
+    ),
+
+  update: (profile: EmployeePayrollProfile) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:update",
+      profile
+    ),
+
+  updateMany: (profiles: EmployeePayrollProfile[]) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:updateMany",
+      profiles
+    ),
+
+  upsert: (profile: EmployeePayrollProfile) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:upsert",
+      profile
+    ),
+
+  upsertMany: (profiles: EmployeePayrollProfile[]) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:upsertMany",
+      profiles
+    ),
+
+  get: (_id: string) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:get",
+      _id
+    ),
+
+  getAll: () =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:getAll"
+    ),
+
+  getByEmployee: (employeeId: string) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:getByEmployee",
+      employeeId
+    ),
+
+  getByComponent: (
+    employeeId: string,
+    componentId: string
+  ) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:getByComponent",
+      employeeId,
+      componentId
+    ),
+
+  getUnsynced: () =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:getUnsynced"
+    ),
+
+  markSynced: (_id: string) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:markSynced",
+      _id
+    ),
+
+  markManySynced: (ids: string[]) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:markManySynced",
+      ids
+    ),
+
+  delete: (_id: string) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:delete",
+      _id
+    ),
+
+  restore: (_id: string) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:restore",
+      _id
+    ),
+
+  permanentlyDelete: (_id: string) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:permanentlyDelete",
+      _id
+    ),
+
+  exists: (
+    employeeId: string,
+    componentId: string
+  ) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:exists",
+      employeeId,
+      componentId
+    ),
+
+  count: () =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:count"
+    ),
+
+  initialize: () =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:initialize"
+    ),
+
+  initializeForEmployee: (employeeId: string) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:initializeForEmployee",
+      employeeId
+    ),
+
+  addComponentToEmployees: (component: PayrollComponent) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:addComponentToEmployees",
+      component
+    ),
+
+  resetToDefaults: (employeeId: string) =>
+    ipcRenderer.invoke(
+      "employeePayrollProfiles:resetToDefaults",
+      employeeId
+    ),
+},
+
 }) satisfies Window["electron"];

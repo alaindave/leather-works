@@ -10,5 +10,4 @@ export default interface CreatePayrollComponentDto {
   calculationType: PayrollCalculationType;
   defaultValue: number;
   percentageOf?: string | null;
-  isActive: number;
 }

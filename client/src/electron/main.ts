@@ -22,6 +22,7 @@ import { registerAppIPC } from "./ipc/app.ipc.js";
 import { markEmployeesOnLeave } from "./services/markEmployeesOnLeave.service.js";
 import { ensureStorageDirectories } from "./storage/directories.js";
 import { registerPayrollComponentIPC } from "./ipc/payroll_components.ipc.js";
+import { initializeEmployeePayrollProfiles } from "./services/payrollProfile.service.js";
 
 const environment = isDev() ? "Development" : "Production";
 
@@ -117,6 +118,7 @@ async function bootstrap() {
   await app.whenReady();
   console.log("Before DB init");
   await initializeDatabase();
+  await initializeEmployeePayrollProfiles();
   console.log("After DB init");
   registerAuthIPC();
   registerOfflineUsersIPC();

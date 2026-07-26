@@ -10,7 +10,6 @@ import {
 
 import PayrollComponentList from "./PayrollComponentList";
 import PayrollDefaults from "./PayrollDefaults";
-import PayslipSettings from "./PayslipSettings";
 
 export default function PayrollSettingsPage() {
   return (
@@ -22,7 +21,6 @@ export default function PayrollSettingsPage() {
           <Tab>Remuneration</Tab>
           <Tab>Deductions</Tab>
           <Tab>Parametres</Tab>
-          <Tab>Fiche de paye</Tab>
         </TabList>
 
         <TabPanels>
@@ -36,10 +34,6 @@ export default function PayrollSettingsPage() {
 
           <TabPanel px={0}>
             <PayrollDefaults />
-          </TabPanel>
-
-          <TabPanel px={0}>
-            <PayslipSettings />
           </TabPanel>
         </TabPanels>
       </Tabs>

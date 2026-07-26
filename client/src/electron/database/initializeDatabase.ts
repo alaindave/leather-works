@@ -20,5 +20,5 @@ export async function initializeDatabase() {
   await createSyncTable();
   await createSettingsTable();
   await createPayrollTables();
-  console.log("Database initialized");
+  console.log("DATABASE INITIALIZED");
 }

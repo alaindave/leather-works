@@ -7,6 +7,11 @@ export default interface PayrollItem {
   name: string;
   type: PayrollComponentType;
   amount: number;
+  // Fields for audit
+  calculationMethod?: string; // "Fixed", "Percentage", "Formula"
+  rate?: number; // e.g. 3 for 3%
+  quantity?: number; // e.g. overtime hours
+  notes?: string; // "15 overtime hours × 5,000 BIF"
   synced: number;
   isDeleted: number;
   createdAt: string;

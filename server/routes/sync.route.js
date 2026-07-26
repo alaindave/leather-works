@@ -11,6 +11,7 @@ const {
   syncEmployeePhoto,
   syncEmployeeDocument,
   syncPayrollComponent,
+  syncPayrollProfile,
 } = require("../sync");
 const Employee = require("../models/employeeModel");
 const Attendance = require("../models/attendanceModel");
@@ -88,6 +89,10 @@ router.post(
 
             case "payroll_component":
               await syncPayrollComponent(operation, data);
+              break;
+
+            case "payroll_profile":
+              await syncPayrollProfile(operation, data);
               break;
 
             default:

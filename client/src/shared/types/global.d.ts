@@ -45,31 +45,20 @@ declare global {
 
       offlineUsers: {
         save: (user: OfflineUser) => Promise<LoggedUser>;
-
         saveNotes: (_id: string, notes: string) => Promise<LoggedUser>;
-
         login: (credentials: LoginCredentials) => Promise<LoggedUser>;
-
         getById: (_id: string) => Promise<LoggedUser>;
-
         getByEmail: (email: string) => Promise<LoggedUser>;
-
         getAll: () => Promise<LoggedUser[]>;
-
         delete: (_id: string) => Promise<LoggedUser>;
       };
 
       tasks: {
         create: (data: Omit<Task, "_id" | "createdAt">) => Promise<Task>;
-
         update: (task: Task) => Promise<Task>;
-
         delete: (taskId: string) => Promise<Task>;
-
         getAll: () => Promise<Task[]>;
-
         getTopTasks: (userId: string) => Promise<Task[]>;
-
         onNew: (callback: (data: Task) => void) => () => void;
       };
 
@@ -112,26 +101,18 @@ declare global {
           document: UploadedEmployeeDocument
         ) => Promise<EmployeeDocument>;
         create: (document: EmployeeDocument) => Promise<EmployeeDocument>;
-
         getAll: () => Promise<EmployeeDocument[]>;
-
         getById: (id: string) => Promise<EmployeeDocument>;
-
         getByEmployee: (employeeId: string) => Promise<EmployeeDocument[]>;
-
         getByType: (
           employeeId: string,
           documentType: string
         ) => Promise<EmployeeDocument>;
 
         update: (document: EmployeeDocument) => Promise<EmployeeDocument>;
-
         delete: (id: string) => Promise<EmployeeDocument>;
-
         getUnsynced: () => Promise<EmployeeDocument>;
-
         markSynced: (id: string) => Promise<EmployeeDocument>;
-
         upsert: (document: EmployeeDocument) => Promise<EmployeeDocument>;
       };
 
@@ -155,15 +136,10 @@ declare global {
 
       leave: {
         create: (leave: Partial<Leave>) => Promise<LeaveWithEmployee>;
-
         getLeaveByEmployeeId: (employeeId: string) => Promise<Leave[]>;
-
         getLeaveById: (_id: string) => Promise<LeaveWithEmployee>;
-
         getOngoingLeaves: () => Promise<LeaveWithEmployee[]>;
-
         getLeaveByMonth: (month: string) => Promise<LeaveWithEmployee[]>;
-
         update: (
           _id: string,
           updates: {
@@ -174,39 +150,57 @@ declare global {
             status?: string;
           }
         ) => Promise<LeaveWithEmployee>;
-
         delete: (_id: string) => Promise<LeaveWithEmployee>;
       };
 
       payrollComponents: {
         create: (component: PayrollComponent) => Promise<PayrollComponent>;
-
         getAll: (type?: "EARNING" | "DEDUCTION") => Promise<PayrollComponent[]>;
-
         getEnabled: (
           type?: "EARNING" | "DEDUCTION"
         ) => Promise<PayrollComponent[]>;
-
         getById: (id: string) => Promise<PayrollComponent | null>;
-
         update: (
-          component: PayrollComponent
-        ) => Promise<PayrollComponent | null>;
-
+          component: PayrollComponent[]
+        ) => Promise<PayrollComponent[] | null>;
         delete: (id: string) => Promise<void>;
-
         setEnabled: (
           id: string,
           enabled: boolean
         ) => Promise<PayrollComponent | null>;
-
         upsert: (
           component: PayrollComponent
         ) => Promise<PayrollComponent | null>;
-
         getUnsynced: () => Promise<PayrollComponent[]>;
-
         markSynced: (id: string) => Promise<PayrollComponent | null>;
+      };
+
+      employeePayrollProfiles: {
+        create(profile: EmployeePayrollProfile): Promise<void>;
+        createMany(profiles: EmployeePayrollProfile[]): Promise<void>;
+        update(profile: EmployeePayrollProfile): Promise<void>;
+        updateMany(profiles: EmployeePayrollProfile[]): Promise<void>;
+        upsert(profile: EmployeePayrollProfile): Promise<void>;
+        upsertMany(profiles: EmployeePayrollProfile[]): Promise<void>;
+        get(_id: string): Promise<EmployeePayrollProfile | undefined>;
+        getAll(): Promise<EmployeePayrollProfile[]>;
+        getByEmployee(employeeId: string): Promise<EmployeePayrollProfile[]>;
+        getByComponent(
+          employeeId: string,
+          componentId: string
+        ): Promise<EmployeePayrollProfile | undefined>;
+        getUnsynced(): Promise<EmployeePayrollProfile[]>;
+        markSynced(_id: string): Promise<void>;
+        markManySynced(ids: string[]): Promise<void>;
+        delete(_id: string): Promise<void>;
+        restore(_id: string): Promise<void>;
+        permanentlyDelete(_id: string): Promise<void>;
+        exists(employeeId: string, componentId: string): Promise<boolean>;
+        count(): Promise<number>;
+        initialize(): Promise<void>;
+        initializeForEmployee(employeeId: string): Promise<void>;
+        addComponentToEmployees(component: PayrollComponent): Promise<void>;
+        resetToDefaults(employeeId: string): Promise<void>;
       };
 
       sync: () => Promise<{

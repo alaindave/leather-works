@@ -5,6 +5,7 @@ const Task = require("./models/taskModel.js");
 const EmployeesDocuments = require("./models/employeesDocumentsModel.js");
 const PayrollComponent = require("./models/payrollComponentModel.js");
 const { AdminUser } = require("./models/adminUserModel.js");
+const EmployeePayrollProfile = require("./models/payrollEmployeeProfileModel.js");
 const fs = require("fs/promises");
 const path = require("path");
 const supabase = require("./services/supabase.service.js");
@@ -289,8 +290,9 @@ async function syncEmployeeDocument(operation, data, file) {
 
 //Sync payroll components
 async function syncPayrollComponent(operation, data) {
+  console.log("PAYROLL COMPONENT TO SYNC WITH SERVER:", data);
   switch (operation) {
-    case "CREATE":
+    case "create":
       await PayrollComponent.updateOne(
         { _id: data._id },
         { $setOnInsert: data },
@@ -298,11 +300,11 @@ async function syncPayrollComponent(operation, data) {
       );
       break;
 
-    case "UPDATE":
+    case "update":
       await PayrollComponent.updateOne({ _id: data._id }, { $set: data });
       break;
 
-    case "DELETE":
+    case "delete":
       await PayrollComponent.updateOne(
         { _id: data._id },
         {
@@ -316,6 +318,64 @@ async function syncPayrollComponent(operation, data) {
   }
 }
 
+// Sync employee payroll profiles
+async function syncPayrollProfile(operation, data) {
+  console.log("PAYROLL PROFILE TO SYNC TO SERVER:", data);
+
+  switch (operation) {
+    case "create":
+      await EmployeePayrollProfile.updateOne(
+        { _id: data._id },
+        {
+          $setOnInsert: data,
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      console.log(
+        "CREATED PAYROLL PROFILE:",
+        await EmployeePayrollProfile.findById(data._id)
+      );
+
+      break;
+
+    case "update":
+      await EmployeePayrollProfile.updateOne(
+        { _id: data._id },
+        {
+          $set: data,
+        }
+      );
+
+      console.log(
+        "UPDATED PAYROLL PROFILE:",
+        await EmployeePayrollProfile.findById(data._id)
+      );
+
+      break;
+
+    case "delete":
+      await EmployeePayrollProfile.updateOne(
+        { _id: data._id },
+        {
+          $set: {
+            isDeleted: 1,
+            updatedAt: new Date(data.updatedAt),
+          },
+        }
+      );
+
+      console.log("DELETED PAYROLL PROFILE:", data._id);
+
+      break;
+
+    default:
+      throw new Error(`UNSUPPORTED OPERATION: ${operation}`);
+  }
+}
+
 module.exports = {
   syncEmployee,
   syncAttendance,
@@ -326,4 +386,5 @@ module.exports = {
   syncEmployeePhoto,
   syncEmployeeDocument,
   syncPayrollComponent,
+  syncPayrollProfile,
 };

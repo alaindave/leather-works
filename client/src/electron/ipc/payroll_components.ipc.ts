@@ -5,7 +5,7 @@ import {
   getPayrollComponents,
   getEnabledPayrollComponents,
   getPayrollComponentById,
-  updatePayrollComponent,
+  updatePayrollComponents,
   deletePayrollComponent,
   enablePayrollComponent,
   disablePayrollComponent,
@@ -44,10 +44,10 @@ export function registerPayrollComponentIPC() {
   });
 
   //Update
-  ipcMain.handle("payroll-components:update", async (_, component) => {
-    await updatePayrollComponent(component);
+  ipcMain.handle("payroll-components:update", async (_, components) => {
+    await updatePayrollComponents(components);
 
-    return await getPayrollComponentById(component._id);
+    return await getPayrollComponents();
   });
 
   //Delete

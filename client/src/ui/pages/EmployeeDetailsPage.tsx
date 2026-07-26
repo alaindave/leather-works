@@ -15,13 +15,7 @@ import {
   VStack,
   useDisclosure,
 } from "@chakra-ui/react";
-import {
-  FiCheckCircle,
-  FiUserCheck,
-  FiClock,
-  FiBriefcase,
-  FiCalendar,
-} from "react-icons/fi";
+import { FiClock, FiBriefcase, FiCalendar } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { FaArrowLeftLong } from "react-icons/fa6";
@@ -30,6 +24,7 @@ import { GoDotFill } from "react-icons/go";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
+import { FaDollarSign } from "react-icons/fa";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import type Employee from "../../shared/types/Employee";
 import useAdminUser from "../../store/auth.store";
@@ -240,6 +235,26 @@ const EmployeeDetailsPage = () => {
                   <CiCalendarDate size="1.3rem" color="purple" />
                   <Text position="relative" top="0.4rem">
                     Congés
+                  </Text>
+                </HStack>
+              </Link>
+              <Link
+                to={{
+                  pathname: `/employees_admin/employees_list/${_id}/payslips`,
+                }}
+                state={{ employee, photo_url }}
+              >
+                <HStack
+                  cursor="pointer"
+                  bg="gray.100"
+                  border="1px solid rgba(255,255,255,0.12)"
+                  boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+                  borderRadius="0.4rem"
+                  padding="0.4rem"
+                >
+                  <FaDollarSign size="1.3rem" color="purple" />
+                  <Text position="relative" top="0.4rem">
+                    Fiche de paye
                   </Text>
                 </HStack>
               </Link>
@@ -482,7 +497,7 @@ const EmployeeDetailsPage = () => {
               border="1px solid"
               borderColor="#D1D9E0"
               overflowY="auto"
-              height="70.5vh"
+              height="71.8vh"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <EmployeeDetailsTab employee={employee} />

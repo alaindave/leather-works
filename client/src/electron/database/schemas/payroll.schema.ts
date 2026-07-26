@@ -1,6 +1,7 @@
 import { run } from "../db.js";
 
 export async function createPayrollTables() {
+  //Creating tables
   await run(`
     CREATE TABLE IF NOT EXISTS payroll_components (
       _id TEXT PRIMARY KEY,
@@ -12,8 +13,8 @@ export async function createPayrollTables() {
         CHECK(calculationType IN ('FIXE','POURCENTAGE','MANUEL'))
         DEFAULT 'MANUEL',
       percentageOf TEXT,
-      defaultValue REAL NOT NULL DEFAULT 0,
-      displayOrder INTEGER NOT NULL DEFAULT 1,
+      defaultValue REAL DEFAULT 0,
+      displayOrder INTEGER NOT NULL,
       isSystem INTEGER NOT NULL DEFAULT 1,
       enabled INTEGER NOT NULL DEFAULT 1,
       createdAt TEXT NOT NULL,
@@ -22,16 +23,6 @@ export async function createPayrollTables() {
       isDeleted INTEGER NOT NULL DEFAULT 0,
       lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     );
-  `);
-
-  await run(`
-    CREATE INDEX IF NOT EXISTS idx_payroll_components_type
-    ON payroll_components(type);
-  `);
-
-  await run(`
-    CREATE INDEX IF NOT EXISTS idx_payroll_components_synced
-    ON payroll_components(synced);
   `);
 
   await run(`
@@ -59,21 +50,6 @@ export async function createPayrollTables() {
   `);
 
   await run(`
-    CREATE INDEX IF NOT EXISTS idx_payroll_employee
-    ON payrolls(employeeId);
-  `);
-
-  await run(`
-    CREATE INDEX IF NOT EXISTS idx_payroll_period
-    ON payrolls(month, year);
-  `);
-
-  await run(`
-    CREATE INDEX IF NOT EXISTS idx_payroll_synced
-    ON payrolls(synced);
-  `);
-
-  await run(`
     CREATE TABLE IF NOT EXISTS payroll_items (
       _id TEXT PRIMARY KEY,
       payrollId TEXT NOT NULL,
@@ -93,6 +69,53 @@ export async function createPayrollTables() {
       FOREIGN KEY(componentId)
         REFERENCES payroll_components(_id)
     );
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS employee_payroll_profiles (
+    _id TEXT PRIMARY KEY,
+    employeeId TEXT NOT NULL,
+    componentId TEXT NOT NULL,
+    displayName TEXT NOT NULL,
+    type TEXT NOT NULL,
+    calculationType TEXT NOT NULL,
+    value REAL,
+    isOverridden INTEGER DEFAULT 0,
+    enabled INTEGER DEFAULT 1,
+    createdAt TEXT,
+    updatedAt TEXT,
+    lastSyncedAt Text,
+    synced INTEGER DEFAULT 0,
+    isDeleted INTEGER DEFAULT 0
+
+);
+    );
+  `);
+
+  // Creating Index
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_payroll_components_type
+    ON payroll_components(type);
+  `);
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_payroll_components_synced
+    ON payroll_components(synced);
+  `);
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_payroll_employee
+    ON payrolls(employeeId);
+  `);
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_payroll_period
+    ON payrolls(month, year);
+  `);
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_payroll_synced
+    ON payrolls(synced);
   `);
 
   await run(`

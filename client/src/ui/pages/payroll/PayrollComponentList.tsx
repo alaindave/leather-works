@@ -8,8 +8,12 @@ import {
   Badge,
   useToast,
 } from "@chakra-ui/react";
+import { Select } from "@chakra-ui/react";
+import { Input } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import PayrollComponent from "../../../shared/types/payroll/PayrollComponent";
+import AddPayrollComponentModal from "../../components/AddPayrollComponentModal";
+import { FaDeleteLeft } from "react-icons/fa6";
 
 interface Props {
   type: "EARNING" | "DEDUCTION";
@@ -17,25 +21,25 @@ interface Props {
 
 export default function PayrollComponentList({ type }: Props) {
   const toast = useToast();
-
   const [components, setComponents] = useState<PayrollComponent[]>([]);
+  const [originalComponents, setOriginalComponents] = useState<
+    PayrollComponent[]
+  >([]);
 
   useEffect(() => {
     loadComponents();
   }, [type]);
 
-  async function loadComponents() {
+  const loadComponents = async () => {
     try {
       const data = await window.electron.payrollComponents.getEnabled(type);
-      console.log("PAYROLL COMPONENTS FETCHED", data);
-      setComponents(data);
+
+      setComponents(structuredClone(data));
+      setOriginalComponents(structuredClone(data));
     } catch (error) {
-      console.error(
-        "AN ERROR OCCURED WHILE FETCHING PAYROLL COMPONENTS",
-        error
-      );
+      console.error(error);
     }
-  }
+  };
 
   const toggleComponent = (_id: string) => {
     setComponents((prev) =>
@@ -51,52 +55,176 @@ export default function PayrollComponentList({ type }: Props) {
   };
 
   const save = async () => {
-    await window.electron.payrollComponents.create(components);
+    try {
+      const modifiedComponents = components.filter((component) => {
+        const original = originalComponents.find(
+          (o) => o._id === component._id
+        );
 
-    toast({
-      title: "Parametres sauvegardes.",
-      status: "success",
-    });
+        if (!original) return true;
+
+        return (
+          original.displayName !== component.displayName ||
+          original.enabled !== component.enabled ||
+          original.calculationType !== component.calculationType ||
+          original.defaultValue !== component.defaultValue
+        );
+      });
+
+      if (modifiedComponents.length === 0) {
+        toast({
+          title: "Aucune modification.",
+          status: "info",
+        });
+
+        return;
+      }
+
+      await window.electron.payrollComponents.update(modifiedComponents);
+
+      toast({
+        title: "Paramètres sauvegardés.",
+        status: "success",
+      });
+
+      loadComponents();
+    } catch (error) {
+      console.error("AN ERROR OCCURED WHILE SAVING CHANGES", error);
+
+      toast({
+        title: "Erreur lors de la sauvegarde.",
+        status: "error",
+      });
+    }
+  };
+
+  const handleDelete = async (_id: string) => {
+    try {
+      await window.electron.payrollComponents.delete(_id);
+      await loadComponents();
+    } catch (error) {
+      console.error("AN ERROR OCCURED WHILE DELETING COMPONENT:", error);
+    }
   };
 
   return (
     <Box>
-      <Flex justify="space-between" mb={5}>
+      <Flex justify="space-between" mb={3}>
         <Text fontWeight="bold" fontSize="xl">
           {type === "EARNING" ? "Rémunérations" : "Déductions"}
         </Text>
 
-        <Button colorScheme="yellow" onClick={save}>
-          Enregistrer
-        </Button>
+        <Flex gap={3}>
+          <AddPayrollComponentModal type={type} onCreated={loadComponents} />
+          <Button colorScheme="yellow" onClick={save}>
+            Enregistrer
+          </Button>
+        </Flex>
       </Flex>
 
       <Stack spacing={1} height="65vh" overflowY="auto">
         {components.map((item) => (
           <Flex
+            position="relative"
             key={item._id}
             justify="space-between"
-            align="center"
             p={2}
             borderWidth="1px"
             borderRadius="lg"
           >
-            <Checkbox
-              isChecked={item.enabled === 1 ? true : false}
-              onChange={() => toggleComponent(item._id)}
-            >
-              <Box ml={2}>
-                <Text fontWeight="bold">{item.displayName}</Text>
-
-                <Text fontSize="sm" color="gray.500">
-                  {item.calculationType}
-                </Text>
+            <Box>
+              <Checkbox
+                isChecked={item.enabled === 1 ? true : false}
+                onChange={() => toggleComponent(item._id)}
+              />
+              <Box ml="3rem" mb="2rem">
+                <Input
+                  value={item.displayName}
+                  fontWeight="bold"
+                  variant="flushed"
+                  onChange={(e) =>
+                    setComponents((prev) =>
+                      prev.map((component) =>
+                        component._id === item._id
+                          ? {
+                              ...component,
+                              displayName: e.target.value,
+                            }
+                          : component
+                      )
+                    )
+                  }
+                />
+                <Select
+                  size="sm"
+                  mt={2}
+                  value={item.calculationType}
+                  onChange={(e) =>
+                    setComponents((prev) =>
+                      prev.map((component) =>
+                        component._id === item._id
+                          ? {
+                              ...component,
+                              calculationType: e.target.value as any,
+                              defaultValue:
+                                e.target.value === "MANUEL"
+                                  ? null
+                                  : component.defaultValue,
+                            }
+                          : component
+                      )
+                    )
+                  }
+                >
+                  <option value="FIXE">Montant fixe</option>
+                  <option value="MANUEL">Manuel</option>
+                  <option value="POURCENTAGE">Pourcentage</option>
+                </Select>
               </Box>
-            </Checkbox>
-
-            <Badge colorScheme={item.enabled ? "green" : "gray"}>
-              {item.enabled ? "Activé" : "Désactivé"}
-            </Badge>
+              {item.calculationType === "POURCENTAGE" ||
+              item.calculationType === "FIXE" ? (
+                <Box>
+                  <Text fontSize="xs" color="gray.500">
+                    {item.calculationType === "POURCENTAGE"
+                      ? "Pourcentage"
+                      : "Montant"}
+                  </Text>
+                  <Input
+                    size="sm"
+                    type="number"
+                    value={item.defaultValue ?? ""}
+                    onChange={(e) =>
+                      setComponents((prev) =>
+                        prev.map((component) =>
+                          component._id === item._id
+                            ? {
+                                ...component,
+                                defaultValue:
+                                  e.target.value === ""
+                                    ? null
+                                    : Number(e.target.value),
+                              }
+                            : component
+                        )
+                      )
+                    }
+                  />
+                </Box>
+              ) : null}
+            </Box>
+            <Box>
+              <Box
+                position="absolute"
+                top="0.1rem"
+                right="0.4rem"
+                onClick={() => handleDelete(item._id)}
+              >
+                <FaDeleteLeft />
+              </Box>
+              <Badge mt="3rem" colorScheme={item.enabled ? "green" : "gray"}>
+                {item.enabled ? "Activé" : "Désactivé"}
+              </Badge>
+            </Box>
           </Flex>
         ))}
       </Stack>

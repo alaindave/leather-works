@@ -2,6 +2,7 @@ import { run, get, all } from "../db.js";
 import { randomUUID } from "crypto";
 import Employee from "../../../shared/types/Employee.js";
 import { addToSyncQueue } from "./sync.repository.js";
+import { initializeEmployeePayrollProfilesForEmployee } from "../../services/payrollProfile.service.js";
 
 export async function createEmployee(
   employee: Omit<
@@ -61,6 +62,8 @@ export async function createEmployee(
       employee.remainingLeave ?? 20,
     ]
   );
+
+  await initializeEmployeePayrollProfilesForEmployee(_id);
 
   const savedEmployee = { _id, ...employee, createdAt: time, updatedAt: time };
 
