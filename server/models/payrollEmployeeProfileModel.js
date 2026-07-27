@@ -66,9 +66,12 @@ const EmployeePayrollProfileSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    createdAt: { type: Date, required: true },
+    updatedAt: { type: Date, required: true },
   },
+
   {
-    timestamps: true,
+    timestamps: false,
     _id: false,
   }
 );

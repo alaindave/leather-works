@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import LeaveHistoryTable from "../components/LeaveHistoryTable";
 import { Link, useLocation } from "react-router-dom";
@@ -7,6 +7,7 @@ import Leave from "../../shared/types/Leave";
 import { MdOutlineChevronRight } from "react-icons/md";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { IoSettings } from "react-icons/io5";
+import PayrollEmployeeProfile from "../../shared/types/payroll/PayrollEmployeeProfile";
 
 type EmployeeState = {
   employee?: Employee;
@@ -20,20 +21,23 @@ const EmployeePayrollReport = () => {
   const location = useLocation();
   const { employee } = (location.state as EmployeeState) || {};
   const { photo_url } = (location.state as PhotoState) || "";
-  const [leaves, setLeaves] = useState<Leave[]>([]);
+  // const [payrollProfiles, setPayrollProfiles] = useState<
+  //   PayrollEmployeeProfile[]
+  // >([]);
 
-  useEffect(() => {
-    getPayrollHistory();
-  }, []);
+  // useEffect(() => {
+  //   getPayrollHistory();
+  // }, []);
 
-  async function getPayrollHistory() {
-    if (!employee?._id) return;
-    const leaves = await window.electron.leave.getLeaveByEmployeeId(
-      employee?._id
-    );
-    console.log("Leave history fetched:", leaves);
-    setLeaves(leaves);
-  }
+  // async function getPayrollHistory() {
+  //   if (!employee?._id) return;
+  //   const payroll_profiles =
+  //     await window.electron.payrollEmployeeProfiles.getByEmployee(
+  //       employee?._id
+  //     );
+  //   console.log("PAYROLL PROFILES FETCHED:", payroll_profiles);
+  //   setPayrollProfiles(payroll_profiles);
+  // }
 
   return (
     <Flex direction="column" bg="#ffffff" width="100%" alignItems="flex-start">
@@ -78,23 +82,18 @@ const EmployeePayrollReport = () => {
             </HStack>
           </Box>
         </HStack>
-        <Box mr="1.3rem" mt="1.5rem">
-          <IoSettings fontSize="1.7rem" />
-        </Box>
-      </Flex>
-      {leaves.length != 0 ? (
-        <LeaveHistoryTable leaves={leaves} />
-      ) : (
-        <Text
-          fontSize="1.7rem"
-          color="gray.800"
-          position="relative"
-          left="20rem"
-          top="15rem"
+        <Link
+          to={{
+            pathname: `/employees_admin/employees_list/${employee?._id}/payroll_settings`,
+          }}
+          state={{ employee, photo_url }}
         >
-          Pas de congés à afficher
-        </Text>
-      )}
+          <Box position="absolute" top="1rem " right="1.5rem">
+            <IoSettings fontSize="1.7rem" />
+          </Box>
+        </Link>
+      </Flex>
+      <Text>Payroll history goes here</Text>
     </Flex>
   );
 };

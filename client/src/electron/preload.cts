@@ -7,6 +7,7 @@ type Task = import("../shared/types/Task", { with: { "resolution-mode": "require
 type EmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
 type UploadedEmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
 type CreatePayrollComponentDto = import("../shared/types/payroll/CreatePayrollComponentDto", { with: { "resolution-mode": "require" } }).default;
+type CreatePayrollProfileDto = import("../shared/types/payroll/CreatePayrollProfileDto", { with: { "resolution-mode": "require" } }).default;
 type PayrollComponent = import("../shared/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
 type EmployeePayrollProfile = import("../shared/types/payroll/PayrollEmployeeProfile", { with: { "resolution-mode": "require" } }).default;
 
@@ -240,57 +241,55 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("payroll-components:markSynced", id),
 },
 
-employeePayrollProfiles: {
-  create: (profile: EmployeePayrollProfile) =>
+payrollEmployeeProfiles: {
+  create: (employeeID:string,profile: CreatePayrollProfileDto) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:create",
+      "payrollEmployeeProfiles:create",employeeID,
       profile
     ),
 
-  createMany: (profiles: EmployeePayrollProfile[]) =>
+  createMany: (profiles: CreatePayrollProfileDto[]) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:createMany",
+      "payrollEmployeeProfiles:createMany",
       profiles
     ),
 
   update: (profile: EmployeePayrollProfile) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:update",
+      "payrollEmployeeProfiles:update",
       profile
     ),
 
   updateMany: (profiles: EmployeePayrollProfile[]) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:updateMany",
+      "payrollEmployeeProfiles:updateMany",
       profiles
     ),
 
   upsert: (profile: EmployeePayrollProfile) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:upsert",
+      "payrollEmployeeProfiles:upsert",
       profile
     ),
 
   upsertMany: (profiles: EmployeePayrollProfile[]) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:upsertMany",
+      "payrollEmployeeProfiles:upsertMany",
       profiles
     ),
 
   get: (_id: string) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:get",
+      "payrollEmployeeProfiles:get",
       _id
     ),
 
-  getAll: () =>
-    ipcRenderer.invoke(
-      "employeePayrollProfiles:getAll"
-    ),
+  getAll: (employeeID?:string,type?: "EARNING" | "DEDUCTION") =>
+    ipcRenderer.invoke("payrollEmployeeProfiles:getAll", employeeID,type),
 
   getByEmployee: (employeeId: string) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:getByEmployee",
+      "payrollEmployeeProfiles:getByEmployee",
       employeeId
     ),
 
@@ -299,43 +298,43 @@ employeePayrollProfiles: {
     componentId: string
   ) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:getByComponent",
+      "payrollEmployeeProfiles:getByComponent",
       employeeId,
       componentId
     ),
 
   getUnsynced: () =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:getUnsynced"
+      "payrollEmployeeProfiles:getUnsynced"
     ),
 
   markSynced: (_id: string) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:markSynced",
+      "payrollEmployeeProfiles:markSynced",
       _id
     ),
 
   markManySynced: (ids: string[]) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:markManySynced",
+      "payrollEmployeeProfiles:markManySynced",
       ids
     ),
 
   delete: (_id: string) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:delete",
+      "payrollEmployeeProfiles:delete",
       _id
     ),
 
   restore: (_id: string) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:restore",
+      "payrollEmployeeProfiles:restore",
       _id
     ),
 
   permanentlyDelete: (_id: string) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:permanentlyDelete",
+      "payrollEmployeeProfiles:permanentlyDelete",
       _id
     ),
 
@@ -344,36 +343,36 @@ employeePayrollProfiles: {
     componentId: string
   ) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:exists",
+      "payrollEmployeeProfiles:exists",
       employeeId,
       componentId
     ),
 
   count: () =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:count"
+      "payrollEmployeeProfiles:count"
     ),
 
   initialize: () =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:initialize"
+      "payrollEmployeeProfiles:initialize"
     ),
 
   initializeForEmployee: (employeeId: string) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:initializeForEmployee",
+      "payrollEmployeeProfiles:initializeForEmployee",
       employeeId
     ),
 
   addComponentToEmployees: (component: PayrollComponent) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:addComponentToEmployees",
+      "payrollEmployeeProfiles:addComponentToEmployees",
       component
     ),
 
   resetToDefaults: (employeeId: string) =>
     ipcRenderer.invoke(
-      "employeePayrollProfiles:resetToDefaults",
+      "payrollEmployeeProfiles:resetToDefaults",
       employeeId
     ),
 },

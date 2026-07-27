@@ -12,6 +12,7 @@ import EmployeeAttendanceReport from "./pages/EmployeeAttendanceReport";
 import EmployeeLeaveReport from "./pages/EmployeeLeaveReport";
 import PayrollSettingsPage from "./pages/payroll/PayrollSettingsPage";
 import EmployeePayrollReport from "./pages/EmployeePayrollReport";
+import PayrollEmployeeProfileSettingsPage from "./pages/payroll/PayrollEmployeeProfileSettingsPage";
 
 const router = createHashRouter([
   {
@@ -58,11 +59,18 @@ const router = createHashRouter([
         element: <EmployeeLeaveReport />,
         errorElement: <PageErrorFallback />,
       },
+
       {
         path: "employees_list/:_id/payslips",
         element: <EmployeePayrollReport />,
         errorElement: <PageErrorFallback />,
       },
+      {
+        path: "employees_list/:_id/payroll_settings",
+        element: <PayrollEmployeeProfileSettingsPage />,
+        errorElement: <PageErrorFallback />,
+      },
+
       {
         path: "attendances",
         element: <EmployeeAttendancePage />,

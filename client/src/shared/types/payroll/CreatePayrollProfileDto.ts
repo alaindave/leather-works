@@ -3,12 +3,12 @@ import {
   PayrollComponentType,
 } from "./PayrollComponent.js";
 
-export default interface CreatePayrollComponentDto {
+export default interface CreatePayrollProfileDto {
   name: string;
   displayName: string;
+  componentId?: string;
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;
-  displayOrder: number;
-  defaultValue: number;
+  value: number | null;
   percentageOf?: string | null;
 }

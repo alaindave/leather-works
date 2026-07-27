@@ -19,14 +19,19 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import CreatePayrollComponentDto from "../../shared/types/payroll/CreatePayrollComponentDto";
+import CreatePayrollProfileDto from "../../shared/types/payroll/CreatePayrollProfileDto";
 
 interface Props {
   type: "EARNING" | "DEDUCTION";
+  employeeID: string;
   onCreated?: () => void;
 }
 
-export default function AddPayrollComponentModal({ type, onCreated }: Props) {
+export default function AddPayrollEmployeeProfileModal({
+  type,
+  onCreated,
+  employeeID,
+}: Props) {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = useState(false);
@@ -36,8 +41,6 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
   >("MANUEL");
 
   const [defaultValue, setDefaultValue] = useState(0);
-
-  const [displayOrder, setDisplayOrder] = useState(0);
 
   const [_, setEnabled] = useState(true);
 
@@ -59,16 +62,18 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
     }
     setLoading(true);
     try {
-      const component: CreatePayrollComponentDto = {
+      const component: CreatePayrollProfileDto = {
         name: displayName.toUpperCase().replace(/\s+/g, "_"),
         displayName,
         type,
         calculationType,
-        displayOrder,
-        defaultValue,
+        value: defaultValue,
         percentageOf: null,
       };
-      await window.electron.payrollComponents.create(component);
+      await window.electron.payrollEmployeeProfiles.create(
+        employeeID,
+        component
+      );
       toast({
         title: "Composante créée",
         status: "success",
@@ -93,7 +98,6 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
       <Button
         bg="#4F46E5"
         color="#ffffff"
-        padding="16px"
         _hover={{
           bg: "#4338CA",
           color: "#e6e6e6",
@@ -106,7 +110,7 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
         spinnerPlacement="start"
         isDisabled={loading}
       >
-        <Text fontSize="1rem" marginLeft="0.7rem" marginTop="1rem">
+        <Text fontSize="1rem" marginTop="1rem">
           Ajouter
         </Text>
       </Button>
@@ -156,17 +160,6 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
                   min={0}
                   value={defaultValue}
                   onChange={(_, value) => setDefaultValue(value)}
-                >
-                  <NumberInputField />
-                </NumberInput>
-              </FormControl>
-              <FormControl>
-                <FormLabel>Ordre</FormLabel>
-
-                <NumberInput
-                  min={0}
-                  value={displayOrder}
-                  onChange={(_, value) => setDisplayOrder(value)}
                 >
                   <NumberInputField />
                 </NumberInput>

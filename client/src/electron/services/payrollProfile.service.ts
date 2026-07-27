@@ -9,6 +9,7 @@ import {
   updateEmployeePayrollProfile,
 } from "../database/repositories/payrollEmployeeProfile.repository.js";
 import PayrollComponent from "../../shared/types/payroll/PayrollComponent.js";
+import CreatePayrollProfileDto from "../../shared/types/payroll/CreatePayrollProfileDto.js";
 
 // Create payroll profiles for a newly created employee.
 export async function initializeEmployeePayrollProfilesForEmployee(
@@ -17,10 +18,11 @@ export async function initializeEmployeePayrollProfilesForEmployee(
   console.log("INITIALIZING PAYROLL PROFILES FOR NEW EMPLOYEE...");
   const components = await getEnabledPayrollComponents();
   const now = new Date().toISOString();
-  const profiles: EmployeePayrollProfile[] = components.map((component) => ({
+  const profiles: CreatePayrollProfileDto[] = components.map((component) => ({
     _id: randomUUID(),
     employeeId,
     componentId: component._id,
+    name: component.name,
     displayName: component.displayName,
     type: component.type,
     calculationType: component.calculationType,
@@ -34,7 +36,7 @@ export async function initializeEmployeePayrollProfilesForEmployee(
     lastSyncedAt: null,
   }));
 
-  await createManyEmployeePayrollProfiles(profiles);
+  await createManyEmployeePayrollProfiles(employeeId, profiles);
 }
 
 //Initialize payroll profiles for every employee.
@@ -48,8 +50,6 @@ export async function initializeEmployeePayrollProfiles() {
     profiles.map((profile) => `${profile.employeeId}:${profile.componentId}`)
   );
 
-  const now = new Date().toISOString();
-
   for (const employee of employees) {
     for (const component of components) {
       const key = `${employee._id}:${component._id}`;
@@ -58,21 +58,13 @@ export async function initializeEmployeePayrollProfiles() {
         continue;
       }
 
-      await createEmployeePayrollProfile({
-        _id: randomUUID(),
-        employeeId: employee._id,
-        componentId: component._id,
+      await createEmployeePayrollProfile(employee._id, {
+        name: component.name,
         displayName: component.displayName,
+        componentId: component._id,
         type: component.type,
         calculationType: component.calculationType,
         value: component.defaultValue,
-        enabled: component.enabled,
-        isOverridden: 0,
-        synced: 0,
-        isDeleted: 0,
-        createdAt: now,
-        updatedAt: now,
-        lastSyncedAt: null,
       });
     }
   }
@@ -83,25 +75,20 @@ export async function addPayrollComponentToAllEmployees(
   component: PayrollComponent
 ) {
   const employees = await getAllEmployees();
-  const now = new Date().toISOString();
-  const profiles: EmployeePayrollProfile[] = employees.map((employee) => ({
-    _id: randomUUID(),
-    employeeId: employee._id,
-    componentId: component._id,
-    displayName: component.displayName,
-    type: component.type,
-    calculationType: component.calculationType,
-    value: component.defaultValue,
-    enabled: component.enabled,
-    isOverridden: 0,
-    synced: 0,
-    isDeleted: 0,
-    createdAt: now,
-    updatedAt: now,
-    lastSyncedAt: null,
-  }));
 
-  await createManyEmployeePayrollProfiles(profiles);
+  for (const employee of employees) {
+    const profile: EmployeePayrollProfile = {
+      componentId: component._id,
+      name: component.name,
+      displayName: component.displayName,
+      type: component.type,
+      calculationType: component.calculationType,
+      value: component.defaultValue,
+      percentageOf: component.percentageOf,
+    };
+
+    await createManyEmployeePayrollProfiles(employee._id, [profile]);
+  }
 }
 
 /**
@@ -111,13 +98,15 @@ export async function addPayrollComponentToAllEmployees(
  * Only updates profiles whose values have not
  * been customized.
  */
-export async function updatePayrollComponentDefaults(component: any) {
+export async function updatePayrollComponentDefaults(
+  component: PayrollComponent
+) {
   const profiles = await getAllEmployeePayrollProfiles();
 
   const matchingProfiles = profiles.filter(
     (profile) =>
       profile.componentId === component._id &&
-      profile.value === component.previousDefaultValue
+      profile.value === component.defaultValue
   );
 
   for (const profile of matchingProfiles) {
@@ -143,9 +132,10 @@ export async function resetEmployeePayrollProfileToDefaults(
     (profile) => profile.employeeId === employeeId
   );
 
+  console.log("EMPLOYEE PAYROLL PROFILES TO RESET FOR", employeeProfiles);
+
   for (const profile of employeeProfiles) {
     const component = components.find((c) => c._id === profile.componentId);
-
     if (!component) {
       continue;
     }
@@ -155,9 +145,11 @@ export async function resetEmployeePayrollProfileToDefaults(
     profile.calculationType = component.calculationType;
     profile.value = component.defaultValue;
     profile.enabled = component.enabled;
-
+    profile.isDeleted = component.isDeleted;
     profile.synced = 0;
     profile.updatedAt = new Date().toISOString();
+
+    console.log("EMPLOYEE PROFILE TO RESET", profile);
 
     await updateEmployeePayrollProfile(profile);
   }

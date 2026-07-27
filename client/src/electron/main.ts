@@ -23,6 +23,7 @@ import { markEmployeesOnLeave } from "./services/markEmployeesOnLeave.service.js
 import { ensureStorageDirectories } from "./storage/directories.js";
 import { registerPayrollComponentIPC } from "./ipc/payroll_components.ipc.js";
 import { initializeEmployeePayrollProfiles } from "./services/payrollProfile.service.js";
+import { registerPayrollEmployeeProfileIPC } from "./ipc/payrollEmployeeProfile.ipc.js";
 
 const environment = isDev() ? "Development" : "Production";
 
@@ -133,6 +134,7 @@ async function bootstrap() {
   registerSyncIPC();
   registerAppIPC();
   registerPayrollComponentIPC();
+  registerPayrollEmployeeProfileIPC();
   console.log("After IPC registration");
   await ensureStorageDirectories();
   await createSplashWindow();

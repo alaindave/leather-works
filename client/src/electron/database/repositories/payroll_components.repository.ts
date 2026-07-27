@@ -3,7 +3,10 @@ import PayrollComponent from "../../../shared/types/payroll/PayrollComponent.js"
 import CreatePayrollComponentDto from "../../../shared/types/payroll/CreatePayrollComponentDto.js";
 import { randomUUID } from "crypto";
 import { addToSyncQueue } from "./sync.repository.js";
-import { addPayrollComponentToAllEmployees } from "../../services/payrollProfile.service.js";
+import {
+  addPayrollComponentToAllEmployees,
+  updatePayrollComponentDefaults,
+} from "../../services/payrollProfile.service.js";
 
 export async function createPayrollComponent(
   component: CreatePayrollComponentDto
@@ -18,6 +21,7 @@ export async function createPayrollComponent(
         _id,
         name,
         displayName,
+        displayOrder,
         type,
         calculationType,
         defaultValue,
@@ -30,12 +34,13 @@ export async function createPayrollComponent(
         lastSyncedAt,
         isDeleted
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
     [
       _id,
       component.name,
       component.displayName,
+      component.displayOrder,
       component.type,
       component.calculationType,
       component.defaultValue,
@@ -255,7 +260,11 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
       operation: "update",
       payload: JSON.stringify(updatedPayrollComponent),
     });
+
+    await updatePayrollComponentDefaults(component);
   }
+
+  return components;
 }
 
 export async function deletePayrollComponent(_id: string) {

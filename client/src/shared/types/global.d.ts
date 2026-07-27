@@ -175,21 +175,30 @@ declare global {
         markSynced: (id: string) => Promise<PayrollComponent | null>;
       };
 
-      employeePayrollProfiles: {
-        create(profile: EmployeePayrollProfile): Promise<void>;
-        createMany(profiles: EmployeePayrollProfile[]): Promise<void>;
-        update(profile: EmployeePayrollProfile): Promise<void>;
-        updateMany(profiles: EmployeePayrollProfile[]): Promise<void>;
-        upsert(profile: EmployeePayrollProfile): Promise<void>;
-        upsertMany(profiles: EmployeePayrollProfile[]): Promise<void>;
-        get(_id: string): Promise<EmployeePayrollProfile | undefined>;
-        getAll(): Promise<EmployeePayrollProfile[]>;
-        getByEmployee(employeeId: string): Promise<EmployeePayrollProfile[]>;
+      payrollEmployeeProfiles: {
+        create(
+          employeeID: string,
+          profile: CreatePayrollProfileDto
+        ): Promise<void>;
+        createMany(
+          employeeID: string,
+          profiles: CreatePayrollProfileDto[]
+        ): Promise<void>;
+        update(profile: PayrollEmployeeProfile): Promise<void>;
+        updateMany(profiles: PayrollEmployeeProfile[]): Promise<void>;
+        upsert(profile: PayrollEmployeeProfile): Promise<void>;
+        upsertMany(profiles: PayrollEmployeeProfile[]): Promise<void>;
+        get(_id: string): Promise<PayrollEmployeeProfile | undefined>;
+        getAll: (
+          employeeID?: string,
+          type?: "EARNING" | "DEDUCTION"
+        ) => Promise<PayrollEmployeeProfile[]>;
+        getByEmployee(employeeId: string): Promise<PayrollEmployeeProfile[]>;
         getByComponent(
           employeeId: string,
           componentId: string
-        ): Promise<EmployeePayrollProfile | undefined>;
-        getUnsynced(): Promise<EmployeePayrollProfile[]>;
+        ): Promise<PayrollEmployeeProfile | undefined>;
+        getUnsynced(): Promise<PayrollEmployeeProfile[]>;
         markSynced(_id: string): Promise<void>;
         markManySynced(ids: string[]): Promise<void>;
         delete(_id: string): Promise<void>;

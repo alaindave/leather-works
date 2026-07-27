@@ -1,17 +1,24 @@
 import { all, get, run } from "../db.js";
-import EmployeePayrollProfile from "../../../shared/types/payroll/PayrollEmployeeProfile.js";
+import PayrollEmployeeProfile from "../../../shared/types/payroll/PayrollEmployeeProfile.js";
 import { addToSyncQueue } from "./sync.repository.js";
+import { randomUUID } from "crypto";
+import CreatePayrollProfileDto from "../../../shared/types/payroll/CreatePayrollProfileDto.js";
 
 export async function createEmployeePayrollProfile(
-  profile: EmployeePayrollProfile
+  employeeID: string,
+  profile: CreatePayrollProfileDto
 ) {
+  console.log("NEW EMPLOYEE PROFILE:", profile);
+  const _id = randomUUID();
   const now = new Date().toISOString();
+
   await run(
     `
     INSERT INTO employee_payroll_profiles (
       _id,
       employeeId,
       componentId,
+      name,
       displayName,
       type,
       calculationType,
@@ -20,31 +27,30 @@ export async function createEmployeePayrollProfile(
       synced,
       isDeleted,
       createdAt,
-      updatedAt,
-      lastSyncedAt
+      updatedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
-      profile._id,
-      profile.employeeId,
-      profile.componentId,
+      _id,
+      employeeID,
+      profile.componentId ?? _id,
+      profile.name,
       profile.displayName,
       profile.type,
       profile.calculationType,
       profile.value,
-      profile.enabled,
-      profile.synced,
-      profile.isDeleted,
-      profile.createdAt,
-      profile.updatedAt,
-      profile.lastSyncedAt ?? null,
+      1,
+      0,
+      0,
+      now,
+      now,
     ]
   );
 
   const payroll_profile = {
     ...profile,
-    _id: profile._id,
+    _id,
     createdAt: now,
     updatedAt: now,
   };
@@ -53,23 +59,26 @@ export async function createEmployeePayrollProfile(
 
   await addToSyncQueue({
     entity: "payroll_profile",
-    entityId: profile._id,
+    entityId: _id,
     operation: "create",
     payload: JSON.stringify(payroll_profile),
   });
 }
 
 export async function createManyEmployeePayrollProfiles(
-  profiles: EmployeePayrollProfile[]
+  employeeID: string,
+  profiles: CreatePayrollProfileDto[]
 ) {
   for (const profile of profiles) {
-    await createEmployeePayrollProfile(profile);
+    await createEmployeePayrollProfile(employeeID, profile);
   }
 }
 
 export async function updateEmployeePayrollProfile(
-  profile: EmployeePayrollProfile
+  profile: PayrollEmployeeProfile
 ) {
+  if (!profile._id) return;
+  console.log("PAYROLL PROFILE  TO UPDATE", profile);
   const now = new Date().toISOString();
   await run(
     `
@@ -81,6 +90,7 @@ export async function updateEmployeePayrollProfile(
       value = ?,
       enabled = ?,
       synced = ?,
+      isOverridden=?,
       isDeleted = ?,
       updatedAt = ?,
       lastSyncedAt = ?
@@ -92,34 +102,33 @@ export async function updateEmployeePayrollProfile(
       profile.calculationType,
       profile.value,
       profile.enabled,
-      profile.synced,
+      0,
+      1,
       profile.isDeleted,
-      profile.updatedAt,
+      now,
       profile.lastSyncedAt ?? null,
       profile._id,
     ]
   );
-  const payroll_profile = {
-    ...profile,
-    _id: profile._id,
-    updatedAt: now,
-  };
+  const updated_profile = await getEmployeePayrollProfile(profile._id);
 
   console.log(
     "UPDATED PAYROLL PROFILE  TO SAVE TO SYNC QUEUE",
-    payroll_profile
+    updated_profile
   );
 
   await addToSyncQueue({
     entity: "payroll_profile",
     entityId: profile._id,
     operation: "update",
-    payload: JSON.stringify(payroll_profile),
+    payload: JSON.stringify(updated_profile),
   });
+
+  return updated_profile;
 }
 
 export async function updateManyEmployeePayrollProfiles(
-  profiles: EmployeePayrollProfile[]
+  profiles: PayrollEmployeeProfile[]
 ) {
   for (const profile of profiles) {
     await updateEmployeePayrollProfile(profile);
@@ -127,7 +136,7 @@ export async function updateManyEmployeePayrollProfiles(
 }
 
 export async function upsertEmployeePayrollProfile(
-  profile: EmployeePayrollProfile
+  profile: PayrollEmployeeProfile
 ) {
   await run(
     `
@@ -181,7 +190,7 @@ export async function upsertEmployeePayrollProfile(
 }
 
 export async function upsertManyEmployeePayrollProfiles(
-  profiles: EmployeePayrollProfile[]
+  profiles: PayrollEmployeeProfile[]
 ) {
   for (const profile of profiles) {
     await upsertEmployeePayrollProfile(profile);
@@ -189,7 +198,7 @@ export async function upsertManyEmployeePayrollProfiles(
 }
 
 export async function getEmployeePayrollProfile(_id: string) {
-  return await get<EmployeePayrollProfile>(
+  return await get<PayrollEmployeeProfile>(
     `
     SELECT *
     FROM employee_payroll_profiles
@@ -201,7 +210,7 @@ export async function getEmployeePayrollProfile(_id: string) {
 }
 
 export async function getEmployeePayrollProfilesByEmployee(employeeId: string) {
-  return await all<EmployeePayrollProfile>(
+  return await all<PayrollEmployeeProfile>(
     `
     SELECT *
     FROM employee_payroll_profiles
@@ -217,7 +226,7 @@ export async function getEmployeePayrollProfileByComponent(
   employeeId: string,
   componentId: string
 ) {
-  return await get<EmployeePayrollProfile>(
+  return await get<PayrollEmployeeProfile>(
     `
     SELECT *
     FROM employee_payroll_profiles
@@ -229,19 +238,36 @@ export async function getEmployeePayrollProfileByComponent(
   );
 }
 
-export async function getAllEmployeePayrollProfiles() {
-  return await all<EmployeePayrollProfile>(
+export async function getAllEmployeePayrollProfiles(
+  employeeID?: string,
+  type?: "EARNING" | "DEDUCTION"
+): Promise<PayrollEmployeeProfile[]> {
+  if (type && employeeID) {
+    return await all(
+      `
+      SELECT *
+      FROM employee_payroll_profiles
+      WHERE
+        employeeId = ?
+        AND type = ?
+        AND isDeleted = 0
+      ORDER BY employeeId, displayName
+      `,
+      [employeeID, type]
+    );
+  }
+
+  return await all(
     `
     SELECT *
     FROM employee_payroll_profiles
-    WHERE isDeleted = 0
     ORDER BY employeeId, displayName
     `
   );
 }
 
 export async function getUnsyncedEmployeePayrollProfiles() {
-  return await all<EmployeePayrollProfile>(
+  return await all<PayrollEmployeeProfile>(
     `
     SELECT *
     FROM employee_payroll_profiles
