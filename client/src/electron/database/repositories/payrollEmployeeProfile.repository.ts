@@ -3,6 +3,7 @@ import PayrollEmployeeProfile from "../../../shared/types/payroll/PayrollEmploye
 import { addToSyncQueue } from "./sync.repository.js";
 import { randomUUID } from "crypto";
 import CreatePayrollProfileDto from "../../../shared/types/payroll/CreatePayrollProfileDto.js";
+import { getPayrollComponentById } from "./payroll_components.repository.js";
 
 export async function createEmployeePayrollProfile(
   employeeID: string,
@@ -20,6 +21,7 @@ export async function createEmployeePayrollProfile(
       componentId,
       name,
       displayName,
+      displayOrder,
       type,
       calculationType,
       value,
@@ -29,7 +31,7 @@ export async function createEmployeePayrollProfile(
       createdAt,
       updatedAt
     )
-    VALUES (?, ?,?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?,?, ?,?,?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       _id,
@@ -37,6 +39,7 @@ export async function createEmployeePayrollProfile(
       profile.componentId ?? _id,
       profile.name,
       profile.displayName,
+      profile.displayOrder,
       profile.type,
       profile.calculationType,
       profile.value,
@@ -78,19 +81,45 @@ export async function updateEmployeePayrollProfile(
   profile: PayrollEmployeeProfile
 ) {
   if (!profile._id) return;
-  console.log("PAYROLL PROFILE  TO UPDATE", profile);
+
+  const component = await getPayrollComponentById(profile.componentId);
+  let isOverridden;
+
+  if (!component) {
+    throw new Error(`PAYROLL COMPONENT NOT FOUND FOR PROFILE ${profile._id}`);
+  }
+
+  // Determine whether this profile has been customized
+  isOverridden =
+    profile.displayName !== component.displayName ||
+    profile.displayOrder !== component.displayOrder ||
+    profile.type !== component.type ||
+    profile.calculationType !== component.calculationType ||
+    profile.value !== component.defaultValue ||
+    profile.enabled !== component.enabled;
+
+  if (isOverridden) {
+    profile.isOverridden = 1;
+  } else {
+    profile.isOverridden = 0;
+  }
+
+  console.log("PAYROLL PROFILE TO UPDATE", profile);
+
   const now = new Date().toISOString();
+
   await run(
     `
     UPDATE employee_payroll_profiles
     SET
       displayName = ?,
+      displayOrder=?,
       type = ?,
       calculationType = ?,
       value = ?,
       enabled = ?,
       synced = ?,
-      isOverridden=?,
+      isOverridden = ?,
       isDeleted = ?,
       updatedAt = ?,
       lastSyncedAt = ?
@@ -98,35 +127,33 @@ export async function updateEmployeePayrollProfile(
     `,
     [
       profile.displayName,
+      profile.displayOrder,
       profile.type,
       profile.calculationType,
       profile.value,
       profile.enabled,
       0,
-      1,
+      profile.isOverridden,
       profile.isDeleted,
       now,
       profile.lastSyncedAt ?? null,
       profile._id,
     ]
   );
-  const updated_profile = await getEmployeePayrollProfile(profile._id);
 
-  console.log(
-    "UPDATED PAYROLL PROFILE  TO SAVE TO SYNC QUEUE",
-    updated_profile
-  );
+  const updatedProfile = await getEmployeePayrollProfile(profile._id);
+
+  console.log("UPDATED PAYROLL PROFILE TO SAVE TO SYNC QUEUE", updatedProfile);
 
   await addToSyncQueue({
     entity: "payroll_profile",
     entityId: profile._id,
     operation: "update",
-    payload: JSON.stringify(updated_profile),
+    payload: JSON.stringify(updatedProfile),
   });
 
-  return updated_profile;
+  return updatedProfile;
 }
-
 export async function updateManyEmployeePayrollProfiles(
   profiles: PayrollEmployeeProfile[]
 ) {
@@ -145,6 +172,7 @@ export async function upsertEmployeePayrollProfile(
       employeeId,
       componentId,
       displayName,
+      displayOrder,
       type,
       calculationType,
       value,
@@ -162,6 +190,7 @@ export async function upsertEmployeePayrollProfile(
       employeeId = excluded.employeeId,
       componentId = excluded.componentId,
       displayName = excluded.displayName,
+      displayOrder = excluded.displayOrder,
       type = excluded.type,
       calculationType = excluded.calculationType,
       value = excluded.value,
@@ -176,6 +205,7 @@ export async function upsertEmployeePayrollProfile(
       profile.employeeId,
       profile.componentId,
       profile.displayName,
+      profile.displayOrder,
       profile.type,
       profile.calculationType,
       profile.value,
@@ -251,7 +281,7 @@ export async function getAllEmployeePayrollProfiles(
         employeeId = ?
         AND type = ?
         AND isDeleted = 0
-      ORDER BY employeeId, displayName
+      ORDER BY displayOrder
       `,
       [employeeID, type]
     );
@@ -261,7 +291,7 @@ export async function getAllEmployeePayrollProfiles(
     `
     SELECT *
     FROM employee_payroll_profiles
-    ORDER BY employeeId, displayName
+    ORDER BY displayOrder
     `
   );
 }

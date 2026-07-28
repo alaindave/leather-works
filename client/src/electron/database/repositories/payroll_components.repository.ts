@@ -72,6 +72,7 @@ export async function createPayrollComponent(
   });
 
   const new_component = await getPayrollComponentById(_id);
+  //Call payroll profile service
   if (new_component) await addPayrollComponentToAllEmployees(new_component);
 
   return new_component;
@@ -221,6 +222,7 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
     SET
       name = ?,
       displayName = ?,
+      displayOrder=?,
       type = ?,
       calculationType = ?,
       defaultValue = ?,
@@ -234,6 +236,7 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
       [
         component.name,
         component.displayName,
+        component.displayOrder,
         component.type,
         component.calculationType,
         component.defaultValue,
@@ -261,6 +264,7 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
       payload: JSON.stringify(updatedPayrollComponent),
     });
 
+    //Call payroll profile service
     await updatePayrollComponentDefaults(component);
   }
 

@@ -78,6 +78,7 @@ export async function createPayrollTables() {
     componentId TEXT NOT NULL,
     name TEXT NOT NULL,
     displayName TEXT NOT NULL,
+    displayOrder INTEGER NOT NULL,
     type TEXT NOT NULL,
     calculationType TEXT NOT NULL,
     value REAL,

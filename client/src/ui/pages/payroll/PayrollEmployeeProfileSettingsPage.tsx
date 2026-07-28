@@ -10,7 +10,6 @@ import {
 } from "@chakra-ui/react";
 import { MdOutlineChevronRight } from "react-icons/md";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import PayrollDefaults from "./PayrollDefaults";
 import PayrollEmployeeProfileList from "./PayrollEmployeeProfileList";
 import { Link, useLocation } from "react-router-dom";
 import Employee from "../../../shared/types/Employee";

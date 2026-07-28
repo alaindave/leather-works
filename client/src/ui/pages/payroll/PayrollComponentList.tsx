@@ -8,6 +8,7 @@ import {
   Badge,
   useToast,
 } from "@chakra-ui/react";
+import { Editable, EditableInput, EditablePreview } from "@chakra-ui/react";
 import { Select } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -65,6 +66,7 @@ export default function PayrollComponentList({ type }: Props) {
 
         return (
           original.displayName !== component.displayName ||
+          original.displayOrder !== component.displayOrder ||
           original.enabled !== component.enabled ||
           original.calculationType !== component.calculationType ||
           original.defaultValue !== component.defaultValue
@@ -138,23 +140,64 @@ export default function PayrollComponentList({ type }: Props) {
                 onChange={() => toggleComponent(item._id)}
               />
               <Box ml="3rem" mb="2rem">
-                <Input
-                  value={item.displayName}
-                  fontWeight="bold"
-                  variant="flushed"
-                  onChange={(e) =>
-                    setComponents((prev) =>
-                      prev.map((component) =>
-                        component._id === item._id
-                          ? {
-                              ...component,
-                              displayName: e.target.value,
-                            }
-                          : component
+                <Flex align="center" gap={3}>
+                  <Editable
+                    value={String(item.displayOrder)}
+                    onChange={(value) => {
+                      const displayOrder = Number(value);
+
+                      if (Number.isNaN(displayOrder)) return;
+
+                      setComponents((prev) =>
+                        prev.map((component) =>
+                          component._id === item._id
+                            ? {
+                                ...component,
+                                displayOrder,
+                              }
+                            : component
+                        )
+                      );
+                    }}
+                  >
+                    <EditablePreview
+                      px={2}
+                      py={1}
+                      minW="40px"
+                      textAlign="center"
+                      borderRadius="md"
+                      borderWidth="1px"
+                      fontWeight="bold"
+                      cursor="pointer"
+                      _hover={{ bg: "gray.100" }}
+                    />
+                    <EditableInput
+                      type="number"
+                      textAlign="center"
+                      width="40px"
+                      px={2}
+                    />
+                  </Editable>
+
+                  <Input
+                    flex={1}
+                    value={item.displayName}
+                    fontWeight="bold"
+                    variant="flushed"
+                    onChange={(e) =>
+                      setComponents((prev) =>
+                        prev.map((component) =>
+                          component._id === item._id
+                            ? {
+                                ...component,
+                                displayName: e.target.value,
+                              }
+                            : component
+                        )
                       )
-                    )
-                  }
-                />
+                    }
+                  />
+                </Flex>
                 <Select
                   size="sm"
                   mt={2}

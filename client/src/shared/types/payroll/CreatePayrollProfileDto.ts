@@ -6,6 +6,7 @@ import {
 export default interface CreatePayrollProfileDto {
   name: string;
   displayName: string;
+  displayOrder: number;
   componentId?: string;
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;

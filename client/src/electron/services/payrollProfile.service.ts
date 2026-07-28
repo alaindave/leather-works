@@ -24,6 +24,7 @@ export async function initializeEmployeePayrollProfilesForEmployee(
     componentId: component._id,
     name: component.name,
     displayName: component.displayName,
+    displayOrder: component.displayOrder,
     type: component.type,
     calculationType: component.calculationType,
     value: component.defaultValue,
@@ -61,6 +62,7 @@ export async function initializeEmployeePayrollProfiles() {
       await createEmployeePayrollProfile(employee._id, {
         name: component.name,
         displayName: component.displayName,
+        displayOrder: component.displayOrder,
         componentId: component._id,
         type: component.type,
         calculationType: component.calculationType,
@@ -81,6 +83,7 @@ export async function addPayrollComponentToAllEmployees(
       componentId: component._id,
       name: component.name,
       displayName: component.displayName,
+      displayOrder: component.displayOrder,
       type: component.type,
       calculationType: component.calculationType,
       value: component.defaultValue,
@@ -104,13 +107,12 @@ export async function updatePayrollComponentDefaults(
   const profiles = await getAllEmployeePayrollProfiles();
 
   const matchingProfiles = profiles.filter(
-    (profile) =>
-      profile.componentId === component._id &&
-      profile.value === component.defaultValue
+    (profile) => profile.componentId === component._id && !profile.isOverridden
   );
 
   for (const profile of matchingProfiles) {
     profile.displayName = component.displayName;
+    profile.displayOrder = component.displayOrder;
     profile.calculationType = component.calculationType;
     profile.value = component.defaultValue;
     profile.enabled = component.enabled;
@@ -132,8 +134,6 @@ export async function resetEmployeePayrollProfileToDefaults(
     (profile) => profile.employeeId === employeeId
   );
 
-  console.log("EMPLOYEE PAYROLL PROFILES TO RESET FOR", employeeProfiles);
-
   for (const profile of employeeProfiles) {
     const component = components.find((c) => c._id === profile.componentId);
     if (!component) {
@@ -141,10 +141,12 @@ export async function resetEmployeePayrollProfileToDefaults(
     }
 
     profile.displayName = component.displayName;
+    profile.displayOrder = component.displayOrder;
     profile.type = component.type;
     profile.calculationType = component.calculationType;
     profile.value = component.defaultValue;
     profile.enabled = component.enabled;
+    profile.isOverridden = 0;
     profile.isDeleted = component.isDeleted;
     profile.synced = 0;
     profile.updatedAt = new Date().toISOString();

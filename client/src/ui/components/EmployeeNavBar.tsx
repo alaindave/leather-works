@@ -159,10 +159,7 @@ const EmployeeNavBar = () => {
 
           <ListItem marginBottom="10px">
             <HStack position="relative" right="1.4rem">
-              <NavLink
-                className="nav-button"
-                to="/employees_admin/payroll_settings"
-              >
+              <NavLink className="nav-button" to="/employees_admin/payroll">
                 <HStack>
                   <Box ml="1rem">
                     <FaFileSignature size="1.4rem" />

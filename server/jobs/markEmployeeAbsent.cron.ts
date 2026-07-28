@@ -1,7 +1,5 @@
-const cron = require("node-cron");
-const {
-  markAbsentEmployees,
-} = require("../services/markEmployeeAbsent.service");
+import cron from "node-cron";
+import { markAbsentEmployees } from "../services/markEmployeeAbsent.service";
 
 console.log("EMPLOYEE ABSENCE CRON JOB INITIALIZED");
 cron.schedule(

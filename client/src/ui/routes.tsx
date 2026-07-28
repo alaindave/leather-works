@@ -10,9 +10,10 @@ import EmployeeAttendancePage from "./pages/EmployeeAttendancePage";
 import PageErrorFallback from "./pages/PageErrorFallback";
 import EmployeeAttendanceReport from "./pages/EmployeeAttendanceReport";
 import EmployeeLeaveReport from "./pages/EmployeeLeaveReport";
-import PayrollSettingsPage from "./pages/payroll/PayrollSettingsPage";
-import EmployeePayrollReport from "./pages/EmployeePayrollReport";
+import PayrollPage from "./pages/payroll/PayrollPage";
+import EmployeePayslips from "./pages/EmployeePayslips";
 import PayrollEmployeeProfileSettingsPage from "./pages/payroll/PayrollEmployeeProfileSettingsPage";
+import PayrollSettingsPage from "./pages/payroll/PayrollSettingsPage";
 
 const router = createHashRouter([
   {
@@ -62,11 +63,11 @@ const router = createHashRouter([
 
       {
         path: "employees_list/:_id/payslips",
-        element: <EmployeePayrollReport />,
+        element: <EmployeePayslips />,
         errorElement: <PageErrorFallback />,
       },
       {
-        path: "employees_list/:_id/payroll_settings",
+        path: "employees_list/:_id/payslips/settings",
         element: <PayrollEmployeeProfileSettingsPage />,
         errorElement: <PageErrorFallback />,
       },
@@ -83,7 +84,12 @@ const router = createHashRouter([
         errorElement: <PageErrorFallback />,
       },
       {
-        path: "payroll_settings",
+        path: "payroll",
+        element: <PayrollPage />,
+        errorElement: <PageErrorFallback />,
+      },
+      {
+        path: "payroll/settings",
         element: <PayrollSettingsPage />,
         errorElement: <PageErrorFallback />,
       },

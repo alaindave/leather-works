@@ -9,6 +9,7 @@ export default interface PayrollEmployeeProfile {
   componentId: string;
   name: string;
   displayName: string;
+  displayOrder: number;
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;
   percentageOf?: string | null;

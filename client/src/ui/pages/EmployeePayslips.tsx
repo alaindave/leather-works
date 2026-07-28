@@ -1,13 +1,9 @@
-import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import LeaveHistoryTable from "../components/LeaveHistoryTable";
-import { Link, useLocation } from "react-router-dom";
-import Employee from "../../shared/types/Employee";
-import Leave from "../../shared/types/Leave";
-import { MdOutlineChevronRight } from "react-icons/md";
+import { Box, Flex, HStack, Text } from "@chakra-ui/react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { IoSettings } from "react-icons/io5";
-import PayrollEmployeeProfile from "../../shared/types/payroll/PayrollEmployeeProfile";
+import { MdOutlineChevronRight } from "react-icons/md";
+import { Link, useLocation } from "react-router-dom";
+import Employee from "../../shared/types/Employee";
 
 type EmployeeState = {
   employee?: Employee;
@@ -84,7 +80,7 @@ const EmployeePayrollReport = () => {
         </HStack>
         <Link
           to={{
-            pathname: `/employees_admin/employees_list/${employee?._id}/payroll_settings`,
+            pathname: `/employees_admin/employees_list/${employee?._id}/payslips/settings`,
           }}
           state={{ employee, photo_url }}
         >

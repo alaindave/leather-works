@@ -1,6 +1,6 @@
 import PayrollItem from "./PayrollItem.js";
 
-export type PayrollStatus = "DRAFT" | "APPROVED" | "PAID";
+export type PayrollStatus = "BROUILLON" | "APPROUVÉ" | "PAYÉ";
 
 export default interface Payroll {
   _id: string;
