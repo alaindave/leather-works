@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Role } from "../types/JwtPayload";
+import { Role } from "../types/JwtPayload.js";
 
 export default function authorize(role: Role) {
   return (req: Request, res: Response, next: NextFunction): Response | void => {

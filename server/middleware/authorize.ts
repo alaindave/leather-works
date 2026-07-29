@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import type { JwtPayload } from "../types/JwtPayload";
+import type { JwtPayload } from "../types/JwtPayload.js";
 
 export default function authorize(
   req: Request,

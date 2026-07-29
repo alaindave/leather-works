@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { markAbsentEmployees } from "../services/markEmployeeAbsent.service";
+import { markAbsentEmployees } from "../services/markEmployeeAbsent.service.js";
 
 console.log("EMPLOYEE ABSENCE CRON JOB INITIALIZED");
 cron.schedule(

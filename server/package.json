@@ -2,14 +2,12 @@
   "name": "leather-works-node",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
+  "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "nodemon --exec ts-node index.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "nodemon server.js",
-    "client": "npm start --prefix client"
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -38,12 +36,13 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/lodash": "^4.17.24",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.2",
     "concurrently": "^9.2.1",
     "electron-devtools-installer": "^4.0.0",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
-    "typescript": "^7.0.2"
+    "typescript": "^5.7.3"
   }
 }

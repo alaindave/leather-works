@@ -8,6 +8,7 @@ import type Task from "./Task";
 import type AdminUser from "./AdminUser";
 import type TaskRecipient from "./AdminUser";
 import { TaskComment } from "./Task";
+import type { PayrollInput, PayrollResult } from "../../../../shared/payroll";
 
 interface SaveFileResult {
   success: boolean;
@@ -210,6 +211,10 @@ declare global {
         initializeForEmployee(employeeId: string): Promise<void>;
         addComponentToEmployees(component: PayrollComponent): Promise<void>;
         resetToDefaults(employeeId: string): Promise<void>;
+      };
+
+      payroll: {
+        generate(input: PayrollInput): Promise<PayrollResult>;
       };
 
       sync: () => Promise<{

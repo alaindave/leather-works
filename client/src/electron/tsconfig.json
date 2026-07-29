@@ -1,24 +1,22 @@
 {
+  "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    "strict": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    "composite": true,
     "target": "ES2022",
-    "module": "node16",
-    "outDir": "../../dist-electron",
-    "rootDir": "../",
-    "moduleResolution": "node16",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "rootDir": ".",
+    "outDir": "../../../dist-electron",
     "skipLibCheck": true,
     "types": ["node"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-
-  "include": [
-    "./**/*",
-    "../shared/**/*",
-    "../../**/*.d.ts",
-    "../shared/types/global.d.ts"
-  ]
+  "references": [
+    {
+      "path": "../../../shared"
+    }
+  ],
+  "include": ["./**/*.ts", "../../../shared/**/*.ts", "../../../**/*.d.ts"],
+  "exclude": ["node_modules", "../../../dist-electron"]
 }
