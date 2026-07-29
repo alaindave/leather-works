@@ -14,8 +14,8 @@ import { GiClockwork } from "react-icons/gi";
 import { GoDotFill } from "react-icons/go";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { Link } from "react-router-dom";
-import type Attendance from "../../shared/types/Attendance";
-import type Employee from "../../shared/types/Employee";
+import type Attendance from "../../common/types/Attendance";
+import type Employee from "../../common/types/Employee";
 // @ts-ignore
 import { useEffect, useState } from "react";
 import "../styles/App.css";

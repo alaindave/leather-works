@@ -2,8 +2,8 @@ import { Box, Flex, HStack, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import LeaveHistoryTable from "../components/LeaveHistoryTable";
 import { Link, useLocation } from "react-router-dom";
-import Employee from "../../shared/types/Employee";
-import Leave from "../../shared/types/Leave";
+import Employee from "../../common/types/Employee";
+import Leave from "../../common/types/Leave";
 import { MdOutlineChevronRight } from "react-icons/md";
 import { FaArrowLeftLong } from "react-icons/fa6";
 

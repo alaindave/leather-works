@@ -1,6 +1,6 @@
 import { run, get, all } from "../db.js";
 import { randomUUID } from "crypto";
-import Employee from "../../../shared/types/Employee.js";
+import Employee from "../../../common/types/Employee.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import { initializeEmployeePayrollProfilesForEmployee } from "../../services/payrollProfile.service.js";
 

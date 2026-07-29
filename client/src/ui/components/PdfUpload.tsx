@@ -14,7 +14,7 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import { useRef, useState } from "react";
-import { EmployeeDocumentType } from "../../shared/types/EmployeeDocuments";
+import { EmployeeDocumentType } from "../../common/types/EmployeeDocuments";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 

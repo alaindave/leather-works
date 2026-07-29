@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { IoSettings } from "react-icons/io5";
 import { FaSyncAlt } from "react-icons/fa";
 import { useState } from "react";
-import Payroll from "../../../shared/types/payroll/Payroll";
+import Payroll from "../../../common/types/payroll/Payroll";
 
 export default function PayrollPage() {
   const [payslips, setPayslips] = useState<Payroll[]>([]);

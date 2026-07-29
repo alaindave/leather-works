@@ -24,7 +24,7 @@ import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
 import DateDropdown from "../components/DateDropdown";
-import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
+import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee";
 import { FaSyncAlt } from "react-icons/fa";
 
 /* ================= SHIMMER ================= */

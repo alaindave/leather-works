@@ -12,7 +12,7 @@ import { MdOutlineChevronRight } from "react-icons/md";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import PayrollEmployeeProfileList from "./PayrollEmployeeProfileList";
 import { Link, useLocation } from "react-router-dom";
-import Employee from "../../../shared/types/Employee";
+import Employee from "../../../common/types/Employee";
 
 type PhotoState = {
   photo_url?: string;

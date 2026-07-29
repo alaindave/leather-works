@@ -3,8 +3,8 @@ import { app } from "electron";
 import fs from "fs/promises";
 import path from "path";
 import { EMPLOYEE_DOCUMENTS_DIR } from "../storage/directories.js";
-import Employee from "../../shared/types/Employee.js";
-import { EmployeeDocument } from "../../shared/types/EmployeeDocuments.js";
+import Employee from "../../common/types/Employee.js";
+import { EmployeeDocument } from "../../common/types/EmployeeDocuments.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"

@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import Task from "../shared/types/Task";
-import PopulatedTaskComment from "../shared/types/PopulatedTaskComment";
-import User from "../shared/types/User";
+import Task from "../common/types/Task";
+import PopulatedTaskComment from "../common/types/PopulatedTaskComment";
+import User from "../common/types/User";
 
 interface TaskStore {
   tasks: Task[];

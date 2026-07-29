@@ -11,8 +11,8 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FaCirclePlus } from "react-icons/fa6";
-import type Employee from "../../shared/types/Employee";
-import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
+import type Employee from "../../common/types/Employee";
+import { LeaveWithEmployee } from "../../common/types/LeaveWithEmployee";
 import EmployeeLeaveCard from "../components/EmployeeLeaveCard";
 import MonthDropDown from "../components/MonthDropDown";
 import LeaveSubmissionModal from "../components/LeaveSubmissionModal";

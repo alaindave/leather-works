@@ -9,7 +9,7 @@ import {
   ModalCloseButton,
 } from "@chakra-ui/react";
 import PdfUpload from "./PdfUpload";
-import { EmployeeDocumentType } from "../../shared/types/EmployeeDocuments";
+import { EmployeeDocumentType } from "../../common/types/EmployeeDocuments";
 import { useState } from "react";
 
 interface UploadDocumentModalProps {

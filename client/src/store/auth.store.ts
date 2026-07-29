@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import User from "../shared/types/User";
+import User from "../common/types/User";
 
 interface AdminUserStore {
   adminUser: Omit<User, "password">;

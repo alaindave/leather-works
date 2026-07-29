@@ -19,7 +19,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { FiCheckCircle, FiUser } from "react-icons/fi";
-import Task from "../../shared/types/Task";
+import Task from "../../common/types/Task";
 import useAdminUser from "../../store/auth.store";
 import useTaskStore from "../../store/task.store";
 import { useState } from "react";

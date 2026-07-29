@@ -1,4 +1,4 @@
-import type Task from "../../../shared/types/Task.js";
+import type Task from "../../../common/types/Task.js";
 import { all, run } from "../db.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import { randomUUID } from "crypto";

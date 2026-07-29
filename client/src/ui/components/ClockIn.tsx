@@ -16,7 +16,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
+import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee";
 
 interface Props {
   attendance?: AttendanceWithEmployee | null;

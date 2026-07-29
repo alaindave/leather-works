@@ -8,7 +8,7 @@ import {
   EmployeeDocument,
   EmployeeDocumentType,
   UploadedEmployeeDocument,
-} from "../../../shared/types/EmployeeDocuments.js";
+} from "../../../common/types/EmployeeDocuments.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import { getEmployeeById } from "./employees.repository.js";
 

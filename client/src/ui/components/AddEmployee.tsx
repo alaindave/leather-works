@@ -33,7 +33,7 @@ import { LuCircleDollarSign } from "react-icons/lu";
 import { MdFactory, MdOutlineNumbers, MdPerson2, MdWork } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
-import type Employee from "../../shared/types/Employee";
+import type Employee from "../../common/types/Employee";
 import "../styles/App.css";
 registerLocale("fr", fr);
 

@@ -23,7 +23,7 @@ import { Controller, useForm } from "react-hook-form";
 import { FaSave } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
 import { z } from "zod";
-import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
+import { LeaveWithEmployee } from "../../common/types/LeaveWithEmployee";
 
 const errorMessage = "Ce champ est obligatoire";
 

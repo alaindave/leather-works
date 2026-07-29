@@ -1,0 +1,32 @@
+export default interface Employee {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    matricule: string;
+    idNum: string;
+    photo_filename: string | null;
+    photo_path: string | null;
+    photo_url: string | null;
+    photo_version: number | null;
+    photo_hash: string | null;
+    photo_last_modified: string | null;
+    photo_needs_upload: number | null;
+    photo_mime_type: string | null;
+    dateBirth: string;
+    dateHired: string;
+    role: string;
+    department: string;
+    salary: number;
+    remainingLeave: number;
+    status: "ACTIF" | "INACTIF";
+    telephone: string;
+    address: string;
+    emergencyContact: string;
+    relationship: string;
+    contactPhone: string;
+    createdAt: string;
+    updatedAt: string;
+    lastSyncedAt: string | null;
+    synced: number;
+    isDeleted: number;
+}

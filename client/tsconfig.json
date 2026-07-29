@@ -2,9 +2,6 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": true,
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -23,11 +20,8 @@
     "noImplicitReturns": true,
     "types": ["vite/client"]
   },
-
   "include": ["src", "global.d.ts", "vite.config.ts"],
-
   "exclude": ["node_modules", "dist", "src/electron"],
-
   "references": [
     {
       "path": "./tsconfig.node.json"

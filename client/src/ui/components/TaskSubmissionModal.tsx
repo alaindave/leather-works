@@ -34,9 +34,9 @@ import { TiDelete } from "react-icons/ti";
 import { GoTag } from "react-icons/go";
 import { LuFlag } from "react-icons/lu";
 
-import AdminUser from "../../shared/types/AdminUser";
+import AdminUser from "../../common/types/AdminUser";
 import DatePicker from "react-datepicker";
-import User from "../../shared/types/User";
+import User from "../../common/types/User";
 
 interface Props {
   author: Omit<User, "password" | "notes">;

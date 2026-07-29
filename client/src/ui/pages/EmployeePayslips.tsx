@@ -3,7 +3,7 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import { IoSettings } from "react-icons/io5";
 import { MdOutlineChevronRight } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
-import Employee from "../../shared/types/Employee";
+import Employee from "../../common/types/Employee";
 
 type EmployeeState = {
   employee?: Employee;

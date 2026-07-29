@@ -3,7 +3,7 @@ import path from "path";
 import crypto from "crypto";
 import { get, run } from "../db.js";
 import { EMPLOYEE_PHOTO_DIR } from "../../storage/directories.js";
-import Employee from "../../../shared/types/Employee.js";
+import Employee from "../../../common/types/Employee.js";
 import { addToSyncQueue } from "./sync.repository.js";
 
 type UploadFile = {

@@ -5,7 +5,7 @@
     "target": "ES2022",
     "module": "Node16",
     "moduleResolution": "Node16",
-    "rootDir": ".",
+    "rootDir": "..",
     "outDir": "../../../dist-electron",
     "skipLibCheck": true,
     "types": ["node"],
@@ -17,6 +17,11 @@
       "path": "../../../shared"
     }
   ],
-  "include": ["./**/*.ts", "../../../shared/**/*.ts", "../../../**/*.d.ts"],
+  "include": [
+    "./**/*.ts",
+    "../common/**/*.ts",
+    "../../../shared/**/*.ts",
+    "../../../**/*.d.ts"
+  ],
   "exclude": ["node_modules", "../../../dist-electron"]
 }

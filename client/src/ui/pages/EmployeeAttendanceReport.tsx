@@ -8,10 +8,10 @@ import {
   Image,
   Spacer,
 } from "@chakra-ui/react";
-import type Employee from "../../shared/types/Employee";
+import type Employee from "../../common/types/Employee";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { MdOutlineChevronRight } from "react-icons/md";
-import Attendance from "../../shared/types/Attendance";
+import Attendance from "../../common/types/Attendance";
 import { GoDotFill } from "react-icons/go";
 import defaultAvatar from "../assets/default-avatar.jpeg";
 import AttendanceTable from "../components/AttendanceRecordTable";

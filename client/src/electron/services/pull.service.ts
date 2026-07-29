@@ -19,12 +19,12 @@ import {
   markLeaveSynced,
   upsertLeave,
 } from "../database/repositories/leaves.repository.js";
-import Employee from "../../shared/types/Employee.js";
-import Attendance from "../../shared/types/Attendance.js";
-import Leave from "../../shared/types/Leave.js";
-import AdminUser from "../../shared/types/AdminUser.js";
-import Task from "../../shared/types/Task.js";
-import PayrollComponent from "../../shared/types/payroll/PayrollComponent.js";
+import Employee from "../../common/types/Employee.js";
+import Attendance from "../../common/types/Attendance.js";
+import Leave from "../../common/types/Leave.js";
+import AdminUser from "../../common/types/AdminUser.js";
+import Task from "../../common/types/Task.js";
+import PayrollComponent from "../../common/types/payroll/PayrollComponent.js";
 import {
   markTaskSynced,
   upsertTask,
@@ -39,7 +39,7 @@ import {
 } from "../database/repositories/employees_documents.repository.js";
 
 import { downloadEmployeeDocument } from "../util/downloadEmployeeDocument.util.js";
-import { EmployeeDocument } from "../../shared/types/EmployeeDocuments.js";
+import { EmployeeDocument } from "../../common/types/EmployeeDocuments.js";
 import {
   upsertPayrollComponent,
   markPayrollComponentSynced,

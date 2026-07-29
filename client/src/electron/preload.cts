@@ -1,15 +1,15 @@
 const { contextBridge, ipcRenderer } = require("electron");
-type OfflineUser = import("../shared/types/OfflineUser", { with: { "resolution-mode": "require" } }).default;
-type Employee = import("../shared/types/Employee", { with: { "resolution-mode": "require" } }).default;
-type AttendanceWithEmployee = import("../shared/types/AttendanceWithEmployee", { with: { "resolution-mode": "require" } }).default;
-type Leave = import("../shared/types/Leave", { with: { "resolution-mode": "require" } }).default;
-type Task = import("../shared/types/Task", { with: { "resolution-mode": "require" } }).default;
-type EmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
-type UploadedEmployeeDocument=typeof import("../shared/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
-type CreatePayrollComponentDto = import("../shared/types/payroll/CreatePayrollComponentDto", { with: { "resolution-mode": "require" } }).default;
-type CreatePayrollProfileDto = import("../shared/types/payroll/CreatePayrollProfileDto", { with: { "resolution-mode": "require" } }).default;
-type PayrollComponent = import("../shared/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
-type EmployeePayrollProfile = import("../shared/types/payroll/PayrollEmployeeProfile", { with: { "resolution-mode": "require" } }).default;
+type OfflineUser = import("../common/types/OfflineUser", { with: { "resolution-mode": "require" } }).default;
+type Employee = import("../common/types/Employee", { with: { "resolution-mode": "require" } }).default;
+type AttendanceWithEmployee = import("../common/types/AttendanceWithEmployee", { with: { "resolution-mode": "require" } }).default;
+type Leave = import("../common/types/Leave", { with: { "resolution-mode": "require" } }).default;
+type Task = import("../common/types/Task", { with: { "resolution-mode": "require" } }).default;
+type EmployeeDocument=typeof import("../common/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
+type UploadedEmployeeDocument=typeof import("../common/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
+type CreatePayrollComponentDto = import("../common/types/payroll/CreatePayrollComponentDto", { with: { "resolution-mode": "require" } }).default;
+type CreatePayrollProfileDto = import("../common/types/payroll/CreatePayrollProfileDto", { with: { "resolution-mode": "require" } }).default;
+type PayrollComponent = import("../common/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
+type EmployeePayrollProfile = import("../common/types/payroll/PayrollEmployeeProfile", { with: { "resolution-mode": "require" } }).default;
 
 
 interface LoginCredentials {

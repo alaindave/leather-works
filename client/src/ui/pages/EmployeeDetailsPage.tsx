@@ -26,7 +26,7 @@ import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import { FaDollarSign } from "react-icons/fa";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import type Employee from "../../shared/types/Employee";
+import type Employee from "../../common/types/Employee";
 import useAdminUser from "../../store/auth.store";
 import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
 import UpdateEmployee from "../components/UpdateEmployee";
@@ -35,7 +35,7 @@ import NotAuthorized from "../components/NotAuthorized";
 import { CiCalendarDate } from "react-icons/ci";
 import { FaRegClock } from "react-icons/fa";
 import EmployeePhotoUpload from "../components/EmployeePhotoUpload";
-import Attendance from "../../shared/types/Attendance";
+import Attendance from "../../common/types/Attendance";
 
 type PhotoState = {
   photo_url?: string;

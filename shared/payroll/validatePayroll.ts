@@ -1,13 +1,31 @@
-import { PayrollEmployeeInput } from "./types";
+import { PayrollEmployeeInput } from "./types.js";
 
-export function validatePayroll(employee: PayrollEmployeeInput): string[] {
+export interface PayrollValidationResult {
+  valid: boolean;
+  message?: string;
+  errors: string[];
+}
+
+export function validatePayroll(
+  employee: PayrollEmployeeInput
+): PayrollValidationResult {
   const errors: string[] = [];
 
-  if (!employee.employeeId) errors.push("Employee ID is required");
+  if (!employee.employeeId) {
+    errors.push("Employee ID is required");
+  }
 
-  if (employee.baseSalary < 0) errors.push("Salary cannot be negative");
+  if (employee.baseSalary < 0) {
+    errors.push("Salary cannot be negative");
+  }
 
-  if (!employee.components) errors.push("Payroll components are required");
+  if (!employee.components || employee.components.length === 0) {
+    errors.push("Payroll components are required");
+  }
 
-  return errors;
+  return {
+    valid: errors.length === 0,
+    message: errors.join(", "),
+    errors,
+  };
 }

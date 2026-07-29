@@ -10,7 +10,7 @@ import {
   deleteAttendance,
   getAttendanceRecord,
 } from "../database/repositories/attendances.repository.js";
-import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee.js";
+import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee.js";
 
 export function registerAttendanceIPC() {
   console.log("REGISTERING ATTENDANCES IPC");

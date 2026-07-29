@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateComponent = calculateComponent;
-function calculateComponent(component, baseSalary, grossSalary) {
+export function calculateComponent(component, baseSalary, grossSalary) {
     switch (component.calculationType) {
         case "FIXE":
             return component.value;

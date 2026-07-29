@@ -14,8 +14,8 @@ import { memo, useEffect, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
 import ClockIn from "./ClockIn";
-import AttendanceWithEmployee from "../../shared/types/AttendanceWithEmployee";
-import Employee from "../../shared/types/Employee";
+import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee";
+import Employee from "../../common/types/Employee";
 import defaultAvatar from "../assets/default-avatar.jpeg";
 
 interface Props {

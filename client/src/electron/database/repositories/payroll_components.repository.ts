@@ -1,6 +1,6 @@
 import { all, get, run } from "../db.js";
-import PayrollComponent from "../../../shared/types/payroll/PayrollComponent.js";
-import CreatePayrollComponentDto from "../../../shared/types/payroll/CreatePayrollComponentDto.js";
+import PayrollComponent from "../../../common/types/payroll/PayrollComponent.js";
+import CreatePayrollComponentDto from "../../../common/types/payroll/CreatePayrollComponentDto.js";
 import { randomUUID } from "crypto";
 import { addToSyncQueue } from "./sync.repository.js";
 import {

@@ -12,7 +12,7 @@ import { Editable, EditableInput, EditablePreview } from "@chakra-ui/react";
 import { Select } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import PayrollComponent from "../../../shared/types/payroll/PayrollComponent";
+import PayrollComponent from "../../../common/types/payroll/PayrollComponent";
 import AddPayrollComponentModal from "../../components/AddPayrollComponentModal";
 import { FaDeleteLeft } from "react-icons/fa6";
 

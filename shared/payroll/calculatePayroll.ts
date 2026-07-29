@@ -1,6 +1,6 @@
-import { PayrollEmployeeInput, PayrollResult, PayrollItem } from "./types";
+import { PayrollEmployeeInput, PayrollResult, PayrollItem } from "./types.js";
 
-import { calculateComponent } from "./calculateComponent";
+import { calculateComponent } from "./calculateComponent.js";
 
 export function calculatePayroll(
   employee: PayrollEmployeeInput

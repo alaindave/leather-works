@@ -1,4 +1,4 @@
-import AdminUser from "../../../shared/types/AdminUser.js";
+import AdminUser from "../../../common/types/AdminUser.js";
 import { get, all, run } from "../db.js";
 
 export async function upsertAdminUser(adminUser: Partial<AdminUser>) {

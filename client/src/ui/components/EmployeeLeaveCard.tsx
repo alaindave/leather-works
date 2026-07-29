@@ -20,9 +20,9 @@ import { TiDeleteOutline } from "react-icons/ti";
 import { FaRegEdit } from "react-icons/fa";
 import LeaveNotesPopover from "./LeaveNotesPopover";
 import LeaveEdit from "./LeaveEdit";
-import { LeaveWithEmployee } from "../../shared/types/LeaveWithEmployee";
+import { LeaveWithEmployee } from "../../common/types/LeaveWithEmployee";
 import defaultAvatar from "../assets/default-avatar.jpeg";
-import Employee from "../../shared/types/Employee";
+import Employee from "../../common/types/Employee";
 
 interface Props {
   leave: LeaveWithEmployee;

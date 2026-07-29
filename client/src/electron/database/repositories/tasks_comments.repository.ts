@@ -1,8 +1,8 @@
-import TaskComment from "../../../shared/types/TaskComment.js";
+import TaskComment from "../../../common/types/TaskComment.js";
 import { randomUUID } from "crypto";
 import { run, all } from "../db.js";
 import { addToSyncQueue } from "./sync.repository.js";
-import PopulatedTaskComment from "../../../shared/types/PopulatedTaskComment.js";
+import PopulatedTaskComment from "../../../common/types/PopulatedTaskComment.js";
 
 //Create task comment
 export async function createTaskComment(comment: TaskComment) {

@@ -9,7 +9,7 @@ import {
   TableContainer,
   Text,
 } from "@chakra-ui/react";
-import Attendance from "../../shared/types/Attendance";
+import Attendance from "../../common/types/Attendance";
 import { formatLateMinutes } from "./ClockIn";
 
 interface AttendanceTableProps {

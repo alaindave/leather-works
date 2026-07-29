@@ -1,14 +1,18 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.validatePayroll = validatePayroll;
-function validatePayroll(employee) {
+export function validatePayroll(employee) {
     const errors = [];
-    if (!employee.employeeId)
+    if (!employee.employeeId) {
         errors.push("Employee ID is required");
-    if (employee.baseSalary < 0)
+    }
+    if (employee.baseSalary < 0) {
         errors.push("Salary cannot be negative");
-    if (!employee.components)
+    }
+    if (!employee.components || employee.components.length === 0) {
         errors.push("Payroll components are required");
-    return errors;
+    }
+    return {
+        valid: errors.length === 0,
+        message: errors.join(", "),
+        errors,
+    };
 }
 //# sourceMappingURL=validatePayroll.js.map

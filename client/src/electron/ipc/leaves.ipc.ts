@@ -9,7 +9,7 @@ import {
   updateLeave,
   deleteLeave,
 } from "../database/repositories/leaves.repository.js";
-import Leave from "../../shared/types/Leave.js";
+import Leave from "../../common/types/Leave.js";
 
 export function registerLeaveIPC() {
   console.log("REGISTERING LEAVES IPC");

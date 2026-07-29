@@ -1,0 +1,5 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { FormControl, FormLabel, Input, Select, Switch, Button, Stack, } from "@chakra-ui/react";
+export default function PayrollComponentForm() {
+    return (_jsxs(Stack, { spacing: 4, children: [_jsxs(FormControl, { children: [_jsx(FormLabel, { children: "Component Name" }), _jsx(Input, { placeholder: "Transport Allowance" })] }), _jsxs(FormControl, { children: [_jsx(FormLabel, { children: "Calculation Type" }), _jsxs(Select, { children: [_jsx("option", { value: "FIXED", children: "Fixed Amount" }), _jsx("option", { value: "PERCENTAGE", children: "Percentage" }), _jsx("option", { value: "MANUAL", children: "Manual Entry" })] })] }), _jsxs(FormControl, { children: [_jsx(FormLabel, { children: "Default Value" }), _jsx(Input, { type: "number" })] }), _jsxs(FormControl, { display: "flex", children: [_jsx(FormLabel, { children: "Active" }), _jsx(Switch, { defaultChecked: true })] }), _jsx(Button, { colorScheme: "yellow", children: "Save Component" })] }));
+}

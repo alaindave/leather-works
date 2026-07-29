@@ -1,4 +1,4 @@
-import type Leave from "../../../shared/types/Leave.js";
+import type Leave from "../../../common/types/Leave.js";
 import { randomUUID } from "crypto";
 import { all, get, run } from "../db.js";
 import { getEmployeeById } from "./employees.repository.js";

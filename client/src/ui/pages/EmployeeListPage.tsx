@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FaAddressBook } from "react-icons/fa6";
-import type Employee from "../../shared/types/Employee";
+import type Employee from "../../common/types/Employee";
 import useAdminUser from "../../store/auth.store";
 import AddEmployee from "../components/AddEmployee";
 import EmployeeCard from "../components/EmployeeCard";

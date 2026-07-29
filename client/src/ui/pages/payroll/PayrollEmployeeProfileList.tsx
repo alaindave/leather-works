@@ -13,7 +13,7 @@ import { Input } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import AddPayrollEmployeeProfileModal from "../../components/AddPayrollEmployeeProfileModal";
 import { FaDeleteLeft } from "react-icons/fa6";
-import PayrollEmployeeProfile from "../../../shared/types/payroll/PayrollEmployeeProfile";
+import PayrollEmployeeProfile from "../../../common/types/payroll/PayrollEmployeeProfile";
 
 interface Props {
   type: "EARNING" | "DEDUCTION";

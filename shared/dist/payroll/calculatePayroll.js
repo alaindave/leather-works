@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculatePayroll = calculatePayroll;
-const calculateComponent_1 = require("./calculateComponent");
-function calculatePayroll(employee) {
+import { calculateComponent } from "./calculateComponent.js";
+export function calculatePayroll(employee) {
     const earnings = [];
     const deductions = [];
     let grossSalary = employee.baseSalary;
@@ -10,7 +7,7 @@ function calculatePayroll(employee) {
     for (const component of employee.components) {
         if (component.type !== "EARNING")
             continue;
-        const amount = (0, calculateComponent_1.calculateComponent)(component, employee.baseSalary, grossSalary);
+        const amount = calculateComponent(component, employee.baseSalary, grossSalary);
         earnings.push({
             componentId: component._id,
             name: component.name,
@@ -24,7 +21,7 @@ function calculatePayroll(employee) {
     for (const component of employee.components) {
         if (component.type !== "DEDUCTION")
             continue;
-        const amount = (0, calculateComponent_1.calculateComponent)(component, employee.baseSalary, grossSalary);
+        const amount = calculateComponent(component, employee.baseSalary, grossSalary);
         deductions.push({
             componentId: component._id,
             name: component.name,

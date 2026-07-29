@@ -1,4 +1,4 @@
-import { PayrollComponentInput } from "./types";
+import { PayrollComponentInput } from "./types.js";
 
 export function calculateComponent(
   component: PayrollComponentInput,

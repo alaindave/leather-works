@@ -1,15 +1,14 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "rootDir": ".",
     "outDir": "./dist",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "noEmit": false,
-    "composite": true
+    "sourceMap": true
   },
   "include": ["**/*.ts"],
   "exclude": ["dist", "node_modules"]

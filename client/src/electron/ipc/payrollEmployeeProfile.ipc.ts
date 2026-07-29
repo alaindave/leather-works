@@ -1,5 +1,5 @@
 import { IpcMainInvokeEvent, ipcMain } from "electron";
-import EmployeePayrollProfile from "../../shared/types/payroll/PayrollEmployeeProfile.js";
+import EmployeePayrollProfile from "../../common/types/payroll/PayrollEmployeeProfile.js";
 import {
   createEmployeePayrollProfile,
   updateManyEmployeePayrollProfiles,
@@ -26,7 +26,7 @@ import {
   addPayrollComponentToAllEmployees,
   resetEmployeePayrollProfileToDefaults,
 } from "../services/payrollProfile.service.js";
-import CreatePayrollProfileDto from "../../shared/types/payroll/CreatePayrollProfileDto.js";
+import CreatePayrollProfileDto from "../../common/types/payroll/CreatePayrollProfileDto.js";
 
 /* -------------------------------------------------------------------------- */
 /*                                    Repository                                 */

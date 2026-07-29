@@ -19,7 +19,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import CreatePayrollProfileDto from "../../shared/types/payroll/CreatePayrollProfileDto";
+import CreatePayrollProfileDto from "../../common/types/payroll/CreatePayrollProfileDto";
 
 interface Props {
   type: "EARNING" | "DEDUCTION";

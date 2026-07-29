@@ -1,4 +1,4 @@
-import type Attendance from "../../../shared/types/Attendance.js";
+import type Attendance from "../../../common/types/Attendance.js";
 import { randomUUID } from "crypto";
 import { all, get, run } from "../db.js";
 import { getEmployeeById } from "./employees.repository.js";

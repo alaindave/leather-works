@@ -14,7 +14,7 @@ import {
 import {
   EmployeeDocument,
   EmployeeDocumentType,
-} from "../../shared/types/EmployeeDocuments.js";
+} from "../../common/types/EmployeeDocuments.js";
 
 export function registerEmployeeDocumentIPC() {
   console.log("REGISTERING EMPLOYEES DOCUMENTS IPC");

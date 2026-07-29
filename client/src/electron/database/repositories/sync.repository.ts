@@ -1,4 +1,4 @@
-import type SyncQueueItem from "../../../shared/types/SyncQueueItem.js";
+import type SyncQueueItem from "../../../common/types/SyncQueueItem.js";
 import { all, run } from "../db.js";
 
 export async function addToSyncQueue(

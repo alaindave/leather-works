@@ -3,7 +3,7 @@ import {
   createLeaveAttendance,
   getAttendanceRecord,
 } from "../database/repositories/attendances.repository.js";
-import Leave from "../../shared/types/Leave.js";
+import Leave from "../../common/types/Leave.js";
 
 export async function markEmployeesOnLeave() {
   console.log("markEmployeesOnLeave SERVICE INITIATED... ");

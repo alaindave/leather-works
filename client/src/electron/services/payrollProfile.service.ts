@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import EmployeePayrollProfile from "../../shared/types/payroll/PayrollEmployeeProfile.js";
+import EmployeePayrollProfile from "../../common/types/payroll/PayrollEmployeeProfile.js";
 import { getAllEmployees } from "../database/repositories/employees.repository.js";
 import { getEnabledPayrollComponents } from "../database/repositories/payroll_components.repository.js";
 import {
@@ -8,8 +8,8 @@ import {
   getAllEmployeePayrollProfiles,
   updateEmployeePayrollProfile,
 } from "../database/repositories/payrollEmployeeProfile.repository.js";
-import PayrollComponent from "../../shared/types/payroll/PayrollComponent.js";
-import CreatePayrollProfileDto from "../../shared/types/payroll/CreatePayrollProfileDto.js";
+import PayrollComponent from "../../common/types/payroll/PayrollComponent.js";
+import CreatePayrollProfileDto from "../../common/types/payroll/CreatePayrollProfileDto.js";
 
 // Create payroll profiles for a newly created employee.
 export async function initializeEmployeePayrollProfilesForEmployee(

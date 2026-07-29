@@ -1,6 +1,6 @@
 import { VStack, Text, Flex, Box } from "@chakra-ui/react";
 import { TiDeleteOutline } from "react-icons/ti";
-import Task from "../../shared/types/Task";
+import Task from "../../common/types/Task";
 
 interface Props {
   task: Task;

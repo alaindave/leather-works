@@ -22,10 +22,10 @@ import { IoPerson } from "react-icons/io5";
 import { MdAttachMoney, MdWork } from "react-icons/md";
 import { LuPaperclip } from "react-icons/lu";
 import useAdminUser from "../../store/auth.store";
-import type Employee from "../../shared/types/Employee";
+import type Employee from "../../common/types/Employee";
 import EmployeeDetailsCard from "./EmployeeDetailsCard";
 import { useEffect, useState, useRef } from "react";
-import { EmployeeDocument } from "../../shared/types/EmployeeDocuments";
+import { EmployeeDocument } from "../../common/types/EmployeeDocuments";
 import EmployeeDocumentsList from "./EmployeeDocumentsList";
 import UploadDocumentModal from "./UploadDocumentModal";
 
