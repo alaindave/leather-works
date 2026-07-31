@@ -68,7 +68,6 @@ router.post(
 
       for (const item of items) {
         const { queueId, entity, operation, data } = item;
-
         try {
           switch (entity) {
             case "employee":

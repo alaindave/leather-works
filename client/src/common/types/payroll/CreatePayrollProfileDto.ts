@@ -12,4 +12,5 @@ export default interface CreatePayrollProfileDto {
   calculationType: PayrollCalculationType;
   value: number | null;
   percentageOf?: string | null;
+  requiresHRApproval: number | null;
 }

@@ -9,11 +9,12 @@ const defaultPayrollComponents = [
     name: "BASIC_SALARY",
     displayName: "Salaire de base",
     type: "EARNING",
-    calculationType: "MANUEL",
+    calculationType: "FIXE",
     defaultValue: 0,
     isRequired: 1,
     isSystem: 1,
     displayOrder: 1,
+    requiresHRApproval: 0,
   },
 
   {
@@ -24,6 +25,7 @@ const defaultPayrollComponents = [
     defaultValue: 0,
     isSystem: 1,
     displayOrder: 2,
+    requiresHRApproval: 1,
   },
 
   {
@@ -34,6 +36,7 @@ const defaultPayrollComponents = [
     defaultValue: 0,
     isSystem: 1,
     displayOrder: 3,
+    requiresHRApproval: 1,
   },
 
   {
@@ -44,6 +47,7 @@ const defaultPayrollComponents = [
     defaultValue: 50000,
     isSystem: 1,
     displayOrder: 4,
+    requiresHRApproval: 0,
   },
 
   {
@@ -54,6 +58,7 @@ const defaultPayrollComponents = [
     defaultValue: 30000,
     isSystem: 1,
     displayOrder: 5,
+    requiresHRApproval: 0,
   },
 
   {
@@ -64,6 +69,7 @@ const defaultPayrollComponents = [
     defaultValue: 15000,
     isSystem: 1,
     displayOrder: 6,
+    requiresHRApproval: 0,
   },
 
   {
@@ -72,8 +78,10 @@ const defaultPayrollComponents = [
     type: "EARNING",
     calculationType: "MANUEL",
     defaultValue: 0,
+    percentageOf: "GROSS_SALARY",
     isSystem: 1,
     displayOrder: 7,
+    requiresHRApproval: 1,
   },
 
   // ==========================
@@ -86,9 +94,10 @@ const defaultPayrollComponents = [
     type: "DEDUCTION",
     calculationType: "POURCENTAGE",
     defaultValue: 0,
-    percentageOf: "GROSS_PAY",
+    percentageOf: "GROSS_SALARY",
     isSystem: 1,
     displayOrder: 101,
+    requiresHRApproval: 0,
   },
 
   {
@@ -97,29 +106,32 @@ const defaultPayrollComponents = [
     type: "DEDUCTION",
     calculationType: "POURCENTAGE",
     defaultValue: 0,
-    percentageOf: "GROSS_PAY",
+    percentageOf: "GROSS_SALARY",
     isSystem: 1,
     displayOrder: 102,
+    requiresHRApproval: 0,
   },
 
   {
     name: "LOAN",
     displayName: "Remboursement de prêt",
     type: "DEDUCTION",
-    calculationType: "MANUEL",
+    calculationType: "FIXE",
     defaultValue: 0,
     isSystem: 1,
     displayOrder: 103,
+    requiresHRApproval: 1,
   },
 
   {
     name: "ABSENCE",
     displayName: "Retenue pour absence",
     type: "DEDUCTION",
-    calculationType: "MANUEL",
+    calculationType: "FIXE",
     defaultValue: 0,
     isSystem: 1,
     displayOrder: 104,
+    requiresHRApproval: 1,
   },
 
   {
@@ -130,6 +142,7 @@ const defaultPayrollComponents = [
     defaultValue: 0,
     isSystem: 1,
     displayOrder: 105,
+    requiresHRApproval: 1,
   },
 ];
 async function seedPayrollComponents() {

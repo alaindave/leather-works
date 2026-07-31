@@ -5,16 +5,21 @@ import {
 
 export default interface PayrollEmployeeProfile {
   _id?: string;
-  employeeId?: string;
+  employeeId: string;
   componentId: string;
   name: string;
   displayName: string;
   displayOrder: number;
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;
-  percentageOf?: string | null;
+  percentageOf?:
+    | "BASIC_SALARY"
+    | "GROSS_SALARY"
+    | "TOTAL_EARNINGS"
+    | "TAXABLE_AMOUNT";
   value: number | null;
   isOverridden?: number;
+  requiresHRApproval: number;
   enabled?: number;
   synced?: number;
   createdAt?: string;

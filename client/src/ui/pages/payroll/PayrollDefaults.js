@@ -1,5 +1,0 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { Box, FormControl, FormLabel, Input, Select, Switch, Stack, } from "@chakra-ui/react";
-export default function PayrollDefaults() {
-    return (_jsx(Box, { children: _jsxs(Stack, { spacing: 5, children: [_jsxs(FormControl, { children: [_jsx(FormLabel, { children: "Monnaie" }), _jsxs(Select, { children: [_jsx("option", { children: "BIF" }), _jsx("option", { children: "RWF" }), _jsx("option", { children: "KSH" }), _jsx("option", { children: "USD" }), _jsx("option", { children: "EURO" })] })] }), _jsxs(FormControl, { children: [_jsx(FormLabel, { children: "Jour de paie" }), _jsx(Input, { type: "number", placeholder: "30" })] }), _jsxs(FormControl, { children: [_jsx(FormLabel, { children: "Jours ouvrables par mois" }), _jsx(Input, { defaultValue: 26 })] }), _jsxs(FormControl, { display: "flex", children: [_jsx(FormLabel, { children: "G\u00E9n\u00E9rer fiches de paye automatiquement" }), _jsx(Switch, { defaultChecked: true })] })] }) }));
-}

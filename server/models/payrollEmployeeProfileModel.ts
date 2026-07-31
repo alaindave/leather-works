@@ -8,6 +8,7 @@ export interface EmployeePayrollProfileDocument {
   type: "EARNING" | "DEDUCTION";
   calculationType: "FIXE" | "MANUEL" | "POURCENTAGE";
   value: number;
+  requiresHRApproval: number;
   enabled: number;
   isOverridden: number;
   synced: number;
@@ -55,6 +56,11 @@ const EmployeePayrollProfileSchema = new Schema<EmployeePayrollProfileDocument>(
     },
 
     value: {
+      type: Number,
+      default: 0,
+    },
+
+    requiresHRApproval: {
       type: Number,
       default: 0,
     },

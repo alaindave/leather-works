@@ -12,10 +12,12 @@ export async function createPayrollTables() {
       calculationType TEXT NOT NULL
         CHECK(calculationType IN ('FIXE','POURCENTAGE','MANUEL'))
         DEFAULT 'MANUEL',
-      percentageOf TEXT,
+      percentageOf TEXT
+        CHECK(percentageOf IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_AMOUNT')),
       defaultValue REAL DEFAULT 0,
       displayOrder INTEGER NOT NULL,
       isSystem INTEGER NOT NULL DEFAULT 1,
+      requiresHRApproval INTEGER NOT NULL DEFAULT 0,
       enabled INTEGER NOT NULL DEFAULT 1,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
@@ -26,33 +28,86 @@ export async function createPayrollTables() {
   `);
 
   await run(`
-    CREATE TABLE IF NOT EXISTS payrolls (
+    CREATE TABLE IF NOT EXISTS payroll_employee_profiles (
       _id TEXT PRIMARY KEY,
       employeeId TEXT NOT NULL,
-      generatedBy TEXT,
+      componentId TEXT NOT NULL,
+      name TEXT NOT NULL,
+      displayName TEXT NOT NULL,
+      displayOrder INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      calculationType TEXT NOT NULL
+        CHECK(calculationType IN ('FIXE','POURCENTAGE','MANUEL'))
+        DEFAULT 'MANUEL',
+      value REAL,
+      isOverridden INTEGER DEFAULT 0,
+      requiresHRApproval INTEGER NOT NULL DEFAULT 0,
+      percentageOf TEXT
+        CHECK(percentageOf IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_AMOUNT')),
+      enabled INTEGER DEFAULT 1,
+      createdAt TEXT,
+      updatedAt TEXT,
+      lastSyncedAt Text,
+      synced INTEGER DEFAULT 0,
+      isDeleted INTEGER DEFAULT 0,
+
+      FOREIGN KEY(employeeId)
+        REFERENCES employees(_id)
+        ON DELETE CASCADE,
+
+      FOREIGN KEY(componentId)
+        REFERENCES payroll_components(_id)
+        ON DELETE CASCADE
+    );
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS payroll_runs (
+      _id TEXT PRIMARY KEY,
+      generatedBy TEXT NOT NULL,
       month INTEGER NOT NULL,
       year INTEGER NOT NULL,
-      grossSalary REAL NOT NULL DEFAULT 0,
-      totalDeductions REAL NOT NULL DEFAULT 0,
-      netSalary REAL NOT NULL DEFAULT 0,
-      notes TEXT,
       status TEXT NOT NULL
-        CHECK(status IN ('BROUILLON','APPROUVÉ','PAYÉ'))
+        CHECK(status IN ('BROUILLON','EN_VERIFICATION','APPROUVÉ','PAYÉ','ANNULÉ'))
         DEFAULT 'BROUILLON',
       synced INTEGER NOT NULL DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(employeeId) REFERENCES employees(_id),
+
       FOREIGN KEY(generatedBy) REFERENCES admin_users(_id)
     );
   `);
 
   await run(`
+    CREATE TABLE IF NOT EXISTS payroll_results (
+      _id TEXT PRIMARY KEY,
+      payrollRunId TEXT NOT NULL,
+      employeeId TEXT NOT NULL,
+      grossSalary REAL NOT NULL DEFAULT 0,
+      totalDeductions REAL NOT NULL DEFAULT 0,
+      netSalary REAL NOT NULL DEFAULT 0,
+      synced INTEGER NOT NULL DEFAULT 0,
+      isDeleted INTEGER NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL,
+      lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+      FOREIGN KEY(payrollRunId)
+        REFERENCES payroll_runs(_id)
+        ON DELETE CASCADE,
+
+      FOREIGN KEY(employeeId)
+        REFERENCES employees(_id)
+   );
+`);
+
+  await run(`
     CREATE TABLE IF NOT EXISTS payroll_items (
       _id TEXT PRIMARY KEY,
-      payrollId TEXT NOT NULL,
+      employeeId TEXT NOT NULL,
+      payrollResultId TEXT NOT NULL,
       componentId TEXT NOT NULL,
       name TEXT NOT NULL,
       type TEXT NOT NULL
@@ -63,81 +118,56 @@ export async function createPayrollTables() {
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(payrollId)
-        REFERENCES payrolls(_id)
-        ON DELETE CASCADE,
+
+      FOREIGN KEY (employeeId)
+         REFERENCES employees(_id),
+      FOREIGN KEY (payrollResultId)
+         REFERENCES payroll_results(_id)
+         ON DELETE CASCADE,
       FOREIGN KEY(componentId)
         REFERENCES payroll_components(_id)
-    );
-  `);
-
-  await run(`
-    CREATE TABLE IF NOT EXISTS employee_payroll_profiles (
-    _id TEXT PRIMARY KEY,
-    employeeId TEXT NOT NULL,
-    componentId TEXT NOT NULL,
-    name TEXT NOT NULL,
-    displayName TEXT NOT NULL,
-    displayOrder INTEGER NOT NULL,
-    type TEXT NOT NULL,
-    calculationType TEXT NOT NULL,
-    value REAL,
-    isOverridden INTEGER DEFAULT 0,
-    enabled INTEGER DEFAULT 1,
-    createdAt TEXT,
-    updatedAt TEXT,
-    lastSyncedAt Text,
-    synced INTEGER DEFAULT 0,
-    isDeleted INTEGER DEFAULT 0
-
-);
     );
   `);
 
   // Creating Index
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_components_type
-    ON payroll_components(type);
+      ON payroll_components(type);
   `);
 
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_components_synced
-    ON payroll_components(synced);
-  `);
-
-  await run(`
-    CREATE INDEX IF NOT EXISTS idx_payroll_employee
-    ON payrolls(employeeId);
+      ON payroll_components(synced);
   `);
 
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_period
-    ON payrolls(month, year);
+      ON payroll_runs(month, year);
   `);
 
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_synced
-    ON payrolls(synced);
+      ON payroll_runs(synced);
   `);
 
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_items_payroll
-    ON payroll_items(payrollId);
+      ON payroll_items(payrollResultId);
   `);
 
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_items_component
-    ON payroll_items(componentId);
+      ON payroll_items(componentId);
   `);
 
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_items_type
-    ON payroll_items(type);
+      ON payroll_items(type);
   `);
 
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_items_synced
-    ON payroll_items(synced);
+      ON payroll_items(synced);
   `);
 
   console.log("PAYROLL TABLES INITIALIZED");

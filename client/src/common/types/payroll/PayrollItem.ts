@@ -2,7 +2,7 @@ import { PayrollComponentType } from "./PayrollComponent.js";
 
 export default interface PayrollItem {
   _id: string;
-  payrollId: string;
+  payrollResultId: string;
   componentId: string;
   name: string;
   type: PayrollComponentType;

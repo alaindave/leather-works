@@ -24,7 +24,7 @@ export interface PayrollDocument {
   netSalary: number;
   notes: string;
   generatedBy?: string;
-  status: "BROUILLON" | "APPROUVÉ" | "PAYÉ";
+  status: "BROUILLON" | "EN_VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
   isDeleted: number;
   lastSyncedAt: Date;
   createdAt: Date;

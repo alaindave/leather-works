@@ -11,4 +11,5 @@ export default interface CreatePayrollComponentDto {
   displayOrder: number;
   defaultValue: number;
   percentageOf?: string | null;
+  requiresHRApproval: number | null;
 }

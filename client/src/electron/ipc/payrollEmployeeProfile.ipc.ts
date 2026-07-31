@@ -18,7 +18,7 @@ import {
   employeePayrollProfileExists,
   countEmployeePayrollProfiles,
   createManyEmployeePayrollProfiles,
-} from "../database/repositories/payrollEmployeeProfile.repository.js";
+} from "../database/repositories/payroll_employee_profile.repository.js";
 
 import {
   initializeEmployeePayrollProfiles,

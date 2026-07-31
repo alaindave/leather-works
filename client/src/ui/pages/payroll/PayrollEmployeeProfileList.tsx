@@ -180,7 +180,7 @@ export default function PayrollEmployeeProfileList({
                   size="sm"
                   mt={2}
                   value={item.calculationType}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setProfiles((prev) =>
                       prev.map((profile) =>
                         profile._id === item._id
@@ -194,44 +194,42 @@ export default function PayrollEmployeeProfileList({
                             }
                           : profile
                       )
-                    )
-                  }
+                    );
+                  }}
                 >
                   <option value="FIXE">Montant fixe</option>
                   <option value="MANUEL">Manuel</option>
                   <option value="POURCENTAGE">Pourcentage</option>
                 </Select>
               </Box>
-              {item.calculationType === "POURCENTAGE" ||
-              item.calculationType === "FIXE" ? (
-                <Box>
-                  <Text fontSize="xs" color="gray.500">
-                    {item.calculationType === "POURCENTAGE"
-                      ? "Pourcentage"
-                      : "Montant"}
-                  </Text>
-                  <Input
-                    size="sm"
-                    type="number"
-                    value={item.value ?? ""}
-                    onChange={(e) =>
-                      setProfiles((prev) =>
-                        prev.map((profile) =>
-                          profile._id === item._id
-                            ? {
-                                ...profile,
-                                value:
-                                  e.target.value === ""
-                                    ? null
-                                    : Number(e.target.value),
-                              }
-                            : profile
-                        )
+
+              <Box>
+                <Text fontSize="xs" color="gray.500">
+                  {item.calculationType === "POURCENTAGE"
+                    ? "Pourcentage"
+                    : "Montant"}
+                </Text>
+                <Input
+                  size="sm"
+                  type="number"
+                  value={item.value ?? 0}
+                  onChange={(e) => {
+                    setProfiles((prev) =>
+                      prev.map((profile) =>
+                        profile._id === item._id
+                          ? {
+                              ...profile,
+                              value:
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value),
+                            }
+                          : profile
                       )
-                    }
-                  />
-                </Box>
-              ) : null}
+                    );
+                  }}
+                />
+              </Box>
             </Box>
             <Box>
               <Box

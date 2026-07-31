@@ -27,6 +27,7 @@ export async function createPayrollComponent(
         defaultValue,
         percentageOf,
         isSystem,
+        requiresHRApproval,
         enabled,
         synced,
         createdAt,
@@ -34,7 +35,7 @@ export async function createPayrollComponent(
         lastSyncedAt,
         isDeleted
       )
-      VALUES (?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?,?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
     [
       _id,
@@ -46,6 +47,7 @@ export async function createPayrollComponent(
       component.defaultValue,
       component.percentageOf,
       0,
+      component.requiresHRApproval ?? 0,
       1,
       0,
       now,
@@ -79,6 +81,7 @@ export async function createPayrollComponent(
 }
 
 export async function upsertPayrollComponent(component: PayrollComponent) {
+  console.log("COMPONENT TO UPSERT", component);
   await run(
     `
     INSERT INTO payroll_components (
@@ -91,6 +94,7 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       percentageOf,
       displayOrder,
       isSystem,
+      requiresHRApproval,
       enabled,
       synced,
       createdAt,
@@ -99,7 +103,7 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       isDeleted
     )
 
-    VALUES (?, ?, ?, ?, ?, ?,?, ?,?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?,?,?, ?,?, ?, ?, ?, ?, ?, ?)
 
     ON CONFLICT(_id)
     DO UPDATE SET
@@ -112,6 +116,7 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       percentageOf = excluded.percentageOf,
       displayOrder = excluded.displayOrder,
       isSystem = excluded.isSystem,
+      requiresHRApproval = excluded.requiresHRApproval,
       enabled = excluded.enabled,
       synced = excluded.synced,
       createdAt = excluded.createdAt,
@@ -130,6 +135,7 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       component.percentageOf,
       component.displayOrder,
       component.isSystem,
+      component.requiresHRApproval,
       component.enabled,
       component.synced,
       component.createdAt,
@@ -227,6 +233,7 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
       calculationType = ?,
       defaultValue = ?,
       percentageOf = ?,
+      requiresHRApproval=?,
       enabled = ?,
       synced = 0,
       updatedAt = CURRENT_TIMESTAMP
@@ -241,6 +248,7 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
         component.calculationType,
         component.defaultValue,
         component.percentageOf,
+        component.requiresHRApproval,
         component.enabled,
         component._id,
       ]

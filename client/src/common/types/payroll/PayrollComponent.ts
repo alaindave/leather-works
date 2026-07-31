@@ -10,7 +10,12 @@ export default interface PayrollComponent {
   calculationType: PayrollCalculationType;
   defaultValue: number | null;
   displayOrder: number;
-  percentageOf?: string | null;
+  percentageOf?:
+    | "BASIC_SALARY"
+    | "GROSS_SALARY"
+    | "TOTAL_EARNINGS"
+    | "TAXABLE_AMOUNT";
+  requiresHRApproval: number;
   enabled: number;
   isSystem: number;
   synced: number;

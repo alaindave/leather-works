@@ -4,11 +4,16 @@ export interface PayrollComponentDocument {
   name: string;
   displayName: string;
   type: "EARNING" | "DEDUCTION";
-  calculationType: "FIXE" | "POURCENTAGE" | "MANUEL";
+  calculationType: "FIXE" | "POURCENTAGE" | "MANUAL";
   defaultValue: number;
   displayOrder: number;
   isSystem: number;
-  percentageOf: string | null;
+  percentageOf:
+    | "BASIC_SALARY"
+    | "GROSS_SALARY"
+    | "TOTAL_EARNINGS"
+    | " TAXABLE_AMOUNT";
+  requiresHRApproval: number | null;
   enabled: number;
   createdAt: Date;
   updatedAt: Date;
@@ -36,7 +41,7 @@ const PayrollComponentSchema = new Schema<PayrollComponentDocument>({
   calculationType: {
     type: String,
     enum: ["FIXE", "POURCENTAGE", "MANUEL"],
-    default: "MANUEL",
+    default: "FIXE",
   },
 
   defaultValue: {
@@ -56,7 +61,12 @@ const PayrollComponentSchema = new Schema<PayrollComponentDocument>({
 
   percentageOf: {
     type: String,
-    default: null,
+    enum: ["BASIC_SALARY", "GROSS_SALARY", "TOTAL_EARNINGS", "TAXABLE_AMOUNT"],
+  },
+
+  requiresHRApproval: {
+    type: Number,
+    default: 0,
   },
 
   enabled: {

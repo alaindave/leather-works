@@ -7,7 +7,7 @@ export default interface Leave {
   endDate: string;
   subject: string;
   notes: string;
-  status: string;
+  status: "ATTENTE_APPROBATION" | "APPROUVÉ" | "REFUSÉ" | "ANNULÉ";
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;

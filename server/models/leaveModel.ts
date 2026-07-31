@@ -9,7 +9,7 @@ export interface LeaveDocument {
   endDate: Date;
   subject: string;
   notes: string;
-  status: "EN ATTENTE D'APPROBATION" | "APPROUVÉ" | "REFUSÉ" | "ANNULÉ";
+  status: "ATTENTE_APPROBATION" | "APPROUVÉ" | "REFUSÉ" | "ANNULÉ";
   isDeleted: number;
   createdAt: Date;
   updatedAt: Date;
@@ -58,8 +58,8 @@ const leaveSchema = new Schema<LeaveDocument>({
 
   status: {
     type: String,
-    enum: ["EN ATTENTE D'APPROBATION", "APPROUVÉ", "REFUSÉ", "ANNULÉ"],
-    default: "EN ATTENTE D'APPROBATION",
+    enum: ["ATTENTE_APPROBATION", "APPROUVÉ", "REFUSÉ", "ANNULÉ"],
+    default: "ATTENTE_APPROBATION",
   },
 
   isDeleted: {

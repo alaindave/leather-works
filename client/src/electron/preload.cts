@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 type OfflineUser = import("../common/types/OfflineUser", { with: { "resolution-mode": "require" } }).default;
 type Employee = import("../common/types/Employee", { with: { "resolution-mode": "require" } }).default;
+type AdminUser = import("../common/types/AdminUser", { with: { "resolution-mode": "require" } }).default;
 type AttendanceWithEmployee = import("../common/types/AttendanceWithEmployee", { with: { "resolution-mode": "require" } }).default;
 type Leave = import("../common/types/Leave", { with: { "resolution-mode": "require" } }).default;
 type Task = import("../common/types/Task", { with: { "resolution-mode": "require" } }).default;
@@ -10,7 +11,9 @@ type CreatePayrollComponentDto = import("../common/types/payroll/CreatePayrollCo
 type CreatePayrollProfileDto = import("../common/types/payroll/CreatePayrollProfileDto", { with: { "resolution-mode": "require" } }).default;
 type PayrollComponent = import("../common/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
 type EmployeePayrollProfile = import("../common/types/payroll/PayrollEmployeeProfile", { with: { "resolution-mode": "require" } }).default;
-
+// type PayrollRun =import("../common/types/payroll/Payroll",{ with: { "resolution-mode": "require" } }).default;
+// type PayrollResultRecord =import("../common/types/payroll/Payroll",{ with: { "resolution-mode": "require" } }).default;
+// type PayrollStatus =import("../common/types/payroll/Payroll",{ with: { "resolution-mode": "require" } }).default;
 
 interface LoginCredentials {
   email: string;
@@ -376,5 +379,92 @@ payrollEmployeeProfiles: {
       employeeId
     ),
 },
+
+payrollRun:{
+
+   createPayrollDraft: (
+    month: number,
+    year: number,
+    admin:AdminUser
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:createDraft",
+      month,
+      year,
+      admin
+    );
+  },
+
+   processPayroll: (
+    month: number,
+    year: number,
+    admin:AdminUser
+
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:process",
+      month,
+      year,
+      admin
+    );
+  },
+
+  getPayrollRuns: () => {
+    return ipcRenderer.invoke(
+      "payroll:getRuns"
+    );
+  },
+
+  getPayrollRunById: (
+    id: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:getRunById",
+      id
+    );
+  },
+
+
+  updatePayrollStatus: (
+    id: string,
+    status: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:updateStatus",
+      id,
+      status
+    );
+  },
+
+ 
+  getPayrollResults: (
+    payrollRunId: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:getResults",
+      payrollRunId
+    );
+  },
+
+  getPayrollItems: (
+    payrollRunId: string,
+    employeeId?: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:getItems",
+      payrollRunId,
+      employeeId
+    );
+  },
+
+  deletePayrollRun: (
+    payrollRunId: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:deleteRun",
+      payrollRunId
+    );
+  },
+}
 
 }) satisfies Window["electron"];
