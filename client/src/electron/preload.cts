@@ -380,31 +380,13 @@ payrollEmployeeProfiles: {
     ),
 },
 
-payrollRun:{
+payrollRun: {
 
-   createPayrollDraft: (
-    month: number,
-    year: number,
-    admin:AdminUser
+  createPayrollDraft: (
+    admin: AdminUser
   ) => {
     return ipcRenderer.invoke(
       "payroll:createDraft",
-      month,
-      year,
-      admin
-    );
-  },
-
-   processPayroll: (
-    month: number,
-    year: number,
-    admin:AdminUser
-
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:process",
-      month,
-      year,
       admin
     );
   },
@@ -424,24 +406,72 @@ payrollRun:{
     );
   },
 
-
-  updatePayrollStatus: (
-    id: string,
-    status: string
+  // BROUILLON → EN_VERIFICATION
+  submitForVerification: (
+    payrollRunId: string
   ) => {
     return ipcRenderer.invoke(
-      "payroll:updateStatus",
-      id,
-      status
+      "payroll:submitForVerification",
+      payrollRunId
     );
   },
 
- 
+  // EN_VERIFICATION → BROUILLON
+  returnToDraft: (
+    payrollRunId: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:returnToDraft",
+      payrollRunId
+    );
+  },
+
+  // EN_VERIFICATION → APPROUVÉ
+  approvePayroll: (
+    payrollRunId: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:approve",
+      payrollRunId
+    );
+  },
+
+  // APPROUVÉ → PAYÉ
+  markPayrollAsPaid: (
+    payrollRunId: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:markAsPaid",
+      payrollRunId
+    );
+  },
+
+  // BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
+  cancelPayroll: (
+    payrollRunId: string
+  ) => {
+    return ipcRenderer.invoke(
+      "payroll:cancel",
+      payrollRunId
+    );
+  },
+
   getPayrollResults: (
     payrollRunId: string
   ) => {
     return ipcRenderer.invoke(
       "payroll:getResults",
+      payrollRunId
+    );
+  },
+
+  getEmployeePayrollResults:(
+  employeeId: string,
+  payrollRunId?: string,
+)=> {
+    return ipcRenderer.invoke(
+      "payroll:getEmployeeResults",
+      employeeId,
       payrollRunId
     );
   },

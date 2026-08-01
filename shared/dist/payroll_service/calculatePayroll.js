@@ -1,11 +1,14 @@
 import { calculateComponent } from "./calculateComponent.js";
-/**
- * Calculate payroll for a single employee
- */
+//Calculate payroll for one employee
 export function calculatePayroll(employee, admin) {
     const earnings = [];
     const deductions = [];
     let grossSalary = employee.baseSalary;
+    let totalEarnings = 0;
+    let totalDeductions = 0;
+    const date = new Date();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
     // First calculate earnings
     for (const component of employee.components) {
         if (component.type !== "EARNING")
@@ -17,10 +20,9 @@ export function calculatePayroll(employee, admin) {
             type: component.type,
             amount,
         });
+        totalEarnings += amount;
         grossSalary += amount;
     }
-    // Calculate deductions
-    let totalDeductions = 0;
     for (const component of employee.components) {
         if (component.type !== "DEDUCTION")
             continue;
@@ -36,27 +38,30 @@ export function calculatePayroll(employee, admin) {
     return {
         employeeId: employee.employeeId,
         generatedBy: admin._id,
+        month,
+        year,
+        baseSalary: employee.baseSalary,
+        grossSalary,
         earnings,
         deductions,
-        grossSalary,
+        totalEarnings,
         totalDeductions,
         netSalary: grossSalary - totalDeductions,
+        status: "BROUILLON",
     };
 }
-/**
- * Calculate payroll for all employees
- */
+//Calculate payroll for all employees
 export function calculatePayrolls(employees, admin) {
     return employees.map((employee) => calculatePayroll(employee, admin));
 }
-/**
- * Calculate payrolls and return company totals
- */
+//Calculate payroll and return summary
 export function calculatePayrollsWithSummary(employees, admin) {
     const results = calculatePayrolls(employees, admin);
     return {
         results,
-        totalGrossSalary: results.reduce((sum, result) => sum + result.grossSalary, 0),
+        employeeCount: results.length,
+        totalBasicSalary: results.reduce((sum, result) => sum + result.baseSalary, 0),
+        totalEarnings: results.reduce((sum, result) => sum + result.totalEarnings, 0),
         totalDeductions: results.reduce((sum, result) => sum + result.totalDeductions, 0),
         totalNetSalary: results.reduce((sum, result) => sum + result.netSalary, 0),
     };

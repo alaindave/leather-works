@@ -2,12 +2,11 @@ import AdminUser, {
   PayrollEmployeeInput,
   PayrollResult,
   PayrollItem,
+  PayrollBatchResult,
 } from "./types.js";
 import { calculateComponent } from "./calculateComponent.js";
 
-/**
- * Calculate payroll for a single employee
- */
+//Calculate payroll for one employee
 export function calculatePayroll(
   employee: PayrollEmployeeInput,
   admin: AdminUser
@@ -15,6 +14,11 @@ export function calculatePayroll(
   const earnings: PayrollItem[] = [];
   const deductions: PayrollItem[] = [];
   let grossSalary = employee.baseSalary;
+  let totalEarnings = 0;
+  let totalDeductions = 0;
+  const date = new Date();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
 
   // First calculate earnings
   for (const component of employee.components) {
@@ -32,12 +36,9 @@ export function calculatePayroll(
       type: component.type,
       amount,
     });
-
+    totalEarnings += amount;
     grossSalary += amount;
   }
-
-  // Calculate deductions
-  let totalDeductions = 0;
 
   for (const component of employee.components) {
     if (component.type !== "DEDUCTION") continue;
@@ -61,17 +62,20 @@ export function calculatePayroll(
   return {
     employeeId: employee.employeeId,
     generatedBy: admin._id,
+    month,
+    year,
+    baseSalary: employee.baseSalary,
+    grossSalary,
     earnings,
     deductions,
-    grossSalary,
+    totalEarnings,
     totalDeductions,
     netSalary: grossSalary - totalDeductions,
+    status: "BROUILLON",
   };
 }
 
-/**
- * Calculate payroll for all employees
- */
+//Calculate payroll for all employees
 export function calculatePayrolls(
   employees: PayrollEmployeeInput[],
   admin: AdminUser
@@ -79,22 +83,7 @@ export function calculatePayrolls(
   return employees.map((employee) => calculatePayroll(employee, admin));
 }
 
-/**
- * Optional summary helper
- */
-export interface PayrollBatchResult {
-  results: PayrollResult[];
-
-  totalGrossSalary: number;
-
-  totalDeductions: number;
-
-  totalNetSalary: number;
-}
-
-/**
- * Calculate payrolls and return company totals
- */
+//Calculate payroll and return summary
 export function calculatePayrollsWithSummary(
   employees: PayrollEmployeeInput[],
   admin: AdminUser
@@ -103,17 +92,19 @@ export function calculatePayrollsWithSummary(
 
   return {
     results,
-
-    totalGrossSalary: results.reduce(
-      (sum, result) => sum + result.grossSalary,
+    employeeCount: results.length,
+    totalBasicSalary: results.reduce(
+      (sum, result) => sum + result.baseSalary,
       0
     ),
-
+    totalEarnings: results.reduce(
+      (sum, result) => sum + result.totalEarnings,
+      0
+    ),
     totalDeductions: results.reduce(
       (sum, result) => sum + result.totalDeductions,
       0
     ),
-
     totalNetSalary: results.reduce((sum, result) => sum + result.netSalary, 0),
   };
 }

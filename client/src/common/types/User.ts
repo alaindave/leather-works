@@ -4,6 +4,6 @@ export default interface User {
   lastName: string;
   email: string;
   password: string;
-  role: "manager" | "admin";
+  role: "MANAGER" | "ADMIN";
   notes: string;
 }

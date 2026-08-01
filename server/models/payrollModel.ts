@@ -20,6 +20,7 @@ export interface PayrollDocument {
   earnings: PayrollItemDocument[];
   deductions: PayrollItemDocument[];
   grossSalary: number;
+  totalEarnings: number;
   totalDeductions: number;
   netSalary: number;
   notes: string;
@@ -27,6 +28,12 @@ export interface PayrollDocument {
   status: "BROUILLON" | "EN_VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
   isDeleted: number;
   lastSyncedAt: Date;
+  approvedAt?: string;
+  paidAt?: string;
+  cancelledAt?: string;
+  approvedBy?: string;
+  paidBy?: string;
+  cancelledBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }

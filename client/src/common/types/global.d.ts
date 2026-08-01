@@ -218,27 +218,39 @@ declare global {
       };
 
       payrollRun: {
-        createPayrollDraft(
-          month: number,
-          year: number,
-          admin: AdminUser
-        ): Promise<PayrollRun>;
-        processPayroll(
-          month: number,
-          year: number,
-          admin: AdminUser
-        ): Promise<{
-          payrollRun: PayrollRun;
-          results: PayrollResult[];
-        }>;
+        createPayrollDraft(admin: AdminUser): Promise<PayrollRun>;
+
         getPayrollRuns(): Promise<PayrollRun[]>;
-        getPayrollRunById(id: string): Promise<PayrollRun | null>;
-        updatePayrollStatus(id: string, status: PayrollStatus): Promise<void>;
+
+        getPayrollRunById(_id: string): Promise<PayrollRun | null>;
+
+        // BROUILLON → EN_VERIFICATION
+        submitForVerification(payrollRunId: string): Promise<void>;
+
+        // EN_VERIFICATION → BROUILLON
+        returnToDraft(payrollRunId: string): Promise<void>;
+
+        // EN_VERIFICATION → APPROUVÉ
+        approvePayroll(payrollRunId: string): Promise<void>;
+
+        // APPROUVÉ → PAYÉ
+        markPayrollAsPaid(payrollRunId: string): Promise<void>;
+
+        // BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
+        cancelPayroll(payrollRunId: string): Promise<void>;
+
         getPayrollResults(payrollRunId: string): Promise<PayrollResultRecord[]>;
+
+        getEmployeePayrollResults(
+          employeeId: string,
+          payrollRunId?: string
+        ): Promise<PayrollResultRecord[] | null>;
+
         getPayrollItems(
           payrollRunId: string,
           employeeId?: string
         ): Promise<any[]>;
+
         deletePayrollRun(payrollRunId: string): Promise<void>;
       };
 

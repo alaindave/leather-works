@@ -28,7 +28,7 @@ type TaskRow = {
   recipientFirstName: string | null;
   recipientLastName: string | null;
   recipientEmail: string | null;
-  recipientRole: "manager" | "admin";
+  recipientRole: "MANAGER" | "ADMIN";
   isDeleted: number;
   submittedAt: string;
 };

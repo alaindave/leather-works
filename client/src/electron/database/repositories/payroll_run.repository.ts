@@ -1,6 +1,9 @@
 import { randomUUID } from "crypto";
 import { run, get, all } from "../db.js";
-import { PayrollResult } from "../../../../../shared/payroll_service/types.js";
+import {
+  PayrollBatchResult,
+  PayrollResult,
+} from "../../../../../shared/payroll_service/types.js";
 import {
   PayrollResultRecord,
   PayrollRun,
@@ -10,19 +13,25 @@ import User from "../../../common/types/User.js";
 
 //Create payroll draft
 export async function createPayrollRun(
-  month: number,
-  year: number,
-  admin: Omit<User, "password" | "notes">,
-  status: PayrollStatus = "BROUILLON"
+  input: PayrollBatchResult,
+  admin: Omit<User, "password" | "notes">
 ) {
-  const now = new Date().toISOString();
+  const date = new Date();
+  const now = date.toISOString();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
 
   const payrollRun: PayrollRun = {
     _id: randomUUID(),
     generatedBy: admin._id,
     month,
     year,
-    status,
+    employeeCount: input.employeeCount,
+    totalBasicSalary: input.totalBasicSalary,
+    totalEarnings: input.totalEarnings,
+    totalDeductions: input.totalDeductions,
+    totalNetSalary: input.totalNetSalary,
+    status: "BROUILLON",
     synced: 0,
     createdAt: now,
     updatedAt: now,
@@ -65,9 +74,13 @@ export async function createPayrollRun(
 export async function getPayrollRuns() {
   return await all<PayrollRun>(
     `
- SELECT *
- FROM payroll_runs
- ORDER BY createdAt DESC
+      SELECT
+         pr.*,
+         gen.firstName || ' ' || gen.lastName AS generatedByName
+      FROM payroll_runs pr
+      LEFT JOIN admin_users gen
+      ON pr.generatedBy = gen._id;
+
  `
   );
 }
@@ -105,7 +118,11 @@ export async function savePayrollResult(
   payrollRunId: string,
   result: PayrollResult
 ) {
-  const now = new Date().toISOString();
+  const date = new Date();
+
+  const now = date.toISOString();
+  const month = date.getMonth() + 1; // 1-12
+  const year = date.getFullYear();
   const payrollResultId = randomUUID();
 
   //Save payroll summary
@@ -116,23 +133,34 @@ export async function savePayrollResult(
  _id,
  payrollRunId,
  employeeId,
+ month,
+ year,
+ baseSalary,
  grossSalary,
+ totalEarnings,
  totalDeductions,
  netSalary,
+ status,
  createdAt,
  updatedAt,
  synced,
  isDeleted
  )
- VALUES(?,?,?,?,?,?,?,?,0,0)
+ VALUES(?,?,?,?,?,?,?,?,
+ ?,?,?,?,?,0,0)
  `,
     [
       payrollResultId,
       payrollRunId,
       result.employeeId,
+      month,
+      year,
+      result.baseSalary,
       result.grossSalary,
+      result.totalEarnings,
       result.totalDeductions,
       result.netSalary,
+      result.status,
       now,
       now,
     ]
@@ -198,20 +226,52 @@ export async function getPayrollResults(payrollRunId: string) {
   );
 }
 
-//Get one employee's payroll result
-export async function getEmployeePayrollResult(
-  payrollRunId: string,
-  employeeId: string
+// Get employee payroll results
+// If payrollRunId is provided, return result for that run only
+// Otherwise return all payroll results for the employee
+export async function getEmployeePayrollResults(
+  employeeId: string,
+  payrollRunId?: string
+) {
+  let query = `
+    SELECT *
+    FROM payroll_results
+    WHERE employeeId = ?
+  `;
+
+  const params: any[] = [employeeId];
+
+  if (payrollRunId) {
+    query += `
+      AND payrollRunId = ?
+    `;
+    params.push(payrollRunId);
+  }
+
+  query += `
+    ORDER BY year DESC, month DESC
+  `;
+
+  return await all<PayrollResultRecord>(query, params);
+}
+
+// Get one employee's payroll result for a given month and year
+export async function getEmployeePayrollResultByMonthAndYear(
+  employeeId: string,
+  month: number,
+  year: number
 ) {
   return await get<PayrollResultRecord>(
     `
- SELECT *
- FROM payroll_results
- WHERE payrollRunId=?
- AND employeeId=?
-
- `,
-    [payrollRunId, employeeId]
+    SELECT *
+    FROM payroll_results
+    WHERE employeeId = ?
+      AND month = ?
+      AND year = ?
+      AND isDeleted = 0
+    LIMIT 1
+    `,
+    [employeeId, month, year]
   );
 }
 

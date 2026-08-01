@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 import {
-  calculatePayrolls,
+  calculatePayrollsWithSummary,
   validatePayrolls,
 } from "../../../../shared/dist/payroll_service/index.js";
 
@@ -15,66 +15,72 @@ import {
   getPayrollResults,
   getPayrollItems,
   deletePayrollRun,
+  getEmployeePayrollResults,
 } from "../database/repositories/payroll_run.repository.js";
+
 import User from "../../common/types/User.js";
 
 export function registerPayrollGenerationIPC() {
   console.log("REGISTERING PAYROLL GENERATION IPC");
 
+  // Generate payroll draft
   ipcMain.handle(
     "payroll:createDraft",
-    async (
-      _,
-      month: number,
-      year: number,
-      admin: Omit<User, "password" | "notes">
-    ) => {
-      return await createPayrollRun(month, year, admin);
-    }
-  );
-
-  ipcMain.handle(
-    "payroll:process",
-    async (
-      _,
-      month: number,
-      year: number,
-      admin: Omit<User, "password" | "notes">
-    ) => {
-      // Get employee payroll configurations
+    async (_, admin: Omit<User, "password" | "notes">) => {
       const inputs = await getAllEmployeePayrollInputs();
-
-      console.log(
-        "TESTING EMPLOYEE PAYROLL PROFILES INPUTS",
-        JSON.stringify(inputs, null, 2)
-      );
-
-      // Validate all employees
       const validation = validatePayrolls(inputs);
-
       if (!validation.valid) {
         throw new Error(validation.message);
       }
-
-      console.log("ADMIN:", admin);
-      // Calculate all employees'payroll
-      const results = calculatePayrolls(inputs, admin);
-
-      // Create payroll run
-      const payrollRun = await createPayrollRun(month, year, admin);
-
-      //Update payroll status
-      await updatePayrollStatus(payrollRun._id, "EN_VERIFICATION");
-
-      // Persist results
-      await savePayrollResults(payrollRun._id, results);
+      const batch = calculatePayrollsWithSummary(inputs, admin);
+      const payrollRun = await createPayrollRun(batch, admin);
+      await savePayrollResults(payrollRun._id, batch.results);
 
       return {
         payrollRun,
-        results,
+        results: batch.results,
       };
     }
   );
+
+  /**
+   * BROUILLON → EN_VERIFICATION
+   */
+  ipcMain.handle(
+    "payroll:submitForVerification",
+    async (_, payrollRunId: string) => {
+      return await updatePayrollStatus(payrollRunId, "EN_VERIFICATION");
+    }
+  );
+
+  /**
+   * EN_VERIFICATION → BROUILLON
+   * Reviewer sends payroll back for correction
+   */
+  ipcMain.handle("payroll:returnToDraft", async (_, payrollRunId: string) => {
+    return await updatePayrollStatus(payrollRunId, "BROUILLON");
+  });
+
+  /**
+   * EN_VERIFICATION → APPROUVÉ
+   */
+  ipcMain.handle("payroll:approve", async (_, payrollRunId: string) => {
+    return await updatePayrollStatus(payrollRunId, "APPROUVÉ");
+  });
+
+  /**
+   * APPROUVÉ → PAYÉ
+   */
+  ipcMain.handle("payroll:markAsPaid", async (_, payrollRunId: string) => {
+    return await updatePayrollStatus(payrollRunId, "PAYÉ");
+  });
+
+  /**
+   * BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
+   */
+  ipcMain.handle("payroll:cancel", async (_, payrollRunId: string) => {
+    return await updatePayrollStatus(payrollRunId, "ANNULÉ");
+  });
 
   ipcMain.handle("payroll:getRuns", async () => {
     return await getPayrollRuns();
@@ -84,13 +90,19 @@ export function registerPayrollGenerationIPC() {
     return await getPayrollRunById(id);
   });
 
-  ipcMain.handle("payroll:updateStatus", async (_, id: string, status) => {
-    return await updatePayrollStatus(id, status);
-  });
-
   ipcMain.handle("payroll:getResults", async (_, payrollRunId: string) => {
     return await getPayrollResults(payrollRunId);
   });
+
+  ipcMain.handle(
+    "payroll:getEmployeeResults",
+    async (_, employeeId: string, payrollRunId?: string) => {
+      console.log("EMPLOYEE PAYSLIPS IPC RECEIVED FOR", employeeId);
+      const results = await getEmployeePayrollResults(employeeId, payrollRunId);
+      console.log("FETCHED RESULTS", results);
+      return results;
+    }
+  );
 
   ipcMain.handle(
     "payroll:getItems",

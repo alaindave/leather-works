@@ -1,17 +1,37 @@
 export function validatePayroll(employee) {
     const errors = [];
-    if (!employee.employeeId) {
-        errors.push("Employee ID is required");
+    if (!employee.employeeId.trim()) {
+        errors.push("Employee ID is required.");
     }
-    if (employee.baseSalary < 0) {
-        errors.push("Salary cannot be negative");
+    if (!Number.isFinite(employee.baseSalary)) {
+        errors.push("Base salary must be a valid number.");
     }
-    if (!employee.components || employee.components.length === 0) {
-        errors.push("Payroll components are required");
+    else if (employee.baseSalary < 0) {
+        errors.push("Base salary cannot be negative.");
     }
+    if (employee.components.length === 0) {
+        errors.push("At least one payroll component is required.");
+    }
+    employee.components.forEach((component, index) => {
+        if (!component._id?.trim()) {
+            errors.push(`Component #${index + 1}: ID is required.`);
+        }
+        if (!component.name.trim()) {
+            errors.push(`Component #${index + 1}: Name is required.`);
+        }
+        if (!["EARNING", "DEDUCTION"].includes(component.type)) {
+            errors.push(`Component "${component.name}": Invalid component type.`);
+        }
+        if (!["FIXE", "POURCENTAGE", "MANUEL"].includes(component.calculationType)) {
+            errors.push(`Component "${component.name}": Invalid calculation type.`);
+        }
+        if (component.value != null && !Number.isFinite(component.value)) {
+            errors.push(`Component "${component.name}": Value must be a valid number.`);
+        }
+    });
     return {
         valid: errors.length === 0,
-        message: errors.join(", "),
+        message: errors.length ? errors.join(", ") : undefined,
         errors,
     };
 }

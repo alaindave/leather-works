@@ -4,6 +4,8 @@ import { IoSettings } from "react-icons/io5";
 import { MdOutlineChevronRight } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
 import Employee from "../../common/types/Employee";
+import { useEffect, useState } from "react";
+import { PayrollResultRecord } from "../../common/types/payroll/Payroll";
 
 type EmployeeState = {
   employee?: Employee;
@@ -14,26 +16,28 @@ type PhotoState = {
 };
 
 const EmployeePayrollReport = () => {
+  const [payslips, setPayslips] = useState<PayrollResultRecord[] | null>([]);
   const location = useLocation();
   const { employee } = (location.state as EmployeeState) || {};
   const { photo_url } = (location.state as PhotoState) || "";
-  // const [payrollProfiles, setPayrollProfiles] = useState<
-  //   PayrollEmployeeProfile[]
-  // >([]);
 
-  // useEffect(() => {
-  //   getPayrollHistory();
-  // }, []);
+  useEffect(() => {
+    getPayrollHistory();
+  }, [employee]);
 
-  // async function getPayrollHistory() {
-  //   if (!employee?._id) return;
-  //   const payroll_profiles =
-  //     await window.electron.payrollEmployeeProfiles.getByEmployee(
-  //       employee?._id
-  //     );
-  //   console.log("PAYROLL PROFILES FETCHED:", payroll_profiles);
-  //   setPayrollProfiles(payroll_profiles);
-  // }
+  async function getPayrollHistory() {
+    if (!employee?._id) return;
+    try {
+      const payslips =
+        await window.electron.payrollRun.getEmployeePayrollResults(
+          employee?._id
+        );
+      console.log("PAYSLIPS FETCHED:", payslips);
+      setPayslips(payslips);
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE FETCHING PAYSLIPS", e);
+    }
+  }
 
   return (
     <Flex direction="column" bg="#ffffff" width="100%" alignItems="flex-start">

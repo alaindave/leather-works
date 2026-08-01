@@ -24,17 +24,30 @@ export interface PayrollItem {
 export interface PayrollResult {
     employeeId: string;
     generatedBy: string;
+    month: number;
+    year: number;
     earnings: PayrollItem[];
     deductions: PayrollItem[];
+    baseSalary: number;
     grossSalary: number;
+    totalEarnings: number;
     totalDeductions: number;
+    status: "BROUILLON" | "EN_VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
     netSalary: number;
+}
+export interface PayrollBatchResult {
+    results: PayrollResult[];
+    employeeCount: number;
+    totalBasicSalary: number;
+    totalEarnings: number;
+    totalDeductions: number;
+    totalNetSalary: number;
 }
 export default interface AdminUser {
     _id: string;
     firstName: string;
     lastName: string;
     email: string;
-    role: "manager" | "admin";
+    role: "MANAGER" | "ADMIN";
 }
 //# sourceMappingURL=types.d.ts.map

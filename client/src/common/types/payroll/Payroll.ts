@@ -31,10 +31,19 @@ export interface PayrollRun {
   _id: string;
   month: number;
   year: number;
+  employeeCount: number;
+  totalBasicSalary: number;
+  totalEarnings: number;
+  totalDeductions: number;
+  totalNetSalary: number;
   generatedBy: string;
+  generatedByName?: string;
   approvedBy?: string;
   approvedAt?: string;
   paidAt?: string;
+  paidBy?: string;
+  cancelledAt?: string;
+  cancelledBy?: string;
   status: PayrollStatus;
   synced: number;
   isDeleted: number;
@@ -47,9 +56,15 @@ export interface PayrollResultRecord {
   _id: string;
   generatedBy: string;
   payrollRunId: string;
+  month: number;
+  year: number;
   employeeId: string;
+  baseSalary: string;
   grossSalary: number;
+  totalEarnings: number;
   totalDeductions: number;
+  status: "BROUILLON" | "EN_VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
   netSalary: number;
   createdAt: string;
+  updatedAt: string;
 }

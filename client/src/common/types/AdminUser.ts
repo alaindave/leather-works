@@ -3,7 +3,7 @@ export default interface AdminUser {
   firstName: string;
   lastName: string;
   email: string;
-  role: "manager" | "admin";
+  role: "MANAGER" | "ADMIN";
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;

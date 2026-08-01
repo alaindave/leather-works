@@ -67,9 +67,20 @@ export async function createPayrollTables() {
       generatedBy TEXT NOT NULL,
       month INTEGER NOT NULL,
       year INTEGER NOT NULL,
+      employeeCount INTEGER NOT NULL DEFAULT 0,
+      totalBasicSalary REAL NOT NULL DEFAULT 0,
+      totalEarnings REAL NOT NULL DEFAULT 0,
+      totalDeductions REAL NOT NULL DEFAULT 0,
+      totalNetSalary REAL NOT NULL DEFAULT 0,
       status TEXT NOT NULL
         CHECK(status IN ('BROUILLON','EN_VERIFICATION','APPROUVÉ','PAYÉ','ANNULÉ'))
         DEFAULT 'BROUILLON',
+      approvedAt TEXT,
+      approvedBy TEXT,
+      paidAt TEXT,
+      paidBy TEXT,
+      cancelledAt TEXT,
+      cancelledBy TEXT,
       synced INTEGER NOT NULL DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
@@ -85,9 +96,16 @@ export async function createPayrollTables() {
       _id TEXT PRIMARY KEY,
       payrollRunId TEXT NOT NULL,
       employeeId TEXT NOT NULL,
+      month INTEGER NOT NULL,
+      year INTEGER NOT NULL,
+      baseSalary REAL NOT NULL DEFAULT 0,
       grossSalary REAL NOT NULL DEFAULT 0,
+      totalEarnings REAL NOT NULL DEFAULT 0,
       totalDeductions REAL NOT NULL DEFAULT 0,
       netSalary REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL
+        CHECK(status IN ('BROUILLON','EN_VERIFICATION','APPROUVÉ','PAYÉ','ANNULÉ'))
+        DEFAULT 'BROUILLON',
       synced INTEGER NOT NULL DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
@@ -141,8 +159,13 @@ export async function createPayrollTables() {
   `);
 
   await run(`
-    CREATE INDEX IF NOT EXISTS idx_payroll_period
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_period
       ON payroll_runs(month, year);
+  `);
+
+  await run(`
+   CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_result_employee_period
+      ON payroll_results(employeeId, month, year);
   `);
 
   await run(`
