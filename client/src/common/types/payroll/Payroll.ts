@@ -54,12 +54,14 @@ export interface PayrollRun {
 
 export interface PayrollResultRecord {
   _id: string;
-  generatedBy: string;
   payrollRunId: string;
   month: number;
   year: number;
   employeeId: string;
-  baseSalary: string;
+  firstName?: string;
+  lastName?: string;
+  department?: string;
+  baseSalary: number;
   grossSalary: number;
   totalEarnings: number;
   totalDeductions: number;

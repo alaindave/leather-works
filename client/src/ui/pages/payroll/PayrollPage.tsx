@@ -17,6 +17,7 @@ import {
   TableCaption,
   TableContainer,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 export default function PayrollPage() {
   const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
@@ -24,6 +25,7 @@ export default function PayrollPage() {
   const user: Omit<User, "password" | "notes"> = useAdminUser(
     (store) => store.adminUser
   );
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadPayrollRun();
@@ -148,7 +150,9 @@ export default function PayrollPage() {
                   cursor="pointer"
                   _hover={{ bg: "transparent" }}
                   transition="background 0.2s"
-                  // onClick={() => navigate(`/payroll/${run._id}`)}
+                  onClick={() =>
+                    navigate(`/employees_admin/payroll/details/${run._id}`)
+                  }
                 >
                   <Td>
                     {run.month.toString().padStart(2, "0")}/{run.year}

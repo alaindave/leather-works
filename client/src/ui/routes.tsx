@@ -14,6 +14,7 @@ import PayrollPage from "./pages/payroll/PayrollPage";
 import EmployeePayslips from "./pages/EmployeePayslips";
 import PayrollEmployeeProfileSettingsPage from "./pages/payroll/PayrollEmployeeProfileSettingsPage";
 import PayrollSettingsPage from "./pages/payroll/PayrollSettingsPage";
+import PayrollDetailsPage from "./pages/payroll/PayrollDetailsPage";
 
 const router = createHashRouter([
   {
@@ -91,6 +92,11 @@ const router = createHashRouter([
       {
         path: "payroll/settings",
         element: <PayrollSettingsPage />,
+        errorElement: <PageErrorFallback />,
+      },
+      {
+        path: "payroll/details/:_id",
+        element: <PayrollDetailsPage />,
         errorElement: <PageErrorFallback />,
       },
     ],

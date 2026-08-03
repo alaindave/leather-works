@@ -46,19 +46,29 @@ export async function createPayrollRun(
  generatedBy,
  month,
  year,
+ employeeCount,
+ totalBasicSalary,
+ totalEarnings,
+ totalDeductions,
+ totalNetSalary,
  status,
  synced,
  createdAt,
  updatedAt,
  isDeleted
  )
- VALUES(?,?,?,?,?,?,?,?,?)
+ VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
  `,
     [
       payrollRun._id,
       payrollRun.generatedBy,
       payrollRun.month,
       payrollRun.year,
+      payrollRun.employeeCount,
+      payrollRun.totalBasicSalary,
+      payrollRun.totalEarnings,
+      payrollRun.totalDeductions,
+      payrollRun.totalNetSalary,
       payrollRun.status,
       payrollRun.synced,
       payrollRun.createdAt,
@@ -89,9 +99,15 @@ export async function getPayrollRuns() {
 export async function getPayrollRunById(_id: string) {
   return await get<PayrollRun>(
     `
- SELECT *
- FROM payroll_runs
- WHERE _id=?
+      SELECT
+          pr.*,
+          gen.firstName || ' ' || gen.lastName AS generatedByName
+      FROM payroll_runs pr
+      LEFT JOIN admin_users gen
+      ON pr.generatedBy = gen._id
+
+      WHERE pr._id=?
+
  `,
     [_id]
   );
@@ -212,16 +228,20 @@ export async function savePayrollResults(
   }
 }
 
-//Get payroll results by payroll run ID
 export async function getPayrollResults(payrollRunId: string) {
-  return await all<PayrollResultRecord>(
+  return await all(
     `
-    SELECT *
-    FROM payroll_results
-    WHERE payrollRunId=?
-    ORDER BY createdAt ASC
-
- `,
+    SELECT
+      pr.*,
+      e.firstName,
+      e.lastName,
+      e.department
+    FROM payroll_results pr
+    LEFT JOIN employees e
+      ON pr.employeeId = e._id
+    WHERE pr.payrollRunId = ?
+    ORDER BY pr.createdAt DESC
+    `,
     [payrollRunId]
   );
 }

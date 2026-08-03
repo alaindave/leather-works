@@ -259,7 +259,7 @@ const EmployeeDetailsPage = () => {
                 </HStack>
               </Link>
             </HStack>
-            {adminUser?.role === "manager" ? (
+            {adminUser?.role === "MANAGER" ? (
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <Box position="relative" bottom="1rem">
                   <UpdateEmployee
@@ -466,7 +466,7 @@ const EmployeeDetailsPage = () => {
               </VStack>
 
               <Box bg="transparent">
-                {adminUser?.role === "manager" ? (
+                {adminUser?.role === "MANAGER" ? (
                   <Button
                     bg="red.100"
                     color="red.600"
