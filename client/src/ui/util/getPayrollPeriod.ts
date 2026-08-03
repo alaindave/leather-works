@@ -5,5 +5,5 @@ export function getPayrollPeriod(month: number, year: number): string {
     month: "long",
   }).format(new Date(year, month - 1, 1));
 
-  return `Periode du 1 au ${endDay} ${monthName} ${year}`;
+  return `1 au ${endDay} ${monthName} ${year}`;
 }

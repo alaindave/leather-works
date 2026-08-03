@@ -27,27 +27,54 @@ const formatCurrency = (value: number) =>
   }).format(value);
 
 const statusColor = {
-  BROUILLON: "gray",
-  EN_VERIFICATION: "gray",
-  APPROUVÉ: "blue",
-  PAYÉ: "green",
-  ANNULÉ: "gray",
+  BROUILLON: "yellow",
+  VERIFICATION: "blue",
+  APPROUVÉ: "green",
+  PAYÉ: "purple",
+  ANNULÉ: "red",
 } as const;
 
 export default function PayrollResultsTable({ payrollResults }: Props) {
   return (
-    <TableContainer borderWidth="1px" borderRadius="lg" overflowX="auto">
+    <TableContainer
+      height="50vh"
+      borderWidth="1px"
+      borderRadius="lg"
+      overflowY="auto"
+    >
       <Table variant="simple" size="sm">
         <Thead bg="gray.50">
           <Tr>
-            <Th>Employé</Th>
-            <Th>Departement</Th>
-            <Th isNumeric>Salaire de base</Th>
-            <Th isNumeric>Remunération</Th>
-            <Th isNumeric>Deductions</Th>
-            <Th isNumeric>Salaire net</Th>
-            <Th>Statut</Th>
-            <Th textAlign="center">Actions</Th>
+            <Th position="sticky" bg="white" top={0} zIndex={1}>
+              Employé
+            </Th>
+            <Th position="sticky" top={0} bg="white" zIndex={1}>
+              Departement
+            </Th>
+            <Th position="sticky" top={0} bg="white" zIndex={1} isNumeric>
+              Salaire de base
+            </Th>
+            <Th position="sticky" top={0} bg="white" zIndex={1} isNumeric>
+              Remunérations
+            </Th>
+            <Th position="sticky" top={0} bg="white" zIndex={1} isNumeric>
+              Deductions
+            </Th>
+            <Th position="sticky" top={0} bg="white" zIndex={1} isNumeric>
+              Salaire net
+            </Th>
+            <Th position="sticky" top={0} bg="white" zIndex={1}>
+              Statut
+            </Th>
+            <Th
+              position="sticky"
+              top={0}
+              bg="white"
+              zIndex={1}
+              textAlign="center"
+            >
+              Actions
+            </Th>
           </Tr>
         </Thead>
 

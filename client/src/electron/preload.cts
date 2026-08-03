@@ -408,11 +408,11 @@ payrollRun: {
 
   // BROUILLON → EN_VERIFICATION
   submitForVerification: (
-    payrollRunId: string
+    payrollRunId: string,admin:AdminUser
   ) => {
     return ipcRenderer.invoke(
       "payroll:submitForVerification",
-      payrollRunId
+      payrollRunId,admin
     );
   },
 
@@ -448,11 +448,12 @@ payrollRun: {
 
   // BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
   cancelPayroll: (
-    payrollRunId: string
+    payrollRunId: string,
+    admin:AdminUser
   ) => {
     return ipcRenderer.invoke(
       "payroll:cancel",
-      payrollRunId
+      payrollRunId,admin
     );
   },
 

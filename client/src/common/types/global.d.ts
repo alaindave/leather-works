@@ -225,7 +225,10 @@ declare global {
         getPayrollRunById(_id: string): Promise<PayrollRun | null>;
 
         // BROUILLON → EN_VERIFICATION
-        submitForVerification(payrollRunId: string): Promise<void>;
+        submitForVerification(
+          payrollRunId: string,
+          admin: AdminUser
+        ): Promise<void>;
 
         // EN_VERIFICATION → BROUILLON
         returnToDraft(payrollRunId: string): Promise<void>;
@@ -237,7 +240,7 @@ declare global {
         markPayrollAsPaid(payrollRunId: string): Promise<void>;
 
         // BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
-        cancelPayroll(payrollRunId: string): Promise<void>;
+        cancelPayroll(payrollRunId: string, admin: AdminUser): Promise<void>;
 
         getPayrollResults(payrollRunId: string): Promise<PayrollResultRecord[]>;
 

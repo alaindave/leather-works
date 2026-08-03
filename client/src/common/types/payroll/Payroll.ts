@@ -2,7 +2,7 @@ import PayrollItem from "./PayrollItem.js";
 
 export type PayrollStatus =
   | "BROUILLON"
-  | "EN_VERIFICATION"
+  | "VERIFICATION"
   | "APPROUVÉ"
   | "PAYÉ"
   | "ANNULÉ";
@@ -38,15 +38,23 @@ export interface PayrollRun {
   totalNetSalary: number;
   generatedBy: string;
   generatedByName?: string;
-  approvedBy?: string;
+  submittedForVerificationAt?: string;
+  submittedForVerificationBy?: string;
+  submittedForVerificationByName?: string;
   approvedAt?: string;
+  approvedBy?: string;
+  approvedByName?: string;
   paidAt?: string;
   paidBy?: string;
+  paidByName?: string;
   cancelledAt?: string;
   cancelledBy?: string;
+  cancelledByName?: string;
   status: PayrollStatus;
+  notes?: string;
   synced: number;
   isDeleted: number;
+  deletedBy?: string;
   createdAt: string;
   updatedAt: string;
   lastSyncedAt?: string;
@@ -65,7 +73,7 @@ export interface PayrollResultRecord {
   grossSalary: number;
   totalEarnings: number;
   totalDeductions: number;
-  status: "BROUILLON" | "EN_VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
+  status: "BROUILLON" | "VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
   netSalary: number;
   createdAt: string;
   updatedAt: string;

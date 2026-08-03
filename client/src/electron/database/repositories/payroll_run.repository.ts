@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { run, get, all } from "../db.js";
+import { run, get, all, transaction, runDirect } from "../db.js";
 import {
   PayrollBatchResult,
   PayrollResult,
@@ -10,6 +10,8 @@ import {
   PayrollStatus,
 } from "../../../common/types/payroll/Payroll.js";
 import User from "../../../common/types/User.js";
+import AdminUser from "../../../common/types/AdminUser.js";
+import { addToSyncQueue } from "./sync.repository.js";
 
 //Create payroll draft
 export async function createPayrollRun(
@@ -77,6 +79,13 @@ export async function createPayrollRun(
     ]
   );
 
+  await addToSyncQueue({
+    entity: "payroll_run",
+    entityId: payrollRun._id,
+    operation: "create",
+    payload: JSON.stringify(payrollRun),
+  });
+
   return payrollRun;
 }
 
@@ -101,10 +110,17 @@ export async function getPayrollRunById(_id: string) {
     `
       SELECT
           pr.*,
-          gen.firstName || ' ' || gen.lastName AS generatedByName
+          gen.firstName || ' ' || gen.lastName AS generatedByName,
+          can.firstName || ' ' ||can.lastName AS cancelledByName,
+          ver.firstName || ' ' ||ver.lastName AS submittedForVerificationByName
+
       FROM payroll_runs pr
       LEFT JOIN admin_users gen
       ON pr.generatedBy = gen._id
+      LEFT JOIN admin_users can
+      ON pr.cancelledBy = can._id
+      LEFT JOIN admin_users ver
+      ON pr.submittedForVerificationBy = ver._id
 
       WHERE pr._id=?
 
@@ -117,16 +133,118 @@ export async function getPayrollRunById(_id: string) {
 export async function updatePayrollStatus(_id: string, status: PayrollStatus) {
   return await run(
     `
- UPDATE payroll_runs
-
- SET
- status=?,
- updatedAt=?
-
- WHERE _id=?
+      UPDATE payroll_runs
+        SET
+          status=?,
+          updatedAt=?
+        WHERE _id=?
  `,
     [status, new Date().toISOString(), _id]
   );
+}
+//Cancel payroll run
+export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
+  const now = new Date().toISOString();
+
+  // Fetch affected payroll result IDs before the transaction
+  const results = await all<{ _id: string }>(
+    `
+    SELECT _id
+    FROM payroll_results
+    WHERE payrollRunId = ?
+    `,
+    [payrollRunId]
+  );
+
+  // Transaction: only direct DB operations
+  await transaction(async () => {
+    await runDirect(
+      `
+      UPDATE payroll_runs
+      SET
+        status = ?,
+        cancelledBy = ?,
+        cancelledAt = ?,
+        updatedAt = ?
+      WHERE _id = ?
+      `,
+      ["ANNULÉ", admin._id, now, now, payrollRunId]
+    );
+
+    await runDirect(
+      `
+      UPDATE payroll_results
+      SET
+        status = ?,
+        updatedAt = ?
+      WHERE payrollRunId = ?
+      `,
+      ["ANNULÉ", now, payrollRunId]
+    );
+
+    return true;
+  });
+
+  // Queue the payroll run for sync
+  await addToSyncQueue({
+    entity: "payroll_run",
+    entityId: payrollRunId,
+    operation: "update",
+    payload: JSON.stringify({
+      _id: payrollRunId,
+      status: "ANNULÉ",
+      updatedAt: now,
+    }),
+  });
+
+  // Queue all affected payroll results for sync
+  for (const result of results) {
+    await addToSyncQueue({
+      entity: "payroll_result",
+      entityId: result._id,
+      operation: "update",
+      payload: JSON.stringify({
+        _id: result._id,
+        status: "ANNULÉ",
+        updatedAt: now,
+      }),
+    });
+  }
+
+  return true;
+}
+
+//Verify payroll run
+export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
+  const now = new Date().toISOString();
+
+  return transaction(async () => {
+    await runDirect(
+      `
+      UPDATE payroll_runs
+      SET
+        status = ?,
+        submittedForVerificationBy = ?,
+        submittedForVerificationAt = ?,
+        updatedAt = ?
+      WHERE _id = ?
+      `,
+      ["VERIFICATION", admin._id, now, now, payrollRunId]
+    );
+
+    await runDirect(
+      `
+      UPDATE payroll_results
+      SET
+        status = ?,
+        updatedAt = ?
+      WHERE payrollRunId = ?
+      `,
+      ["VERIFICATION", now, payrollRunId]
+    );
+
+    return true;
+  });
 }
 
 //Save payroll result
@@ -146,21 +264,21 @@ export async function savePayrollResult(
     `
  INSERT INTO payroll_results
  (
- _id,
- payrollRunId,
- employeeId,
- month,
- year,
- baseSalary,
- grossSalary,
- totalEarnings,
- totalDeductions,
- netSalary,
- status,
- createdAt,
- updatedAt,
- synced,
- isDeleted
+  _id,
+  payrollRunId,
+  employeeId,
+  month,
+  year,
+  baseSalary,
+  grossSalary,
+  totalEarnings,
+  totalDeductions,
+  netSalary,
+  status,
+  createdAt,
+  updatedAt,
+   synced,
+  isDeleted
  )
  VALUES(?,?,?,?,?,?,?,?,
  ?,?,?,?,?,0,0)

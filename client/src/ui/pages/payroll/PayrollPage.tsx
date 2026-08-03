@@ -1,4 +1,4 @@
-import { Box, Flex, Text, HStack, Button } from "@chakra-ui/react";
+import { Box, Flex, Text, HStack, Button, Badge } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { IoSettings } from "react-icons/io5";
 import { FaSyncAlt } from "react-icons/fa";
@@ -18,6 +18,7 @@ import {
   TableContainer,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { getPayrollPeriod } from "../../util/getPayrollPeriod";
 
 export default function PayrollPage() {
   const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
@@ -70,6 +71,14 @@ export default function PayrollPage() {
     // }
   };
 
+  const statusColor = {
+    BROUILLON: "#e6b800",
+    VERIFICATION: "#1a53ff",
+    APPROUVÉ: "green",
+    PAYÉ: "purple",
+    ANNULÉ: "red",
+  } as const;
+
   return (
     <Flex direction="column" width="100%">
       <Flex width="100%" justify="space-between">
@@ -79,7 +88,7 @@ export default function PayrollPage() {
               color="#1F2937"
               fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
               fontWeight="700"
-              ml="0.5rem"
+              ml="1rem"
               mt="0.7rem"
             >
               Fiches de paye
@@ -100,18 +109,23 @@ export default function PayrollPage() {
           </HStack>
           <Text
             fontWeight="500"
-            left="0.45rem"
             fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
             color="gray.500"
             position="relative"
             bottom="1.4rem"
+            left="1rem"
           >
             Gérez les fiches de payes
           </Text>
         </Box>
 
-        <Button mt="2rem" onClick={handlePayrollGeneration}>
-          Generer fiches de paye
+        <Button
+          colorScheme="blue"
+          mr="2rem"
+          mt="1.2rem"
+          onClick={handlePayrollGeneration}
+        >
+          Générer fiches de paye
         </Button>
 
         <Box mt="1rem" mr="2rem">
@@ -120,83 +134,76 @@ export default function PayrollPage() {
           </Link>
         </Box>
       </Flex>
-      <Box ml="2rem" mt="3rem">
-        <TableContainer
-          width="50vw"
-          borderWidth="1px"
-          borderRadius="lg"
-          overflowX="auto"
-        >
-          <Table variant="simple" size="md">
-            <Thead>
-              <Tr>
-                <Th>Période</Th>
-                <Th>Statut</Th>
-                <Th>Généré par</Th>
-                <Th>Date de génération</Th>
-                {/* <Th>Approuvé par</Th>
-                <Th>Date d'approbation</Th>
-                <Th>Payé par</Th>
-                <Th>Date de paiement</Th>
-                <Th>Annulé par</Th>
-                <Th>Date d'annulation</Th> */}
-              </Tr>
-            </Thead>
-
-            <Tbody>
-              {payrollRuns.map((run) => (
-                <Tr
-                  key={run._id}
-                  cursor="pointer"
-                  _hover={{ bg: "transparent" }}
-                  transition="background 0.2s"
-                  onClick={() =>
-                    navigate(`/employees_admin/payroll/details/${run._id}`)
-                  }
-                >
-                  <Td>
-                    {run.month.toString().padStart(2, "0")}/{run.year}
-                  </Td>
-
-                  <Td>
-                    {/* Status badge here */}
-                    {run.status}
-                  </Td>
-
-                  <Td>{run.generatedByName}</Td>
-
-                  <Td>
-                    {run.createdAt
-                      ? new Date(run.createdAt).toLocaleDateString("fr-FR")
-                      : "-"}
-                  </Td>
-
-                  {/* <Td>{run.approvedBy ?? "-"}</Td>
-
-                  <Td>
-                    {run.approvedAt
-                      ? new Date(run.approvedAt).toLocaleString()
-                      : "-"}
-                  </Td> */}
-
-                  {/* <Td>{run.paidBy ?? "-"}</Td>
-
-                  <Td>
-                    {run.paidAt ? new Date(run.paidAt).toLocaleString() : "-"}
-                  </Td> */}
-                  {/* 
-                  <Td>{run.cancelledBy ?? "-"}</Td>
-
-                  <Td>
-                    {run.cancelledAt
-                      ? new Date(run.cancelledAt).toLocaleString()
-                      : "-"}
-                  </Td> */}
+      <Box ml="5rem" mt="3rem">
+        {payrollRuns.length === 0 ? (
+          <Text
+            position="relative"
+            top="12rem"
+            left="20rem"
+            color="gray.700"
+            fontSize="2.1rem"
+            fontWeight="500"
+          >
+            Pas de fiches de payes à afficher
+          </Text>
+        ) : (
+          <TableContainer
+            width="60vw"
+            borderWidth="1px"
+            borderRadius="lg"
+            overflowX="auto"
+          >
+            <Table variant="simple" size="md">
+              <Thead>
+                <Tr>
+                  <Th>Période</Th>
+                  <Th>Statut</Th>
+                  <Th>Créee par</Th>
+                  <Th>Date de création</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+              </Thead>
+
+              <Tbody>
+                {payrollRuns.map((run) => (
+                  <Tr
+                    key={run._id}
+                    cursor="pointer"
+                    _hover={{ bg: "transparent" }}
+                    transition="background 0.2s"
+                    onClick={() =>
+                      navigate(`/employees_admin/payroll/details/${run._id}`)
+                    }
+                  >
+                    <Td>
+                      Du{" "}
+                      {run?.month && run?.year
+                        ? getPayrollPeriod(run.month, run.year)
+                        : ""}
+                    </Td>
+
+                    <Td>
+                      <Badge
+                        bg={statusColor[run.status]}
+                        color="#ffffff"
+                        fontSize="14px"
+                      >
+                        {run.status}
+                      </Badge>
+                    </Td>
+
+                    <Td>{run.generatedByName}</Td>
+
+                    <Td>
+                      {run.createdAt
+                        ? new Date(run.createdAt).toLocaleDateString("fr-FR")
+                        : "-"}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        )}
       </Box>
     </Flex>
   );

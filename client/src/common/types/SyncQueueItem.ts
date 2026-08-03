@@ -10,7 +10,10 @@ export default interface SyncQueueItem {
     | "employee_photo"
     | "employee_document"
     | "payroll_component"
-    | "payroll_profile";
+    | "payroll_profile"
+    | "payroll_run"
+    | "payroll_result"
+    | "payroll_item";
   entityId: string;
   operation: "create" | "update" | "delete";
   payload: string;

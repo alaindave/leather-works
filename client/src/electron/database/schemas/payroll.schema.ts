@@ -64,7 +64,6 @@ export async function createPayrollTables() {
   await run(`
     CREATE TABLE IF NOT EXISTS payroll_runs (
       _id TEXT PRIMARY KEY,
-      generatedBy TEXT NOT NULL,
       month INTEGER NOT NULL,
       year INTEGER NOT NULL,
       employeeCount INTEGER NOT NULL DEFAULT 0,
@@ -73,8 +72,11 @@ export async function createPayrollTables() {
       totalDeductions REAL NOT NULL DEFAULT 0,
       totalNetSalary REAL NOT NULL DEFAULT 0,
       status TEXT NOT NULL
-        CHECK(status IN ('BROUILLON','EN_VERIFICATION','APPROUVÉ','PAYÉ','ANNULÉ'))
+        CHECK(status IN ('BROUILLON','VERIFICATION','APPROUVÉ','PAYÉ','ANNULÉ'))
         DEFAULT 'BROUILLON',
+      generatedBy TEXT NOT NULL,
+      submittedForVerificationAt TEXT,
+      submittedForVerificationBy TEXT,
       approvedAt TEXT,
       approvedBy TEXT,
       paidAt TEXT,
@@ -83,11 +85,24 @@ export async function createPayrollTables() {
       cancelledBy TEXT,
       synced INTEGER NOT NULL DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
+      deletedBy TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-      FOREIGN KEY(generatedBy) REFERENCES admin_users(_id)
+      FOREIGN KEY (generatedBy) REFERENCES admin_users(_id)
+        ON DELETE RESTRICT,
+      FOREIGN KEY(submittedForVerificationBy) REFERENCES admin_users(_id)
+        ON DELETE RESTRICT,
+      FOREIGN KEY(approvedBy) REFERENCES admin_users(_id)
+        ON DELETE RESTRICT,
+      FOREIGN KEY(paidBy) REFERENCES admin_users(_id)
+        ON DELETE RESTRICT,
+      FOREIGN KEY(cancelledBy) REFERENCES admin_users(_id)
+        ON DELETE RESTRICT,
+      FOREIGN KEY(deletedBy) REFERENCES admin_users(_id)
+        ON DELETE RESTRICT
+
     );
   `);
 
@@ -104,7 +119,7 @@ export async function createPayrollTables() {
       totalDeductions REAL NOT NULL DEFAULT 0,
       netSalary REAL NOT NULL DEFAULT 0,
       status TEXT NOT NULL
-        CHECK(status IN ('BROUILLON','EN_VERIFICATION','APPROUVÉ','PAYÉ','ANNULÉ'))
+        CHECK(status IN ('BROUILLON','VERIFICATION','APPROUVÉ','PAYÉ','ANNULÉ'))
         DEFAULT 'BROUILLON',
       synced INTEGER NOT NULL DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
@@ -159,14 +174,16 @@ export async function createPayrollTables() {
   `);
 
   await run(`
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_period
-      ON payroll_runs(month, year);
-  `);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_period
+  ON payroll_runs(month, year)
+  WHERE status <> 'ANNULÉ';
+ `);
 
   await run(`
-   CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_result_employee_period
-      ON payroll_results(employeeId, month, year);
-  `);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_result_employee_period
+  ON payroll_results(employeeId, month, year)
+  WHERE status <> 'ANNULÉ';
+`);
 
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_synced

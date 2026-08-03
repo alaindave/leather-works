@@ -37,7 +37,7 @@ export interface PayrollResult {
   grossSalary: number;
   totalEarnings: number;
   totalDeductions: number;
-  status: "BROUILLON" | "EN_VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
+  status: "BROUILLON" | "VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
   netSalary: number;
 }
 

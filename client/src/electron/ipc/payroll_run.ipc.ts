@@ -16,9 +16,12 @@ import {
   getPayrollItems,
   deletePayrollRun,
   getEmployeePayrollResults,
+  cancelPayrollRun,
+  verifyPayrollRun,
 } from "../database/repositories/payroll_run.repository.js";
 
 import User from "../../common/types/User.js";
+import AdminUser from "../../common/types/AdminUser.js";
 
 export function registerPayrollGenerationIPC() {
   console.log("REGISTERING PAYROLL GENERATION IPC");
@@ -48,8 +51,8 @@ export function registerPayrollGenerationIPC() {
    */
   ipcMain.handle(
     "payroll:submitForVerification",
-    async (_, payrollRunId: string) => {
-      return await updatePayrollStatus(payrollRunId, "EN_VERIFICATION");
+    async (_, payrollRunId: string, admin: AdminUser) => {
+      return await verifyPayrollRun(payrollRunId, admin);
     }
   );
 
@@ -78,9 +81,12 @@ export function registerPayrollGenerationIPC() {
   /**
    * BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
    */
-  ipcMain.handle("payroll:cancel", async (_, payrollRunId: string) => {
-    return await updatePayrollStatus(payrollRunId, "ANNULÉ");
-  });
+  ipcMain.handle(
+    "payroll:cancel",
+    async (_, payrollRunId: string, admin: AdminUser) => {
+      return await cancelPayrollRun(payrollRunId, admin);
+    }
+  );
 
   ipcMain.handle("payroll:getRuns", async () => {
     return await getPayrollRuns();

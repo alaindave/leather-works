@@ -204,7 +204,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         <LeaveNotesPopover subject={subject} notes={notes} />
       </Box>
       <Box width="7rem">
-        {status === "EN ATTENTE D'APPROBATION" ? (
+        {status === "ATTENTE_APPROBATION" ? (
           <Text
             color="yellow.600"
             fontWeight="600"
@@ -212,7 +212,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
             whiteSpace="normal"
             wordBreak="break-word"
           >
-            En attente{"\n"}d'approbation
+            Attente approbation
           </Text>
         ) : (
           <Text
@@ -237,7 +237,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           {remainingLeave}
         </Text>
       </Box>
-      {adminUser?.role === "manager" ? (
+      {adminUser?.role === "MANAGER" ? (
         // Manager area
         <Box>
           <Text color="gray.200" fontSize="1.1rem">
@@ -272,7 +272,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 p="6px"
                 boxShadow="0 8px 30px rgba(0,0,0,0.35)"
               >
-                {status === "EN ATTENTE D'APPROBATION" ? (
+                {status === "ATTENTE_APPROBATION" ? (
                   <>
                     <MenuItem
                       fontWeight="600"
@@ -381,7 +381,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 p="6px"
                 boxShadow="0 8px 30px rgba(0,0,0,0.35)"
               >
-                {status === "EN ATTENTE D'APPROBATION" ? (
+                {status === "ATTENTE_APPROBATION" ? (
                   <>
                     <MenuItem
                       icon={<FaRegEdit color="orange.300" size="1rem" />}

@@ -98,6 +98,25 @@ export const run = (sql: string, params: Params = []): Promise<RunResult> => {
 };
 
 // =====================
+//  RUN DIRECT (WRITE OPERATIONS)
+// =====================
+
+export const runDirect = (
+  sql: string,
+  params: Params = []
+): Promise<RunResult> => {
+  return withRetry(
+    () =>
+      new Promise((resolve, reject) => {
+        db.run(sql, params, function (err) {
+          if (err) return reject(err);
+          resolve(this);
+        });
+      })
+  );
+};
+
+// =====================
 // GET (READ SINGLE)
 // =====================
 //prettier-ignore

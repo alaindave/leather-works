@@ -11,17 +11,21 @@ import { formatCurrency } from "../util/currencyFormatter";
 
 interface Props {
   employeeCount: number;
+  totalBasicSalary: number;
   totalEarnings: number;
   totalDeductions: number;
+  totalNetSalary: number;
 }
 
 const PayrollDashboard = ({
   employeeCount,
+  totalBasicSalary,
   totalEarnings,
   totalDeductions,
+  totalNetSalary,
 }: Props) => {
   return (
-    <Flex justify="space-evenly" width="100%">
+    <Flex position="relative" bottom="1rem" justify="space-evenly" width="100%">
       <Box
         bg="linear-gradient(
           135deg,
@@ -66,6 +70,53 @@ const PayrollDashboard = ({
           fontWeight="700"
         >
           {employeeCount}
+        </Text>
+      </Box>
+
+      <Box
+        bg="linear-gradient(
+          135deg,
+          rgba(255,255,255,0.08),
+          rgba(255,255,255,0.03)
+        )"
+        border="1px solid rgba(255,255,255,0.12)"
+        boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+        borderRadius="0.4rem"
+        width="12rem"
+        height="8rem"
+      >
+        <HStack position="relative" top="2rem">
+          <Box
+            width="2.2rem"
+            height="2.2rem"
+            backgroundColor="#000080"
+            borderRadius="10px"
+            padding="8px"
+            marginLeft="8px"
+          >
+            <BsFillPeopleFill color="#ffffff" size="1.2rem" />
+          </Box>
+
+          <Text
+            color="gray.700"
+            fontSize="1.3rem"
+            fontWeight="700"
+            position="relative"
+            left="1rem"
+          >
+            Salaires
+          </Text>
+        </HStack>
+
+        <Text
+          color="gray.600"
+          fontSize="1.1rem"
+          position="relative"
+          left="3rem"
+          top="1.8rem"
+          fontWeight="700"
+        >
+          {formatCurrency(totalBasicSalary)}
         </Text>
       </Box>
 
@@ -153,7 +204,7 @@ const PayrollDashboard = ({
           color="gray.600"
           fontSize="1.1rem"
           position="relative"
-          left="3rem"
+          left="2rem"
           fontWeight="700"
         >
           {formatCurrency(totalDeductions)}
@@ -198,10 +249,10 @@ const PayrollDashboard = ({
           color="gray.600"
           fontSize="1.1rem"
           position="relative"
-          left="3rem"
+          left="1.5rem"
           fontWeight="700"
         >
-          {formatCurrency(totalEarnings - totalDeductions)}
+          {formatCurrency(totalNetSalary)}
         </Text>
       </Box>
     </Flex>
