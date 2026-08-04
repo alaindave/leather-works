@@ -11,6 +11,7 @@ export async function createEmployeePayrollProfile(
   profile: CreatePayrollProfileDto
 ) {
   console.log("NEW EMPLOYEE PROFILE:", profile);
+
   const _id = randomUUID();
   const now = new Date().toISOString();
 
@@ -38,7 +39,7 @@ export async function createEmployeePayrollProfile(
     [
       _id,
       employeeId,
-      profile.componentId ?? _id,
+      profile.componentId ?? null,
       profile.name,
       profile.displayName,
       profile.displayOrder,

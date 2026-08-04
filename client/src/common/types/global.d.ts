@@ -13,6 +13,7 @@ import type {
   PayrollResultRecord,
   PayrollStatus,
 } from "../../common/types/payroll/Payroll";
+import PayrollItem from "./payroll/PayrollItem";
 
 interface SaveFileResult {
   success: boolean;
@@ -234,10 +235,13 @@ declare global {
         returnToDraft(payrollRunId: string): Promise<void>;
 
         // EN_VERIFICATION → APPROUVÉ
-        approvePayroll(payrollRunId: string): Promise<void>;
+        approvePayroll(payrollRunId: string, admin: AdminUser): Promise<void>;
 
         // APPROUVÉ → PAYÉ
-        markPayrollAsPaid(payrollRunId: string): Promise<void>;
+        markPayrollAsPaid(
+          payrollRunId: string,
+          admin: AdminUser
+        ): Promise<void>;
 
         // BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
         cancelPayroll(payrollRunId: string, admin: AdminUser): Promise<void>;
@@ -247,14 +251,14 @@ declare global {
         getEmployeePayrollResults(
           employeeId: string,
           payrollRunId?: string
-        ): Promise<PayrollResultRecord[] | null>;
+        ): Promise<PayrollResultRecord | null>;
 
         getPayrollItems(
-          payrollRunId: string,
+          payrollResultId: string,
           employeeId?: string
-        ): Promise<any[]>;
+        ): Promise<PayrollItem[]>;
 
-        deletePayrollRun(payrollRunId: string): Promise<void>;
+        deletePayrollRun(payrollResultId: string): Promise<void>;
       };
 
       sync: () => Promise<{

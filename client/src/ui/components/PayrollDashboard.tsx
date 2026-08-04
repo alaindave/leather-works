@@ -25,7 +25,7 @@ const PayrollDashboard = ({
   totalNetSalary,
 }: Props) => {
   return (
-    <Flex position="relative" bottom="1rem" justify="space-evenly" width="100%">
+    <Flex position="relative" bottom="2rem" justify="space-evenly" width="100%">
       <Box
         bg="linear-gradient(
           135deg,

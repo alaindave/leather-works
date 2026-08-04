@@ -152,6 +152,7 @@ export default function PayrollPage() {
             borderWidth="1px"
             borderRadius="lg"
             overflowX="auto"
+            overflowY="auto"
           >
             <Table variant="simple" size="md">
               <Thead>

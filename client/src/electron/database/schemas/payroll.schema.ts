@@ -31,7 +31,7 @@ export async function createPayrollTables() {
     CREATE TABLE IF NOT EXISTS payroll_employee_profiles (
       _id TEXT PRIMARY KEY,
       employeeId TEXT NOT NULL,
-      componentId TEXT NOT NULL,
+      componentId TEXT,
       name TEXT NOT NULL,
       displayName TEXT NOT NULL,
       displayOrder INTEGER NOT NULL,

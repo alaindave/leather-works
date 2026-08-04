@@ -428,21 +428,22 @@ payrollRun: {
 
   // EN_VERIFICATION → APPROUVÉ
   approvePayroll: (
-    payrollRunId: string
+    payrollRunId: string,
+    adminUser:AdminUser
   ) => {
     return ipcRenderer.invoke(
       "payroll:approve",
-      payrollRunId
+      payrollRunId,adminUser
     );
   },
 
   // APPROUVÉ → PAYÉ
   markPayrollAsPaid: (
-    payrollRunId: string
+    payrollRunId: string,adminUser: AdminUser
   ) => {
     return ipcRenderer.invoke(
       "payroll:markAsPaid",
-      payrollRunId
+      payrollRunId,adminUser
     );
   },
 
@@ -478,12 +479,12 @@ payrollRun: {
   },
 
   getPayrollItems: (
-    payrollRunId: string,
+    payrollResultId: string,
     employeeId?: string
   ) => {
     return ipcRenderer.invoke(
       "payroll:getItems",
-      payrollRunId,
+      payrollResultId,
       employeeId
     );
   },

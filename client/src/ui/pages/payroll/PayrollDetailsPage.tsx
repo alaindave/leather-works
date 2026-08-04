@@ -32,7 +32,6 @@ import PayrollDashboard from "../../components/PayrollDashboard";
 import User from "../../../common/types/User";
 import { formatTime } from "../../util/timeFormatter";
 import DeletionDialog from "../../components/DeletionDialog";
-import { aborted } from "node:util";
 // import AttendanceTable from "../components/AttendanceRecordTable";
 
 const PayrollDetailsPage = () => {
@@ -115,6 +114,35 @@ const PayrollDetailsPage = () => {
     }
   };
 
+  const approve = async () => {
+    if (!_id) return;
+    try {
+      const results = await window.electron.payrollRun.approvePayroll(
+        _id,
+        adminUser
+      );
+      console.log("APPROVAL RESULTS", results);
+      loadPayrollRun();
+      loadPayrollResuts();
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE SUBMITTING FOR APPROVAL", e);
+    }
+  };
+  const pay = async () => {
+    if (!_id) return;
+    try {
+      const results = await window.electron.payrollRun.markPayrollAsPaid(
+        _id,
+        adminUser
+      );
+      console.log("PAYMENT RESULTS", results);
+      loadPayrollRun();
+      loadPayrollResuts();
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE SUBMITTING FOR PAYMENT", e);
+    }
+  };
+
   return (
     <Flex
       bg="#ffffff"
@@ -132,8 +160,10 @@ const PayrollDetailsPage = () => {
           }}
         >
           <Box
-            ml="0.5rem"
-            mb="2rem"
+            position="absolute"
+            top="1rem"
+            ml="0.2rem"
+            mr="2rem"
             p={2}
             border="1px solid #14376b"
             borderRadius="10px"
@@ -141,7 +171,7 @@ const PayrollDetailsPage = () => {
             <FaArrowLeftLong color="black" />
           </Box>
         </Link>
-        <Box>
+        <Box ml="2rem">
           <HStack>
             <Text mt="0.8rem" ml="0.5rem" fontSize="1.4rem" fontWeight="600">
               Fiches de paye
@@ -155,49 +185,69 @@ const PayrollDetailsPage = () => {
                 ? getPayrollPeriod(payrollRun.month, payrollRun.year)
                 : ""}
             </Text>{" "}
-            {payrollRun?.status === "ANNULÉ" || (
-              <HStack position="absolute" right="1rem">
-                <Button
-                  onClick={onConfirmationOpen}
-                  width="10rem"
-                  bg="#ffffff"
-                  border="1px solid gray"
-                >
-                  <Box color="red.400" fontSize="1.2rem" mr="0.7rem">
-                    <MdOutlineCancel />
-                  </Box>
-                  Annuler
-                </Button>
-                {payrollRun?.status === "VERIFICATION" ? (
-                  <Button width="10rem" bg="#ffffff" border="1px solid gray">
-                    <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
-                      <GiConfirmed />
-                    </Box>
-                    Approuver
-                  </Button>
-                ) : (
+            {/* Buttons */}
+            {payrollRun?.status === "ANNULÉ" ||
+              payrollRun?.status === "PAYÉ" || (
+                <HStack position="absolute" right="1rem">
                   <Button
-                    onClick={verify}
+                    onClick={onConfirmationOpen}
                     width="10rem"
                     bg="#ffffff"
                     border="1px solid gray"
                   >
-                    <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
-                      <GiConfirmed />
+                    <Box color="red.400" fontSize="1.2rem" mr="0.7rem">
+                      <MdOutlineCancel />
                     </Box>
-                    Verifier
+                    Annuler
                   </Button>
-                )}
-              </HStack>
-            )}
+                  {payrollRun?.status === "VERIFICATION" ? (
+                    <Button
+                      onClick={approve}
+                      width="10rem"
+                      bg="#ffffff"
+                      border="1px solid gray"
+                    >
+                      <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
+                        <GiConfirmed />
+                      </Box>
+                      Approuver
+                    </Button>
+                  ) : payrollRun?.status === "APPROUVÉ" ? (
+                    <Button
+                      onClick={pay}
+                      width="10rem"
+                      bg="#ffffff"
+                      border="1px solid gray"
+                    >
+                      <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
+                        <GiConfirmed />
+                      </Box>
+                      Payer
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={verify}
+                      width="10rem"
+                      bg="#ffffff"
+                      border="1px solid gray"
+                    >
+                      <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
+                        <GiConfirmed />
+                      </Box>
+                      Verifier
+                    </Button>
+                  )}
+                </HStack>
+              )}
           </HStack>
+          {/* Audit log */}
           <Text
             position="relative"
             left="0.5rem"
             bottom="1rem"
             color="gray.500"
           >
-            Crée le{" "}
+            Créee le{" "}
             {payrollRun?.createdAt &&
               new Date(payrollRun?.createdAt).toLocaleDateString("fr-FR", {
                 day: "numeric",
@@ -216,7 +266,7 @@ const PayrollDetailsPage = () => {
               bottom="2rem"
               color="gray.500"
             >
-              Annulé le{" "}
+              Annulée le{" "}
               {payrollRun?.cancelledAt &&
                 new Date(payrollRun?.cancelledAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
@@ -229,13 +279,84 @@ const PayrollDetailsPage = () => {
               par {payrollRun?.cancelledByName}
             </Text>
           ) : null}
+          {/* Verifying payroll */}
+          {payrollRun?.status === "VERIFICATION" ||
+          payrollRun?.status === "APPROUVÉ" ||
+          payrollRun?.status === "PAYÉ" ? (
+            <Text
+              position="relative"
+              left="0.5rem"
+              bottom="2rem"
+              color="gray.500"
+            >
+              Soumise pour verification le{" "}
+              {payrollRun?.submittedForVerificationAt &&
+                new Date(
+                  payrollRun?.submittedForVerificationAt
+                ).toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              {"  "}à{" "}
+              {payrollRun?.submittedForVerificationAt &&
+                formatTime(payrollRun?.submittedForVerificationAt)}{" "}
+              {"  "}
+              par {payrollRun?.submittedForVerificationByName}
+            </Text>
+          ) : null}
+          {/* Approved payroll */}
+          {payrollRun?.status === "APPROUVÉ" ||
+          payrollRun?.status === "PAYÉ" ? (
+            <Text
+              position="relative"
+              left="0.5rem"
+              bottom="3rem"
+              color="gray.500"
+            >
+              Approuvée le{" "}
+              {payrollRun?.approvedAt &&
+                new Date(payrollRun?.approvedAt).toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              {"  "}à{" "}
+              {payrollRun?.approvedAt && formatTime(payrollRun?.approvedAt)}{" "}
+              {"  "}
+              par {payrollRun?.approvedByName}
+            </Text>
+          ) : null}
+          {/* Paid payroll */}
+          {payrollRun?.status === "PAYÉ" ? (
+            <Text
+              position="relative"
+              left="0.5rem"
+              bottom="4rem"
+              color="gray.500"
+            >
+              Payée le{" "}
+              {payrollRun?.paidAt &&
+                new Date(payrollRun?.paidAt).toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              {"  "}à {payrollRun?.paidAt && formatTime(payrollRun?.paidAt)}{" "}
+              {"  "}
+              par {payrollRun?.paidByName}
+            </Text>
+          ) : null}
         </Box>
-        {payrollRun?.status && payrollRun?.status === "ANNULÉ" ? (
+
+        {/* Status badge */}
+        {(payrollRun?.status && payrollRun?.status === "ANNULÉ") ||
+        payrollRun?.status === "PAYÉ" ? (
           <Badge
             position="absolute"
             top="1rem"
             right="2rem"
-            bg="#E53E3E"
+            bg={payrollRun?.status && statusColor[payrollRun.status]}
             color="gray.200"
             fontSize="1rem"
           >
@@ -243,9 +364,9 @@ const PayrollDetailsPage = () => {
           </Badge>
         ) : (
           <Badge
-            position="relative"
-            top="2rem"
-            left="2rem"
+            position="absolute"
+            top="1.5rem"
+            right="28rem"
             bg={payrollRun?.status && statusColor[payrollRun.status]}
             color="gray.200"
             fontSize="1rem"

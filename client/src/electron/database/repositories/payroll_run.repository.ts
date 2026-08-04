@@ -12,6 +12,7 @@ import {
 import User from "../../../common/types/User.js";
 import AdminUser from "../../../common/types/AdminUser.js";
 import { addToSyncQueue } from "./sync.repository.js";
+import PayrollItem from "../../../common/types/payroll/PayrollItem.js";
 
 //Create payroll draft
 export async function createPayrollRun(
@@ -112,7 +113,10 @@ export async function getPayrollRunById(_id: string) {
           pr.*,
           gen.firstName || ' ' || gen.lastName AS generatedByName,
           can.firstName || ' ' ||can.lastName AS cancelledByName,
-          ver.firstName || ' ' ||ver.lastName AS submittedForVerificationByName
+          ver.firstName || ' ' ||ver.lastName AS submittedForVerificationByName,
+          app.firstName || ' ' ||app.lastName AS approvedByName,
+          paid.firstName || ' ' ||paid.lastName AS paidByName
+
 
       FROM payroll_runs pr
       LEFT JOIN admin_users gen
@@ -121,6 +125,10 @@ export async function getPayrollRunById(_id: string) {
       ON pr.cancelledBy = can._id
       LEFT JOIN admin_users ver
       ON pr.submittedForVerificationBy = ver._id
+      LEFT JOIN admin_users app
+      ON pr.approvedBy = app._id
+      LEFT JOIN admin_users paid
+      ON pr.paidBy = paid._id
 
       WHERE pr._id=?
 
@@ -247,6 +255,78 @@ export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
   });
 }
 
+//Approve payroll run
+export async function approvePayrollRun(
+  payrollRunId: string,
+  admin: AdminUser
+) {
+  const now = new Date().toISOString();
+
+  return transaction(async () => {
+    await runDirect(
+      `
+      UPDATE payroll_runs
+      SET
+        status = ?,
+        approvedBy = ?,
+        approvedAt = ?,
+        updatedAt = ?
+      WHERE _id = ?
+      `,
+      ["APPROUVÉ", admin._id, now, now, payrollRunId]
+    );
+
+    await runDirect(
+      `
+      UPDATE payroll_results
+      SET
+        status = ?,
+        updatedAt = ?
+      WHERE payrollRunId = ?
+      `,
+      ["APPROUVÉ", now, payrollRunId]
+    );
+
+    return true;
+  });
+}
+
+//Payment
+export async function paymentPayrollRun(
+  payrollRunId: string,
+  admin: AdminUser
+) {
+  const now = new Date().toISOString();
+
+  return transaction(async () => {
+    await runDirect(
+      `
+      UPDATE payroll_runs
+      SET
+        status = ?,
+        paidBy = ?,
+        paidAt = ?,
+        updatedAt = ?
+      WHERE _id = ?
+      `,
+      ["PAYÉ", admin._id, now, now, payrollRunId]
+    );
+
+    await runDirect(
+      `
+      UPDATE payroll_results
+      SET
+        status = ?,
+        updatedAt = ?
+      WHERE payrollRunId = ?
+      `,
+      ["PAYÉ", now, payrollRunId]
+    );
+
+    return true;
+  });
+}
+
 //Save payroll result
 export async function savePayrollResult(
   payrollRunId: string,
@@ -364,33 +444,20 @@ export async function getPayrollResults(payrollRunId: string) {
   );
 }
 
-// Get employee payroll results
-// If payrollRunId is provided, return result for that run only
-// Otherwise return all payroll results for the employee
+// Get employee payroll results for a given payroll run ID
 export async function getEmployeePayrollResults(
   employeeId: string,
   payrollRunId?: string
 ) {
-  let query = `
+  return get<PayrollResultRecord>(
+    `
     SELECT *
     FROM payroll_results
-    WHERE employeeId = ?
-  `;
-
-  const params: any[] = [employeeId];
-
-  if (payrollRunId) {
-    query += `
-      AND payrollRunId = ?
-    `;
-    params.push(payrollRunId);
-  }
-
-  query += `
-    ORDER BY year DESC, month DESC
-  `;
-
-  return await all<PayrollResultRecord>(query, params);
+    WHERE payrollRunId = ?
+      AND employeeId=?
+    `,
+    [payrollRunId, employeeId]
+  );
 }
 
 // Get one employee's payroll result for a given month and year
@@ -415,32 +482,32 @@ export async function getEmployeePayrollResultByMonthAndYear(
 
 // Get payroll items - earnings + deductions
 export async function getPayrollItems(
-  payrollRunId: string,
+  payrollResultId: string,
   employeeId?: string
 ) {
   if (employeeId) {
-    return await all(
+    return await all<PayrollItem[]>(
       `
       SELECT *
       FROM payroll_items
-      WHERE payrollRunId=?
+      WHERE payrollResultId=?
         AND employeeId=?
       ORDER BY createdAt ASC
 
       `,
-      [payrollRunId, employeeId]
+      [payrollResultId, employeeId]
     );
   }
 
-  return await all(
+  return await all<PayrollItem[]>(
     `
     SELECT *
      FROM payroll_items
-        WHERE payrollRunId=?
+        WHERE payrollResultId=?
     ORDER BY createdAt ASC
 
     `,
-    [payrollRunId]
+    [payrollResultId]
   );
 }
 

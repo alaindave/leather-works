@@ -13,8 +13,6 @@ export default interface Payroll {
   generatedBy?: string;
   month: number;
   year: number;
-  earnings: PayrollItem[];
-  deductions: PayrollItem[];
   grossSalary: number;
   totalDeductions: number;
   netSalary: number;
@@ -71,6 +69,8 @@ export interface PayrollResultRecord {
   department?: string;
   baseSalary: number;
   grossSalary: number;
+  earnings: PayrollItem[];
+  deductions: PayrollItem[];
   totalEarnings: number;
   totalDeductions: number;
   status: "BROUILLON" | "VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";

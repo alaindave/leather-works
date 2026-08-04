@@ -1,11 +1,30 @@
-import { Box, Flex, HStack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  HStack,
+  Text,
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+  Badge,
+} from "@chakra-ui/react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { IoSettings } from "react-icons/io5";
 import { MdOutlineChevronRight } from "react-icons/md";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Employee from "../../common/types/Employee";
 import { useEffect, useState } from "react";
-import { PayrollResultRecord } from "../../common/types/payroll/Payroll";
+import {
+  PayrollResultRecord,
+  PayrollRun,
+} from "../../common/types/payroll/Payroll";
+import { getPayrollPeriod } from "../util/getPayrollPeriod";
 
 type EmployeeState = {
   employee?: Employee;
@@ -16,28 +35,28 @@ type PhotoState = {
 };
 
 const EmployeePayrollReport = () => {
-  const [payslips, setPayslips] = useState<PayrollResultRecord[] | null>([]);
+  const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
   const location = useLocation();
   const { employee } = (location.state as EmployeeState) || {};
   const { photo_url } = (location.state as PhotoState) || "";
+  const navigate = useNavigate();
+  const statusColor = {
+    BROUILLON: "#e6b800",
+    VERIFICATION: "#1a53ff",
+    APPROUVÉ: "green",
+    PAYÉ: "purple",
+    ANNULÉ: "red",
+  } as const;
 
   useEffect(() => {
-    getPayrollHistory();
+    loadPayrollRun();
   }, [employee]);
 
-  async function getPayrollHistory() {
-    if (!employee?._id) return;
-    try {
-      const payslips =
-        await window.electron.payrollRun.getEmployeePayrollResults(
-          employee?._id
-        );
-      console.log("PAYSLIPS FETCHED:", payslips);
-      setPayslips(payslips);
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE FETCHING PAYSLIPS", e);
-    }
-  }
+  const loadPayrollRun = async () => {
+    const payrollRuns = await window.electron.payrollRun.getPayrollRuns();
+    console.log("FETCHED PAYROLL RUNS", payrollRuns);
+    setPayrollRuns(payrollRuns);
+  };
 
   return (
     <Flex direction="column" bg="#ffffff" width="100%" alignItems="flex-start">
@@ -93,7 +112,67 @@ const EmployeePayrollReport = () => {
           </Box>
         </Link>
       </Flex>
-      <Text>Payroll history goes here</Text>
+      <TableContainer
+        width="60vw"
+        borderWidth="1px"
+        borderRadius="lg"
+        overflowX="auto"
+        overflowY="auto"
+        ml="5rem"
+        mt="5rem"
+      >
+        <Table variant="simple" size="md">
+          <Thead>
+            <Tr>
+              <Th>Période</Th>
+              <Th>Statut</Th>
+              <Th>Créee par</Th>
+              <Th>Date de création</Th>
+            </Tr>
+          </Thead>
+
+          <Tbody>
+            {payrollRuns.map((run) => (
+              <Tr
+                key={run._id}
+                cursor="pointer"
+                _hover={{ bg: "transparent" }}
+                transition="background 0.2s"
+                onClick={() =>
+                  navigate(
+                    `/employees_admin/employees_list/${employee?._id}/payslips/${run._id}`
+                  )
+                }
+              >
+                <Td>
+                  Du{" "}
+                  {run?.month && run?.year
+                    ? getPayrollPeriod(run.month, run.year)
+                    : ""}
+                </Td>
+
+                <Td>
+                  <Badge
+                    bg={statusColor[run.status]}
+                    color="#ffffff"
+                    fontSize="14px"
+                  >
+                    {run.status}
+                  </Badge>
+                </Td>
+
+                <Td>{run.generatedByName}</Td>
+
+                <Td>
+                  {run.createdAt
+                    ? new Date(run.createdAt).toLocaleDateString("fr-FR")
+                    : "-"}
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
     </Flex>
   );
 };

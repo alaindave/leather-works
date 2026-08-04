@@ -28,17 +28,20 @@ interface Props {
 }
 
 export default function AddPayrollEmployeeProfileModal({
-  type,
   onCreated,
   employeeID,
 }: Props) {
+  console.log("EMPLOYEE ID TESTING", employeeID);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState("");
+  const [displayOrder, setDisplayOrder] = useState(0);
+
   const [calculationType, setCalculationType] = useState<
     "FIXE" | "POURCENTAGE" | "MANUEL"
   >("MANUEL");
+  const [type, setType] = useState<"EARNING" | "DEDUCTION">("EARNING");
 
   const [defaultValue, setDefaultValue] = useState(0);
 
@@ -65,6 +68,7 @@ export default function AddPayrollEmployeeProfileModal({
       const component: CreatePayrollProfileDto = {
         name: displayName.toUpperCase().replace(/\s+/g, "_"),
         displayName,
+        displayOrder,
         type,
         calculationType,
         value: defaultValue,
@@ -114,20 +118,15 @@ export default function AddPayrollEmployeeProfileModal({
           Ajouter
         </Text>
       </Button>
-
       <Modal isOpen={isOpen} onClose={onClose} size="lg">
         <ModalOverlay backdropFilter="blur(0.8rem)" />
-
         <ModalContent>
           <ModalHeader>Ajouter un composant</ModalHeader>
-
           <ModalCloseButton />
-
           <ModalBody>
             <Stack spacing={4}>
               <FormControl isRequired>
                 <FormLabel>Nom</FormLabel>
-
                 <Input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
@@ -135,8 +134,19 @@ export default function AddPayrollEmployeeProfileModal({
                 />
               </FormControl>
               <FormControl>
+                <FormLabel>Type de composante</FormLabel>
+                <Select
+                  value={calculationType}
+                  onChange={(e) =>
+                    setType(e.target.value as "EARNING" | "DEDUCTION")
+                  }
+                >
+                  <option value="EARNING">Rémunération</option>
+                  <option value="DEDUCTION">Deduction</option>
+                </Select>
+              </FormControl>
+              <FormControl>
                 <FormLabel>Type de calcul</FormLabel>
-
                 <Select
                   value={calculationType}
                   onChange={(e) =>
@@ -146,20 +156,26 @@ export default function AddPayrollEmployeeProfileModal({
                   }
                 >
                   <option value="FIXE">Montant fixe</option>
-
                   <option value="POURCENTAGE">Pourcentage</option>
-
                   <option value="MANUEL">Manuel</option>
                 </Select>
               </FormControl>
-
               <FormControl>
                 <FormLabel>Valeur par défaut</FormLabel>
-
                 <NumberInput
                   min={0}
                   value={defaultValue}
                   onChange={(_, value) => setDefaultValue(value)}
+                >
+                  <NumberInputField />
+                </NumberInput>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Ordre d'affichage</FormLabel>
+                <NumberInput
+                  min={0}
+                  value={displayOrder}
+                  onChange={(_, value) => setDisplayOrder(value)}
                 >
                   <NumberInputField />
                 </NumberInput>

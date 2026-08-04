@@ -18,6 +18,8 @@ import {
   getEmployeePayrollResults,
   cancelPayrollRun,
   verifyPayrollRun,
+  approvePayrollRun,
+  paymentPayrollRun,
 } from "../database/repositories/payroll_run.repository.js";
 
 import User from "../../common/types/User.js";
@@ -67,16 +69,22 @@ export function registerPayrollGenerationIPC() {
   /**
    * EN_VERIFICATION → APPROUVÉ
    */
-  ipcMain.handle("payroll:approve", async (_, payrollRunId: string) => {
-    return await updatePayrollStatus(payrollRunId, "APPROUVÉ");
-  });
+  ipcMain.handle(
+    "payroll:approve",
+    async (_, payrollRunId: string, admin: AdminUser) => {
+      return await approvePayrollRun(payrollRunId, admin);
+    }
+  );
 
   /**
    * APPROUVÉ → PAYÉ
    */
-  ipcMain.handle("payroll:markAsPaid", async (_, payrollRunId: string) => {
-    return await updatePayrollStatus(payrollRunId, "PAYÉ");
-  });
+  ipcMain.handle(
+    "payroll:markAsPaid",
+    async (_, payrollRunId: string, admin: AdminUser) => {
+      return await paymentPayrollRun(payrollRunId, admin);
+    }
+  );
 
   /**
    * BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
@@ -112,8 +120,8 @@ export function registerPayrollGenerationIPC() {
 
   ipcMain.handle(
     "payroll:getItems",
-    async (_, payrollRunId: string, employeeId?: string) => {
-      return await getPayrollItems(payrollRunId, employeeId);
+    async (_, payrollResultId: string, employeeId?: string) => {
+      return await getPayrollItems(payrollResultId, employeeId);
     }
   );
 
