@@ -154,7 +154,7 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
 
                 <NumberInput
                   min={0}
-                  value={defaultValue}
+                  value={defaultValue ?? 0}
                   onChange={(_, value) => setDefaultValue(value)}
                 >
                   <NumberInputField />

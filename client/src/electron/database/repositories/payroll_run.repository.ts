@@ -184,10 +184,11 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
       UPDATE payroll_results
       SET
         status = ?,
+        cancelledAt=?,
         updatedAt = ?
       WHERE payrollRunId = ?
       `,
-      ["ANNULÉ", now, payrollRunId]
+      ["ANNULÉ", now, now, payrollRunId]
     );
 
     return true;
@@ -245,10 +246,11 @@ export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
       UPDATE payroll_results
       SET
         status = ?,
+        verifiedAt=?,
         updatedAt = ?
       WHERE payrollRunId = ?
       `,
-      ["VERIFICATION", now, payrollRunId]
+      ["VERIFICATION", now, now, payrollRunId]
     );
 
     return true;
@@ -281,10 +283,11 @@ export async function approvePayrollRun(
       UPDATE payroll_results
       SET
         status = ?,
+        approvedAt=?,
         updatedAt = ?
       WHERE payrollRunId = ?
       `,
-      ["APPROUVÉ", now, payrollRunId]
+      ["APPROUVÉ", now, now, payrollRunId]
     );
 
     return true;
@@ -317,10 +320,11 @@ export async function paymentPayrollRun(
       UPDATE payroll_results
       SET
         status = ?,
+        paidAt=?,
         updatedAt = ?
       WHERE payrollRunId = ?
       `,
-      ["PAYÉ", now, payrollRunId]
+      ["PAYÉ", now, now, payrollRunId]
     );
 
     return true;
@@ -393,13 +397,14 @@ export async function savePayrollResult(
   employeeId,
   componentId,
   name,
+  displayName,
   type,
   amount,
   createdAt,
   updatedAt
   )
 
-  VALUES(?,?,?,?,?,?,?,?,?)
+  VALUES(?,?,?,?,?,?,?,?,?,?)
   `,
       [
         randomUUID(),
@@ -407,6 +412,7 @@ export async function savePayrollResult(
         result.employeeId,
         item.componentId,
         item.name,
+        item.displayName,
         item.type,
         item.amount,
         now,

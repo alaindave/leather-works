@@ -437,20 +437,35 @@ const EmployeeDetailsPage = () => {
                       <>
                         <HStack spacing={3}>
                           <Box>
-                            <HStack spacing={1} color="gray.500" fontSize="sm">
-                              <Icon
-                                as={FiClock}
+                            {attendance?.clockIn ? (
+                              <HStack
+                                spacing={1}
+                                color="gray.500"
+                                fontSize="sm"
+                              >
+                                <Icon
+                                  as={FiClock}
+                                  fontSize="1.1rem"
+                                  color="purple.500"
+                                />
+                                <Text mt="1rem" fontSize="0.95rem">
+                                  Arrivée à{" "}
+                                  {attendance?.clockIn &&
+                                    new Date(
+                                      attendance?.clockIn
+                                    ).toLocaleTimeString("fr-FR")}
+                                </Text>
+                              </HStack>
+                            ) : (
+                              <Text
+                                color="blue.400"
                                 fontSize="1.1rem"
-                                color="purple.500"
-                              />
-                              <Text mt="1rem" fontSize="0.95rem">
-                                Arrivée à{" "}
-                                {attendance?.clockIn &&
-                                  new Date(
-                                    attendance?.clockIn
-                                  ).toLocaleTimeString("fr-FR")}
+                                ml="7rem"
+                                mt="0.5rem"
+                              >
+                                Pas de pointage{" "}
                               </Text>
-                            </HStack>
+                            )}
                           </Box>
                         </HStack>
 

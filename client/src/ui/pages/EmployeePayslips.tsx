@@ -140,7 +140,13 @@ const EmployeePayrollReport = () => {
                 transition="background 0.2s"
                 onClick={() =>
                   navigate(
-                    `/employees_admin/employees_list/${employee?._id}/payslips/${run._id}`
+                    `/employees_admin/employees_list/${employee?._id}/payslips/${run._id}`,
+                    {
+                      state: {
+                        employee,
+                        photo_url,
+                      },
+                    }
                   )
                 }
               >

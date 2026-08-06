@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import Employee from "../models/employeeModel.js";
 import Attendance from "../models/attendanceModel.js";
 
-export async function markAbsentEmployees(): Promise<void> {
+export async function markAbsentEmployees() {
   const now = new Date();
 
   const CURRENT_TIMESTAMP = now.toISOString();
@@ -13,6 +13,11 @@ export async function markAbsentEmployees(): Promise<void> {
     status: "ACTIF",
   });
 
+  let created = 0;
+  let alreadyExists = 0;
+
+  console.log("FETCHED ACTIVE EMPLOYEES", employees);
+
   for (const employee of employees) {
     const attendance = await Attendance.findOne({
       employeeId: employee._id,
@@ -20,18 +25,30 @@ export async function markAbsentEmployees(): Promise<void> {
       isDeleted: 0,
     });
 
-    if (!attendance) {
-      const absentAttendance = await Attendance.create({
-        _id: randomUUID(),
-        employeeId: employee._id,
-        date,
-        status: "ABSENT",
-        source: "AUTOMATIC",
-        createdAt: CURRENT_TIMESTAMP,
-        updatedAt: CURRENT_TIMESTAMP,
-      });
+    console.log("FETCHED ACTIVE EMPLOYEES ATTENDANCE", attendance);
 
-      console.log("ABSENT ATTENDANCE CREATED:", absentAttendance);
+    if (attendance) {
+      alreadyExists++;
+      continue;
     }
+
+    await Attendance.create({
+      _id: randomUUID(),
+      employeeId: employee._id,
+      date,
+      status: "ABSENT",
+      source: "AUTO_SERVER",
+      createdAt: CURRENT_TIMESTAMP,
+      updatedAt: CURRENT_TIMESTAMP,
+    });
+
+    created++;
   }
+
+  return {
+    date,
+    totalEmployees: employees.length,
+    created,
+    alreadyExists,
+  };
 }

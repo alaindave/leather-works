@@ -8,7 +8,7 @@ export default interface PayrollComponent {
   displayName: string;
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;
-  defaultValue: number | null;
+  defaultValue?: number | null;
   displayOrder: number;
   percentageOf?:
     | "BASIC_SALARY"

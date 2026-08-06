@@ -16,10 +16,22 @@ export interface PayrollEmployeeInput {
     components: PayrollComponentInput[];
 }
 export interface PayrollItem {
+    _id?: string;
+    payrollResultId?: string;
     componentId?: string;
     name: string;
+    displayName?: string;
     type: PayrollComponentType;
     amount: number;
+    calculationMethod?: string;
+    rate?: number;
+    quantity?: number;
+    notes?: string;
+    synced?: number;
+    isDeleted?: number;
+    createdAt?: string;
+    updatedAt?: string;
+    lastSyncedAt?: string;
 }
 export interface PayrollResult {
     employeeId: string;
@@ -32,7 +44,7 @@ export interface PayrollResult {
     grossSalary: number;
     totalEarnings: number;
     totalDeductions: number;
-    status: "BROUILLON" | "EN_VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
+    status: "BROUILLON" | "VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
     netSalary: number;
 }
 export interface PayrollBatchResult {

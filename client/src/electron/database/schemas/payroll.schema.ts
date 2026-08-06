@@ -121,6 +121,10 @@ export async function createPayrollTables() {
       status TEXT NOT NULL
         CHECK(status IN ('BROUILLON','VERIFICATION','APPROUVÉ','PAYÉ','ANNULÉ'))
         DEFAULT 'BROUILLON',
+      cancelledAt TEXT,
+      verifiedAt TEXT,
+      approvedAt TEXT,
+      paidAt TEXT,
       synced INTEGER NOT NULL DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
@@ -143,6 +147,7 @@ export async function createPayrollTables() {
       payrollResultId TEXT NOT NULL,
       componentId TEXT NOT NULL,
       name TEXT NOT NULL,
+      displayName TEXT NOT NULL,
       type TEXT NOT NULL
         CHECK(type IN ('EARNING','DEDUCTION')),
       amount REAL NOT NULL,

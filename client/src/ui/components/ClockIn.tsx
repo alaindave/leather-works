@@ -255,7 +255,6 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked, awayStatus }: Props) => {
                 onMouseEnter={onOpen}
                 onMouseLeave={onClose}
                 bg="#F8F9FB"
-                borderColor="#22345F"
                 color="white"
                 position="relative"
                 right="1rem"
@@ -272,9 +271,9 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked, awayStatus }: Props) => {
                       )}
                       <Text color="gray.800">de retard</Text>
                     </HStack>
-                    {attendance?.lateNotes && (
+                    {attendance?.notes && (
                       <Text position="relative" bottom="1rem" color="gray.700">
-                        <strong>Justification:</strong> {attendance?.lateNotes}
+                        <strong>Justification:</strong> {attendance?.notes}
                       </Text>
                     )}
                   </VStack>

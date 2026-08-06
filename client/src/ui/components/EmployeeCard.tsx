@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import "../styles/App.css";
 import AddClockInNotesPopover from "./AddClockInNotesPopover";
 import defaultAvatar from "../assets/default-avatar.jpeg";
+import AbsenceNotesPopover from "./AbsenceNotesPopover";
 
 interface Props {
   employee: Employee;
@@ -150,16 +151,14 @@ const EmployeeCard = ({ employee }: Props) => {
       .catch((error: Error) => console.error(error));
   };
 
-  const handleLateNotes = async (
-    lateNotes: string | undefined
-  ): Promise<boolean> => {
+  const saveNotes = async (notes: string | undefined): Promise<boolean> => {
     try {
       if (!attendance?._id) {
         throw new Error("Attendance record not found");
       }
       const updatedAttendance = await window.electron.attendance.update(
         attendance._id,
-        { lateNotes }
+        { notes }
       );
       setAttendance(updatedAttendance);
       return true;
@@ -238,15 +237,12 @@ const EmployeeCard = ({ employee }: Props) => {
               En Congé
             </Badge>
           ) : !loadingAttendance && attendance?.status === "ABSENT" ? (
-            <Badge
-              mt="2rem"
-              ml="1rem"
-              bg="#E53E3E"
-              color="gray.200"
-              fontSize="14px"
-            >
-              Absent
-            </Badge>
+            <Box mt="1.5rem">
+              <AbsenceNotesPopover
+                existingNotes={attendance?.notes}
+                onSubmit={saveNotes}
+              />
+            </Box>
           ) : null}
 
           {!loadingAttendance && attendance?.status === "PONCTUEL" ? (
@@ -256,8 +252,8 @@ const EmployeeCard = ({ employee }: Props) => {
           ) : !loadingAttendance && attendance?.status === "RETARD" ? (
             <Box mt="1.5rem">
               <AddClockInNotesPopover
-                existingNotes={attendance?.lateNotes}
-                onSubmit={handleLateNotes}
+                existingNotes={attendance?.notes}
+                onSubmit={saveNotes}
               />
             </Box>
           ) : null}

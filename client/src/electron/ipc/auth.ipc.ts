@@ -16,12 +16,12 @@ export function registerAuthIPC() {
     if (!credentials) {
       throw new Error("Missing credentials");
     }
-    const online = await NetworkService.isOnline();
+    const online = await NetworkService.canReachBackend();
 
     if (!online) {
       return {
         success: false,
-        message: "No internet connection",
+        message: "Backend unreachable",
       };
     }
 

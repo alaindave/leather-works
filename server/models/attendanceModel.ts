@@ -4,12 +4,12 @@ export interface AttendanceDocument {
   _id: string;
   employeeId: string;
   date: string;
-  source: "MANUAL" | "AUTOMATIC";
+  source: "MANUAL" | "AUTO_CLIENT" | "AUTO_SERVER";
   clockIn?: Date;
   clockOut?: Date;
   status: "PONCTUEL" | "RETARD" | "ABSENT" | "CONGÉ";
   lateMinutes?: number;
-  lateNotes?: string;
+  notes?: string;
   isDeleted: number;
   createdAt: Date;
   updatedAt: Date;
@@ -34,7 +34,7 @@ const attendanceSchema = new Schema<AttendanceDocument>({
   source: {
     type: String,
     default: "MANUAL",
-    enum: ["MANUAL", "AUTOMATIC"],
+    enum: ["MANUAL", "AUTO_CLIENT", "AUTO_SERVER"],
     required: true,
   },
 
@@ -56,7 +56,7 @@ const attendanceSchema = new Schema<AttendanceDocument>({
     type: Number,
   },
 
-  lateNotes: {
+  notes: {
     type: String,
   },
 
@@ -77,7 +77,13 @@ const attendanceSchema = new Schema<AttendanceDocument>({
   },
 });
 
-attendanceSchema.index({ employeeId: 1, date: 1 }, { unique: true });
+attendanceSchema.index(
+  { employeeId: 1, date: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { isdeleted: 0 },
+  }
+);
 
 const Attendance = model<AttendanceDocument>("Attendances", attendanceSchema);
 

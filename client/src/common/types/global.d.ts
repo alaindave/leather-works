@@ -137,6 +137,8 @@ declare global {
           updates: Partial<AttendanceWithEmployee>
         ) => Promise<AttendanceWithEmployee>;
 
+        markAbsent: () => Promise<AttendanceWithEmployee[]>;
+
         delete: (_id: string) => Promise<AttendanceWithEmployee>;
       };
 

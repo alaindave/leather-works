@@ -74,6 +74,10 @@ export interface PayrollResultRecord {
   totalEarnings: number;
   totalDeductions: number;
   status: "BROUILLON" | "VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
+  cancelledAt?: string;
+  verifiedAt?: string;
+  approvedAt?: string;
+  paidAt?: string;
   netSalary: number;
   createdAt: string;
   updatedAt: string;

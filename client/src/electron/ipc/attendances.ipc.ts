@@ -11,6 +11,7 @@ import {
   getAttendanceRecord,
 } from "../database/repositories/attendances.repository.js";
 import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee.js";
+import { markEmployeesAbsent } from "../services/markEmployeesAbsent.service.js";
 
 export function registerAttendanceIPC() {
   console.log("REGISTERING ATTENDANCES IPC");
@@ -50,6 +51,11 @@ export function registerAttendanceIPC() {
       return updateAttendance(_id, updates);
     }
   );
+
+  ipcMain.handle("attendance:mark-absent", async () => {
+    return markEmployeesAbsent();
+  });
+
   ipcMain.handle("attendance:delete", async (_, _id: string) => {
     return deleteAttendance(_id);
   });

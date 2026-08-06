@@ -1,30 +1,21 @@
-import dns from "dns/promises";
 import axios from "axios";
+import { app } from "electron";
+
+const API_URL = app.isPackaged
+  ? "https://leather-works.onrender.com"
+  : process.env.VITE_API_URL;
 
 export class NetworkService {
-  static async hasInternetAccess(): Promise<boolean> {
+  static async canReachBackend(): Promise<boolean> {
     try {
-      await dns.lookup("google.com");
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  static async canReachInternet(): Promise<boolean> {
-    try {
-      await axios.get("https://clients3.google.com/generate_204", {
-        timeout: 5000,
+      await axios.get(`${API_URL}/health`, {
+        timeout: 3000,
       });
+      console.log("BACKEND AVAILABLE");
       return true;
     } catch {
+      console.log("BACKEND UNAVAILABLE");
       return false;
     }
-  }
-
-  static async isOnline(): Promise<boolean> {
-    const dnsOk = await this.hasInternetAccess();
-    if (!dnsOk) return false;
-    return await this.canReachInternet();
   }
 }

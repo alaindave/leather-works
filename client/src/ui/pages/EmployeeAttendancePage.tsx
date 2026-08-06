@@ -20,6 +20,8 @@ import { useEffect, useRef, useState } from "react";
 import { HiOutlineDownload } from "react-icons/hi";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
+import { RiPresentationFill } from "react-icons/ri";
+
 import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
@@ -71,6 +73,10 @@ const EmployeeAttendancePage = () => {
 
   /* Initial data fetch*/
   useEffect(() => {
+    loadAttendance();
+  }, [selectedDate]);
+
+  const loadAttendance = () => {
     setLoading(true);
     console.log("Selected date:", selectedDate);
     window.electron.attendance
@@ -88,7 +94,7 @@ const EmployeeAttendancePage = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [selectedDate]);
+  };
 
   //Attendance sync and refresh
   const handleAttendanceSync = async () => {
@@ -96,12 +102,7 @@ const EmployeeAttendancePage = () => {
       setLoading(true);
       const result = await window.electron.sync();
       if (result.success) {
-        console.log("Sync completed");
-        const attendances = await window.electron.attendance.getByDate(
-          selectedDate
-        );
-        console.log(`Fetched attendances for ${selectedDate}`, attendances);
-        setAttendances(attendances);
+        loadAttendance();
       } else {
         console.error(result.message);
       }
@@ -120,6 +121,16 @@ const EmployeeAttendancePage = () => {
       onClose();
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const markAbsent = async () => {
+    try {
+      const absences = await window.electron.attendance.markAbsent();
+      console.log("ABSENCES CREATED", absences);
+      loadAttendance();
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE MARKING ABSENCES", e);
     }
   };
 
@@ -261,7 +272,18 @@ const EmployeeAttendancePage = () => {
           </Box>
 
           <Spacer />
-
+          <Button
+            colorScheme="red"
+            onClick={markAbsent}
+            mt="0.5rem"
+            mr="1.3rem"
+          >
+            <HStack>
+              <RiPresentationFill />
+              <Text mt="1rem">Marquer les absences</Text>
+            </HStack>
+          </Button>
+          <Spacer />
           <Button
             bg="#4F46E5"
             color="#ffffff"
@@ -269,7 +291,12 @@ const EmployeeAttendancePage = () => {
             mt="0.5rem"
             mr="1.3rem"
           >
-            <HiOutlineDownload /> Exporter
+            <HStack>
+              <Box>
+                <HiOutlineDownload />
+              </Box>
+              <Text mt="1rem">Exporter</Text>
+            </HStack>
           </Button>
         </Flex>
 

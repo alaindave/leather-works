@@ -33,6 +33,7 @@ export function registerPayrollGenerationIPC() {
     "payroll:createDraft",
     async (_, admin: Omit<User, "password" | "notes">) => {
       const inputs = await getAllEmployeePayrollInputs();
+      console.log("FTECHED PAYROLL INPUTS");
       const validation = validatePayrolls(inputs);
       if (!validation.valid) {
         throw new Error(validation.message);

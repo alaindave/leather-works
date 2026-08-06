@@ -59,7 +59,7 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
           position="relative"
           bottom="0.8rem"
         >
-          {value || "N.D."}
+          {value}
           {property === "Salaire" ? " FBU" : ""}
         </Text>
       </Box>

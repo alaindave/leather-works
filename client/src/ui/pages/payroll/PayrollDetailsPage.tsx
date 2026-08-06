@@ -1,38 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
 import {
+  Badge,
   Box,
+  Button,
   Flex,
   HStack,
   Text,
-  VStack,
-  Image,
-  Spacer,
-  Button,
-  Badge,
   useDisclosure,
 } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { MdOutlineChevronRight } from "react-icons/md";
-import { GoDotFill } from "react-icons/go";
-import defaultAvatar from "../assets/default-avatar.jpeg";
-import { CiCalendarDate } from "react-icons/ci";
-import { MdOutlineCancel } from "react-icons/md";
-import { IoSync } from "react-icons/io5";
+import { MdOutlineCancel, MdOutlineChevronRight } from "react-icons/md";
+import { Link, useParams } from "react-router-dom";
+
 import { GiConfirmed } from "react-icons/gi";
-import useAdminUser from "../../../store/auth.store";
 import {
   PayrollResultRecord,
   PayrollRun,
 } from "../../../common/types/payroll/Payroll";
-import { getMonthName } from "../../util/getMonthName";
+import User from "../../../common/types/User";
+import useAdminUser from "../../../store/auth.store";
+import DeletionDialog from "../../components/DeletionDialog";
+import PayrollDashboard from "../../components/PayrollDashboard";
 import PayrollResultsTable from "../../components/PayrollResultsTable";
 import { getPayrollPeriod } from "../../util/getPayrollPeriod";
-import PayrollDashboard from "../../components/PayrollDashboard";
-import User from "../../../common/types/User";
 import { formatTime } from "../../util/timeFormatter";
-import DeletionDialog from "../../components/DeletionDialog";
-// import AttendanceTable from "../components/AttendanceRecordTable";
 
 const PayrollDetailsPage = () => {
   const { _id } = useParams();
@@ -241,13 +232,14 @@ const PayrollDetailsPage = () => {
               )}
           </HStack>
           {/* Audit log */}
+
           <Text
             position="relative"
             left="0.5rem"
             bottom="1rem"
             color="gray.500"
           >
-            Créee le{" "}
+            ---- Créee le{" "}
             {payrollRun?.createdAt &&
               new Date(payrollRun?.createdAt).toLocaleDateString("fr-FR", {
                 day: "numeric",
@@ -256,9 +248,9 @@ const PayrollDetailsPage = () => {
               })}
             {"  "}à {payrollRun?.createdAt && formatTime(payrollRun?.createdAt)}{" "}
             {"  "}
-            par {payrollRun?.generatedByName}
-            {/* Cancelled payroll run */}
+            par {payrollRun?.generatedByName}---
           </Text>
+          {/* Cancelled payroll run */}
           {payrollRun?.status === "ANNULÉ" ? (
             <Text
               position="relative"
@@ -266,7 +258,7 @@ const PayrollDetailsPage = () => {
               bottom="2rem"
               color="gray.500"
             >
-              Annulée le{" "}
+              --- Annulée le{" "}
               {payrollRun?.cancelledAt &&
                 new Date(payrollRun?.cancelledAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
@@ -276,7 +268,7 @@ const PayrollDetailsPage = () => {
               {"  "}à{" "}
               {payrollRun?.cancelledAt && formatTime(payrollRun?.cancelledAt)}{" "}
               {"  "}
-              par {payrollRun?.cancelledByName}
+              par {payrollRun?.cancelledByName}---
             </Text>
           ) : null}
           {/* Verifying payroll */}
@@ -289,7 +281,7 @@ const PayrollDetailsPage = () => {
               bottom="2rem"
               color="gray.500"
             >
-              Soumise pour verification le{" "}
+              --- Soumise pour verification le{" "}
               {payrollRun?.submittedForVerificationAt &&
                 new Date(
                   payrollRun?.submittedForVerificationAt
@@ -302,7 +294,7 @@ const PayrollDetailsPage = () => {
               {payrollRun?.submittedForVerificationAt &&
                 formatTime(payrollRun?.submittedForVerificationAt)}{" "}
               {"  "}
-              par {payrollRun?.submittedForVerificationByName}
+              par {payrollRun?.submittedForVerificationByName}---
             </Text>
           ) : null}
           {/* Approved payroll */}
@@ -314,7 +306,7 @@ const PayrollDetailsPage = () => {
               bottom="3rem"
               color="gray.500"
             >
-              Approuvée le{" "}
+              --- Approuvée le{" "}
               {payrollRun?.approvedAt &&
                 new Date(payrollRun?.approvedAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
@@ -324,7 +316,7 @@ const PayrollDetailsPage = () => {
               {"  "}à{" "}
               {payrollRun?.approvedAt && formatTime(payrollRun?.approvedAt)}{" "}
               {"  "}
-              par {payrollRun?.approvedByName}
+              par {payrollRun?.approvedByName}---
             </Text>
           ) : null}
           {/* Paid payroll */}
@@ -335,7 +327,7 @@ const PayrollDetailsPage = () => {
               bottom="4rem"
               color="gray.500"
             >
-              Payée le{" "}
+              ---Payée le{" "}
               {payrollRun?.paidAt &&
                 new Date(payrollRun?.paidAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
@@ -344,7 +336,7 @@ const PayrollDetailsPage = () => {
                 })}
               {"  "}à {payrollRun?.paidAt && formatTime(payrollRun?.paidAt)}{" "}
               {"  "}
-              par {payrollRun?.paidByName}
+              par {payrollRun?.paidByName}---
             </Text>
           ) : null}
         </Box>

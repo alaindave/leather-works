@@ -128,7 +128,7 @@ const EmployeeListPage = () => {
             </Text>
           </Box>
           <Spacer />
-          {adminUser?.role === "manager" ? (
+          {adminUser?.role === "MANAGER" ? (
             <Box mt="0.75rem" mr="2.3rem">
               <AddEmployee onAddEmployee={handleAddEmployee} />
             </Box>

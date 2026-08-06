@@ -2,15 +2,15 @@ export default interface Attendance {
   _id: string;
   employeeId: string;
   date: string;
-  clockIn: string;
+  clockIn?: string;
   clockOut?: string;
   status: "PONCTUEL" | "RETARD" | "ABSENT" | "CONGÉ";
-  source: "MANUAL" | "AUTOMATIC";
+  source: "MANUAL" | "AUTO_CLIENT" | "AUTO_SERVER";
   lateMinutes?: number;
-  lateNotes?: string;
+  notes?: string;
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;
-  synced: number;
-  isDeleted: number;
+  synced?: number;
+  isDeleted?: number;
 }

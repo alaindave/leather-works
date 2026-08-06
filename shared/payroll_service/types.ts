@@ -20,10 +20,23 @@ export interface PayrollEmployeeInput {
 }
 
 export interface PayrollItem {
+  _id?: string;
+  payrollResultId?: string;
   componentId?: string;
   name: string;
+  displayName?: string;
   type: PayrollComponentType;
   amount: number;
+  // Fields for audit
+  calculationMethod?: string; // "Fixed", "Percentage", "Formula"
+  rate?: number; // e.g. 3 for 3%
+  quantity?: number; // e.g. overtime hours
+  notes?: string; // "15 overtime hours × 5,000 BIF"
+  synced?: number;
+  isDeleted?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
 }
 
 export interface PayrollResult {

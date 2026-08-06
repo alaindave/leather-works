@@ -39,7 +39,7 @@ export async function createEmployeePayrollProfile(
     [
       _id,
       employeeId,
-      profile.componentId ?? null,
+      profile.componentId ?? _id,
       profile.name,
       profile.displayName,
       profile.displayOrder,
@@ -89,9 +89,67 @@ export async function updateEmployeePayrollProfile(
 
   const component = await getPayrollComponentById(profile.componentId);
   let isOverridden;
-
   if (!component) {
-    throw new Error(`PAYROLL COMPONENT NOT FOUND FOR PROFILE ${profile._id}`);
+    console.log(`PAYROLL COMPONENT NOT FOUND FOR PROFILE ${profile._id}`);
+    const component = await getEmployeePayrollProfile(profile._id);
+    if (component) {
+      console.log("PAYROLL PROFILE TO UPDATE", profile);
+
+      const now = new Date().toISOString();
+
+      await run(
+        `
+    UPDATE payroll_employee_profiles
+    SET
+      displayName = ?,
+      displayOrder=?,
+      type = ?,
+      calculationType = ?,
+      value = ?,
+      requiresHRApproval=?,
+      enabled = ?,
+      synced = ?,
+      isOverridden = ?,
+      isDeleted = ?,
+      updatedAt = ?,
+      lastSyncedAt = ?
+    WHERE _id = ?
+    `,
+        [
+          profile.displayName,
+          profile.displayOrder,
+          profile.type,
+          profile.calculationType,
+          profile.value,
+          profile.requiresHRApproval,
+          profile.enabled,
+          0,
+          profile.isOverridden,
+          profile.isDeleted,
+          now,
+          profile.lastSyncedAt ?? null,
+          profile._id,
+        ]
+      );
+
+      const updatedProfile = await getEmployeePayrollProfile(profile._id);
+
+      console.log(
+        "UPDATED PAYROLL PROFILE TO SAVE TO SYNC QUEUE",
+        updatedProfile
+      );
+
+      await addToSyncQueue({
+        entity: "payroll_profile",
+        entityId: profile._id,
+        operation: "update",
+        payload: JSON.stringify(updatedProfile),
+      });
+
+      return updatedProfile;
+    }
+
+    throw new Error("NO DEFAULT OR CUSTOM COMPONENTS FOUND WITH THAT ID");
   }
 
   // Determine whether this profile has been customized

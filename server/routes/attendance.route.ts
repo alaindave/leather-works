@@ -10,6 +10,7 @@ import {
   editAttendance,
   deleteAttendance,
 } from "../db.js";
+import { markAbsentEmployeesHandler } from "../controllers/attendance.controller.js";
 
 const router = express.Router();
 
@@ -150,6 +151,9 @@ router.put(
     }
   }
 );
+
+//Mark employees absent
+router.post("/mark-absent", markAbsentEmployeesHandler);
 
 // Delete attendance
 router.delete(

@@ -59,25 +59,21 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
               <Td>{new Date(record.date).toLocaleDateString("fr-FR")}</Td>
 
               <Td>
-                {record.clockIn ? (
-                  new Date(record.clockIn).toLocaleTimeString("fr-FR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                ) : (
-                  <Text color="gray.400">—</Text>
-                )}
+                {record.clockIn
+                  ? new Date(record.clockIn).toLocaleTimeString("fr-FR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : null}
               </Td>
 
               <Td>
-                {record.clockOut ? (
-                  new Date(record.clockOut).toLocaleTimeString("fr-FR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                ) : (
-                  <Text color="gray.400">—</Text>
-                )}
+                {record.clockOut
+                  ? new Date(record.clockOut).toLocaleTimeString("fr-FR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : null}
               </Td>
 
               <Td>
@@ -95,7 +91,7 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
               <Td>
                 {record.lateMinutes && formatLateMinutes(record.lateMinutes)}
               </Td>
-              <Td>{record.lateNotes}</Td>
+              <Td>{record.notes}</Td>
             </Tr>
           ))}
         </Tbody>

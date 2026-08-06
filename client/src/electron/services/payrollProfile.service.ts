@@ -26,7 +26,7 @@ export async function initializeEmployeePayrollProfilesForEmployee(
   const components = await getEnabledPayrollComponents();
   const now = new Date().toISOString();
   const profiles: CreatePayrollProfileDto[] = components.map((component) => {
-    let value = component.defaultValue;
+    let value = component.defaultValue ?? null;
 
     // Automatically use employee salary
     if (component.name === "BASIC_SALARY") {
@@ -91,7 +91,7 @@ export async function initializeEmployeePayrollProfiles() {
         componentId: component._id,
         type: component.type,
         calculationType: component.calculationType,
-        value,
+        value: value ?? null,
         requiresHRApproval: component.requiresHRApproval,
       });
     }
@@ -120,7 +120,7 @@ export async function addPayrollComponentToAllEmployees(
       displayOrder: component.displayOrder,
       type: component.type,
       calculationType: component.calculationType,
-      value,
+      value: value ?? null,
       percentageOf: component.percentageOf,
       isOverridden: 0,
       requiresHRApproval: component.requiresHRApproval,
@@ -173,7 +173,7 @@ export async function updatePayrollComponentDefaults(
 
       profile.value = employee.salary;
     } else {
-      profile.value = component.defaultValue;
+      profile.value = component.defaultValue ?? null;
     }
 
     profile.enabled = component.enabled;
@@ -216,7 +216,7 @@ export async function resetEmployeePayrollProfileToDefaults(
     if (component.name === "BASIC_SALARY") {
       profile.value = employee.salary;
     } else {
-      profile.value = component.defaultValue;
+      profile.value = component.defaultValue ?? null;
     }
 
     profile.enabled = component.enabled;

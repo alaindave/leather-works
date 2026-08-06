@@ -128,6 +128,10 @@ contextBridge.exposeInMainWorld("electron", {
     update: (_id: string, updates: Partial<AttendanceWithEmployee>) =>
       ipcRenderer.invoke("attendance:update", _id, updates),
 
+    markAbsent: () =>
+      ipcRenderer.invoke(
+        "attendance:mark-absent"),
+
     delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
 
 

@@ -96,23 +96,14 @@ app.use(cors());
 
 // Routes
 app.use("/employees", employees);
-
 app.use("/documents", employee_documents);
-
 app.use("/photos", employee_photos);
-
 app.use("/attendances", attendances);
-
 app.use("/leaves", leaves);
-
 app.use("/adminUsers", adminUser);
-
 app.use("/tasks", tasks);
-
 app.use("/auth", auth);
-
 app.use("/sync", sync);
-
 app.use("/api/jobs", jobsRouter);
 
 // Health check endpoint

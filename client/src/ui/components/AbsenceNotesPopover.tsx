@@ -18,28 +18,28 @@ interface Props {
   existingNotes?: string | undefined;
 }
 
-const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
+const AbsenceNotesPopover = ({ onSubmit, existingNotes }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [lateNote, setLateNote] = useState(existingNotes);
+  const [absenceNote, setAbsenceNote] = useState(existingNotes);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setLateNote(existingNotes);
+    setAbsenceNote(existingNotes);
   }, [existingNotes]);
 
   const close = () => {
-    setLateNote("");
+    setAbsenceNote("");
     onClose();
   };
 
   const handleSave = async () => {
-    setLateNote("");
+    setAbsenceNote("");
     setIsSubmitting(true);
 
     try {
-      console.log("Notes to save:", lateNote);
-      const success = await onSubmit(lateNote);
+      console.log("Notes to save:", absenceNote);
+      const success = await onSubmit(absenceNote);
       if (success) {
         setIsSubmitting(false);
         onClose();
@@ -78,12 +78,12 @@ const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
       <PopoverTrigger>
         <Badge
           animation={`${flashLate} 1.5s ease-in-out 2`}
-          bg="#DD6B20"
+          bg="red.500"
           color="gray.200"
           fontSize="14px"
           cursor="pointer"
         >
-          En retard
+          ABSENT
         </Badge>
       </PopoverTrigger>
       <Portal>
@@ -98,9 +98,9 @@ const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
           <PopoverBody>
             <Textarea
               ref={textareaRef}
-              value={lateNote ?? ""}
-              onChange={(e) => setLateNote(e.target.value)}
-              placeholder="Raison du retard..."
+              value={absenceNote ?? ""}
+              onChange={(e) => setAbsenceNote(e.target.value)}
+              placeholder="Raison de l'absence..."
               bg="#08162b"
               color="white"
               resize="none"
@@ -126,4 +126,4 @@ const AddClockInNotesPopover = ({ onSubmit, existingNotes }: Props) => {
   );
 };
 
-export default AddClockInNotesPopover;
+export default AbsenceNotesPopover;

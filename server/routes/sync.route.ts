@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 
-import upload from "../middleware/sync_upload.js";
+import upload from "../middlewares/sync_upload.js";
 
 import {
   syncEmployee,

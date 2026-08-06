@@ -5,6 +5,7 @@ export default interface PayrollItem {
   payrollResultId: string;
   componentId: string;
   name: string;
+  displayName: string;
   type: PayrollComponentType;
   amount: number;
   // Fields for audit

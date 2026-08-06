@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { all, get, run } from "../db.js";
 import { getEmployeeById } from "./employees.repository.js";
 import { addToSyncQueue } from "./sync.repository.js";
+import Employee from "../../../common/types/Employee.js";
 
 export async function createAttendance(employeeId: string, clockIn: string) {
   const employee = await getEmployeeById(employeeId);
@@ -71,6 +72,83 @@ export async function createAttendance(employeeId: string, clockIn: string) {
   return getAttendanceById(_id);
 }
 
+export async function getEmployeesWhoDidNotClockIn(
+  date: string
+): Promise<Employee[]> {
+  return all(
+    `
+      SELECT e.*
+      FROM employees e
+      WHERE e.status = 'ACTIF'
+
+      AND NOT EXISTS (
+        SELECT 1
+        FROM attendances a
+        WHERE a.employeeId = e._id
+          AND a.date = ?
+          AND a.isDeleted = 0
+          AND a.status IN ('PONCTUEL', 'RETARD')
+      )
+
+      AND NOT EXISTS (
+        SELECT 1
+        FROM leaves l
+        WHERE l.employeeId = e._id
+          AND l.isDeleted = 0
+          AND l.status = 'APPROUVÉ'
+          AND date(?) BETWEEN l.startDate AND l.endDate
+      )
+    `,
+    [date, date]
+  );
+}
+
+export async function createAbsentAttendance(
+  attendance: Attendance
+): Promise<Attendance> {
+  await run(
+    `
+      INSERT OR IGNORE INTO attendances (
+        _id,
+        employeeId,
+        date,
+        status,
+        source,
+        createdAt,
+        updatedAt
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `,
+    [
+      attendance._id,
+      attendance.employeeId,
+      attendance.date,
+      attendance.status,
+      attendance.source,
+      attendance.createdAt,
+      attendance.updatedAt,
+    ]
+  );
+
+  const absentAttendance: Attendance | null = await getAttendanceRecord(
+    attendance.employeeId,
+    attendance.date
+  );
+
+  if (!absentAttendance) {
+    throw new Error("FAILED TO CREATE ATTENDANCE RECORD");
+  }
+
+  await addToSyncQueue({
+    entity: "attendance",
+    entityId: attendance._id,
+    operation: "create",
+    payload: JSON.stringify(attendance),
+  });
+
+  return absentAttendance;
+}
+
 export async function getAttendanceById(
   _id: string
 ): Promise<Attendance | undefined | null> {
@@ -117,7 +195,7 @@ export async function getAttendanceByDate(date: string) {
       a.clockOut,
       a.status,
       a.lateMinutes,
-      a.lateNotes,
+      a.notes,
       e.matricule,
       e.firstName,
       e.lastName,
@@ -135,7 +213,10 @@ export async function getAttendanceByDate(date: string) {
   );
 }
 
-export async function getAttendanceRecord(employeeId: string, date: string) {
+export async function getAttendanceRecord(
+  employeeId: string,
+  date: string
+): Promise<Attendance | null> {
   return get(
     `
     SELECT *
@@ -151,13 +232,13 @@ export async function getAttendanceRecord(employeeId: string, date: string) {
 export async function updateAttendance(
   _id: string,
   updates: Partial<
-    Pick<Attendance, "clockIn" | "clockOut" | "lateNotes" | "isDeleted">
+    Pick<Attendance, "clockIn" | "clockOut" | "notes" | "isDeleted">
   >
 ) {
   const existing = await getAttendanceById(_id);
 
   if (!existing) {
-    throw new Error("Attendance record not found");
+    throw new Error("ATTENDANCE RECORD NOT FOUND");
   }
 
   const fields: string[] = [];
@@ -188,10 +269,13 @@ export async function updateAttendance(
     values.push(status);
 
     savedUpdates = {
+      ...savedUpdates,
       _id,
+      employeedId: existing.employeeId,
       clockIn: updates.clockIn,
       lateMinutes,
       status,
+      createdAt: existing.createdAt,
       updatedAt,
     };
   }
@@ -200,18 +284,24 @@ export async function updateAttendance(
     fields.push("clockOut = ?");
     values.push(updates.clockOut);
     savedUpdates = {
+      ...savedUpdates,
       _id,
+      employeedId: existing.employeeId,
       clockOut: updates.clockOut,
+      createdAt: existing.createdAt,
       updatedAt,
     };
   }
 
-  if (updates.lateNotes !== undefined) {
-    fields.push("lateNotes = ?");
-    values.push(updates.lateNotes);
+  if (updates.notes !== undefined) {
+    fields.push("notes = ?");
+    values.push(updates.notes);
     savedUpdates = {
+      ...savedUpdates,
       _id,
-      lateNotes: updates.lateNotes,
+      employeedId: existing.employeeId,
+      notes: updates.notes,
+      createdAt: existing.createdAt,
       updatedAt,
     };
   }
@@ -220,8 +310,12 @@ export async function updateAttendance(
     fields.push("isDeleted = ?");
     values.push(updates.isDeleted);
     savedUpdates = {
+      ...savedUpdates,
       _id,
+      createdAt: existing.createdAt,
       updatedAt,
+      employeedId: existing.employeeId,
+      isDeleted: updates.isDeleted,
     };
   }
 
@@ -355,7 +449,7 @@ export async function upsertAttendance(attendance: Attendance) {
       attendance.status,
       attendance.source,
       attendance.lateMinutes,
-      attendance.lateNotes,
+      attendance.notes,
       attendance.isDeleted ?? 0,
       attendance.createdAt,
       attendance.updatedAt,

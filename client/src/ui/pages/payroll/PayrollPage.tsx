@@ -139,9 +139,9 @@ export default function PayrollPage() {
           <Text
             position="relative"
             top="12rem"
-            left="20rem"
+            left="15rem"
             color="gray.700"
-            fontSize="2.1rem"
+            fontSize="2rem"
             fontWeight="500"
           >
             Pas de fiches de payes à afficher

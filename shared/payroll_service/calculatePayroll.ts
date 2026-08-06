@@ -33,6 +33,7 @@ export function calculatePayroll(
     earnings.push({
       componentId: component._id,
       name: component.name,
+      displayName: component.displayName,
       type: component.type,
       amount,
     });
@@ -52,6 +53,7 @@ export function calculatePayroll(
     deductions.push({
       componentId: component._id,
       name: component.name,
+      displayName: component.displayName,
       type: component.type,
       amount,
     });
