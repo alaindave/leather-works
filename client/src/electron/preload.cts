@@ -145,8 +145,7 @@ contextBridge.exposeInMainWorld("electron", {
         "leave:create",
        leave
       ),
-
-      
+        
     getLeaveById: (_id: string) =>
       ipcRenderer.invoke("leave:getLeaveById", _id),
 

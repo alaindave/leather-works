@@ -11,7 +11,7 @@ export async function createLeave(leave: Partial<Leave>) {
   }
   console.log("LEAVE TO CREATE:", leave);
   const today = new Date();
-  const submittedAt = today.toISOString().split("T")[0];
+  const submittedAt = today.toISOString();
   const time = today.toISOString();
   const month = String(today.getMonth() + 1).padStart(2, "0");
   const year = today.getFullYear();
@@ -27,6 +27,7 @@ export async function createLeave(leave: Partial<Leave>) {
       submittedMonth,
       startDate,
       endDate,
+      status,
       subject,
       notes,
       synced,
@@ -34,7 +35,7 @@ export async function createLeave(leave: Partial<Leave>) {
       createdAt,
       updatedAt
     )
-    VALUES (?, ?, ?, ?,?, ?,?,?, 0, 0, datetime('now'), datetime('now'))
+    VALUES (?, ?, ?, ?,?,?, ?,?,?, 0, 0, datetime('now'), datetime('now'))
     `,
     [
       _id,
@@ -43,6 +44,7 @@ export async function createLeave(leave: Partial<Leave>) {
       submittedMonth,
       leave.startDate,
       leave.endDate,
+      leave.status ?? "ATTENTE_APPROBATION",
       leave.subject,
       leave.notes,
     ]
@@ -126,12 +128,12 @@ export async function getLeaveByEmployeeId(employeeId: string) {
 export async function getOngoingLeaves(): Promise<Leave[]> {
   return all(
     `
-SELECT * 
-FROM leaves 
-WHERE startDate <= date('now') 
-  AND endDate >= date('now')
-  AND status = 'APPROUVÉ'
-  AND isDeleted = 0
+    SELECT * 
+    FROM leaves 
+    WHERE startDate <= date('now') 
+      AND endDate >= date('now')
+      AND status = 'APPROUVÉ'
+      AND isDeleted = 0
 
     `
   );
@@ -192,7 +194,7 @@ export async function updateLeave(
   const existing = await getLeaveById(_id);
 
   if (!existing) {
-    throw new Error("Leave not found");
+    throw new Error("LEAVE NOT FOUND");
   }
 
   const fields: string[] = [];

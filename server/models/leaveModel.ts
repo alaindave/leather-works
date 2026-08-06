@@ -5,8 +5,8 @@ export interface LeaveDocument {
   employeeId: string;
   submittedAt: Date;
   submittedMonth: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   subject: string;
   notes: string;
   status: "ATTENTE_APPROBATION" | "APPROUVÉ" | "REFUSÉ" | "ANNULÉ";
@@ -37,12 +37,12 @@ const leaveSchema = new Schema<LeaveDocument>({
   },
 
   startDate: {
-    type: Date,
+    type: String,
     required: true,
   },
 
   endDate: {
-    type: Date,
+    type: String,
     required: true,
   },
 

@@ -1,6 +1,13 @@
 export type PayrollComponentType = "EARNING" | "DEDUCTION";
 
-export type PayrollCalculationType = "FIXE" | "POURCENTAGE" | "MANUEL";
+export type PayrollCalculationType =
+  | "FIXE"
+  | "POURCENTAGE_BASE"
+  | "POURCENTAGE_BRUT"
+  | "POURCENTAGE_IMPOSABLE"
+  | "MANUEL"
+  | "QUANTITE_TAUX"
+  | "FORMULE";
 
 export default interface PayrollComponent {
   _id: string;
@@ -8,14 +15,18 @@ export default interface PayrollComponent {
   displayName: string;
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;
-  defaultValue?: number | null;
-  displayOrder: number;
-  percentageOf?:
-    | "BASIC_SALARY"
+  calculationBase:
+    | "BASE_SALARY"
     | "GROSS_SALARY"
+    | "TAXABLE_SALARY"
     | "TOTAL_EARNINGS"
-    | "TAXABLE_AMOUNT";
-  requiresHRApproval: number;
+    | "TOTAL_DEDUCTIONS"
+    | "NET_SALARY"
+    | null;
+  defaultValue?: number | null;
+  taxable?: number;
+  displayOrder: number;
+  requiresHRApproval?: number;
   enabled: number;
   isSystem: number;
   synced: number;

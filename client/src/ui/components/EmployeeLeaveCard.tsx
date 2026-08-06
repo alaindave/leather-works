@@ -10,6 +10,7 @@ import {
   MenuList,
   Text,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import useAdminUser from "../../store/auth.store";
@@ -35,7 +36,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   const [employee, setEmployee] = useState<Employee>({} as Employee);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [photo_url, setPhotoUrl] = useState("");
-
+  const toast = useToast();
   const {
     _id,
     firstName,
@@ -80,41 +81,87 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   }, [employee.photo_path]);
 
   // //Handle leave approval
-  const handleApprove = () => {
-    const _startDate: Date = new Date(startDate);
-    const _endDate: Date = new Date(endDate);
-    console.log("startDate :", _startDate);
-    console.log("endDate :", _endDate);
+  const handleApprove = async () => {
+    try {
+      const _startDate = new Date(startDate);
+      const _endDate = new Date(endDate);
 
-    const leaveDays =
-      Math.ceil(
-        (_endDate.getTime() - _startDate.getTime()) / (1000 * 60 * 60 * 24)
-      ) + 1;
-    console.log("Leave days :", leaveDays);
-    let updatedRemainingLeave = remainingLeave - leaveDays;
-    if (updatedRemainingLeave <= 0) {
-      updatedRemainingLeave = 0;
-    }
-    console.log("Employee ID to leave:", employeeId);
-    console.log("updatedRemainingLeave:", updatedRemainingLeave);
+      const leaveDays =
+        Math.ceil(
+          (_endDate.getTime() - _startDate.getTime()) / (1000 * 60 * 60 * 24)
+        ) + 1;
 
-    window.electron.employees
-      .update(employeeId, { remainingLeave: updatedRemainingLeave })
-      .then((employee) => {
-        console.log("Updated employee: ", employee);
-        console.log("ID of leave to update:", leave._id);
-        return window.electron.leave.update(leave._id, {
-          status: "APPROUVÉ",
+      console.log("LEAVE DAYS:", leaveDays);
+      console.log("REMAINING LEAVE:", remainingLeave);
+
+      // Validate dates
+      if (_endDate < _startDate) {
+        console.error("END DATE CANNOT BE BEFORE START DATE");
+        toast({
+          title: "Dates invalides",
+          description:
+            "La date de fin ne peut pas être antérieure à la date de début.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "top-right",
         });
-      })
-      .then((leave) => {
-        console.log("Updated leave: ", leave);
-        setLocalLeave(leave);
-      })
-      .catch((error) =>
-        console.error("An error occured while approving the leave", error)
-      );
+        return;
+      }
+
+      // Not enough leave days
+      if (leaveDays > remainingLeave) {
+        console.error(
+          `INSUFFICIENT LEAVE BALANCE. REQUESTED: ${leaveDays}, AVAILABLE: ${remainingLeave}`
+        );
+
+        toast({
+          title: "Solde de congé insuffisant",
+          description: `L'employé dispose de ${remainingLeave} jour${
+            remainingLeave !== 1 ? "s" : ""
+          } de congé restant${
+            remainingLeave !== 1 ? "s" : ""
+          }, mais ${leaveDays} jour${
+            leaveDays !== 1 ? "s" : ""
+          } sont demandés.`,
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+          position: "top-right",
+        });
+        return;
+      }
+
+      const updatedRemainingLeave = remainingLeave - leaveDays;
+
+      console.log("UPDATED REMAINING LEAVE:", updatedRemainingLeave);
+
+      const employee = await window.electron.employees.update(employeeId, {
+        remainingLeave: updatedRemainingLeave,
+      });
+
+      console.log("UPDATED EMPLOYEE:", employee);
+
+      const updatedLeave = await window.electron.leave.update(leave._id, {
+        status: "APPROUVÉ",
+      });
+
+      console.log("UPDATED LEAVE:", updatedLeave);
+
+      setLocalLeave(updatedLeave);
+    } catch (error) {
+      console.error("AN ERROR OCCURRED WHILE APPROVING LEAVE:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'approbation du congé.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
   };
+
   //Handle leave denial
   const handleDeny = () => {
     window.electron.leave
@@ -178,7 +225,6 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           />
           <Text
             color="gray.800"
-            mt="0.6rem"
             fontWeight="500"
             fontSize="1.1rem"
             whiteSpace="normal"
@@ -191,7 +237,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         </HStack>
       </Box>
       <Box>
-        <Text color="gray.600" fontWeight="500" fontSize="1.1rem">
+        <Text ml="0.5rem" color="gray.600" fontWeight="500" fontSize="1.1rem">
           {new Date(startDate).toLocaleDateString("fr-FR")}
         </Text>
       </Box>

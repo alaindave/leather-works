@@ -72,6 +72,47 @@ export async function createAttendance(employeeId: string, clockIn: string) {
   return getAttendanceById(_id);
 }
 
+export async function createLeaveAttendance(employeeId: string) {
+  const now = new Date().toISOString();
+  const _id = randomUUID();
+
+  await run(
+    `
+      INSERT INTO attendances (
+        _id,
+        employeeId,
+        date,
+        status,
+        createdAt,
+        updatedAt,
+        synced,
+        lastSyncedAt
+      )
+      VALUES (?,?, ?, ?, ?, ?, ?, ?)
+    `,
+    [_id, employeeId, now, "CONGÉ", now, now, 0, now]
+  );
+  const savedAttendance = {
+    _id,
+    employeeId,
+    date: now,
+    status: "CONGÉ",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  console.log("ATTENDANCE TO SAVE TO SYNC QUEUE", savedAttendance);
+
+  await addToSyncQueue({
+    entity: "attendance",
+    entityId: _id,
+    operation: "create",
+    payload: JSON.stringify(savedAttendance),
+  });
+
+  return getAttendanceById(_id);
+}
+
 export async function getEmployeesWhoDidNotClockIn(
   date: string
 ): Promise<Employee[]> {
@@ -231,11 +272,12 @@ export async function getAttendanceRecord(
 
 export async function updateAttendance(
   _id: string,
-  updates: Partial<
-    Pick<Attendance, "clockIn" | "clockOut" | "notes" | "isDeleted">
-  >
+  updates: Partial<Attendance>
 ) {
   const existing = await getAttendanceById(_id);
+
+  console.log("ATTENDANCE TO UPDATE", existing);
+  console.log("UPDATES", updates);
 
   if (!existing) {
     throw new Error("ATTENDANCE RECORD NOT FOUND");
@@ -306,6 +348,15 @@ export async function updateAttendance(
     };
   }
 
+  if (updates.status === "CONGÉ") {
+    fields.push("status = ?");
+    values.push(updates.status);
+    savedUpdates = {
+      ...savedUpdates,
+      status: updates.status,
+    };
+  }
+
   if (updates.isDeleted !== undefined) {
     fields.push("isDeleted = ?");
     values.push(updates.isDeleted);
@@ -337,7 +388,7 @@ export async function updateAttendance(
     values
   );
 
-  console.log("Attendance to save to sync queue", savedUpdates);
+  console.log("ATTENDANCE TO SAVE TO SYNC QUEUE", savedUpdates);
 
   await addToSyncQueue({
     entity: "attendance",
@@ -347,26 +398,6 @@ export async function updateAttendance(
   });
 
   return getAttendanceById(_id);
-}
-
-export async function createLeaveAttendance(employeeId: string, date: string) {
-  const now = new Date().toISOString();
-
-  return run(
-    `
-      INSERT INTO attendances (
-        employeeId,
-        date,
-        status,
-        createdAt,
-        updatedAt,
-        synced,
-        lastSyncedAt
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `,
-    [employeeId, date, "CONGÉ", now, now, 0, now]
-  );
 }
 
 export async function deleteAttendance(_id: string) {
@@ -420,7 +451,7 @@ export async function upsertAttendance(attendance: Attendance) {
       status,
       source,
       lateMinutes,
-      lateNotes,
+      notes,
       isDeleted,
       createdAt,
       updatedAt
@@ -435,7 +466,7 @@ export async function upsertAttendance(attendance: Attendance) {
       status = excluded.status,
       source = excluded.source,
       lateMinutes = excluded.lateMinutes,
-      lateNotes = excluded.lateNotes,
+      notes = excluded.notes,
       isDeleted = excluded.isDeleted,
       createdAt = excluded.createdAt,
       updatedAt = excluded.updatedAt

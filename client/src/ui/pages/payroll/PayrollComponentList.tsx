@@ -1,27 +1,35 @@
 import {
+  Badge,
   Box,
   Button,
   Checkbox,
   Flex,
-  Stack,
+  Input,
+  Select,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
-  Badge,
+  Th,
+  Thead,
+  Tr,
   useToast,
 } from "@chakra-ui/react";
 import { Editable, EditableInput, EditablePreview } from "@chakra-ui/react";
-import { Select } from "@chakra-ui/react";
-import { Input } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { FaDeleteLeft } from "react-icons/fa6";
 import PayrollComponent from "../../../common/types/payroll/PayrollComponent";
 import AddPayrollComponentModal from "../../components/AddPayrollComponentModal";
-import { FaDeleteLeft } from "react-icons/fa6";
 
 interface Props {
   type: "EARNING" | "DEDUCTION";
+  showTaxable: boolean;
 }
 
-export default function PayrollComponentList({ type }: Props) {
+export default function PayrollComponentList({ type, showTaxable }: Props) {
   const toast = useToast();
+
   const [components, setComponents] = useState<PayrollComponent[]>([]);
   const [originalComponents, setOriginalComponents] = useState<
     PayrollComponent[]
@@ -55,6 +63,33 @@ export default function PayrollComponentList({ type }: Props) {
     );
   };
 
+  // Toggle taxable / imposable
+  const toggleTaxable = (_id: string) => {
+    setComponents((prev) =>
+      prev.map((item) =>
+        item._id === _id
+          ? {
+              ...item,
+              taxable: item.taxable === 1 ? 0 : 1,
+            }
+          : item
+      )
+    );
+  };
+
+  const updateComponent = (_id: string, changes: Partial<PayrollComponent>) => {
+    setComponents((prev) =>
+      prev.map((component) =>
+        component._id === _id
+          ? {
+              ...component,
+              ...changes,
+            }
+          : component
+      )
+    );
+  };
+
   const save = async () => {
     try {
       const modifiedComponents = components.filter((component) => {
@@ -68,6 +103,7 @@ export default function PayrollComponentList({ type }: Props) {
           original.displayName !== component.displayName ||
           original.displayOrder !== component.displayOrder ||
           original.enabled !== component.enabled ||
+          original.taxable !== component.taxable ||
           original.calculationType !== component.calculationType ||
           original.defaultValue !== component.defaultValue
         );
@@ -111,166 +147,242 @@ export default function PayrollComponentList({ type }: Props) {
 
   return (
     <Box>
-      <Flex justify="space-between" mb={3}>
-        <Text fontWeight="bold" fontSize="xl">
-          {type === "EARNING" ? "Rémunérations" : "Déductions"}
-        </Text>
+      {/* Header */}
+      <Flex ml="2rem" justify="space-between" align="center" mb={4}>
+        <Box>
+          <Text fontWeight="bold" fontSize="xl">
+            {type === "EARNING" ? "Rémunérations" : "Déductions"}
+          </Text>
+
+          <Text fontSize="sm" color="gray.500">
+            Configurez les éléments de paie
+          </Text>
+        </Box>
 
         <Flex gap={3}>
           <AddPayrollComponentModal type={type} onCreated={loadComponents} />
+
           <Button colorScheme="yellow" onClick={save}>
             Enregistrer
           </Button>
         </Flex>
       </Flex>
 
-      <Stack spacing={1} height="65vh" overflowY="auto">
-        {components.map((item) => (
-          <Flex
-            position="relative"
-            key={item._id}
-            justify="space-between"
-            p={2}
-            borderWidth="1px"
-            borderRadius="lg"
-          >
-            <Box>
-              <Checkbox
-                isChecked={item.enabled === 1 ? true : false}
-                onChange={() => toggleComponent(item._id)}
-              />
-              <Box ml="3rem" mb="2rem">
-                <Flex align="center" gap={3}>
+      {/* Table */}
+      <TableContainer
+        height="100%"
+        overflowY="auto"
+        border="1px solid"
+        borderColor="gray.200"
+        borderRadius="lg"
+      >
+        <Table variant="simple" size="sm">
+          <Thead position="sticky" top={0} zIndex={1} bg="gray.50">
+            <Tr>
+              <Th width="70px">Actif</Th>
+
+              <Th width="90px">Ordre</Th>
+
+              <Th>Élément</Th>
+
+              <Th width="190px">Type de calcul</Th>
+
+              <Th width="150px">Valeur</Th>
+
+              {/* Taxable */}
+              {showTaxable ? (
+                <Th width="120px" textAlign="center">
+                  Imposable
+                </Th>
+              ) : null}
+
+              <Th width="120px">Statut</Th>
+
+              <Th width="60px">Action</Th>
+            </Tr>
+          </Thead>
+
+          <Tbody>
+            {components.map((item) => (
+              <Tr
+                key={item._id}
+                _hover={{
+                  bg: "gray.50",
+                }}
+              >
+                {/* Enabled */}
+                <Td>
+                  <Checkbox
+                    isChecked={item.enabled === 1}
+                    onChange={() => toggleComponent(item._id)}
+                    colorScheme="green"
+                  />
+                </Td>
+
+                {/* Display order */}
+                <Td>
                   <Editable
                     value={String(item.displayOrder)}
                     onChange={(value) => {
                       const displayOrder = Number(value);
 
-                      if (Number.isNaN(displayOrder)) return;
+                      if (Number.isNaN(displayOrder)) {
+                        return;
+                      }
 
-                      setComponents((prev) =>
-                        prev.map((component) =>
-                          component._id === item._id
-                            ? {
-                                ...component,
-                                displayOrder,
-                              }
-                            : component
-                        )
-                      );
+                      updateComponent(item._id, {
+                        displayOrder,
+                      });
                     }}
                   >
                     <EditablePreview
                       px={2}
                       py={1}
-                      minW="40px"
+                      minW="45px"
                       textAlign="center"
-                      borderRadius="md"
                       borderWidth="1px"
+                      borderRadius="md"
                       fontWeight="bold"
                       cursor="pointer"
-                      _hover={{ bg: "gray.100" }}
+                      _hover={{
+                        bg: "gray.100",
+                      }}
                     />
+
                     <EditableInput
                       type="number"
                       textAlign="center"
-                      width="40px"
+                      width="60px"
                       px={2}
                     />
                   </Editable>
+                </Td>
 
+                {/* Display name */}
+                <Td>
                   <Input
-                    flex={1}
                     value={item.displayName}
-                    fontWeight="bold"
+                    fontWeight="600"
                     variant="flushed"
                     onChange={(e) =>
-                      setComponents((prev) =>
-                        prev.map((component) =>
-                          component._id === item._id
-                            ? {
-                                ...component,
-                                displayName: e.target.value,
-                              }
-                            : component
-                        )
-                      )
+                      updateComponent(item._id, {
+                        displayName: e.target.value,
+                      })
                     }
                   />
-                </Flex>
-                <Select
-                  size="sm"
-                  mt={2}
-                  value={item.calculationType}
-                  onChange={(e) =>
-                    setComponents((prev) =>
-                      prev.map((component) =>
-                        component._id === item._id
-                          ? {
-                              ...component,
-                              calculationType: e.target.value as any,
-                              defaultValue:
-                                e.target.value === "MANUEL"
-                                  ? null
-                                  : component.defaultValue,
-                            }
-                          : component
-                      )
-                    )
-                  }
-                >
-                  <option value="FIXE">Montant fixe</option>
-                  <option value="MANUEL">Manuel</option>
-                  <option value="POURCENTAGE">Pourcentage</option>
-                </Select>
-              </Box>
-              {item.calculationType === "POURCENTAGE" ||
-              item.calculationType === "FIXE" ? (
-                <Box>
-                  <Text fontSize="xs" color="gray.500">
-                    {item.calculationType === "POURCENTAGE"
-                      ? "Pourcentage"
-                      : "Montant"}
-                  </Text>
-                  <Input
+                </Td>
+
+                {/* Calculation type */}
+                <Td>
+                  <Select
+                    size="md"
+                    value={item.calculationType}
+                    onChange={(e) => {
+                      const calculationType = e.target
+                        .value as PayrollComponent["calculationType"];
+
+                      updateComponent(item._id, {
+                        calculationType,
+                        defaultValue:
+                          calculationType === "MANUEL"
+                            ? null
+                            : item.defaultValue,
+                      });
+                    }}
+                  >
+                    <option value="FIXE">Montant fixe</option>
+
+                    <option value="MANUEL">Manuel</option>
+
+                    <option value="POURCENTAGE_BASE">
+                      Pourcentage-salaire de base
+                    </option>
+
+                    <option value="POURCENTAGE_BRUT">
+                      Pourcentage-salaire brut
+                    </option>
+                    <option value="POURCENTAGE_IMPOSABLE">
+                      Pourcentage-salaire imposable
+                    </option>
+                  </Select>
+                </Td>
+
+                {/* Default value */}
+                <Td>
+                  {item.calculationType === "POURCENTAGE_BASE" ||
+                  item.calculationType === "POURCENTAGE_BRUT" ||
+                  item.calculationType === "POURCENTAGE_IMPOSABLE" ||
+                  item.calculationType === "FIXE" ? (
+                    <Input
+                      size="sm"
+                      type="number"
+                      value={item.defaultValue ?? ""}
+                      onChange={(e) =>
+                        updateComponent(item._id, {
+                          defaultValue:
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                        })
+                      }
+                    />
+                  ) : (
+                    <Text color="gray.400" fontSize="sm">
+                      N/A
+                    </Text>
+                  )}
+                </Td>
+
+                {/* Taxable */}
+                {showTaxable ? (
+                  <Td textAlign="center">
+                    <Checkbox
+                      isChecked={item.taxable === 1}
+                      onChange={() => toggleTaxable(item._id)}
+                      colorScheme="purple"
+                    />
+                  </Td>
+                ) : null}
+
+                {/* Status */}
+                <Td>
+                  <Badge
+                    colorScheme={item.enabled ? "green" : "gray"}
+                    borderRadius="full"
+                    px={2}
+                    py={1}
+                  >
+                    {item.enabled ? "Activé" : "Désactivé"}
+                  </Badge>
+                </Td>
+
+                {/* Delete */}
+                <Td>
+                  <Button
+                    variant="ghost"
                     size="sm"
-                    type="number"
-                    value={item.defaultValue ?? ""}
-                    onChange={(e) =>
-                      setComponents((prev) =>
-                        prev.map((component) =>
-                          component._id === item._id
-                            ? {
-                                ...component,
-                                defaultValue:
-                                  e.target.value === ""
-                                    ? null
-                                    : Number(e.target.value),
-                              }
-                            : component
-                        )
-                      )
-                    }
-                  />
-                </Box>
-              ) : null}
-            </Box>
-            <Box>
-              <Box
-                position="absolute"
-                top="0.1rem"
-                right="0.4rem"
-                onClick={() => handleDelete(item._id)}
-              >
-                <FaDeleteLeft />
-              </Box>
-              <Badge mt="3rem" colorScheme={item.enabled ? "green" : "gray"}>
-                {item.enabled ? "Activé" : "Désactivé"}
-              </Badge>
-            </Box>
-          </Flex>
-        ))}
-      </Stack>
+                    colorScheme="red"
+                    onClick={() => handleDelete(item._id)}
+                    aria-label="Supprimer"
+                  >
+                    <FaDeleteLeft />
+                  </Button>
+                </Td>
+              </Tr>
+            ))}
+
+            {components.length === 0 && (
+              <Tr>
+                <Td colSpan={8} textAlign="center" py={10}>
+                  <Text color="gray.500">
+                    Aucun élément de paie disponible.
+                  </Text>
+                </Td>
+              </Tr>
+            )}
+          </Tbody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 }

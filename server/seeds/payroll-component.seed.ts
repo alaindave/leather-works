@@ -14,6 +14,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 1,
     requiresHRApproval: 0,
+    taxable: 1,
   },
 
   {
@@ -24,6 +25,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 2,
     requiresHRApproval: 1,
+    taxable: 1,
   },
 
   {
@@ -34,6 +36,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 3,
     requiresHRApproval: 1,
+    taxable: 1,
   },
 
   {
@@ -45,6 +48,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 4,
     requiresHRApproval: 0,
+    taxable: 0,
   },
 
   {
@@ -56,6 +60,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 5,
     requiresHRApproval: 0,
+    taxable: 0,
   },
 
   {
@@ -67,6 +72,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 6,
     requiresHRApproval: 0,
+    taxable: 0,
   },
 
   {
@@ -74,10 +80,10 @@ const defaultPayrollComponents = [
     displayName: "Commission",
     type: "EARNING",
     calculationType: "MANUEL",
-    percentageOf: "GROSS_SALARY",
     isSystem: 1,
     displayOrder: 7,
     requiresHRApproval: 1,
+    taxable: 1,
   },
 
   // ==========================
@@ -88,22 +94,24 @@ const defaultPayrollComponents = [
     name: "TAX",
     displayName: "Impôt",
     type: "DEDUCTION",
-    calculationType: "POURCENTAGE",
-    percentageOf: "GROSS_SALARY",
+    calculationType: "POURCENTAGE_IMPOSABLE",
+    calculationBase: "TAXABLE_SALARY",
     isSystem: 1,
     displayOrder: 101,
     requiresHRApproval: 0,
+    taxable: 0,
   },
 
   {
     name: "SOCIAL_SECURITY",
     displayName: "Sécurité sociale",
     type: "DEDUCTION",
-    calculationType: "POURCENTAGE",
-    percentageOf: "GROSS_SALARY",
+    calculationType: "POURCENTAGE_BRUT",
+    calculationBase: "GROSS_SALARY",
     isSystem: 1,
     displayOrder: 102,
     requiresHRApproval: 0,
+    taxable: 0,
   },
 
   {
@@ -114,6 +122,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 103,
     requiresHRApproval: 1,
+    taxable: 0,
   },
 
   {
@@ -124,6 +133,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 104,
     requiresHRApproval: 1,
+    taxable: 0,
   },
 
   {
@@ -134,6 +144,7 @@ const defaultPayrollComponents = [
     isSystem: 1,
     displayOrder: 105,
     requiresHRApproval: 1,
+    taxable: 0,
   },
 ];
 async function seedPayrollComponents() {

@@ -85,19 +85,7 @@ const EmployeeCard = ({ employee }: Props) => {
 
   //Fetch attendance
   useEffect(() => {
-    window.electron.attendance
-      .getAttendanceRecord(employee._id, new Date().toISOString().split("T")[0])
-      .then((attendance) => {
-        setAttendance(attendance);
-        console.log("Attendance fetched: ", attendance);
-      })
-      .catch((error) => {
-        console.error(
-          "An error occured while fetching attendance data: ",
-          error
-        );
-      })
-      .finally(() => setLoadingAttendance(false));
+    loadData();
   }, []);
 
   //Fetch employee photos URL
@@ -112,6 +100,19 @@ const EmployeeCard = ({ employee }: Props) => {
 
     load();
   }, [employee.photo_path]);
+
+  const loadData = () => {
+    window.electron.attendance
+      .getAttendanceRecord(employee._id, new Date().toISOString().split("T")[0])
+      .then((attendance) => {
+        setAttendance(attendance);
+        console.log("ATTENDANCE FETCHED: ", attendance);
+      })
+      .catch((error) => {
+        console.error("AN ERROR OCCURED WHILE FETCHING ATTENDANCE: ", error);
+      })
+      .finally(() => setLoadingAttendance(false));
+  };
 
   const handleToggleClockInEdit = () => {
     setErrorMessage(false);
@@ -152,18 +153,23 @@ const EmployeeCard = ({ employee }: Props) => {
   };
 
   const saveNotes = async (notes: string | undefined): Promise<boolean> => {
+    if (!notes) {
+      loadData();
+      return true;
+    }
     try {
       if (!attendance?._id) {
-        throw new Error("Attendance record not found");
+        throw new Error("ATTENDANCE RECORD NOT FOUND");
       }
       const updatedAttendance = await window.electron.attendance.update(
         attendance._id,
         { notes }
       );
       setAttendance(updatedAttendance);
+      loadData();
       return true;
     } catch (error) {
-      console.error("An error occured while submitting late notes: ", error);
+      console.error("AN ERROR OCCURED WHILE SAVING NOTES: ", error);
       return false;
     }
   };
@@ -241,6 +247,8 @@ const EmployeeCard = ({ employee }: Props) => {
               <AbsenceNotesPopover
                 existingNotes={attendance?.notes}
                 onSubmit={saveNotes}
+                employeeId={employee._id}
+                attendanceId={attendance._id}
               />
             </Box>
           ) : null}

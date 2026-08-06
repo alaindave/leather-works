@@ -28,7 +28,7 @@ import Employee from "../../common/types/Employee";
 import DatePicker from "react-datepicker";
 import { FaSave } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
-import { MdFactory, MdOutlineNumbers, MdPerson2, MdWork } from "react-icons/md";
+import { MdFactory, MdPerson2, MdWork } from "react-icons/md";
 import { FaCalendarDays } from "react-icons/fa6";
 import { FaRegNoteSticky } from "react-icons/fa6";
 

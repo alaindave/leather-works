@@ -10,7 +10,7 @@ export async function createPayrollTables() {
       type TEXT NOT NULL
         CHECK(type IN ('EARNING','DEDUCTION')),
       calculationType TEXT NOT NULL
-        CHECK(calculationType IN ('FIXE','POURCENTAGE','MANUEL'))
+        CHECK(calculationType IN ('FIXE','POURCENTAGE_BASE','POURCENTAGE_BRUT','MANUEL'))
         DEFAULT 'MANUEL',
       percentageOf TEXT
         CHECK(percentageOf IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_AMOUNT')),
@@ -18,6 +18,7 @@ export async function createPayrollTables() {
       displayOrder INTEGER NOT NULL,
       isSystem INTEGER NOT NULL DEFAULT 1,
       requiresHRApproval INTEGER NOT NULL DEFAULT 0,
+      taxable INTEGER NOT NULL DEFAULT 1,
       enabled INTEGER NOT NULL DEFAULT 1,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
@@ -37,9 +38,10 @@ export async function createPayrollTables() {
       displayOrder INTEGER NOT NULL,
       type TEXT NOT NULL,
       calculationType TEXT NOT NULL
-        CHECK(calculationType IN ('FIXE','POURCENTAGE','MANUEL'))
+        CHECK(calculationType IN ('FIXE','POURCENTAGE_BASE','POURCENTAGE_BRUT','MANUEL'))
         DEFAULT 'MANUEL',
       value REAL,
+      taxable INTEGER NOT NULL DEFAULT 1,
       isOverridden INTEGER DEFAULT 0,
       requiresHRApproval INTEGER NOT NULL DEFAULT 0,
       percentageOf TEXT

@@ -6,8 +6,14 @@ export interface EmployeePayrollProfileDocument {
   componentId: string;
   displayName: string;
   type: "EARNING" | "DEDUCTION";
-  calculationType: "FIXE" | "MANUEL" | "POURCENTAGE";
+  calculationType:
+    | "FIXE"
+    | "MANUEL"
+    | "POURCENTAGE_BRUT"
+    | "POURCENTAGE_BASE"
+    | "POURCENTAGE_IMPOSABLE";
   value: number;
+  taxable: number;
   requiresHRApproval: number;
   enabled: number;
   isOverridden: number;
@@ -51,13 +57,17 @@ const EmployeePayrollProfileSchema = new Schema<EmployeePayrollProfileDocument>(
 
     calculationType: {
       type: String,
-      enum: ["FIXE", "MANUEL", "POURCENTAGE"],
+      enum: ["FIXE", "MANUEL", "POURCENTAGE_BRUT", "POURCENTAGE_BASE"],
       required: true,
     },
 
     value: {
       type: Number,
       default: 0,
+    },
+
+    taxable: {
+      type: Number,
     },
 
     requiresHRApproval: {

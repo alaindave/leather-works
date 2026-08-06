@@ -14,6 +14,7 @@ import Leave from "../../common/types/Leave.js";
 export function registerLeaveIPC() {
   console.log("REGISTERING LEAVES IPC");
   ipcMain.handle("leave:create", async (_, leave: Partial<Leave>) => {
+    console.log("LEAVE IPC RECEIVED FOR EMPLOYEE:", leave.employeeId);
     return createLeave(leave);
   });
 

@@ -7,10 +7,10 @@ import Leave from "../../common/types/Leave.js";
 
 export async function markEmployeesOnLeave() {
   console.log("markEmployeesOnLeave SERVICE INITIATED... ");
-
   const leaves: Leave[] = await getOngoingLeaves();
-
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString();
+  console.log("ONGOING LEAVES", leaves);
+  console.log("TODAY", today);
 
   for (const leave of leaves) {
     const existingAttendance = await getAttendanceRecord(
@@ -21,6 +21,6 @@ export async function markEmployeesOnLeave() {
     if (existingAttendance) {
       continue;
     }
-    await createLeaveAttendance(leave.employeeId, today);
+    await createLeaveAttendance(leave.employeeId);
   }
 }

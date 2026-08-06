@@ -33,7 +33,6 @@ const EmployeeAdminPage = () => {
   const [time, setTime] = useState<Date>(new Date());
   const user = useAdminUser((store) => store.adminUser);
   const saveNotes = useAdminUser((store) => store.saveNotes);
-  // const loadTasks = useTaskStore((store) => store.loadTasks);
   const loadTopTasks = useTaskStore((store) => store.loadTopTasks);
   const deleteTask = useTaskStore((store) => store.deleteTask);
   const tasks = useTaskStore((store) => store.tasks);
@@ -68,32 +67,7 @@ const EmployeeAdminPage = () => {
     const interval = setInterval(() => {
       setTime(new Date());
     }, 10000);
-
-    window.electron.employees
-      .getAll()
-      .then((employees) => {
-        setEmployees(employees);
-        return window.electron.attendance.getByDate(
-          new Date().toISOString().split("T")[0]
-        );
-      })
-      .then((attendance) => {
-        setAttendances(attendance);
-        return window.electron.leave.getOngoingLeaves();
-      })
-      .then((leaves) => {
-        setLeaves(leaves);
-        return window.electron.adminUsers.getAll();
-      })
-      .then((adminUsers) => {
-        console.log("Retrieved admin users: ", adminUsers);
-        setAdminUsersList(adminUsers);
-        return loadTopTasks(user._id);
-      })
-      .catch((error) => {
-        console.error("An error occured while retrieving data:", error);
-      });
-
+    loadData();
     return () => clearInterval(interval);
   }, []);
 
@@ -109,28 +83,37 @@ const EmployeeAdminPage = () => {
     return () => clearTimeout(timeout);
   }, [notes]);
 
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const employees = await window.electron.employees.getAll();
+      setEmployees(employees);
+      console.log("FETCHED SYNCED EMPLOYEES:", employees);
+      const attendances = await window.electron.attendance.getByDate(
+        new Date().toISOString().split("T")[0]
+      );
+      setAttendances(attendances);
+      console.log("FETCHED ATTENDANCES:", attendances);
+      const leaves = await window.electron.leave.getOngoingLeaves();
+      setLeaves(leaves);
+      console.log("FETCHED ONGOING LEAVES:", leaves);
+      const admin_users = await window.electron.adminUsers.getAll();
+      setAdminUsersList(admin_users);
+      console.log("FETCHED ADMIN USERS", admin_users);
+      const top_tasks = await loadTopTasks(user._id);
+      console.log("FETCHED TOP TASKS:", top_tasks);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDataSync = async () => {
     try {
       setLoading(true);
       const result = await window.electron.sync();
       if (result.success) {
-        console.log("Sync completed");
-        const employees = await window.electron.employees.getAll();
-        setEmployees(employees);
-        console.log("Fetched synced employees:", employees);
-        const attendances = await window.electron.attendance.getByDate(
-          new Date().toISOString().split("T")[0]
-        );
-        setAttendances(attendances);
-        console.log("Fetched synced attendances:", attendances);
-        const leaves = await window.electron.leave.getOngoingLeaves();
-        setLeaves(leaves);
-        console.log("Fetched synced leaves:", leaves);
-        const admin_users = await window.electron.adminUsers.getAll();
-        setAdminUsersList(admin_users);
-        console.log("Fetched admin users", admin_users);
-        const top_tasks = await loadTopTasks(user._id);
-        console.log("Fetched top tasks:", top_tasks);
+        console.log("SYNC COMPLETED");
+        loadData();
       } else {
         console.error(result.message);
       }

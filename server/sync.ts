@@ -50,6 +50,11 @@ export async function syncEmployee(
         }
       );
 
+      console.log(
+        "SYNCED DELETED EMPLOYEE:",
+        await Employee.findById(data._id)
+      );
+
       break;
   }
 }
@@ -85,6 +90,11 @@ export async function syncAttendance(operation: SyncOperation, data: SyncData) {
         }
       );
 
+      console.log(
+        "SYNCED DELETED ATTENDANCE:",
+        await Attendance.findById(data._id)
+      );
+
       break;
   }
 }
@@ -105,6 +115,8 @@ export async function syncLeave(operation: SyncOperation, data: SyncData) {
         }
       );
 
+      console.log("SYNCED LEAVE:", await Leave.findById(data._id));
+
       break;
 
     case "delete":
@@ -117,6 +129,8 @@ export async function syncLeave(operation: SyncOperation, data: SyncData) {
           updatedAt: new Date(),
         }
       );
+
+      console.log("SYNCED DELETED LEAVE:", await Leave.findById(data._id));
 
       break;
   }
@@ -138,6 +152,8 @@ export async function syncTask(operation: SyncOperation, data: SyncData) {
         }
       );
 
+      console.log("SYNCED TASK:", await Task.findById(data._id));
+
       break;
 
     case "delete":
@@ -150,6 +166,8 @@ export async function syncTask(operation: SyncOperation, data: SyncData) {
           updatedAt: new Date(),
         }
       );
+
+      console.log("SYNCED DELETED TASK:", await Task.findById(data._id));
 
       break;
   }
@@ -172,6 +190,8 @@ export async function syncTaskComment(
       if (!task.comments.some((comment) => comment._id === data._id)) {
         task.comments.push(data as any);
       }
+
+      console.log("SYNCED TASK COMMENT:", await Task.findById(data._id));
 
       break;
 

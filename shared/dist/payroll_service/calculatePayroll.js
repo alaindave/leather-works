@@ -1,33 +1,76 @@
-import { calculateComponent } from "./calculateComponent.js";
-//Calculate payroll for one employee
+import { calculateComponent, } from "./calculateComponent.js";
+// Calculate payroll for one employee
 export function calculatePayroll(employee, admin) {
     const earnings = [];
     const deductions = [];
-    let grossSalary = employee.baseSalary;
+    const baseSalary = employee.baseSalary;
     let totalEarnings = 0;
     let totalDeductions = 0;
+    let grossSalary = baseSalary;
     const date = new Date();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
-    // First calculate earnings
+    /*
+     * ============================================================
+     * 1. CALCULATE ENABLED EARNINGS
+     * ============================================================
+     */
     for (const component of employee.components) {
+        // Ignore disabled components
+        if (component.enabled !== 1)
+            continue;
         if (component.type !== "EARNING")
             continue;
-        const amount = calculateComponent(component, employee.baseSalary, grossSalary);
+        const context = {
+            baseSalary,
+            grossSalary,
+            taxableSalary: grossSalary,
+            totalEarnings,
+            totalDeductions,
+            netSalary: grossSalary - totalDeductions,
+        };
+        const amount = calculateComponent(component, context);
         earnings.push({
             componentId: component._id,
             name: component.name,
             displayName: component.displayName,
             type: component.type,
             amount,
+            taxable: component.taxable,
         });
         totalEarnings += amount;
         grossSalary += amount;
     }
+    /*
+     * ============================================================
+     * 2. CALCULATE TAXABLE SALARY
+     * ============================================================
+     *
+     */
+    const taxableSalary = baseSalary +
+        earnings
+            .filter((item) => item.taxable === 1)
+            .reduce((total, item) => total + item.amount, 0);
+    /*
+     * ============================================================
+     * 3. CALCULATE ENABLED DEDUCTIONS
+     * ============================================================
+     */
     for (const component of employee.components) {
+        // Ignore disabled components
+        if (component.enabled !== 1)
+            continue;
         if (component.type !== "DEDUCTION")
             continue;
-        const amount = calculateComponent(component, employee.baseSalary, grossSalary);
+        const context = {
+            baseSalary,
+            grossSalary,
+            taxableSalary,
+            totalEarnings,
+            totalDeductions,
+            netSalary: grossSalary - totalDeductions,
+        };
+        const amount = calculateComponent(component, context);
         deductions.push({
             componentId: component._id,
             name: component.name,
@@ -37,26 +80,38 @@ export function calculatePayroll(employee, admin) {
         });
         totalDeductions += amount;
     }
+    /*
+     * ============================================================
+     * 4. FINAL NET SALARY
+     * ============================================================
+     */
+    const netSalary = grossSalary - totalDeductions;
+    /*
+     * ============================================================
+     * 5. RETURN PAYROLL RESULT
+     * ============================================================
+     */
     return {
         employeeId: employee.employeeId,
         generatedBy: admin._id,
         month,
         year,
-        baseSalary: employee.baseSalary,
+        baseSalary,
         grossSalary,
+        taxableSalary,
         earnings,
         deductions,
         totalEarnings,
         totalDeductions,
-        netSalary: grossSalary - totalDeductions,
+        netSalary,
         status: "BROUILLON",
     };
 }
-//Calculate payroll for all employees
+// Calculate payroll for all employees
 export function calculatePayrolls(employees, admin) {
     return employees.map((employee) => calculatePayroll(employee, admin));
 }
-//Calculate payroll and return summary
+// Calculate payroll and return summary
 export function calculatePayrollsWithSummary(employees, admin) {
     const results = calculatePayrolls(employees, admin);
     return {

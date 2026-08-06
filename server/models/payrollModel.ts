@@ -9,6 +9,7 @@ export interface PayrollItemDocument {
   lastSyncedAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  taxable?: number;
 }
 
 export interface PayrollDocument {
@@ -61,6 +62,10 @@ const PayrollItemSchema = new Schema<PayrollItemDocument>(
       type: Number,
       required: true,
       min: 0,
+    },
+
+    taxable: {
+      type: Number,
     },
 
     isDeleted: {

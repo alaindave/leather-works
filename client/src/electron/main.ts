@@ -149,7 +149,7 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-  console.error("Startup error:", error);
+  console.error("STARTUP ERROR:", error);
 });
 
 app.on("window-all-closed", () => {
@@ -159,6 +159,6 @@ app.on("window-all-closed", () => {
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught exception:");
+  console.error("UNCAUGHT EXCEPTION:");
   console.error(err);
 });

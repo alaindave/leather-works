@@ -12,14 +12,18 @@ export default interface PayrollEmployeeProfile {
   displayOrder: number;
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;
-  percentageOf?:
-    | "BASIC_SALARY"
+  calculationBase:
+    | "BASE_SALARY"
     | "GROSS_SALARY"
+    | "TAXABLE_SALARY"
     | "TOTAL_EARNINGS"
-    | "TAXABLE_AMOUNT";
+    | "TOTAL_DEDUCTIONS"
+    | "NET_SALARY"
+    | null;
   value: number | null;
+  taxable?: number;
   isOverridden?: number;
-  requiresHRApproval: number;
+  requiresHRApproval?: number;
   enabled?: number;
   synced?: number;
   createdAt?: string;

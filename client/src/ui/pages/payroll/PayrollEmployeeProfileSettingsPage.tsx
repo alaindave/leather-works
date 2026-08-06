@@ -84,12 +84,14 @@ export default function PayrollEmployeeProfileSettingsPage() {
             <PayrollEmployeeProfileList
               employeeID={employee._id}
               type="EARNING"
+              showTaxable
             />
           </TabPanel>
           <TabPanel px={0}>
             <PayrollEmployeeProfileList
               employeeID={employee._id}
               type="DEDUCTION"
+              showTaxable={false}
             />
           </TabPanel>
         </TabPanels>

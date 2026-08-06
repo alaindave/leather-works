@@ -27,6 +27,7 @@ export async function createEmployeePayrollProfile(
       type,
       calculationType,
       value,
+      taxable,
       requiresHRApproval,
       enabled,
       synced,
@@ -34,7 +35,7 @@ export async function createEmployeePayrollProfile(
       createdAt,
       updatedAt
     )
-    VALUES (?, ?,?, ?,?,?,?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `,
     [
       _id,
@@ -46,6 +47,7 @@ export async function createEmployeePayrollProfile(
       profile.type,
       profile.calculationType,
       profile.value,
+      profile.taxable,
       profile.requiresHRApproval ?? 0,
       1,
       0,
@@ -106,6 +108,7 @@ export async function updateEmployeePayrollProfile(
       type = ?,
       calculationType = ?,
       value = ?,
+      taxable=?,
       requiresHRApproval=?,
       enabled = ?,
       synced = ?,
@@ -121,6 +124,7 @@ export async function updateEmployeePayrollProfile(
           profile.type,
           profile.calculationType,
           profile.value,
+          profile.taxable,
           profile.requiresHRApproval,
           profile.enabled,
           0,
@@ -181,6 +185,7 @@ export async function updateEmployeePayrollProfile(
       type = ?,
       calculationType = ?,
       value = ?,
+      taxable=?,
       requiresHRApproval=?,
       enabled = ?,
       synced = ?,
@@ -196,6 +201,7 @@ export async function updateEmployeePayrollProfile(
       profile.type,
       profile.calculationType,
       profile.value,
+      profile.taxable,
       profile.requiresHRApproval,
       profile.enabled,
       0,
@@ -242,6 +248,7 @@ export async function upsertEmployeePayrollProfile(
       type,
       calculationType,
       value,
+      taxable,
       requiresHRApproval,
       enabled,
       synced,
@@ -250,7 +257,7 @@ export async function upsertEmployeePayrollProfile(
       updatedAt,
       lastSyncedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?,?)
 
     ON CONFLICT(_id)
     DO UPDATE SET
@@ -261,6 +268,7 @@ export async function upsertEmployeePayrollProfile(
       type = excluded.type,
       calculationType = excluded.calculationType,
       value = excluded.value,
+      taxable = excluded.taxable,
       requiresHRApproval = excluded.requiresHRApproval,
       enabled = excluded.enabled,
       synced = excluded.synced,
@@ -277,6 +285,7 @@ export async function upsertEmployeePayrollProfile(
       profile.type,
       profile.calculationType,
       profile.value,
+      profile.taxable,
       profile.requiresHRApproval,
       profile.enabled,
       profile.synced,
@@ -343,6 +352,9 @@ export async function getAllEmployeePayrollInputs(): Promise<
       displayOrder: row.displayOrder,
       type: row.type,
       calculationType: row.calculationType,
+      calculationBase: row.calculationBase,
+      enabled: row.enabled ?? 0,
+      taxable: row.taxable,
       value: row.value ?? 0,
     });
   }

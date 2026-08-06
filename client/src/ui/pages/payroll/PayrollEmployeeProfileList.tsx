@@ -1,38 +1,49 @@
 import {
+  Badge,
   Box,
   Button,
   Checkbox,
   Flex,
-  Stack,
+  Input,
+  Select,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
-  Badge,
+  Th,
+  Thead,
+  Tr,
   useToast,
 } from "@chakra-ui/react";
-import { Select } from "@chakra-ui/react";
-import { Input } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import AddPayrollEmployeeProfileModal from "../../components/AddPayrollEmployeeProfileModal";
 import { FaDeleteLeft } from "react-icons/fa6";
+
+import AddPayrollEmployeeProfileModal from "../../components/AddPayrollEmployeeProfileModal";
 import PayrollEmployeeProfile from "../../../common/types/payroll/PayrollEmployeeProfile";
 
 interface Props {
   type: "EARNING" | "DEDUCTION";
   employeeID: string;
+  showTaxable: boolean;
 }
 
 export default function PayrollEmployeeProfileList({
   type,
   employeeID,
+  showTaxable,
 }: Props) {
   const toast = useToast();
+
   const [profiles, setProfiles] = useState<PayrollEmployeeProfile[]>([]);
+
   const [originalProfiles, setOriginalProfiles] = useState<
     PayrollEmployeeProfile[]
   >([]);
 
   useEffect(() => {
     loadProfiles();
-  }, [type]);
+  }, [type, employeeID]);
 
   const loadProfiles = async () => {
     try {
@@ -40,7 +51,9 @@ export default function PayrollEmployeeProfileList({
         employeeID,
         type
       );
+
       console.log("FETCHED PAYROLL PROFILES", data);
+
       setProfiles(structuredClone(data));
       setOriginalProfiles(structuredClone(data));
     } catch (error) {
@@ -48,13 +61,44 @@ export default function PayrollEmployeeProfileList({
     }
   };
 
-  const toggleComponent = (_id: string) => {
+  const updateProfile = (
+    _id: string,
+    changes: Partial<PayrollEmployeeProfile>
+  ) => {
+    setProfiles((prev) =>
+      prev.map((profile) =>
+        profile._id === _id
+          ? {
+              ...profile,
+              ...changes,
+            }
+          : profile
+      )
+    );
+  };
+
+  // Toggle enabled
+  const toggleProfile = (_id: string) => {
     setProfiles((prev) =>
       prev.map((item) =>
         item._id === _id
           ? {
               ...item,
               enabled: item.enabled === 1 ? 0 : 1,
+            }
+          : item
+      )
+    );
+  };
+
+  // Toggle taxable / imposable
+  const toggleTaxable = (_id: string) => {
+    setProfiles((prev) =>
+      prev.map((item) =>
+        item._id === _id
+          ? {
+              ...item,
+              taxable: item.taxable === 1 ? 0 : 1,
             }
           : item
       )
@@ -71,6 +115,7 @@ export default function PayrollEmployeeProfileList({
         return (
           original.displayName !== profile.displayName ||
           original.enabled !== profile.enabled ||
+          original.taxable !== profile.taxable ||
           original.calculationType !== profile.calculationType ||
           original.value !== profile.value
         );
@@ -80,6 +125,8 @@ export default function PayrollEmployeeProfileList({
         toast({
           title: "Aucune modification.",
           status: "info",
+          duration: 3000,
+          isClosable: true,
         });
 
         return;
@@ -90,15 +137,19 @@ export default function PayrollEmployeeProfileList({
       toast({
         title: "Paramètres sauvegardés.",
         status: "success",
+        duration: 3000,
+        isClosable: true,
       });
 
-      loadProfiles();
+      await loadProfiles();
     } catch (error) {
       console.error("AN ERROR OCCURED WHILE SAVING CHANGES", error);
 
       toast({
         title: "Erreur lors de la sauvegarde.",
         status: "error",
+        duration: 5000,
+        isClosable: true,
       });
     }
   };
@@ -106,27 +157,66 @@ export default function PayrollEmployeeProfileList({
   const handleDelete = async (_id: string) => {
     try {
       await window.electron.payrollEmployeeProfiles.delete(_id);
+
+      toast({
+        title: "Élément supprimé.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
       await loadProfiles();
     } catch (error) {
       console.error("AN ERROR OCCURED WHILE DELETING COMPONENT:", error);
+
+      toast({
+        title: "Erreur lors de la suppression.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   const reset = async () => {
     try {
       await window.electron.payrollEmployeeProfiles.resetToDefaults(employeeID);
+
+      toast({
+        title: "Profil réinitialisé.",
+        description:
+          "Les paramètres de paie ont été réinitialisés aux valeurs par défaut.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
       await loadProfiles();
     } catch (error) {
       console.error("AN ERROR OCCURED WHILE RESETTING COMPONENTS:", error);
+
+      toast({
+        title: "Erreur lors de la réinitialisation.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   return (
     <Box>
-      <Flex justify="space-between" mb={3}>
-        <Text fontWeight="bold" fontSize="xl">
-          {type === "EARNING" ? "Rémunérations" : "Déductions"}
-        </Text>
+      {/* Header */}
+      <Flex justify="space-between" align="center" mb={4}>
+        <Box>
+          <Text fontWeight="bold" fontSize="xl">
+            {type === "EARNING" ? "Rémunérations" : "Déductions"}
+          </Text>
+
+          <Text fontSize="sm" color="gray.500">
+            Configuration individuelle des éléments de paie
+          </Text>
+        </Box>
 
         <Flex gap={3}>
           <AddPayrollEmployeeProfileModal
@@ -134,119 +224,192 @@ export default function PayrollEmployeeProfileList({
             type={type}
             onCreated={loadProfiles}
           />
+
           <Button colorScheme="yellow" onClick={save}>
             Enregistrer
           </Button>
+
           <Button colorScheme="green" onClick={reset}>
-            Reinitialiser
+            Réinitialiser
           </Button>
         </Flex>
       </Flex>
 
-      <Stack spacing={1} height="65vh" overflowY="auto">
-        {profiles.map((item) => (
-          <Flex
-            position="relative"
-            key={item._id}
-            justify="space-between"
-            p={2}
-            borderWidth="1px"
-            borderRadius="lg"
+      {/* Table */}
+      <TableContainer
+        height="100%"
+        overflowY="auto"
+        border="1px solid"
+        borderColor="gray.200"
+        borderRadius="lg"
+      >
+        <Table variant="simple" size="sm">
+          <Thead
+            position="sticky"
+            top={0}
+            zIndex={1}
+            bg={type === "EARNING" ? "purple.50" : "red.50"}
           >
-            <Box>
-              <Checkbox
-                isChecked={item.enabled === 1 ? true : false}
-                onChange={() => toggleComponent(item._id!)}
-              />
-              <Box ml="3rem" mb="2rem">
-                <Input
-                  value={item.displayName}
-                  fontWeight="bold"
-                  variant="flushed"
-                  onChange={(e) =>
-                    setProfiles((prev) =>
-                      prev.map((profile) =>
-                        profile._id === item._id
-                          ? {
-                              ...profile,
-                              displayName: e.target.value,
-                            }
-                          : profile
-                      )
-                    )
-                  }
-                />
-                <Select
-                  size="sm"
-                  mt={2}
-                  value={item.calculationType}
-                  onChange={(e) => {
-                    setProfiles((prev) =>
-                      prev.map((profile) =>
-                        profile._id === item._id
-                          ? {
-                              ...profile,
-                              calculationType: e.target.value as any,
-                              defaultValue:
-                                e.target.value === "MANUEL"
-                                  ? null
-                                  : profile.value,
-                            }
-                          : profile
-                      )
-                    );
-                  }}
-                >
-                  <option value="FIXE">Montant fixe</option>
-                  <option value="MANUEL">Manuel</option>
-                  <option value="POURCENTAGE">Pourcentage</option>
-                </Select>
-              </Box>
+            <Tr>
+              <Th width="70px">Actif</Th>
 
-              <Box>
-                <Text fontSize="xs" color="gray.500">
-                  {item.calculationType === "POURCENTAGE"
-                    ? "Pourcentage"
-                    : "Montant"}
-                </Text>
-                <Input
-                  size="sm"
-                  type="number"
-                  value={item.value ?? 0}
-                  onChange={(e) => {
-                    setProfiles((prev) =>
-                      prev.map((profile) =>
-                        profile._id === item._id
-                          ? {
-                              ...profile,
-                              value:
-                                e.target.value === ""
-                                  ? null
-                                  : Number(e.target.value),
-                            }
-                          : profile
-                      )
-                    );
-                  }}
-                />
-              </Box>
-            </Box>
-            <Box>
-              <Box
-                position="absolute"
-                top="0.1rem"
-                right="0.4rem"
-                onClick={() => handleDelete(item._id!)}
+              <Th>Élément</Th>
+
+              <Th width="200px">Type de calcul</Th>
+
+              <Th width="160px">Valeur</Th>
+
+              {/* Taxable */}
+              {showTaxable ? (
+                <Th width="120px" textAlign="center">
+                  Imposable
+                </Th>
+              ) : null}
+
+              <Th width="120px">Statut</Th>
+
+              <Th width="70px">Action</Th>
+            </Tr>
+          </Thead>
+
+          <Tbody>
+            {profiles.map((item) => (
+              <Tr
+                key={item._id}
+                _hover={{
+                  bg: "gray.50",
+                }}
               >
-                <FaDeleteLeft />
-              </Box>
-              <Badge mt="3rem" colorScheme={item.enabled ? "green" : "gray"}>
-                {item.enabled ? "Activé" : "Désactivé"}
-              </Badge>
-            </Box>
-          </Flex>
-        ))}
-      </Stack>
+                {/* Enabled */}
+                <Td>
+                  <Checkbox
+                    isChecked={item.enabled === 1}
+                    onChange={() => toggleProfile(item._id!)}
+                    colorScheme="green"
+                  />
+                </Td>
+
+                {/* Display name */}
+                <Td>
+                  <Input
+                    value={item.displayName}
+                    fontWeight="600"
+                    variant="flushed"
+                    onChange={(e) =>
+                      updateProfile(item._id!, {
+                        displayName: e.target.value,
+                      })
+                    }
+                  />
+                </Td>
+
+                {/* Calculation type */}
+                <Td>
+                  <Select
+                    size="md"
+                    value={item.calculationType}
+                    onChange={(e) => {
+                      const calculationType = e.target
+                        .value as PayrollEmployeeProfile["calculationType"];
+
+                      updateProfile(item._id!, {
+                        calculationType,
+                        value: calculationType === "MANUEL" ? null : item.value,
+                      });
+                    }}
+                  >
+                    <option value="FIXE">Montant fixe</option>
+
+                    <option value="MANUEL">Manuel</option>
+
+                    <option value="POURCENTAGE_BASE">
+                      Pourcentage-salaire de base
+                    </option>
+
+                    <option value="POURCENTAGE_BRUT">
+                      Pourcentage-salaire brut
+                    </option>
+                    <option value="POURCENTAGE_IMPOSABLE">
+                      Pourcentage-salaire imposable
+                    </option>
+                  </Select>
+                </Td>
+
+                {/* Value */}
+                <Td>
+                  {item.calculationType === "POURCENTAGE_BASE" ||
+                  item.calculationType === "POURCENTAGE_BRUT" ||
+                  item.calculationType === "FIXE" ? (
+                    <Input
+                      size="sm"
+                      type="number"
+                      value={item.value ?? ""}
+                      onChange={(e) =>
+                        updateProfile(item._id!, {
+                          value:
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                        })
+                      }
+                    />
+                  ) : (
+                    <Text color="gray.400" fontSize="sm">
+                      Manuel
+                    </Text>
+                  )}
+                </Td>
+
+                {/* Taxable / Imposable */}
+                {showTaxable ? (
+                  <Td textAlign="center">
+                    <Checkbox
+                      isChecked={item.taxable === 1}
+                      onChange={() => toggleTaxable(item._id!)}
+                      colorScheme="purple"
+                    />
+                  </Td>
+                ) : null}
+
+                {/* Status */}
+                <Td>
+                  <Badge
+                    colorScheme={item.enabled ? "green" : "gray"}
+                    borderRadius="full"
+                    px={2}
+                    py={1}
+                  >
+                    {item.enabled ? "Activé" : "Désactivé"}
+                  </Badge>
+                </Td>
+
+                {/* Delete */}
+                <Td>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    colorScheme="red"
+                    onClick={() => handleDelete(item._id!)}
+                    aria-label="Supprimer"
+                  >
+                    <FaDeleteLeft />
+                  </Button>
+                </Td>
+              </Tr>
+            ))}
+
+            {profiles.length === 0 && (
+              <Tr>
+                <Td colSpan={7} textAlign="center" py={10}>
+                  <Text color="gray.500">
+                    Aucun élément de paie configuré pour cet employé.
+                  </Text>
+                </Td>
+              </Tr>
+            )}
+          </Tbody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 }

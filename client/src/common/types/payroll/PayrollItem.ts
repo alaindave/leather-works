@@ -12,6 +12,7 @@ export default interface PayrollItem {
   calculationMethod?: string; // "Fixed", "Percentage", "Formula"
   rate?: number; // e.g. 3 for 3%
   quantity?: number; // e.g. overtime hours
+  taxable?: number;
   notes?: string; // "15 overtime hours × 5,000 BIF"
   synced: number;
   isDeleted: number;

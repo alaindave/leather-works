@@ -11,6 +11,14 @@ export default interface CreatePayrollProfileDto {
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;
   value: number | null;
-  percentageOf?: string | null;
+  calculationBase?:
+    | "BASE_SALARY"
+    | "GROSS_SALARY"
+    | "TAXABLE_SALARY"
+    | "TOTAL_EARNINGS"
+    | "TOTAL_DEDUCTIONS"
+    | "NET_SALARY"
+    | null;
+  taxable?: number;
   requiresHRApproval?: number | null;
 }

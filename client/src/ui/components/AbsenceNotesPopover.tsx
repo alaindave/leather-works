@@ -10,19 +10,29 @@ import {
   Button,
   useDisclosure,
   Portal,
+  useToast,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
+import Leave from "../../common/types/Leave";
 
 interface Props {
-  onSubmit: (notes: string | undefined) => Promise<boolean>;
+  onSubmit: (notes?: string | undefined) => Promise<boolean>;
+  employeeId: string;
+  attendanceId: string;
   existingNotes?: string | undefined;
 }
 
-const AbsenceNotesPopover = ({ onSubmit, existingNotes }: Props) => {
+const AbsenceNotesPopover = ({
+  onSubmit,
+  employeeId,
+  attendanceId,
+  existingNotes,
+}: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [absenceNote, setAbsenceNote] = useState(existingNotes);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     setAbsenceNote(existingNotes);
@@ -38,17 +48,121 @@ const AbsenceNotesPopover = ({ onSubmit, existingNotes }: Props) => {
     setIsSubmitting(true);
 
     try {
-      console.log("Notes to save:", absenceNote);
+      console.log("NOTES TO SAVE:", absenceNote);
       const success = await onSubmit(absenceNote);
       if (success) {
         setIsSubmitting(false);
+        onSubmit(absenceNote);
         onClose();
       }
     } catch (error) {
-      console.error("Failed to save late notes:", error);
+      console.error("FAILED TO SAVE NOTES:", error);
     }
   };
 
+  const handleLeave = async () => {
+    setAbsenceNote("");
+    setIsSubmitting(true);
+
+    try {
+      const employee = await window.electron.employees.getById(employeeId);
+
+      if (!employee) {
+        toast({
+          title: "Employé introuvable",
+          description:
+            "Impossible de trouver l'employé pour vérifier son solde de congé.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "top-right",
+        });
+
+        return;
+      }
+
+      const remainingLeave = employee.remainingLeave ?? 0;
+
+      const leaveDays = 1;
+
+      if (remainingLeave < leaveDays) {
+        toast({
+          title: "Solde de congé insuffisant",
+          description:
+            "L'employé ne dispose d'aucun jour de congé restant. L'absence ne peut pas être convertie en congé.",
+          status: "info",
+          duration: 5000,
+          isClosable: true,
+          position: "top-right",
+        });
+
+        return;
+      }
+
+      const today = new Date();
+      const date = today.toISOString().split("T")[0];
+
+      const leave: Partial<Leave> = {
+        employeeId,
+        startDate: date,
+        endDate: date,
+        subject: "Absence approuvée",
+        notes: absenceNote,
+        status: "APPROUVÉ",
+      };
+
+      // Create leave
+      const savedLeave = await window.electron.leave.create(leave);
+
+      console.log("LEAVE SUCCESSFULLY SAVED:", savedLeave);
+
+      // Deduct one leave day
+      const updatedEmployee = await window.electron.employees.update(
+        employeeId,
+        {
+          remainingLeave: remainingLeave - leaveDays,
+        }
+      );
+
+      console.log("EMPLOYEE LEAVE BALANCE UPDATED:", updatedEmployee);
+
+      // Change attendance from ABSENT → CONGÉ
+      const attendanceChange = await window.electron.attendance.update(
+        attendanceId,
+        {
+          notes: absenceNote,
+          status: "CONGÉ",
+        }
+      );
+
+      console.log("ATTENDANCE CHANGE:", attendanceChange);
+
+      toast({
+        title: "Congé enregistré",
+        description: "L'absence a été convertie en congé avec succès.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "top-right",
+      });
+
+      onSubmit();
+      onClose();
+    } catch (error) {
+      console.error("UNABLE TO SAVE LEAVE:", error);
+
+      toast({
+        title: "Erreur",
+        description: "Impossible de convertir l'absence en congé.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const flashLate = keyframes`
   0% {
     opacity: 1;
@@ -118,6 +232,19 @@ const AbsenceNotesPopover = ({ onSubmit, existingNotes }: Props) => {
               isDisabled={isSubmitting}
             >
               Sauvegarder
+            </Button>
+            <Button
+              mt={3}
+              ml={10}
+              size="sm"
+              colorScheme="green"
+              onClick={handleLeave}
+              isLoading={isSubmitting}
+              loadingText="Patientez..."
+              spinnerPlacement="start"
+              isDisabled={isSubmitting}
+            >
+              Congé
             </Button>
           </PopoverBody>
         </PopoverContent>

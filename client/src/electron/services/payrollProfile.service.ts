@@ -43,6 +43,7 @@ export async function initializeEmployeePayrollProfilesForEmployee(
       type: component.type,
       calculationType: component.calculationType,
       value,
+      taxable: component.taxable,
       requiresHRApproval: component.requiresHRApproval,
       enabled: component.enabled,
       isOverridden: 0,
@@ -92,6 +93,7 @@ export async function initializeEmployeePayrollProfiles() {
         type: component.type,
         calculationType: component.calculationType,
         value: value ?? null,
+        taxable: component.taxable,
         requiresHRApproval: component.requiresHRApproval,
       });
     }
@@ -121,7 +123,8 @@ export async function addPayrollComponentToAllEmployees(
       type: component.type,
       calculationType: component.calculationType,
       value: value ?? null,
-      percentageOf: component.percentageOf,
+      taxable: component.taxable,
+      calculationBase: component.calculationBase,
       isOverridden: 0,
       requiresHRApproval: component.requiresHRApproval,
       enabled: component.enabled,
@@ -176,6 +179,7 @@ export async function updatePayrollComponentDefaults(
       profile.value = component.defaultValue ?? null;
     }
 
+    profile.taxable = component.taxable;
     profile.enabled = component.enabled;
     profile.synced = 0;
     profile.updatedAt = new Date().toISOString();
@@ -219,6 +223,7 @@ export async function resetEmployeePayrollProfileToDefaults(
       profile.value = component.defaultValue ?? null;
     }
 
+    profile.taxable = component.taxable;
     profile.enabled = component.enabled;
     profile.isOverridden = 0;
     profile.isDeleted = component.isDeleted;

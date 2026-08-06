@@ -1,6 +1,13 @@
 export type PayrollComponentType = "EARNING" | "DEDUCTION";
 
-export type CalculationType = "FIXE" | "POURCENTAGE" | "MANUEL";
+export type CalculationType =
+  | "FIXE"
+  | "POURCENTAGE_BRUT"
+  | "POURCENTAGE_BASE"
+  | "POURCENTAGE_IMPOSABLE"
+  | "MANUEL"
+  | "QUANTITE_TAUX"
+  | "FORMULE";
 
 export interface PayrollComponentInput {
   _id?: string;
@@ -9,8 +16,20 @@ export interface PayrollComponentInput {
   displayOrder: number;
   type: PayrollComponentType;
   calculationType: CalculationType;
-  value: number;
-  percentageOf?: "BASE_SALARY" | "GROSS_SALARY";
+  calculationBase:
+    | "BASE_SALARY"
+    | "GROSS_SALARY"
+    | "TAXABLE_SALARY"
+    | "TOTAL_EARNINGS"
+    | "TOTAL_DEDUCTIONS"
+    | "NET_SALARY"
+    | null;
+  value?: number | null;
+  quantity?: number | null;
+  rate?: number | null;
+  formula?: string | null;
+  taxable?: number;
+  enabled: number;
 }
 
 export interface PayrollEmployeeInput {
@@ -30,6 +49,7 @@ export interface PayrollItem {
   // Fields for audit
   calculationMethod?: string; // "Fixed", "Percentage", "Formula"
   rate?: number; // e.g. 3 for 3%
+  taxable?: number;
   quantity?: number; // e.g. overtime hours
   notes?: string; // "15 overtime hours × 5,000 BIF"
   synced?: number;
@@ -48,6 +68,7 @@ export interface PayrollResult {
   deductions: PayrollItem[];
   baseSalary: number;
   grossSalary: number;
+  taxableSalary: number;
   totalEarnings: number;
   totalDeductions: number;
   status: "BROUILLON" | "VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";

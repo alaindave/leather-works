@@ -174,15 +174,60 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked, awayStatus }: Props) => {
   return (
     <>
       {awayStatus ? (
-        <Badge
-          mr="0.3rem"
-          mb="1rem"
-          bg={awayStatus === "CONGÉ" ? "#3182CE" : "#E53E3E"}
-          color="gray.200"
-          fontSize="14px"
-        >
-          {awayStatus}
-        </Badge>
+        attendance?.notes?.trim() ? (
+          <Popover isOpen={isOpen} onClose={onClose} placement="left">
+            <PopoverTrigger>
+              <Box
+                fontSize="18px"
+                color="#FF8787"
+                cursor="pointer"
+                _hover={{
+                  color: "#F2B705",
+                }}
+                onMouseEnter={onOpen}
+                onMouseLeave={onClose}
+              >
+                <Badge
+                  mr="0.3rem"
+                  mb="1rem"
+                  bg={awayStatus === "CONGÉ" ? "#3182CE" : "#E53E3E"}
+                  color="gray.200"
+                  fontSize="14px"
+                >
+                  {awayStatus}
+                </Badge>
+              </Box>
+            </PopoverTrigger>
+            <PopoverContent
+              onMouseEnter={onOpen}
+              onMouseLeave={onClose}
+              bg="#F8F9FB"
+              color="white"
+              position="relative"
+              right="1rem"
+            >
+              <PopoverArrow bg="#08162b" />
+
+              <PopoverBody>
+                {attendance?.notes && (
+                  <Text position="relative" color="gray.700">
+                    <strong>Justification:</strong> {attendance?.notes}
+                  </Text>
+                )}
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <Badge
+            mr="0.3rem"
+            mb="1rem"
+            bg={awayStatus === "CONGÉ" ? "#3182CE" : "#E53E3E"}
+            color="gray.200"
+            fontSize="14px"
+          >
+            {awayStatus}
+          </Badge>
+        )
       ) : (
         <Box>
           {(attendance?.lateMinutes ?? 0) > 0 ? (
