@@ -97,7 +97,7 @@ const EmployeeAttendancePage = () => {
   };
 
   //Attendance sync and refresh
-  const handleAttendanceSync = async () => {
+  const attendanceSync = async () => {
     try {
       setLoading(true);
       const result = await window.electron.sync();
@@ -128,7 +128,7 @@ const EmployeeAttendancePage = () => {
     try {
       const absences = await window.electron.attendance.markAbsent();
       console.log("ABSENCES CREATED", absences);
-      loadAttendance();
+      attendanceSync();
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE MARKING ABSENCES", e);
     }
@@ -254,7 +254,7 @@ const EmployeeAttendancePage = () => {
                 position="relative"
                 bottom="0.2rem"
                 right="1rem"
-                onClick={handleAttendanceSync}
+                onClick={attendanceSync}
               >
                 <FaSyncAlt />
               </Button>
@@ -306,7 +306,7 @@ const EmployeeAttendancePage = () => {
           </Box>
 
           <Spacer />
-          <Box>
+          <Box mr="1rem">
             <SearchBar onSearch={setSearchText} />
           </Box>
         </Flex>
@@ -322,7 +322,7 @@ const EmployeeAttendancePage = () => {
         border="1px solid #E2E8F0"
         boxShadow="0 2px 10px rgba(15,23,42,.06)"
         height="4.7rem"
-        width="80vw"
+        width="78.5vw"
         overflowY="hidden"
         overflowX="hidden"
         mt="1rem"

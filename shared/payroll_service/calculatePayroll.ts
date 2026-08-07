@@ -17,13 +17,11 @@ export function calculatePayroll(
 ): PayrollResult {
   const earnings: PayrollItem[] = [];
   const deductions: PayrollItem[] = [];
-
   const baseSalary = employee.baseSalary;
-
   let totalEarnings = 0;
   let totalDeductions = 0;
   let grossSalary = baseSalary;
-
+  let socialRate = 0;
   const date = new Date();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
@@ -37,7 +35,6 @@ export function calculatePayroll(
   for (const component of employee.components) {
     // Ignore disabled components
     if (component.enabled !== 1) continue;
-
     if (component.type !== "EARNING") continue;
 
     const context: PayrollCalculationContext = {
@@ -86,13 +83,16 @@ export function calculatePayroll(
   for (const component of employee.components) {
     // Ignore disabled components
     if (component.enabled !== 1) continue;
-
     if (component.type !== "DEDUCTION") continue;
-
+    if (component.name === "SOCIAL_SECURITY") {
+      socialRate = component.value ?? 0;
+    }
     const context: PayrollCalculationContext = {
+      employeeId: employee.employeeId,
       baseSalary,
       grossSalary,
       taxableSalary,
+      socialRate,
       totalEarnings,
       totalDeductions,
       netSalary: grossSalary - totalDeductions,

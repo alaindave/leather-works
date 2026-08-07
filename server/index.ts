@@ -61,9 +61,7 @@ mongoose
   .connect(mongoUri)
   .then(async () => {
     console.log("CONNECTED TO AFRITAN DATABASE");
-
     await seedPayrollComponents();
-
     console.log("PAYROLL COMPONENTS SEEDED");
   })
   .catch((error) => {

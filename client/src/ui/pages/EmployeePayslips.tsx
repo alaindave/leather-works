@@ -112,73 +112,85 @@ const EmployeePayrollReport = () => {
           </Box>
         </Link>
       </Flex>
-      <TableContainer
-        width="60vw"
-        borderWidth="1px"
-        borderRadius="lg"
-        overflowX="auto"
-        overflowY="auto"
-        ml="5rem"
-        mt="5rem"
-      >
-        <Table variant="simple" size="md">
-          <Thead>
-            <Tr>
-              <Th>Période</Th>
-              <Th>Statut</Th>
-              <Th>Créee par</Th>
-              <Th>Date de création</Th>
-            </Tr>
-          </Thead>
-
-          <Tbody>
-            {payrollRuns.map((run) => (
-              <Tr
-                key={run._id}
-                cursor="pointer"
-                _hover={{ bg: "transparent" }}
-                transition="background 0.2s"
-                onClick={() =>
-                  navigate(
-                    `/employees_admin/employees_list/${employee?._id}/payslips/${run._id}`,
-                    {
-                      state: {
-                        employee,
-                        photo_url,
-                      },
-                    }
-                  )
-                }
-              >
-                <Td>
-                  Du{" "}
-                  {run?.month && run?.year
-                    ? getPayrollPeriod(run.month, run.year)
-                    : ""}
-                </Td>
-
-                <Td>
-                  <Badge
-                    bg={statusColor[run.status]}
-                    color="#ffffff"
-                    fontSize="14px"
-                  >
-                    {run.status}
-                  </Badge>
-                </Td>
-
-                <Td>{run.generatedByName}</Td>
-
-                <Td>
-                  {run.createdAt
-                    ? new Date(run.createdAt).toLocaleDateString("fr-FR")
-                    : "-"}
-                </Td>
+      {payrollRuns.length !== 0 ? (
+        <TableContainer
+          width="60vw"
+          borderWidth="1px"
+          borderRadius="lg"
+          overflowX="auto"
+          overflowY="auto"
+          ml="5rem"
+          mt="5rem"
+        >
+          <Table variant="simple" size="md">
+            <Thead>
+              <Tr>
+                <Th>Période</Th>
+                <Th>Statut</Th>
+                <Th>Créee par</Th>
+                <Th>Date de création</Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
+            </Thead>
+
+            <Tbody>
+              {payrollRuns.map((run) => (
+                <Tr
+                  key={run._id}
+                  cursor="pointer"
+                  _hover={{ bg: "transparent" }}
+                  transition="background 0.2s"
+                  onClick={() =>
+                    navigate(
+                      `/employees_admin/employees_list/${employee?._id}/payslips/${run._id}`,
+                      {
+                        state: {
+                          employee,
+                          photo_url,
+                        },
+                      }
+                    )
+                  }
+                >
+                  <Td>
+                    Du{" "}
+                    {run?.month && run?.year
+                      ? getPayrollPeriod(run.month, run.year)
+                      : ""}
+                  </Td>
+
+                  <Td>
+                    <Badge
+                      bg={statusColor[run.status]}
+                      color="#ffffff"
+                      fontSize="14px"
+                    >
+                      {run.status}
+                    </Badge>
+                  </Td>
+
+                  <Td>{run.generatedByName}</Td>
+
+                  <Td>
+                    {run.createdAt
+                      ? new Date(run.createdAt).toLocaleDateString("fr-FR")
+                      : "-"}
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <Text
+          ml="15rem"
+          mt="15rem"
+          fontSize="2rem"
+          color="gray.600"
+          fontWeight="600"
+        >
+          Pas de bulletins de paye à afficher
+        </Text>
+      )}
     </Flex>
   );
 };

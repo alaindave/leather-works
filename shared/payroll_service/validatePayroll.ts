@@ -39,9 +39,14 @@ export function validatePayroll(
     }
 
     if (
-      !["FIXE", "POURCENTAGE_BRUT", "POURCENTAGE_BASE", "MANUEL"].includes(
-        component.calculationType
-      )
+      ![
+        "FIXE",
+        "MANUEL",
+        "POURCENTAGE_BASE",
+        "POURCENTAGE_BRUT",
+        "POURCENTAGE_IMPOSABLE",
+        "FORMULE",
+      ].includes(component.calculationType)
     ) {
       errors.push(`Component "${component.name}": Invalid calculation type.`);
     }

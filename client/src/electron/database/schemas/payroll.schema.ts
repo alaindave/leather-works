@@ -10,10 +10,10 @@ export async function createPayrollTables() {
       type TEXT NOT NULL
         CHECK(type IN ('EARNING','DEDUCTION')),
       calculationType TEXT NOT NULL
-        CHECK(calculationType IN ('FIXE','POURCENTAGE_BASE','POURCENTAGE_BRUT','MANUEL'))
+        CHECK(calculationType IN ('FIXE','MANUEL','POURCENTAGE_BASE','POURCENTAGE_BRUT','POURCENTAGE_IMPOSABLE','FORMULE'))
         DEFAULT 'MANUEL',
-      percentageOf TEXT
-        CHECK(percentageOf IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_AMOUNT')),
+      calculationBase TEXT
+        CHECK(calculationBase IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_SALARY')),
       defaultValue REAL DEFAULT 0,
       displayOrder INTEGER NOT NULL,
       isSystem INTEGER NOT NULL DEFAULT 1,
@@ -38,14 +38,14 @@ export async function createPayrollTables() {
       displayOrder INTEGER NOT NULL,
       type TEXT NOT NULL,
       calculationType TEXT NOT NULL
-        CHECK(calculationType IN ('FIXE','POURCENTAGE_BASE','POURCENTAGE_BRUT','MANUEL'))
+        CHECK(calculationType IN ('FIXE','MANUEL','POURCENTAGE_BASE','POURCENTAGE_BRUT','POURCENTAGE_IMPOSABLE','FORMULE'))
         DEFAULT 'MANUEL',
       value REAL,
       taxable INTEGER NOT NULL DEFAULT 1,
       isOverridden INTEGER DEFAULT 0,
       requiresHRApproval INTEGER NOT NULL DEFAULT 0,
-      percentageOf TEXT
-        CHECK(percentageOf IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_AMOUNT')),
+      calculationBase TEXT
+        CHECK(calculationBase IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_SALARY')),
       enabled INTEGER DEFAULT 1,
       createdAt TEXT,
       updatedAt TEXT,

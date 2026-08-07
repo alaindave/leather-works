@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
-
+import { validate as isUUID } from "uuid";
 import {
   getEmployee,
   addAttendance,
@@ -25,6 +25,9 @@ interface AttendanceParams {
 interface DateQuery {
   date?: string;
 }
+
+//Mark employees absent
+router.post("/mark-absent", markAbsentEmployeesHandler);
 
 // Add attendance
 router.post(
@@ -93,7 +96,7 @@ router.get(
   "/:employeeId",
   async (req: Request<EmployeeParams>, res: Response) => {
     try {
-      if (!mongoose.Types.ObjectId.isValid(req.params.employeeId)) {
+      if (!isUUID(req.params.employeeId)) {
         return res.status(400).send("Invalid employee ID");
       }
 
@@ -151,9 +154,6 @@ router.put(
     }
   }
 );
-
-//Mark employees absent
-router.post("/mark-absent", markAbsentEmployeesHandler);
 
 // Delete attendance
 router.delete(

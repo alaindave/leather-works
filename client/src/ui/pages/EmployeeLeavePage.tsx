@@ -309,7 +309,7 @@ const EmployeeLeavePage = () => {
               border="1px solid #E2E8F0"
               boxShadow="0 2px 10px rgba(15,23,42,.06)"
               height="4.7rem"
-              width="80vw"
+              width="78.5vw"
               overflowY="hidden"
               overflowX="hidden"
               mt="0.3rem"
@@ -374,7 +374,7 @@ const EmployeeLeavePage = () => {
           mb="2.7rem"
           ml="0.01rem"
           height="5.5rem"
-          width="82vw"
+          width="80vw"
           justify="space-between"
         >
           <Box

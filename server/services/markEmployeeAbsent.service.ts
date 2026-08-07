@@ -4,46 +4,49 @@ import Employee from "../models/employeeModel.js";
 import Attendance from "../models/attendanceModel.js";
 
 export async function markAbsentEmployees() {
-  const now = new Date();
-
-  const CURRENT_TIMESTAMP = now.toISOString();
-  const date = now.toISOString().split("T")[0];
+  const CURRENT_TIMESTAMP = new Date();
+  const date = CURRENT_TIMESTAMP.toISOString().split("T")[0];
 
   const employees = await Employee.find({
     status: "ACTIF",
   });
 
-  let created = 0;
-  let alreadyExists = 0;
-
   console.log("FETCHED ACTIVE EMPLOYEES", employees);
 
-  for (const employee of employees) {
-    const attendance = await Attendance.findOne({
-      employeeId: employee._id,
+  if (employees.length === 0) {
+    return {
       date,
-      isDeleted: 0,
-    });
-
-    console.log("FETCHED ACTIVE EMPLOYEES ATTENDANCE", attendance);
-
-    if (attendance) {
-      alreadyExists++;
-      continue;
-    }
-
-    await Attendance.create({
-      _id: randomUUID(),
-      employeeId: employee._id,
-      date,
-      status: "ABSENT",
-      source: "AUTO_SERVER",
-      createdAt: CURRENT_TIMESTAMP,
-      updatedAt: CURRENT_TIMESTAMP,
-    });
-
-    created++;
+      totalEmployees: 0,
+      created: 0,
+      alreadyExists: 0,
+    };
   }
+
+  const operations = employees.map((employee) => ({
+    updateOne: {
+      filter: {
+        employeeId: employee._id,
+        date,
+      },
+      update: {
+        $setOnInsert: {
+          _id: randomUUID(),
+          employeeId: employee._id,
+          date,
+          status: "ABSENT" as const,
+          source: "AUTO_SERVER" as const,
+          createdAt: CURRENT_TIMESTAMP,
+          updatedAt: CURRENT_TIMESTAMP,
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  const result = await Attendance.bulkWrite(operations);
+
+  const created = result.upsertedCount;
+  const alreadyExists = employees.length - created;
 
   return {
     date,

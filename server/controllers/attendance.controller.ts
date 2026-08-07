@@ -6,6 +6,8 @@ export async function markAbsentEmployeesHandler(req: Request, res: Response) {
   try {
     const result = await markAbsentEmployees();
 
+    console.log("MARK ABSENT SUCCESS", result);
+
     return res.status(200).json({
       success: true,
       message: "Employés absents marqués avec succès",

@@ -200,6 +200,8 @@ router.get(
         }).lean(),
       ]);
 
+      console.log("RETRIEVED LEAVE ITEMS TO SEND TO CLIENT", leaves);
+
       return res.send({
         success: true,
         adminUsers,

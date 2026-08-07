@@ -201,6 +201,8 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
     operation: "update",
     payload: JSON.stringify({
       _id: payrollRunId,
+      cancelledBy: admin._id,
+      cancelledAt: now,
       status: "ANNULÉ",
       updatedAt: now,
     }),
@@ -213,7 +215,7 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
       entityId: result._id,
       operation: "update",
       payload: JSON.stringify({
-        _id: result._id,
+        _id: payrollRunId,
         status: "ANNULÉ",
         updatedAt: now,
       }),
@@ -227,34 +229,74 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
 export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
   const now = new Date().toISOString();
 
-  return transaction(async () => {
+  // Fetch affected payroll result IDs before the transaction
+  const results = await all<{ _id: string }>(
+    `
+      SELECT _id
+      FROM payroll_results
+      WHERE payrollRunId = ?
+    `,
+    [payrollRunId]
+  );
+
+  // Update local database
+  await transaction(async () => {
     await runDirect(
       `
-      UPDATE payroll_runs
-      SET
-        status = ?,
-        submittedForVerificationBy = ?,
-        submittedForVerificationAt = ?,
-        updatedAt = ?
-      WHERE _id = ?
+        UPDATE payroll_runs
+        SET
+          status = ?,
+          submittedForVerificationBy = ?,
+          submittedForVerificationAt = ?,
+          updatedAt = ?
+        WHERE _id = ?
       `,
       ["VERIFICATION", admin._id, now, now, payrollRunId]
     );
 
     await runDirect(
       `
-      UPDATE payroll_results
-      SET
-        status = ?,
-        verifiedAt=?,
-        updatedAt = ?
-      WHERE payrollRunId = ?
+        UPDATE payroll_results
+        SET
+          status = ?,
+          verifiedAt = ?,
+          updatedAt = ?
+        WHERE payrollRunId = ?
       `,
       ["VERIFICATION", now, now, payrollRunId]
     );
-
-    return true;
   });
+
+  // Queue payroll run for sync
+  await addToSyncQueue({
+    entity: "payroll_run",
+    entityId: payrollRunId,
+    operation: "update",
+    payload: JSON.stringify({
+      _id: payrollRunId,
+      status: "VERIFICATION",
+      submittedForVerificationBy: admin._id,
+      submittedForVerificationAt: now,
+      updatedAt: now,
+    }),
+  });
+
+  // Queue all affected payroll results for sync
+  for (const result of results) {
+    await addToSyncQueue({
+      entity: "payroll_result",
+      entityId: result._id,
+      operation: "update",
+      payload: JSON.stringify({
+        _id: result._id,
+        status: "VERIFICATION",
+        verifiedAt: now,
+        updatedAt: now,
+      }),
+    });
+  }
+
+  return true;
 }
 
 //Approve payroll run
@@ -264,71 +306,151 @@ export async function approvePayrollRun(
 ) {
   const now = new Date().toISOString();
 
-  return transaction(async () => {
+  // Fetch affected payroll result IDs before the transaction
+  const results = await all<{ _id: string }>(
+    `
+      SELECT _id
+      FROM payroll_results
+      WHERE payrollRunId = ?
+    `,
+    [payrollRunId]
+  );
+
+  // Update local database
+  await transaction(async () => {
     await runDirect(
       `
-      UPDATE payroll_runs
-      SET
-        status = ?,
-        approvedBy = ?,
-        approvedAt = ?,
-        updatedAt = ?
-      WHERE _id = ?
+        UPDATE payroll_runs
+        SET
+          status = ?,
+          approvedBy = ?,
+          approvedAt = ?,
+          updatedAt = ?
+        WHERE _id = ?
       `,
       ["APPROUVÉ", admin._id, now, now, payrollRunId]
     );
 
     await runDirect(
       `
-      UPDATE payroll_results
-      SET
-        status = ?,
-        approvedAt=?,
-        updatedAt = ?
-      WHERE payrollRunId = ?
+        UPDATE payroll_results
+        SET
+          status = ?,
+          approvedAt = ?,
+          updatedAt = ?
+        WHERE payrollRunId = ?
       `,
       ["APPROUVÉ", now, now, payrollRunId]
     );
-
-    return true;
   });
+
+  // Queue payroll run for sync
+  await addToSyncQueue({
+    entity: "payroll_run",
+    entityId: payrollRunId,
+    operation: "update",
+    payload: JSON.stringify({
+      _id: payrollRunId,
+      status: "APPROUVÉ",
+      approvedBy: admin._id,
+      approvedAt: now,
+      updatedAt: now,
+    }),
+  });
+
+  // Queue all affected payroll results for sync
+  for (const result of results) {
+    await addToSyncQueue({
+      entity: "payroll_result",
+      entityId: result._id,
+      operation: "update",
+      payload: JSON.stringify({
+        _id: result._id,
+        status: "APPROUVÉ",
+        approvedAt: now,
+        updatedAt: now,
+      }),
+    });
+  }
+
+  return true;
 }
 
-//Payment
+//Payment payroll run
 export async function paymentPayrollRun(
   payrollRunId: string,
   admin: AdminUser
 ) {
   const now = new Date().toISOString();
 
-  return transaction(async () => {
+  // Fetch affected payroll result IDs before the transaction
+  const results = await all<{ _id: string }>(
+    `
+      SELECT _id
+      FROM payroll_results
+      WHERE payrollRunId = ?
+    `,
+    [payrollRunId]
+  );
+
+  // Update local database
+  await transaction(async () => {
     await runDirect(
       `
-      UPDATE payroll_runs
-      SET
-        status = ?,
-        paidBy = ?,
-        paidAt = ?,
-        updatedAt = ?
-      WHERE _id = ?
+        UPDATE payroll_runs
+        SET
+          status = ?,
+          paidBy = ?,
+          paidAt = ?,
+          updatedAt = ?
+        WHERE _id = ?
       `,
       ["PAYÉ", admin._id, now, now, payrollRunId]
     );
 
     await runDirect(
       `
-      UPDATE payroll_results
-      SET
-        status = ?,
-        paidAt=?,
-        updatedAt = ?
-      WHERE payrollRunId = ?
+        UPDATE payroll_results
+        SET
+          status = ?,
+          paidAt = ?,
+          updatedAt = ?
+        WHERE payrollRunId = ?
       `,
       ["PAYÉ", now, now, payrollRunId]
     );
-
-    return true;
   });
+
+  // Queue payroll run for sync
+  await addToSyncQueue({
+    entity: "payroll_run",
+    entityId: payrollRunId,
+    operation: "update",
+    payload: JSON.stringify({
+      _id: payrollRunId,
+      status: "PAYÉ",
+      paidBy: admin._id,
+      paidAt: now,
+      updatedAt: now,
+    }),
+  });
+
+  // Queue all affected payroll results for sync
+  for (const result of results) {
+    await addToSyncQueue({
+      entity: "payroll_result",
+      entityId: result._id,
+      operation: "update",
+      payload: JSON.stringify({
+        _id: result._id,
+        status: "PAYÉ",
+        paidAt: now,
+        updatedAt: now,
+      }),
+    });
+  }
+
+  return true;
 }
 
 //Save payroll result
@@ -337,89 +459,134 @@ export async function savePayrollResult(
   result: PayrollResult
 ) {
   const date = new Date();
-
   const now = date.toISOString();
-  const month = date.getMonth() + 1; // 1-12
+  const month = date.getMonth() + 1;
   const year = date.getFullYear();
+
   const payrollResultId = randomUUID();
 
-  //Save payroll summary
-  await run(
-    `
- INSERT INTO payroll_results
- (
-  _id,
-  payrollRunId,
-  employeeId,
-  month,
-  year,
-  baseSalary,
-  grossSalary,
-  totalEarnings,
-  totalDeductions,
-  netSalary,
-  status,
-  createdAt,
-  updatedAt,
-   synced,
-  isDeleted
- )
- VALUES(?,?,?,?,?,?,?,?,
- ?,?,?,?,?,0,0)
- `,
-    [
-      payrollResultId,
-      payrollRunId,
-      result.employeeId,
-      month,
-      year,
-      result.baseSalary,
-      result.grossSalary,
-      result.totalEarnings,
-      result.totalDeductions,
-      result.netSalary,
-      result.status,
-      now,
-      now,
-    ]
-  );
+  // Generate IDs before saving so they can be used for sync
+  const items = [...result.earnings, ...result.deductions].map((item) => ({
+    _id: randomUUID(),
+    payrollResultId,
+    employeeId: result.employeeId,
+    componentId: item.componentId,
+    name: item.name,
+    displayName: item.displayName,
+    type: item.type,
+    amount: item.amount,
+    createdAt: now,
+    updatedAt: now,
+  }));
 
-  //Save payroll items
-  const items = [...result.earnings, ...result.deductions];
-
-  for (const item of items) {
-    await run(
+  await transaction(async () => {
+    // Save payroll result
+    await runDirect(
       `
-  INSERT INTO payroll_items
-  (
-  _id,
-  payrollResultId,
-  employeeId,
-  componentId,
-  name,
-  displayName,
-  type,
-  amount,
-  createdAt,
-  updatedAt
-  )
-
-  VALUES(?,?,?,?,?,?,?,?,?,?)
-  `,
+        INSERT INTO payroll_results (
+          _id,
+          payrollRunId,
+          employeeId,
+          month,
+          year,
+          baseSalary,
+          grossSalary,
+          totalEarnings,
+          totalDeductions,
+          netSalary,
+          status,
+          createdAt,
+          updatedAt,
+          synced,
+          isDeleted
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
+      `,
       [
-        randomUUID(),
         payrollResultId,
+        payrollRunId,
         result.employeeId,
-        item.componentId,
-        item.name,
-        item.displayName,
-        item.type,
-        item.amount,
+        month,
+        year,
+        result.baseSalary,
+        result.grossSalary,
+        result.totalEarnings,
+        result.totalDeductions,
+        result.netSalary,
+        result.status,
         now,
         now,
       ]
     );
+
+    // Save payroll items
+    for (const item of items) {
+      await runDirect(
+        `
+          INSERT INTO payroll_items (
+            _id,
+            payrollResultId,
+            employeeId,
+            componentId,
+            name,
+            displayName,
+            type,
+            amount,
+            createdAt,
+            updatedAt
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        [
+          item._id,
+          item.payrollResultId,
+          item.employeeId,
+          item.componentId,
+          item.name,
+          item.displayName,
+          item.type,
+          item.amount,
+          item.createdAt,
+          item.updatedAt,
+        ]
+      );
+    }
+  });
+
+  // Queue payroll result
+  await addToSyncQueue({
+    entity: "payroll_result",
+    entityId: payrollResultId,
+    operation: "create",
+    payload: JSON.stringify({
+      _id: payrollResultId,
+      payrollRunId,
+      employeeId: result.employeeId,
+      month,
+      year,
+      baseSalary: result.baseSalary,
+      grossSalary: result.grossSalary,
+      totalEarnings: result.totalEarnings,
+      totalDeductions: result.totalDeductions,
+      netSalary: result.netSalary,
+      status: result.status,
+      createdAt: now,
+      updatedAt: now,
+      isDeleted: 0,
+    }),
+  });
+
+  // Queue payroll items
+  for (const item of items) {
+    await addToSyncQueue({
+      entity: "payroll_item",
+      entityId: item._id,
+      operation: "create",
+      payload: JSON.stringify(item),
+    });
   }
+
+  return payrollResultId;
 }
 
 //Bulk save payroll results
@@ -520,30 +687,90 @@ export async function getPayrollItems(
 /**
  * Delete payroll run data
  *
- * Useful for reprocessing draft payroll
+ *
  */
 export async function deletePayrollRun(payrollRunId: string) {
-  await run(
+  // Get IDs before deleting the records
+  const results = await all<{ _id: string }>(
     `
- DELETE FROM payroll_items
- WHERE payrollRunId=?
- `,
+      SELECT _id
+      FROM payroll_results
+      WHERE payrollRunId = ?
+    `,
     [payrollRunId]
   );
 
-  await run(
+  const items = await all<{ _id: string }>(
     `
- DELETE FROM payroll_results
- WHERE payrollRunId=?
- `,
+      SELECT _id
+      FROM payroll_items
+      WHERE payrollRunId = ?
+    `,
     [payrollRunId]
   );
 
-  return await run(
-    `
- DELETE FROM payroll_runs
- WHERE _id=?
- `,
-    [payrollRunId]
-  );
+  await transaction(async () => {
+    // Delete payroll items
+    await runDirect(
+      `
+        DELETE FROM payroll_items
+        WHERE payrollRunId = ?
+      `,
+      [payrollRunId]
+    );
+
+    // Delete payroll results
+    await runDirect(
+      `
+        DELETE FROM payroll_results
+        WHERE payrollRunId = ?
+      `,
+      [payrollRunId]
+    );
+
+    // Delete payroll run
+    await runDirect(
+      `
+        DELETE FROM payroll_runs
+        WHERE _id = ?
+      `,
+      [payrollRunId]
+    );
+  });
+
+  // Queue payroll items for deletion
+  for (const item of items) {
+    await addToSyncQueue({
+      entity: "payroll_item",
+      entityId: item._id,
+      operation: "delete",
+      payload: JSON.stringify({
+        _id: item._id,
+      }),
+    });
+  }
+
+  // Queue payroll results for deletion
+  for (const result of results) {
+    await addToSyncQueue({
+      entity: "payroll_result",
+      entityId: result._id,
+      operation: "delete",
+      payload: JSON.stringify({
+        _id: result._id,
+      }),
+    });
+  }
+
+  // Queue payroll run for deletion
+  await addToSyncQueue({
+    entity: "payroll_run",
+    entityId: payrollRunId,
+    operation: "delete",
+    payload: JSON.stringify({
+      _id: payrollRunId,
+    }),
+  });
+
+  return true;
 }

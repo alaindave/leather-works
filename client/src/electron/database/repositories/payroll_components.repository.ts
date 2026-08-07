@@ -24,9 +24,9 @@ export async function createPayrollComponent(
         displayOrder,
         type,
         calculationType,
+        calculationBase,
         defaultValue,
         taxable,
-        percentageOf,
         isSystem,
         requiresHRApproval,
         enabled,
@@ -36,7 +36,7 @@ export async function createPayrollComponent(
         lastSyncedAt,
         isDeleted
       )
-      VALUES (?, ?, ?,?, ?,?,?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       `,
     [
       _id,
@@ -45,9 +45,9 @@ export async function createPayrollComponent(
       component.displayOrder,
       component.type,
       component.calculationType,
-      component.defaultValue,
-      component.taxable,
       component.calculationBase,
+      component.defaultValue,
+      component.taxable ?? 1,
       0,
       component.requiresHRApproval ?? 0,
       1,
@@ -92,9 +92,9 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       displayName,
       type,
       calculationType,
+      calculationBase,
       defaultValue,
       taxable,
-      percentageOf,
       displayOrder,
       isSystem,
       requiresHRApproval,
@@ -106,7 +106,7 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       isDeleted
     )
 
-    VALUES (?, ?, ?, ?,?, ?, ?,?,?, ?,?, ?, ?, ?, ?, ?, ?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 
     ON CONFLICT(_id)
     DO UPDATE SET
@@ -115,9 +115,9 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       displayName = excluded.displayName,
       type = excluded.type,
       calculationType = excluded.calculationType,
+      calculationBase = excluded.calculationBase,
       defaultValue = excluded.defaultValue,
       taxable=excluded.taxable,
-      percentageOf = excluded.percentageOf,
       displayOrder = excluded.displayOrder,
       isSystem = excluded.isSystem,
       requiresHRApproval = excluded.requiresHRApproval,
@@ -135,9 +135,9 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       component.displayName,
       component.type,
       component.calculationType,
-      component.defaultValue,
-      component.taxable,
       component.calculationBase,
+      component.defaultValue,
+      component.taxable ?? 1,
       component.displayOrder,
       component.isSystem,
       component.requiresHRApproval,
@@ -236,9 +236,9 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
       displayOrder=?,
       type = ?,
       calculationType = ?,
+      calculationBase = ?,
       defaultValue = ?,
       taxable=?,
-      percentageOf = ?,
       requiresHRApproval=?,
       enabled = ?,
       synced = 0,
@@ -252,9 +252,9 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
         component.displayOrder,
         component.type,
         component.calculationType,
-        component.defaultValue,
-        component.taxable,
         component.calculationBase,
+        component.defaultValue,
+        component.taxable ?? 1,
         component.requiresHRApproval,
         component.enabled,
         component._id,

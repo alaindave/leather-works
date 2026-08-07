@@ -293,6 +293,7 @@ export default function PayrollEmployeeProfileList({
                 <Td>
                   <Input
                     value={item.displayName}
+                    width="13rem"
                     fontWeight="600"
                     variant="flushed"
                     onChange={(e) =>
@@ -319,27 +320,17 @@ export default function PayrollEmployeeProfileList({
                     }}
                   >
                     <option value="FIXE">Montant fixe</option>
-
                     <option value="MANUEL">Manuel</option>
-
-                    <option value="POURCENTAGE_BASE">
-                      Pourcentage-salaire de base
-                    </option>
-
-                    <option value="POURCENTAGE_BRUT">
-                      Pourcentage-salaire brut
-                    </option>
-                    <option value="POURCENTAGE_IMPOSABLE">
-                      Pourcentage-salaire imposable
-                    </option>
+                    <option value="FORMULE">Formule</option>
+                    <option value="POURCENTAGE_BASE">%-sal.base.</option>
+                    <option value="POURCENTAGE_BRUT">%-sal.brut.</option>
+                    <option value="POURCENTAGE_IMPOSABLE">%-sal.imp.</option>
                   </Select>
                 </Td>
 
                 {/* Value */}
                 <Td>
-                  {item.calculationType === "POURCENTAGE_BASE" ||
-                  item.calculationType === "POURCENTAGE_BRUT" ||
-                  item.calculationType === "FIXE" ? (
+                  {item.calculationType !== "FORMULE" ? (
                     <Input
                       size="sm"
                       type="number"
@@ -354,9 +345,7 @@ export default function PayrollEmployeeProfileList({
                       }
                     />
                   ) : (
-                    <Text color="gray.400" fontSize="sm">
-                      Manuel
-                    </Text>
+                    <Text>-- -- --</Text>
                   )}
                 </Td>
 

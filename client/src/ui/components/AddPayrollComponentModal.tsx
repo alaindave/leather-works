@@ -32,7 +32,11 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [calculationType, setCalculationType] = useState<
-    "FIXE" | "POURCENTAGE" | "MANUEL"
+    | "FIXE"
+    | "POURCENTAGE_BRUT"
+    | "POURCENTAGE_BASE"
+    | "POURCENTAGE_IMPOSABLE"
+    | "MANUEL"
   >("MANUEL");
 
   const [defaultValue, setDefaultValue] = useState(0);
@@ -66,7 +70,7 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
         calculationType,
         displayOrder,
         defaultValue,
-        percentageOf: null,
+        calculationBase: null,
       };
       await window.electron.payrollComponents.create(component);
       toast({
@@ -137,7 +141,12 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
                   value={calculationType}
                   onChange={(e) =>
                     setCalculationType(
-                      e.target.value as "FIXE" | "POURCENTAGE" | "MANUEL"
+                      e.target.value as
+                        | "FIXE"
+                        | "POURCENTAGE_BRUT"
+                        | "POURCENTAGE_BASE"
+                        | "POURCENTAGE_IMPOSABLE"
+                        | "MANUEL"
                     )
                   }
                 >

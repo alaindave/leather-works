@@ -39,7 +39,11 @@ export default function AddPayrollEmployeeProfileModal({
   const [displayOrder, setDisplayOrder] = useState(0);
 
   const [calculationType, setCalculationType] = useState<
-    "FIXE" | "POURCENTAGE" | "MANUEL"
+    | "FIXE"
+    | "POURCENTAGE_BASE"
+    | "POURCENTAGE_BRUT"
+    | "POURCENTAGE_IMPOSABLE"
+    | "MANUEL"
   >("MANUEL");
   const [type, setType] = useState<"EARNING" | "DEDUCTION">("EARNING");
 
@@ -71,8 +75,8 @@ export default function AddPayrollEmployeeProfileModal({
         displayOrder,
         type,
         calculationType,
+        calculationBase: null,
         value: defaultValue,
-        percentageOf: null,
       };
       await window.electron.payrollEmployeeProfiles.create(
         employeeID,
@@ -151,7 +155,12 @@ export default function AddPayrollEmployeeProfileModal({
                   value={calculationType}
                   onChange={(e) =>
                     setCalculationType(
-                      e.target.value as "FIXE" | "POURCENTAGE" | "MANUEL"
+                      e.target.value as
+                        | "FIXE"
+                        | "POURCENTAGE_BASE"
+                        | "POURCENTAGE_BRUT"
+                        | "POURCENTAGE_IMPOSABLE"
+                        | "MANUEL"
                     )
                   }
                 >

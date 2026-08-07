@@ -7,6 +7,7 @@ export function calculatePayroll(employee, admin) {
     let totalEarnings = 0;
     let totalDeductions = 0;
     let grossSalary = baseSalary;
+    let socialRate = 0;
     const date = new Date();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
@@ -62,10 +63,15 @@ export function calculatePayroll(employee, admin) {
             continue;
         if (component.type !== "DEDUCTION")
             continue;
+        if (component.name === "SOCIAL_SECURITY") {
+            socialRate = component.value ?? 0;
+        }
         const context = {
+            employeeId: employee.employeeId,
             baseSalary,
             grossSalary,
             taxableSalary,
+            socialRate,
             totalEarnings,
             totalDeductions,
             netSalary: grossSalary - totalDeductions,

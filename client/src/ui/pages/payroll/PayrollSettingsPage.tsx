@@ -48,7 +48,7 @@ const PayrollSettingsPage = () => {
         </Box>
       </HStack>
 
-      <Tabs ml="5rem" colorScheme="yellow">
+      <Tabs ml="3rem" colorScheme="yellow">
         <TabList>
           <Tab>Remuneration</Tab>
           <Tab>Deductions</Tab>

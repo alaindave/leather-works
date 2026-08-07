@@ -41,7 +41,7 @@ export default function PayrollComponentList({ type, showTaxable }: Props) {
 
   const loadComponents = async () => {
     try {
-      const data = await window.electron.payrollComponents.getEnabled(type);
+      const data = await window.electron.payrollComponents.getAll(type);
 
       setComponents(structuredClone(data));
       setOriginalComponents(structuredClone(data));
@@ -291,19 +291,11 @@ export default function PayrollComponentList({ type, showTaxable }: Props) {
                     }}
                   >
                     <option value="FIXE">Montant fixe</option>
-
                     <option value="MANUEL">Manuel</option>
-
-                    <option value="POURCENTAGE_BASE">
-                      Pourcentage-salaire de base
-                    </option>
-
-                    <option value="POURCENTAGE_BRUT">
-                      Pourcentage-salaire brut
-                    </option>
-                    <option value="POURCENTAGE_IMPOSABLE">
-                      Pourcentage-salaire imposable
-                    </option>
+                    <option value="FORMULE">Formule</option>
+                    <option value="POURCENTAGE_BASE">% - sal.base</option>
+                    <option value="POURCENTAGE_BRUT">% - sal.brut</option>
+                    <option value="POURCENTAGE_IMPOSABLE">% - sal.impos</option>
                   </Select>
                 </Td>
 
@@ -327,8 +319,8 @@ export default function PayrollComponentList({ type, showTaxable }: Props) {
                       }
                     />
                   ) : (
-                    <Text color="gray.400" fontSize="sm">
-                      N/A
+                    <Text ml="0.2rem" color="gray.600" fontSize="sm">
+                      -- -- --
                     </Text>
                   )}
                 </Td>

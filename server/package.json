@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@shared": "*",
     "@supabase/supabase-js": "^2.110.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
@@ -30,7 +31,7 @@
     "resend": "^6.12.4",
     "simple-zustand-devtools": "^1.1.0",
     "socket.io": "^4.8.3",
-    "@shared": "*"
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

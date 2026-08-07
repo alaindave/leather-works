@@ -6,10 +6,11 @@ export interface PayrollComponentDocument {
   type: "EARNING" | "DEDUCTION";
   calculationType:
     | "FIXE"
-    | "POURCENTAGE_BRUT"
+    | "MANUEL"
     | "POURCENTAGE_BASE"
+    | "POURCENTAGE_BRUT"
     | "POURCENTAGE_IMPOSABLE"
-    | "MANUEL";
+    | "FORMULE";
   defaultValue: number;
   taxable?: Number;
   displayOrder: number;
@@ -51,10 +52,11 @@ const PayrollComponentSchema = new Schema<PayrollComponentDocument>({
     type: String,
     enum: [
       "FIXE",
-      "POURCENTAGE_BRUT",
-      "POURCENTAGE_BASE",
-      "POURCENTAGE_IMPOSABLE",
       "MANUEL",
+      "POURCENTAGE_BASE",
+      "POURCENTAGE_BRUT",
+      "POURCENTAGE_IMPOSABLE",
+      "FORMULE",
     ],
     default: "MANUEL",
   },

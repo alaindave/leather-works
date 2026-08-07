@@ -378,12 +378,18 @@ export async function syncPayrollProfile(
   operation: SyncOperation,
   data: SyncData
 ) {
+  const { _id, ...fields } = data;
+
   await EmployeePayrollProfile.updateOne(
     {
-      _id: data._id,
+      employeeId: data.employeeId,
+      componentId: data.componentId,
     },
     {
-      $set: data,
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
     },
     {
       upsert: true,
