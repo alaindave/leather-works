@@ -12,43 +12,85 @@ jobs:
   build-windows:
     runs-on: windows-latest
 
-    defaults:
-      run:
-        working-directory: ./client
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: client/package-lock.json
+          cache-dependency-path: package-lock.json
 
+      # ---------------------------------------------------------
+      # Install all monorepo dependencies
+      # ---------------------------------------------------------
       - name: Install dependencies
         run: npm ci
 
-      - name: Rebuild native modules
+      # ---------------------------------------------------------
+      # Build shared payroll engine
+      # ---------------------------------------------------------
+      - name: Build shared
+        run: npm run build:shared
+
+      # ---------------------------------------------------------
+      # Build server
+      # ---------------------------------------------------------
+      - name: Build server
+        run: npm run build:server
+
+      # ---------------------------------------------------------
+      # Build React renderer + Electron main/preload
+      # ---------------------------------------------------------
+      - name: Build client
+        run: npm run build:client
+
+      # ---------------------------------------------------------
+      # Rebuild native Electron dependencies
+      # ---------------------------------------------------------
+      - name: Rebuild Electron native modules
+        working-directory: ./client
         run: npx electron-builder install-app-deps
 
-      - name: Build React App
-        run: npm run build
-
+      # ---------------------------------------------------------
+      # Build Windows installer
+      # ---------------------------------------------------------
       - name: Build Windows Installer
+        working-directory: ./client
         run: npx electron-builder --win --x64 --publish never
 
+      # ---------------------------------------------------------
+      # Debug build output
+      # ---------------------------------------------------------
       - name: Debug dist-app
         shell: pwsh
         run: |
-            Write-Host "Current directory:"
-            Get-Location
+          Write-Host "Repository root:"
+          Get-Location
 
-            Write-Host "Contents of client/dist-app:"
-            Get-ChildItem -Path dist-app -Recurse
+          Write-Host ""
+          Write-Host "Client directory:"
+          Get-ChildItem -Path client
 
+          Write-Host ""
+          Write-Host "Client dist-app:"
+          if (Test-Path "client/dist-app") {
+            Get-ChildItem -Path "client/dist-app" -Recurse
+          } else {
+            Write-Error "client/dist-app does not exist"
+            exit 1
+          }
+
+      # ---------------------------------------------------------
+      # Create GitHub Release
+      # ---------------------------------------------------------
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             client/dist-app/*.exe
             client/dist-app/*.yml
+            client/dist-app/*.blockmap
+          generate_release_notes: true

@@ -7,6 +7,9 @@ import PayrollComponent from "./models/payrollComponentModel.js";
 import AdminUser from "./models/adminUserModel.js";
 import EmployeePayrollProfile from "./models/payrollEmployeeProfileModel.js";
 import supabase from "./services/supabase.service.js";
+import PayrollRun from "./models/payrollRunModel.js";
+import PayrollResult from "./models/payrollResultModel.js";
+import PayrollItem from "./models/payrollItemModel.js";
 
 export type SyncOperation = "create" | "update" | "delete";
 
@@ -384,6 +387,72 @@ export async function syncPayrollProfile(
     {
       employeeId: data.employeeId,
       componentId: data.componentId,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
+}
+
+// Sync payroll run
+export async function syncPayrollRun(operation: SyncOperation, data: SyncData) {
+  const { _id, ...fields } = data;
+
+  await PayrollRun.updateOne(
+    {
+      _id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
+}
+
+// Sync payroll result
+export async function syncPayrollResult(
+  operation: SyncOperation,
+  data: SyncData
+) {
+  const { _id, ...fields } = data;
+
+  await PayrollResult.updateOne(
+    {
+      _id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
+}
+
+// Sync payroll item
+export async function syncPayrollItem(
+  operation: SyncOperation,
+  data: SyncData
+) {
+  const { _id, ...fields } = data;
+
+  await PayrollItem.updateOne(
+    {
+      _id,
     },
     {
       $set: fields,

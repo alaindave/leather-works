@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-export interface EmployeePayrollProfileDocument {
+export interface PayrollEmployeeProfileDocument {
   _id: string;
   employeeId: string;
   componentId: string;
@@ -33,7 +33,7 @@ export interface EmployeePayrollProfileDocument {
   updatedAt: Date;
 }
 
-const EmployeePayrollProfileSchema = new Schema<EmployeePayrollProfileDocument>(
+const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
   {
     _id: {
       type: String,
@@ -142,26 +142,26 @@ const EmployeePayrollProfileSchema = new Schema<EmployeePayrollProfileDocument>(
 );
 
 // One payroll profile per employee/component pair
-EmployeePayrollProfileSchema.index(
+PayrollEmployeeProfileSchema.index(
   { employeeId: 1, componentId: 1 },
   { unique: true }
 );
 
 // Useful for payroll generation
-EmployeePayrollProfileSchema.index({
+PayrollEmployeeProfileSchema.index({
   employeeId: 1,
   enabled: 1,
 });
 
 // Useful during synchronization
-EmployeePayrollProfileSchema.index({
+PayrollEmployeeProfileSchema.index({
   synced: 1,
   isDeleted: 1,
 });
 
-const EmployeePayrollProfile = model<EmployeePayrollProfileDocument>(
-  "EmployeePayrollProfiles",
-  EmployeePayrollProfileSchema
+const PayrollEmployeeProfile = model<PayrollEmployeeProfileDocument>(
+  "PayrollEmployeeProfiles",
+  PayrollEmployeeProfileSchema
 );
 
-export default EmployeePayrollProfile;
+export default PayrollEmployeeProfile;

@@ -10,8 +10,8 @@ import {
   getEmployeePayrollProfileByComponent,
   getAllEmployeePayrollProfiles,
   getUnsyncedEmployeePayrollProfiles,
-  markEmployeePayrollProfileSynced,
-  markManyEmployeePayrollProfilesSynced,
+  markPayrollEmployeeProfileSynced,
+  markManyPayrollEmployeeProfileSynced,
   deleteEmployeePayrollProfile,
   restoreEmployeePayrollProfile,
   permanentlyDeleteEmployeePayrollProfile,
@@ -122,14 +122,14 @@ export function registerPayrollEmployeeProfileIPC() {
   ipcMain.handle(
     "payrollEmployeeProfiles:markSynced",
     async (_: IpcMainInvokeEvent, id) => {
-      return await markEmployeePayrollProfileSynced(id);
+      return await markPayrollEmployeeProfileSynced(id);
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:markManySynced",
     async (_: IpcMainInvokeEvent, ids) => {
-      return await markManyEmployeePayrollProfilesSynced(ids);
+      return await markManyPayrollEmployeeProfileSynced(ids);
     }
   );
 

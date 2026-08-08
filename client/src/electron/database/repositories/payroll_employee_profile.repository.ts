@@ -73,6 +73,8 @@ export async function createEmployeePayrollProfile(
     operation: "create",
     payload: JSON.stringify(payroll_profile),
   });
+
+  return payroll_profile;
 }
 
 export async function createManyEmployeePayrollProfiles(
@@ -88,17 +90,14 @@ export async function updateEmployeePayrollProfile(
   profile: PayrollEmployeeProfile
 ) {
   if (!profile._id) return;
-
-  const component = await getPayrollComponentById(profile.componentId);
   let isOverridden;
+  const component = await getPayrollComponentById(profile.componentId);
   if (!component) {
     console.log(`PAYROLL COMPONENT NOT FOUND FOR PROFILE ${profile._id}`);
     const component = await getEmployeePayrollProfile(profile._id);
     if (component) {
       console.log("PAYROLL PROFILE TO UPDATE", profile);
-
       const now = new Date().toISOString();
-
       await run(
         `
     UPDATE payroll_employee_profiles
@@ -107,6 +106,7 @@ export async function updateEmployeePayrollProfile(
       displayOrder=?,
       type = ?,
       calculationType = ?,
+      calculationBase=?,
       value = ?,
       taxable=?,
       requiresHRApproval=?,
@@ -123,6 +123,7 @@ export async function updateEmployeePayrollProfile(
           profile.displayOrder,
           profile.type,
           profile.calculationType,
+          profile.calculationBase,
           profile.value,
           profile.taxable,
           profile.requiresHRApproval,
@@ -162,6 +163,7 @@ export async function updateEmployeePayrollProfile(
     profile.displayOrder !== component.displayOrder ||
     profile.type !== component.type ||
     profile.calculationType !== component.calculationType ||
+    profile.calculationBase !== component.calculationBase ||
     profile.value !== component.defaultValue ||
     profile.enabled !== component.enabled ||
     profile.requiresHRApproval !== component.requiresHRApproval;
@@ -184,6 +186,7 @@ export async function updateEmployeePayrollProfile(
       displayOrder=?,
       type = ?,
       calculationType = ?,
+      calculationBase = ?,
       value = ?,
       taxable=?,
       requiresHRApproval=?,
@@ -200,6 +203,7 @@ export async function updateEmployeePayrollProfile(
       profile.displayOrder,
       profile.type,
       profile.calculationType,
+      profile.calculationBase,
       profile.value,
       profile.taxable,
       profile.requiresHRApproval,
@@ -243,6 +247,7 @@ export async function upsertEmployeePayrollProfile(
       _id,
       employeeId,
       componentId,
+      name,
       displayName,
       displayOrder,
       type,
@@ -257,12 +262,13 @@ export async function upsertEmployeePayrollProfile(
       updatedAt,
       lastSyncedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?,?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 
     ON CONFLICT(_id)
     DO UPDATE SET
       employeeId = excluded.employeeId,
       componentId = excluded.componentId,
+      name = excluded.name,
       displayName = excluded.displayName,
       displayOrder = excluded.displayOrder,
       type = excluded.type,
@@ -280,6 +286,7 @@ export async function upsertEmployeePayrollProfile(
       profile._id,
       profile.employeeId,
       profile.componentId,
+      profile.name,
       profile.displayName,
       profile.displayOrder,
       profile.type,
@@ -441,7 +448,7 @@ export async function getUnsyncedEmployeePayrollProfiles() {
   );
 }
 
-export async function markEmployeePayrollProfileSynced(_id: string) {
+export async function markPayrollEmployeeProfileSynced(_id: string) {
   await run(
     `
     UPDATE payroll_employee_profiles
@@ -454,9 +461,9 @@ export async function markEmployeePayrollProfileSynced(_id: string) {
   );
 }
 
-export async function markManyEmployeePayrollProfilesSynced(ids: string[]) {
+export async function markManyPayrollEmployeeProfileSynced(ids: string[]) {
   for (const id of ids) {
-    await markEmployeePayrollProfileSynced(id);
+    await markPayrollEmployeeProfileSynced(id);
   }
 }
 

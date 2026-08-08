@@ -14,6 +14,9 @@ import {
   syncPayrollComponent,
   syncPayrollProfile,
   SyncOperation,
+  syncPayrollRun,
+  syncPayrollResult,
+  syncPayrollItem,
 } from "../sync.js";
 
 import Employee from "../models/employeeModel.js";
@@ -23,6 +26,10 @@ import Task from "../models/taskModel.js";
 import AdminUser from "../models/adminUserModel.js";
 import EmployeeDocuments from "../models/employeesDocumentsModel.js";
 import PayrollComponent from "../models/payrollComponentModel.js";
+import PayrollEmployeeProfile from "../models/payrollEmployeeProfileModel.js";
+import PayrollResult from "../models/payrollResultModel.js";
+import PayrollItem from "../models/payrollItemModel.js";
+import PayrollRun from "../models/payrollRunModel.js";
 
 const router = express.Router();
 
@@ -122,6 +129,18 @@ router.post(
               await syncPayrollProfile(operation, data);
               break;
 
+            case "payroll_run":
+              await syncPayrollRun(operation, data);
+              break;
+
+            case "payroll_result":
+              await syncPayrollResult(operation, data);
+              break;
+
+            case "payroll_item":
+              await syncPayrollItem(operation, data);
+              break;
+
             default:
               continue;
           }
@@ -168,6 +187,10 @@ router.get(
         leaves,
         tasks,
         payrollComponents,
+        payrollEmployeeProfiles,
+        payrollRuns,
+        payrollResults,
+        payrollItems,
       ] = await Promise.all([
         AdminUser.find({
           updatedAt: { $gt: date },
@@ -198,9 +221,25 @@ router.get(
         PayrollComponent.find({
           updatedAt: { $gt: date },
         }).lean(),
+
+        PayrollEmployeeProfile.find({
+          updatedAt: { $gt: date },
+        }).lean(),
+
+        PayrollRun.find({
+          updatedAt: { $gt: date },
+        }).lean(),
+
+        PayrollResult.find({
+          updatedAt: { $gt: date },
+        }).lean(),
+
+        PayrollItem.find({
+          updatedAt: { $gt: date },
+        }).lean(),
       ]);
 
-      console.log("RETRIEVED LEAVE ITEMS TO SEND TO CLIENT", leaves);
+      console.log("RETRIEVED PAYROLL ITEMS TO SEND TO CLIENT", payrollRuns);
 
       return res.send({
         success: true,
@@ -211,6 +250,10 @@ router.get(
         leaves,
         tasks,
         payrollComponents,
+        payrollEmployeeProfiles,
+        payrollRuns,
+        payrollResults,
+        payrollItems,
         serverTime: new Date().toISOString(),
       });
     } catch (error) {

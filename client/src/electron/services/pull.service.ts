@@ -44,6 +44,25 @@ import {
   upsertPayrollComponent,
   markPayrollComponentSynced,
 } from "../database/repositories/payroll_components.repository.js";
+import PayrollEmployeeProfile from "../../common/types/payroll/PayrollEmployeeProfile.js";
+import {
+  markPayrollEmployeeProfileSynced,
+  upsertEmployeePayrollProfile,
+} from "../database/repositories/payroll_employee_profile.repository.js";
+import {
+  PayrollResultRecord,
+  PayrollRun,
+} from "../../common/types/payroll/Payroll.js";
+import {
+  markPayrollItemSynced,
+  markPayrollResultSynced,
+  markPayrollRunSynced,
+  upsertPayrollItem,
+  upsertPayrollResult,
+  upsertPayrollRun,
+} from "../database/repositories/payroll_run.repository.js";
+import { PayrollResult } from "../../../../shared/payroll_service/types.js";
+import PayrollItem from "../../common/types/payroll/PayrollItem.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -69,6 +88,10 @@ export async function pullLatestChanges() {
       leaves,
       tasks,
       payrollComponents,
+      payrollEmployeeProfiles,
+      payrollRuns,
+      payrollResults,
+      payrollItems,
       serverTime,
     } = response.data;
     console.log("PULLED ITEMS FROM SERVER");
@@ -80,6 +103,10 @@ export async function pullLatestChanges() {
     console.log("FETCHED LEAVES:", leaves);
     console.log("FETCHED TASKS:", tasks);
     console.log("FETCHED PAYROLL COMPONENTS:", payrollComponents);
+    console.log("FETCHED PAYROLL EMPLOYEE PROFILES:", payrollEmployeeProfiles);
+    console.log("FETCHED PAYROLL RUNS:", payrollRuns);
+    console.log("FETCHED PAYROLL RESULTS:", payrollResults);
+    console.log("FETCHED PAYROLL ITEMS:", payrollItems);
 
     await syncAdminUsers(adminUsers);
     await syncEmployees(employees);
@@ -89,6 +116,11 @@ export async function pullLatestChanges() {
     await syncLeaves(leaves);
     await syncTasks(tasks);
     await syncPayrollComponents(payrollComponents);
+    await syncPayrollEmployeeProfiles(payrollEmployeeProfiles);
+    await syncPayrollRuns(payrollRuns);
+    await syncPayrollResults(payrollResults);
+    await syncPayrollItems(payrollItems);
+
     await setSetting("lastSync", serverTime);
 
     return response;
@@ -276,6 +308,64 @@ async function syncPayrollComponents(payrollComponents: PayrollComponent[]) {
         component._id,
         error
       );
+    }
+  }
+}
+
+async function syncPayrollEmployeeProfiles(
+  payrollEmployeeProfiles: PayrollEmployeeProfile[]
+) {
+  for (const component of payrollEmployeeProfiles) {
+    if (!component._id) continue;
+    try {
+      await upsertEmployeePayrollProfile(component);
+      await markPayrollEmployeeProfileSynced(component._id);
+    } catch (error) {
+      console.error(
+        "FAILED TO SYNC PULLED PAYROLL EMPLOYEE PROFILE:",
+        component._id,
+        error
+      );
+    }
+  }
+}
+
+async function syncPayrollRuns(payrollRun: PayrollRun[]) {
+  for (const run of payrollRun) {
+    if (!run._id) continue;
+    try {
+      await upsertPayrollRun(run);
+      await markPayrollRunSynced(run._id);
+    } catch (error) {
+      console.error("FAILED TO SYNC PULLED PAYROLL RUN:", run._id, error);
+    }
+  }
+}
+
+async function syncPayrollResults(PayrollResults: PayrollResultRecord[]) {
+  for (const result of PayrollResults) {
+    if (!result._id) continue;
+    try {
+      await upsertPayrollResult(result);
+      await markPayrollResultSynced(result._id);
+    } catch (error) {
+      console.error(
+        "FAILED TO SYNC PULLED PAYROLL RESULTS:",
+        result._id,
+        error
+      );
+    }
+  }
+}
+
+async function syncPayrollItems(PayrollItems: PayrollItem[]) {
+  for (const item of PayrollItems) {
+    if (!item._id) continue;
+    try {
+      await upsertPayrollItem(item);
+      await markPayrollItemSynced(item._id);
+    } catch (error) {
+      console.error("FAILED TO SYNC PULLED PAYROLL RESULTS:", item._id, error);
     }
   }
 }

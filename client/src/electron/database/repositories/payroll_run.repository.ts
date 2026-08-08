@@ -136,6 +136,215 @@ export async function getPayrollRunById(_id: string) {
     [_id]
   );
 }
+// Upsert payroll run
+export async function upsertPayrollRun(payrollRun: PayrollRun) {
+  await run(
+    `
+      INSERT INTO payroll_runs (
+        _id,
+        generatedBy,
+        month,
+        year,
+        employeeCount,
+        totalBasicSalary,
+        totalEarnings,
+        totalDeductions,
+        totalNetSalary,
+        status,
+        cancelledBy,
+        cancelledAt,
+        submittedForVerificationBy,
+        submittedForVerificationAt,
+        approvedBy,
+        approvedAt,
+        paidBy,
+        paidAt,
+        synced,
+        createdAt,
+        updatedAt,
+        isDeleted
+      )
+      VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?,
+        1, ?, ?, ?
+      )
+      ON CONFLICT(_id) DO UPDATE SET
+        generatedBy = excluded.generatedBy,
+        month = excluded.month,
+        year = excluded.year,
+        employeeCount = excluded.employeeCount,
+        totalBasicSalary = excluded.totalBasicSalary,
+        totalEarnings = excluded.totalEarnings,
+        totalDeductions = excluded.totalDeductions,
+        totalNetSalary = excluded.totalNetSalary,
+        status = excluded.status,
+        cancelledBy = excluded.cancelledBy,
+        cancelledAt = excluded.cancelledAt,
+        submittedForVerificationBy = excluded.submittedForVerificationBy,
+        submittedForVerificationAt = excluded.submittedForVerificationAt,
+        approvedBy = excluded.approvedBy,
+        approvedAt = excluded.approvedAt,
+        paidBy = excluded.paidBy,
+        paidAt = excluded.paidAt,
+        createdAt = excluded.createdAt,
+        updatedAt = excluded.updatedAt,
+        isDeleted = excluded.isDeleted,
+        synced = 1
+    `,
+    [
+      payrollRun._id,
+      payrollRun.generatedBy,
+      payrollRun.month,
+      payrollRun.year,
+      payrollRun.employeeCount,
+      payrollRun.totalBasicSalary,
+      payrollRun.totalEarnings,
+      payrollRun.totalDeductions,
+      payrollRun.totalNetSalary,
+      payrollRun.status,
+      payrollRun.cancelledBy ?? null,
+      payrollRun.cancelledAt ?? null,
+      payrollRun.submittedForVerificationBy ?? null,
+      payrollRun.submittedForVerificationAt ?? null,
+      payrollRun.approvedBy ?? null,
+      payrollRun.approvedAt ?? null,
+      payrollRun.paidBy ?? null,
+      payrollRun.paidAt ?? null,
+      payrollRun.createdAt,
+      payrollRun.updatedAt,
+      payrollRun.isDeleted ?? 0,
+    ]
+  );
+
+  return true;
+}
+
+// Upsert payroll results
+export async function upsertPayrollResult(payrollResult: PayrollResultRecord) {
+  await run(
+    `
+      INSERT INTO payroll_results (
+        _id,
+        payrollRunId,
+        employeeId,
+        month,
+        year,
+        baseSalary,
+        grossSalary,
+        totalEarnings,
+        totalDeductions,
+        netSalary,
+        status,
+        cancelledAt,
+        verifiedAt,
+        approvedAt,
+        paidAt,
+        createdAt,
+        updatedAt,
+        synced,
+        isDeleted
+      )
+      VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, 1, ?
+      )
+      ON CONFLICT(_id) DO UPDATE SET
+        payrollRunId = excluded.payrollRunId,
+        employeeId = excluded.employeeId,
+        month = excluded.month,
+        year = excluded.year,
+        baseSalary = excluded.baseSalary,
+        grossSalary = excluded.grossSalary,
+        totalEarnings = excluded.totalEarnings,
+        totalDeductions = excluded.totalDeductions,
+        netSalary = excluded.netSalary,
+        status = excluded.status,
+        cancelledAt = excluded.cancelledAt,
+        verifiedAt = excluded.verifiedAt,
+        approvedAt = excluded.approvedAt,
+        paidAt = excluded.paidAt,
+        createdAt = excluded.createdAt,
+        updatedAt = excluded.updatedAt,
+        synced = 1,
+        isDeleted = excluded.isDeleted
+    `,
+    [
+      payrollResult._id,
+      payrollResult.payrollRunId,
+      payrollResult.employeeId,
+      payrollResult.month,
+      payrollResult.year,
+      payrollResult.baseSalary,
+      payrollResult.grossSalary,
+      payrollResult.totalEarnings,
+      payrollResult.totalDeductions,
+      payrollResult.netSalary,
+      payrollResult.status,
+      payrollResult.cancelledAt ?? null,
+      payrollResult.verifiedAt ?? null,
+      payrollResult.approvedAt ?? null,
+      payrollResult.paidAt ?? null,
+      payrollResult.createdAt,
+      payrollResult.updatedAt,
+      payrollResult.isDeleted ?? 0,
+    ]
+  );
+
+  return true;
+}
+
+//Upsert payroll items
+export async function upsertPayrollItem(payrollItem: PayrollItem) {
+  await run(
+    `
+      INSERT INTO payroll_items (
+        _id,
+        payrollResultId,
+        employeeId,
+        componentId,
+        name,
+        displayName,
+        type,
+        amount,
+        createdAt,
+        updatedAt,
+        synced,
+        isDeleted
+      )
+      VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?
+      )
+      ON CONFLICT(_id) DO UPDATE SET
+        payrollResultId = excluded.payrollResultId,
+        employeeId = excluded.employeeId,
+        componentId = excluded.componentId,
+        name = excluded.name,
+        displayName = excluded.displayName,
+        type = excluded.type,
+        amount = excluded.amount,
+        createdAt = excluded.createdAt,
+        updatedAt = excluded.updatedAt,
+        synced = 1,
+        isDeleted = excluded.isDeleted
+    `,
+    [
+      payrollItem._id,
+      payrollItem.payrollResultId,
+      payrollItem.employeeId,
+      payrollItem.componentId,
+      payrollItem.name,
+      payrollItem.displayName ?? null,
+      payrollItem.type,
+      payrollItem.amount,
+      payrollItem.createdAt,
+      payrollItem.updatedAt,
+      payrollItem.isDeleted ?? 0,
+    ]
+  );
+
+  return true;
+}
 
 //Update payroll status
 export async function updatePayrollStatus(_id: string, status: PayrollStatus) {
@@ -164,7 +373,7 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
     [payrollRunId]
   );
 
-  // Transaction: only direct DB operations
+  // Transaction
   await transaction(async () => {
     await runDirect(
       `
@@ -681,6 +890,39 @@ export async function getPayrollItems(
 
     `,
     [payrollResultId]
+  );
+}
+
+export async function markPayrollRunSynced(_id: string) {
+  return await run(
+    `
+      UPDATE payroll_runs
+      SET synced = 1
+      WHERE _id = ?
+    `,
+    [_id]
+  );
+}
+
+export async function markPayrollResultSynced(_id: string) {
+  return await run(
+    `
+      UPDATE payroll_results
+      SET synced = 1
+      WHERE _id = ?
+    `,
+    [_id]
+  );
+}
+
+export async function markPayrollItemSynced(_id: string) {
+  return await run(
+    `
+      UPDATE payroll_items
+      SET synced = 1
+      WHERE _id = ?
+    `,
+    [_id]
   );
 }
 

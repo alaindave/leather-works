@@ -60,6 +60,7 @@ export interface PayrollItem {
 }
 
 export interface PayrollResult {
+  _id?: string;
   employeeId: string;
   generatedBy: string;
   month: number;

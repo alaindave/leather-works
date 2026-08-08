@@ -17,7 +17,12 @@ import { markTaskCommentsSynced } from "../database/repositories/tasks_comments.
 import { markEmployeePhotoSynced } from "../database/repositories/employees_photos.repository.js";
 import { markEmployeeDocumentSynced } from "../database/repositories/employees_documents.repository.js";
 import { markPayrollComponentSynced } from "../database/repositories/payroll_components.repository.js";
-import { markEmployeePayrollProfileSynced } from "../database/repositories/payroll_employee_profile.repository.js";
+import { markPayrollEmployeeProfileSynced } from "../database/repositories/payroll_employee_profile.repository.js";
+import {
+  markPayrollItemSynced,
+  markPayrollResultSynced,
+  markPayrollRunSynced,
+} from "../database/repositories/payroll_run.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -134,7 +139,19 @@ export async function pushPendingChanges() {
         break;
 
       case "payroll_profile":
-        await markEmployeePayrollProfileSynced(data._id);
+        await markPayrollEmployeeProfileSynced(data._id);
+        break;
+
+      case "payroll_run":
+        await markPayrollRunSynced(data._id);
+        break;
+
+      case "payroll_result":
+        await markPayrollResultSynced(data._id);
+        break;
+
+      case "payroll_item":
+        await markPayrollItemSynced(data._id);
         break;
     }
   }

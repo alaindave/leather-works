@@ -7,23 +7,23 @@ export type PayrollStatus =
   | "PAYÉ"
   | "ANNULÉ";
 
-export default interface Payroll {
-  _id: string;
-  employeeId: string;
-  generatedBy?: string;
-  month: number;
-  year: number;
-  grossSalary: number;
-  totalDeductions: number;
-  netSalary: number;
-  notes?: string;
-  status: PayrollStatus;
-  synced: number;
-  isDeleted: number;
-  createdAt: string;
-  updatedAt: string;
-  lastSyncedAt?: string;
-}
+// export default interface Payroll {
+//   _id: string;
+//   employeeId: string;
+//   generatedBy?: string;
+//   month: number;
+//   year: number;
+//   grossSalary: number;
+//   totalDeductions: number;
+//   netSalary: number;
+//   notes?: string;
+//   status: PayrollStatus;
+//   synced: number;
+//   isDeleted: number;
+//   createdAt: string;
+//   updatedAt: string;
+//   lastSyncedAt?: string;
+// }
 
 export interface PayrollRun {
   _id: string;
@@ -81,4 +81,5 @@ export interface PayrollResultRecord {
   netSalary: number;
   createdAt: string;
   updatedAt: string;
+  isDeleted: string;
 }
