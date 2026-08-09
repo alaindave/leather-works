@@ -9,7 +9,7 @@ interface Props {
   color: string;
 }
 
-const PayslipCardDisplay = ({ itemName, amount, color, icon }: Props) => {
+const PayslipItemDisplay = ({ itemName, amount, color, icon }: Props) => {
   const cardBgColor = `${color}.50`;
   const iconBgColor = `${color}.100`;
   const iconColor = `${color}.600`;
@@ -45,4 +45,4 @@ const PayslipCardDisplay = ({ itemName, amount, color, icon }: Props) => {
   );
 };
 
-export default PayslipCardDisplay;
+export default PayslipItemDisplay;

@@ -15,27 +15,30 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { CiCalendar } from "react-icons/ci";
-import { MdPayment } from "react-icons/md";
-import { IoWalletOutline } from "react-icons/io5";
-import { FaArrowTrendUp } from "react-icons/fa6";
-import { FaArrowLeftLong } from "react-icons/fa6";
-import { FaArrowDownLong } from "react-icons/fa6";
-import { GrStatusInfo } from "react-icons/gr";
+import {
+  FaArrowDownLong,
+  FaArrowLeftLong,
+  FaArrowTrendUp,
+  FaRegCalendarCheck,
+} from "react-icons/fa6";
 import { FcApproval } from "react-icons/fc";
-import { MdFreeCancellation } from "react-icons/md";
+import { IoWalletOutline } from "react-icons/io5";
 import { LuInfo } from "react-icons/lu";
-import { FaRegCalendarCheck } from "react-icons/fa6";
+import {
+  MdFreeCancellation,
+  MdOutlineChevronRight,
+  MdPayment,
+} from "react-icons/md";
 import { PiCreditCardLight } from "react-icons/pi";
-import { MdOutlineChevronRight } from "react-icons/md";
 import { Link, useLocation, useParams } from "react-router-dom";
 import Attendance from "../../../common/types/Attendance";
 import Employee from "../../../common/types/Employee";
-import { PayrollResultRecord } from "../../../common/types/payroll/Payroll";
-import PayrollItem from "../../../common/types/payroll/PayrollItem";
+import { PayrollResult } from "../../../common/types/payroll/Payroll";
+import { PayrollItem } from "../../../common/types/payroll/Payroll";
 import defaultAvatar from "../../assets/default-avatar.jpeg";
-import { getPayrollPeriod } from "../../util/getPayrollPeriod";
-import PayslipCardDisplay from "../../components/payroll/PayslipCardDisplay";
+import PayslipItemDisplay from "../../components/payroll/PayslipItemDisplay";
 import { formatCurrency } from "../../util/currencyFormatter";
+import { getPayrollPeriod } from "../../util/getPayrollPeriod";
 
 type EmployeeState = {
   employee?: Employee;
@@ -54,9 +57,9 @@ const EmployeePayslipDetails = () => {
   const location = useLocation();
   const { employee } = (location.state as EmployeeState) || {};
   const { photo_url } = (location.state as PhotoState) || "";
-  const { attendance } = (location.state as AttendanceState) || {};
-  const [payrollResults, setPayrollResults] =
-    useState<PayrollResultRecord | null>({} as PayrollResultRecord);
+  const [payrollResults, setPayrollResults] = useState<PayrollResult | null>(
+    {} as PayrollResult
+  );
   const [payrollItems, setPayrollItems] = useState<PayrollItem[] | null>([]);
   console.log("Employee ID:", employeeId);
   console.log("PAYROLL ID", payslipId);
@@ -393,25 +396,25 @@ const EmployeePayslipDetails = () => {
         gap={10}
         padding={10}
       >
-        <PayslipCardDisplay
+        <PayslipItemDisplay
           itemName="Salaire de base"
           amount={payrollResults?.baseSalary!}
           icon={IoWalletOutline}
           color="green"
         />
-        <PayslipCardDisplay
+        <PayslipItemDisplay
           itemName="Remunerations"
           amount={payrollResults?.totalEarnings!}
           icon={FaArrowTrendUp}
           color="blue"
         />
-        <PayslipCardDisplay
+        <PayslipItemDisplay
           itemName="Deductions"
           amount={payrollResults?.totalDeductions!}
           icon={FaArrowDownLong}
           color="red"
         />
-        <PayslipCardDisplay
+        <PayslipItemDisplay
           itemName="Salaire net"
           amount={payrollResults?.netSalary!}
           icon={PiCreditCardLight}

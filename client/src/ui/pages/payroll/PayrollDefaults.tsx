@@ -42,7 +42,6 @@ export default function PayrollDefaults() {
 
           <Switch defaultChecked />
         </FormControl>
-        <Button colorScheme="red">Retirer fiche de paye</Button>
       </Stack>
     </Box>
   );

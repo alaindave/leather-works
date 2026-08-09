@@ -159,7 +159,7 @@ const EmployeeDetailsPage = () => {
         maxW="1400px"
         mx="auto"
         ml="0.01rem"
-        height="94.8vh"
+        height="94vh"
       >
         <VStack spacing={4} align="stretch">
           {/* HEADER */}
@@ -495,13 +495,15 @@ const EmployeeDetailsPage = () => {
                     Supprimer
                   </Button>
                 ) : (
-                  <NotAuthorized
-                    buttonText="Supprimer"
-                    icon={FaRegTrashCan}
-                    placement="bottom"
-                    width="13rem"
-                    color="red"
-                  />
+                  <Box position="relative" left="5rem" bottom="1rem">
+                    <NotAuthorized
+                      buttonText="Supprimer"
+                      icon={FaRegTrashCan}
+                      placement="bottom"
+                      width="13rem"
+                      color="red"
+                    />
+                  </Box>
                 )}
               </Box>
             </Box>
@@ -512,7 +514,7 @@ const EmployeeDetailsPage = () => {
               border="1px solid"
               borderColor="#D1D9E0"
               overflowY="auto"
-              height="71.8vh"
+              height="70vh"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <EmployeeDetailsTab employee={employee} />

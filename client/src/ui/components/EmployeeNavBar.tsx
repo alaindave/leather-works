@@ -226,10 +226,33 @@ const EmployeeNavBar = () => {
           ml="0.2rem"
           mt="0.5rem"
         >
-          <MdPersonOutline color="blue" size="2rem" />
+          <Menu>
+            <MenuButton
+              background="transparent"
+              color="#374151"
+              _hover={{ bg: "transparent" }}
+              _expanded={{ bg: "transparent" }}
+              as={Button}
+              rightIcon={<MdPersonOutline color="blue" size="2rem" />}
+              position="relative"
+              right="0.2rem"
+            />
+            <MenuList bg="#ffffff" position="relative" left="1.8rem">
+              <MenuItem
+                bg="gray.700"
+                _hover={{ bg: "#e68a00" }}
+                onClick={handleLogOut}
+              >
+                <FaSignOutAlt color="#ffffff" />
+                <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
+                  Deconnection
+                </Text>
+              </MenuItem>
+            </MenuList>
+          </Menu>
         </Flex>
 
-        <Box>
+        <Box position="relative">
           <HStack>
             <Text
               mt="0.2rem"
@@ -240,30 +263,12 @@ const EmployeeNavBar = () => {
             >
               {adminUser?.firstName} {adminUser?.lastName}
             </Text>
-            <Box position="relative" bottom="7px" width="20px">
-              <Menu>
-                <MenuButton
-                  background="transparent"
-                  color="#374151"
-                  _hover={{ bg: "transparent" }}
-                  _expanded={{ bg: "transparent" }}
-                  as={Button}
-                  rightIcon={<IoIosArrowUp size="18px" />}
-                />
-                <MenuList bg="#ffffff" position="relative" right="12rem">
-                  <MenuItem
-                    bg="gray.700"
-                    _hover={{ bg: "#e68a00" }}
-                    onClick={handleLogOut}
-                  >
-                    <FaSignOutAlt color="#ffffff" />
-                    <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
-                      Deconnection
-                    </Text>
-                  </MenuItem>
-                </MenuList>
-              </Menu>
-            </Box>
+            <Box
+              position="absolute"
+              top="0.3px"
+              right="1rem"
+              width="20px"
+            ></Box>
           </HStack>
           <Text
             position="relative"

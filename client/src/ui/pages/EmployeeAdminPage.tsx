@@ -383,7 +383,7 @@ const EmployeeAdminPage = () => {
           ))}
         </Box>
       </Grid>
-      <Box mb={7}>
+      <Box mb={8}>
         <QuickActions onTaskCreate={handleTaskCreate} />
       </Box>
       <ReminderModal
