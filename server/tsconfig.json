@@ -3,9 +3,11 @@
     "outDir": "./dist",
     "rootDir": ".",
     "module": "NodeNext",
+    "types": ["node"],
     "moduleResolution": "NodeNext",
     "declaration": true,
-    "composite": true
+    "composite": true,
+    "skipLibCheck": true
   },
   "include": ["./**/*.ts"],
   "exclude": ["node_modules", "dist"]
