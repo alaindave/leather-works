@@ -500,6 +500,31 @@ payrollRun: {
       payrollRunId
     );
   },
-}
+
+  
+},
+
+notifications: {
+  scheduleReminder: (
+    message: string,
+    remindAt: string
+  ) =>
+    ipcRenderer.invoke(
+      "notifications:schedule-reminder",
+      message,
+      remindAt
+    ),
+
+  cancelReminder: (id: string) =>
+    ipcRenderer.invoke(
+      "notifications:cancel-reminder",
+      id
+    ),
+
+  cancelAllReminders: () =>
+    ipcRenderer.invoke(
+      "notifications:cancel-all-reminders"
+    ),
+},
 
 }) satisfies Window["electron"];

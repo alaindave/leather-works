@@ -1,5 +1,5 @@
 import { ipcMain, app } from "electron";
-import { NetworkService } from "../services/network.service.js";
+import { NetworkService } from "../services/sync/network.service.js";
 import axios from "axios";
 import { clearToken, saveToken } from "../auth.js";
 const API_URL = app.isPackaged

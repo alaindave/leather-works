@@ -1,29 +1,9 @@
-import PayrollItem from "./PayrollItem.js";
-
 export type PayrollStatus =
   | "BROUILLON"
   | "VERIFICATION"
   | "APPROUVÉ"
   | "PAYÉ"
   | "ANNULÉ";
-
-// export default interface Payroll {
-//   _id: string;
-//   employeeId: string;
-//   generatedBy?: string;
-//   month: number;
-//   year: number;
-//   grossSalary: number;
-//   totalDeductions: number;
-//   netSalary: number;
-//   notes?: string;
-//   status: PayrollStatus;
-//   synced: number;
-//   isDeleted: number;
-//   createdAt: string;
-//   updatedAt: string;
-//   lastSyncedAt?: string;
-// }
 
 export interface PayrollRun {
   _id: string;
@@ -58,12 +38,12 @@ export interface PayrollRun {
   lastSyncedAt?: string;
 }
 
-export interface PayrollResultRecord {
-  _id: string;
-  payrollRunId: string;
+export interface PayrollResult {
+  _id?: string;
+  payrollRunId?: string;
   month: number;
   year: number;
-  employeeId: string;
+  employeeId?: string;
   firstName?: string;
   lastName?: string;
   department?: string;
@@ -79,7 +59,78 @@ export interface PayrollResultRecord {
   approvedAt?: string;
   paidAt?: string;
   netSalary: number;
-  createdAt: string;
-  updatedAt: string;
-  isDeleted: string;
+  createdAt?: string;
+  updatedAt?: string;
+  isDeleted?: string;
+}
+
+export type PayrollComponentType = "EARNING" | "DEDUCTION";
+
+export type CalculationType =
+  | "FIXE"
+  | "POURCENTAGE_BRUT"
+  | "POURCENTAGE_BASE"
+  | "POURCENTAGE_IMPOSABLE"
+  | "MANUEL"
+  | "QUANTITE_TAUX"
+  | "FORMULE";
+
+export interface PayrollComponentInput {
+  _id?: string;
+  name: string;
+  displayName?: string;
+  displayOrder: number;
+  type: PayrollComponentType;
+  calculationType: CalculationType;
+  calculationBase:
+    | "BASE_SALARY"
+    | "GROSS_SALARY"
+    | "TAXABLE_SALARY"
+    | "TOTAL_EARNINGS"
+    | "TOTAL_DEDUCTIONS"
+    | "NET_SALARY"
+    | null;
+  value?: number | null;
+  quantity?: number | null;
+  rate?: number | null;
+  formula?: string | null;
+  taxable?: number;
+  enabled: number;
+}
+
+export interface PayrollEmployeeInput {
+  employeeId: string;
+  baseSalary: number;
+  components: PayrollComponentInput[];
+}
+
+export interface PayrollItem {
+  _id?: string;
+  employeeId?: string;
+  payrollResultId?: string;
+  componentId?: string;
+  name: string;
+  displayName?: string;
+  type: PayrollComponentType;
+  amount: number;
+  calculationMethod?: string;
+  rate?: number;
+  taxable?: number;
+  quantity?: number;
+  notes?: string;
+  synced?: number;
+  isDeleted?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
+}
+
+//Payroll Summary interface
+export interface PayrollBatchResult {
+  results: PayrollResult[];
+  employeeCount: number;
+  totalBasicSalary: number;
+  totalEarnings: number;
+  totalDeductions: number;
+  totalNetSalary: number;
 }

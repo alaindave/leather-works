@@ -1,5 +1,4 @@
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
@@ -8,12 +7,6 @@
     "declaration": true,
     "composite": true
   },
-  "references": [
-    {
-      "path": "../shared"
-    }
-  ],
-
   "include": ["./**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

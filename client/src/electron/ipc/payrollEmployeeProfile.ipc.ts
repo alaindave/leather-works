@@ -25,7 +25,7 @@ import {
   initializeEmployeePayrollProfilesForEmployee,
   addPayrollComponentToAllEmployees,
   resetEmployeePayrollProfileToDefaults,
-} from "../services/payrollProfile.service.js";
+} from "../services/payroll/payrollProfile.service.js";
 import CreatePayrollProfileDto from "../../common/types/payroll/CreatePayrollProfileDto.js";
 
 /* -------------------------------------------------------------------------- */

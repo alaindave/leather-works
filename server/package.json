@@ -13,7 +13,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shared": "*",
     "@supabase/supabase-js": "^2.110.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",

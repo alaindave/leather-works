@@ -17,9 +17,7 @@ import { FaHome, FaRegCalendarAlt } from "react-icons/fa";
 import { FaFileSignature, FaRegClock } from "react-icons/fa6";
 import { IoPeopleSharp } from "react-icons/io5";
 import { MdPersonOutline } from "react-icons/md";
-import { IoIosArrowDown } from "react-icons/io";
-import { FaUserAlt } from "react-icons/fa";
-import { IoSettings } from "react-icons/io5";
+import { IoIosArrowUp } from "react-icons/io";
 import { FaSignOutAlt } from "react-icons/fa";
 import { IoStatsChartSharp } from "react-icons/io5";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -232,63 +230,50 @@ const EmployeeNavBar = () => {
         </Flex>
 
         <Box>
-          <Text
-            mt="0.2rem"
-            color="gray.800"
-            fontSize="1rem"
-            fontWeight={700}
-            padding="2px"
-          >
-            {adminUser?.firstName} {adminUser?.lastName}
-          </Text>
+          <HStack>
+            <Text
+              mt="0.2rem"
+              color="gray.800"
+              fontSize="1rem"
+              fontWeight={700}
+              padding="2px"
+            >
+              {adminUser?.firstName} {adminUser?.lastName}
+            </Text>
+            <Box position="relative" bottom="7px" width="20px">
+              <Menu>
+                <MenuButton
+                  background="transparent"
+                  color="#374151"
+                  _hover={{ bg: "transparent" }}
+                  _expanded={{ bg: "transparent" }}
+                  as={Button}
+                  rightIcon={<IoIosArrowUp size="18px" />}
+                />
+                <MenuList bg="#ffffff" position="relative" right="12rem">
+                  <MenuItem
+                    bg="gray.700"
+                    _hover={{ bg: "#e68a00" }}
+                    onClick={handleLogOut}
+                  >
+                    <FaSignOutAlt color="#ffffff" />
+                    <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
+                      Deconnection
+                    </Text>
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Box>
+          </HStack>
           <Text
             position="relative"
             bottom="1.1rem"
             color="gray.600"
             fontWeight="500"
+            fontSize="0.95rem"
           >
             {adminUser?.email}
           </Text>
-        </Box>
-
-        <Box position="relative" bottom="7px" width="20px">
-          <Menu>
-            <MenuButton
-              position="relative"
-              right="20px"
-              background="transparent"
-              color="#374151"
-              _hover={{ bg: "transparent" }}
-              as={Button}
-              rightIcon={<IoIosArrowDown size="18px" />}
-            />
-            <MenuList bg="gray.500" position="relative" right="200px">
-              <MenuItem bg="gray.500" _hover={{ bg: "#e68a00" }}>
-                <FaUserAlt color="#ffffff" />
-                <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
-                  Mon profil
-                </Text>
-              </MenuItem>
-
-              <MenuItem bg="gray.500" _hover={{ bg: "#e68a00" }}>
-                <IoSettings color="#ffffff" />
-                <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
-                  Parametres
-                </Text>
-              </MenuItem>
-
-              <MenuItem
-                bg="gray.500"
-                _hover={{ bg: "#e68a00" }}
-                onClick={handleLogOut}
-              >
-                <FaSignOutAlt color="#ffffff" />
-                <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
-                  Deconnection
-                </Text>
-              </MenuItem>
-            </MenuList>
-          </Menu>
         </Box>
       </Flex>
 

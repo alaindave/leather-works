@@ -24,6 +24,7 @@ import Task from "../../common/types/Task";
 import useTaskStore from "../../store/task.store";
 import { FaSyncAlt } from "react-icons/fa";
 import { FaBell } from "react-icons/fa";
+import ReminderModal from "../components/ReminderModal";
 
 const EmployeeAdminPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -49,6 +50,12 @@ const EmployeeAdminPage = () => {
     isOpen: isDetailsOpen,
     onOpen: onDetailsOpen,
     onClose: onDetailsClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isReminderOpen,
+    onOpen: onReminderOpen,
+    onClose: onReminderClose,
   } = useDisclosure();
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -163,6 +170,14 @@ const EmployeeAdminPage = () => {
       .catch((error) =>
         console.error("An error occured while saving notes: ", error)
       );
+  };
+
+  const handleOpenReminder = () => {
+    if (!notes?.trim()) {
+      return;
+    }
+
+    onReminderOpen();
   };
 
   return (
@@ -333,6 +348,8 @@ const EmployeeAdminPage = () => {
             colorScheme="blue"
             width="6rem"
             height="3rem"
+            onClick={handleOpenReminder}
+            isDisabled={!notes.trim()}
           >
             <Box mr="0.4rem">
               <FaBell />
@@ -369,6 +386,11 @@ const EmployeeAdminPage = () => {
       <Box mb={7}>
         <QuickActions onTaskCreate={handleTaskCreate} />
       </Box>
+      <ReminderModal
+        isReminderOpen={isReminderOpen}
+        onReminderClose={onReminderClose}
+        notes={notes}
+      />
     </Flex>
   );
 };

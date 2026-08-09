@@ -36,6 +36,12 @@ interface LoggedUser {
   updatedAt: string;
 }
 
+interface Reminder {
+  id: string;
+  message: string;
+  remindAt: string;
+}
+
 declare global {
   interface Window {
     electron: {
@@ -267,6 +273,25 @@ declare global {
         success: boolean;
         message?: string;
       }>;
+
+      notifications: {
+        scheduleReminder(
+          message: string,
+          remindAt: string
+        ): Promise<{
+          success: boolean;
+          reminder?: Reminder;
+          message?: string;
+        }>;
+
+        cancelReminder(id: string): Promise<{
+          success: boolean;
+        }>;
+
+        cancelAllReminders(): Promise<{
+          success: boolean;
+        }>;
+      };
     };
   }
 }

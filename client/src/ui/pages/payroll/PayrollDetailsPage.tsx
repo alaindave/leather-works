@@ -14,7 +14,7 @@ import { Link, useParams } from "react-router-dom";
 
 import { GiConfirmed } from "react-icons/gi";
 import {
-  PayrollResultRecord,
+  PayrollResult,
   PayrollRun,
 } from "../../../common/types/payroll/Payroll";
 import User from "../../../common/types/User";
@@ -33,9 +33,7 @@ const PayrollDetailsPage = () => {
   const [payrollRun, setPayrollRun] = useState<PayrollRun | null>(
     {} as PayrollRun
   );
-  const [payrollResults, setPayrollResults] = useState<PayrollResultRecord[]>(
-    []
-  );
+  const [payrollResults, setPayrollResults] = useState<PayrollResult[]>([]);
 
   const statusColor = {
     BROUILLON: "#e6b800",
@@ -192,29 +190,33 @@ const PayrollDetailsPage = () => {
                     Annuler
                   </Button>
                   {payrollRun?.status === "VERIFICATION" ? (
-                    <Button
-                      onClick={approve}
-                      width="10rem"
-                      bg="#ffffff"
-                      border="1px solid gray"
-                    >
-                      <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
-                        <GiConfirmed />
-                      </Box>
-                      Approuver
-                    </Button>
+                    adminUser.role === "MANAGER" ? (
+                      <Button
+                        onClick={approve}
+                        width="10rem"
+                        bg="#ffffff"
+                        border="1px solid gray"
+                      >
+                        <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
+                          <GiConfirmed />
+                        </Box>
+                        Approuver
+                      </Button>
+                    ) : null
                   ) : payrollRun?.status === "APPROUVÉ" ? (
-                    <Button
-                      onClick={pay}
-                      width="10rem"
-                      bg="#ffffff"
-                      border="1px solid gray"
-                    >
-                      <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
-                        <GiConfirmed />
-                      </Box>
-                      Payer
-                    </Button>
+                    adminUser.role === "MANAGER" ? (
+                      <Button
+                        onClick={pay}
+                        width="10rem"
+                        bg="#ffffff"
+                        border="1px solid gray"
+                      >
+                        <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
+                          <GiConfirmed />
+                        </Box>
+                        Payer
+                      </Button>
+                    ) : null
                   ) : (
                     <Button
                       onClick={verify}

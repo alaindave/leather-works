@@ -3,16 +3,15 @@ import { run, get, all, transaction, runDirect } from "../db.js";
 import {
   PayrollBatchResult,
   PayrollResult,
-} from "../../../../../shared/payroll_service/types.js";
+  PayrollItem,
+} from "../../../common/types/payroll/Payroll.js";
 import {
-  PayrollResultRecord,
   PayrollRun,
   PayrollStatus,
 } from "../../../common/types/payroll/Payroll.js";
 import User from "../../../common/types/User.js";
 import AdminUser from "../../../common/types/AdminUser.js";
 import { addToSyncQueue } from "./sync.repository.js";
-import PayrollItem from "../../../common/types/payroll/PayrollItem.js";
 
 //Create payroll draft
 export async function createPayrollRun(
@@ -136,6 +135,26 @@ export async function getPayrollRunById(_id: string) {
     [_id]
   );
 }
+
+// Get payroll runs by status
+export async function getPayrollRunsByStatus(status: PayrollStatus) {
+  return await get<PayrollRun>(
+    `
+      SELECT
+        pr.*,
+        gen.firstName || ' ' || gen.lastName AS generatedByName
+      FROM payroll_runs pr
+      LEFT JOIN admin_users gen
+        ON pr.generatedBy = gen._id
+      WHERE pr.status = ?
+        AND pr.isDeleted = 0
+      ORDER BY pr.createdAt DESC
+      LIMIT 1
+    `,
+    [status]
+  );
+}
+
 // Upsert payroll run
 export async function upsertPayrollRun(payrollRun: PayrollRun) {
   await run(
@@ -221,7 +240,7 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
 }
 
 // Upsert payroll results
-export async function upsertPayrollResult(payrollResult: PayrollResultRecord) {
+export async function upsertPayrollResult(payrollResult: PayrollResult) {
   await run(
     `
       INSERT INTO payroll_results (
@@ -831,7 +850,7 @@ export async function getEmployeePayrollResults(
   employeeId: string,
   payrollRunId?: string
 ) {
-  return get<PayrollResultRecord>(
+  return get<PayrollResult>(
     `
     SELECT *
     FROM payroll_results
@@ -848,7 +867,7 @@ export async function getEmployeePayrollResultByMonthAndYear(
   month: number,
   year: number
 ) {
-  return await get<PayrollResultRecord>(
+  return await get<PayrollResult>(
     `
     SELECT *
     FROM payroll_results
@@ -931,8 +950,9 @@ export async function markPayrollItemSynced(_id: string) {
  *
  *
  */
+
 export async function deletePayrollRun(payrollRunId: string) {
-  // Get IDs before deleting the records
+  // Get all payroll result IDs belonging to this payroll run
   const results = await all<{ _id: string }>(
     `
       SELECT _id
@@ -942,24 +962,37 @@ export async function deletePayrollRun(payrollRunId: string) {
     [payrollRunId]
   );
 
-  const items = await all<{ _id: string }>(
-    `
-      SELECT _id
-      FROM payroll_items
-      WHERE payrollRunId = ?
-    `,
-    [payrollRunId]
-  );
+  const resultIds = results.map((result) => result._id);
+
+  // Get all payroll item IDs belonging to those payroll results
+  let items: { _id: string }[] = [];
+
+  if (resultIds.length > 0) {
+    const placeholders = resultIds.map(() => "?").join(", ");
+
+    items = await all<{ _id: string }>(
+      `
+        SELECT _id
+        FROM payroll_items
+        WHERE payrollResultId IN (${placeholders})
+      `,
+      resultIds
+    );
+  }
 
   await transaction(async () => {
     // Delete payroll items
-    await runDirect(
-      `
-        DELETE FROM payroll_items
-        WHERE payrollRunId = ?
-      `,
-      [payrollRunId]
-    );
+    if (resultIds.length > 0) {
+      const placeholders = resultIds.map(() => "?").join(", ");
+
+      await runDirect(
+        `
+          DELETE FROM payroll_items
+          WHERE payrollResultId IN (${placeholders})
+        `,
+        resultIds
+      );
+    }
 
     // Delete payroll results
     await runDirect(

@@ -347,34 +347,45 @@ export async function syncEmployeeDocument(
 }
 
 // ================= PAYROLL =================
-
 export async function syncPayrollComponent(
   operation: SyncOperation,
   data: SyncData
 ) {
-  if (operation === "delete") {
-    await PayrollComponent.updateOne(
-      {
-        _id: data._id,
-      },
-      {
-        isDeleted: 1,
-        updatedAt: new Date(),
-      }
-    );
+  switch (operation) {
+    case "delete":
+      await PayrollComponent.updateOne(
+        {
+          _id: data._id,
+        },
+        {
+          $set: {
+            isDeleted: 1,
+            updatedAt: new Date(),
+          },
+        }
+      );
 
-    return;
+      return;
+
+    case "create":
+    case "update":
+      await PayrollComponent.updateOne(
+        {
+          _id: data._id,
+        },
+        {
+          $set: data,
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      return;
+
+    default:
+      throw new Error(`Unsupported payroll component operation: ${operation}`);
   }
-
-  await PayrollComponent.updateOne(
-    {
-      _id: data._id,
-    },
-    data,
-    {
-      upsert: true,
-    }
-  );
 }
 
 export async function syncPayrollProfile(
@@ -383,41 +394,90 @@ export async function syncPayrollProfile(
 ) {
   const { _id, ...fields } = data;
 
-  await EmployeePayrollProfile.updateOne(
-    {
-      employeeId: data.employeeId,
-      componentId: data.componentId,
-    },
-    {
-      $set: fields,
-      $setOnInsert: {
-        _id,
-      },
-    },
-    {
-      upsert: true,
-    }
-  );
+  switch (operation) {
+    case "create":
+    case "update":
+      await EmployeePayrollProfile.updateOne(
+        {
+          employeeId: data.employeeId,
+          componentId: data.componentId,
+        },
+        {
+          $set: fields,
+          $setOnInsert: {
+            _id,
+          },
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      return;
+
+    case "delete":
+      await EmployeePayrollProfile.updateOne(
+        {
+          employeeId: data.employeeId,
+          componentId: data.componentId,
+        },
+        {
+          $set: {
+            isDeleted: 1,
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      return;
+
+    default:
+      throw new Error(`Unsupported payroll profile operation: ${operation}`);
+  }
 }
 
 // Sync payroll run
 export async function syncPayrollRun(operation: SyncOperation, data: SyncData) {
   const { _id, ...fields } = data;
 
-  await PayrollRun.updateOne(
-    {
-      _id,
-    },
-    {
-      $set: fields,
-      $setOnInsert: {
-        _id,
-      },
-    },
-    {
-      upsert: true,
-    }
-  );
+  switch (operation) {
+    case "create":
+    case "update":
+      await PayrollRun.updateOne(
+        {
+          _id,
+        },
+        {
+          $set: fields,
+          $setOnInsert: {
+            _id,
+          },
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      return;
+
+    case "delete":
+      await PayrollRun.updateOne(
+        {
+          _id,
+        },
+        {
+          $set: {
+            isDeleted: 1,
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      return;
+
+    default:
+      throw new Error(`Unsupported payroll run operation: ${operation}`);
+  }
 }
 
 // Sync payroll result
@@ -427,20 +487,44 @@ export async function syncPayrollResult(
 ) {
   const { _id, ...fields } = data;
 
-  await PayrollResult.updateOne(
-    {
-      _id,
-    },
-    {
-      $set: fields,
-      $setOnInsert: {
-        _id,
-      },
-    },
-    {
-      upsert: true,
-    }
-  );
+  switch (operation) {
+    case "create":
+    case "update":
+      await PayrollResult.updateOne(
+        {
+          _id,
+        },
+        {
+          $set: fields,
+          $setOnInsert: {
+            _id,
+          },
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      return;
+
+    case "delete":
+      await PayrollResult.updateOne(
+        {
+          _id,
+        },
+        {
+          $set: {
+            isDeleted: 1,
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      return;
+
+    default:
+      throw new Error(`Unsupported payroll result operation: ${operation}`);
+  }
 }
 
 // Sync payroll item
@@ -450,18 +534,42 @@ export async function syncPayrollItem(
 ) {
   const { _id, ...fields } = data;
 
-  await PayrollItem.updateOne(
-    {
-      _id,
-    },
-    {
-      $set: fields,
-      $setOnInsert: {
-        _id,
-      },
-    },
-    {
-      upsert: true,
-    }
-  );
+  switch (operation) {
+    case "create":
+    case "update":
+      await PayrollItem.updateOne(
+        {
+          _id,
+        },
+        {
+          $set: fields,
+          $setOnInsert: {
+            _id,
+          },
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      return;
+
+    case "delete":
+      await PayrollItem.updateOne(
+        {
+          _id,
+        },
+        {
+          $set: {
+            isDeleted: 1,
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      return;
+
+    default:
+      throw new Error(`Unsupported payroll item operation: ${operation}`);
+  }
 }

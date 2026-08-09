@@ -4,7 +4,7 @@ import { addToSyncQueue } from "./sync.repository.js";
 import { randomUUID } from "crypto";
 import CreatePayrollProfileDto from "../../../common/types/payroll/CreatePayrollProfileDto.js";
 import { getPayrollComponentById } from "./payroll_components.repository.js";
-import { PayrollEmployeeInput } from "../../../../../shared/payroll_service/types.js";
+import { PayrollEmployeeInput } from "../../../common/types/payroll/Payroll.js";
 
 export async function createEmployeePayrollProfile(
   employeeId: string,

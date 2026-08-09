@@ -1,11 +1,6 @@
 import { ipcMain } from "electron";
-import {
-  calculatePayrollsWithSummary,
-  validatePayrolls,
-} from "../../../../shared/dist/payroll_service/index.js";
-
+import { calculatePayrollsWithSummary } from "../services/payroll/calculatePayroll.js";
 import { getAllEmployeePayrollInputs } from "../database/repositories/payroll_employee_profile.repository.js";
-
 import {
   createPayrollRun,
   savePayrollResults,
@@ -21,9 +16,9 @@ import {
   approvePayrollRun,
   paymentPayrollRun,
 } from "../database/repositories/payroll_run.repository.js";
-
 import User from "../../common/types/User.js";
 import AdminUser from "../../common/types/AdminUser.js";
+import { validatePayrolls } from "../services/payroll/validatePayroll.js";
 
 export function registerPayrollGenerationIPC() {
   console.log("REGISTERING PAYROLL GENERATION IPC");

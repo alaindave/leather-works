@@ -11,7 +11,7 @@ import {
   getAttendanceRecord,
 } from "../database/repositories/attendances.repository.js";
 import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee.js";
-import { markEmployeesAbsent } from "../services/markEmployeesAbsent.service.js";
+import { markEmployeesAbsent } from "../services/attendance/markEmployeesAbsent.service.js";
 
 export function registerAttendanceIPC() {
   console.log("REGISTERING ATTENDANCES IPC");

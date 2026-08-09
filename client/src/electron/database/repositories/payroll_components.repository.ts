@@ -6,7 +6,7 @@ import { addToSyncQueue } from "./sync.repository.js";
 import {
   addPayrollComponentToAllEmployees,
   updatePayrollComponentDefaults,
-} from "../../services/payrollProfile.service.js";
+} from "../../services/payroll/payrollProfile.service.js";
 
 export async function createPayrollComponent(
   component: CreatePayrollComponentDto

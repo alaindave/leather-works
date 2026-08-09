@@ -1,23 +1,33 @@
-import { Box, Flex, Text, HStack, Button, Badge } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
-import { IoSettings } from "react-icons/io5";
-import { FaSyncAlt } from "react-icons/fa";
-import { useEffect, useState } from "react";
-import useAdminUser from "../../../store/auth.store";
-import User from "../../../common/types/User";
-import Payroll, { PayrollRun } from "../../../common/types/payroll/Payroll";
 import {
+  Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Menu,
   Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
   TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
 } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { FaSyncAlt } from "react-icons/fa";
+import { IoSettings } from "react-icons/io5";
+import { PiDotsThreeOutlineVerticalDuotone } from "react-icons/pi";
+import { MdOutlineDeleteForever } from "react-icons/md";
+import { IoIosRemoveCircleOutline } from "react-icons/io";
+import { Link, useNavigate } from "react-router-dom";
+import User from "../../../common/types/User";
+import { PayrollRun } from "../../../common/types/payroll/Payroll";
+import useAdminUser from "../../../store/auth.store";
 import { getPayrollPeriod } from "../../util/getPayrollPeriod";
 
 export default function PayrollPage() {
@@ -51,24 +61,40 @@ export default function PayrollPage() {
   };
   //Payroll sync and refresh
   const handlePayrollSync = async () => {
-    // try {
-    //   setLoading(true);
-    //   const result = await window.electron.sync();
-    //   if (result.success) {
-    //     console.log("Sync completed");
-    //     const leaves = await window.electron.leave.getLeaveByMonth(
-    //       submissionMonth
-    //     );
-    //     setLeaves(leaves);
-    //     console.log(
-    //       `Fetched leaves for the month of ${submissionMonth}:${leaves}`
-    //     );
-    //   } else {
-    //     console.error(result.message);
-    //   }
-    // } finally {
-    //   setLoading(false);
-    // }
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (result.success) {
+        console.log("SYNC COMPLETED");
+        loadPayrollRun();
+      } else {
+        console.error(result.message);
+      }
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE SYNCING");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const withdraw = async (_id: string) => {
+    try {
+      const results = await window.electron.payrollRun.returnToDraft(_id);
+      console.log("WITHDRAW RESULTS", results);
+      loadPayrollRun();
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE WITHDRAWING PAYROLL", e);
+    }
+  };
+
+  const handleDelete = async (_id: string) => {
+    try {
+      const results = await window.electron.payrollRun.deletePayrollRun(_id);
+      console.log("DELETE RESULTS", results);
+      loadPayrollRun();
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE DELETING PAYROLL", e);
+    }
   };
 
   const statusColor = {
@@ -161,21 +187,21 @@ export default function PayrollPage() {
                   <Th>Statut</Th>
                   <Th>Créee par</Th>
                   <Th>Date de création</Th>
+                  {user?.role === "MANAGER" ? <Th>Actions</Th> : null}
                 </Tr>
               </Thead>
 
               <Tbody>
                 {payrollRuns.map((run) => (
-                  <Tr
-                    key={run._id}
-                    cursor="pointer"
-                    _hover={{ bg: "transparent" }}
-                    transition="background 0.2s"
-                    onClick={() =>
-                      navigate(`/employees_admin/payroll/details/${run._id}`)
-                    }
-                  >
-                    <Td>
+                  <Tr key={run._id}>
+                    <Td
+                      cursor="pointer"
+                      _hover={{ bg: "transparent" }}
+                      transition="background 0.2s"
+                      onClick={() =>
+                        navigate(`/employees_admin/payroll/details/${run._id}`)
+                      }
+                    >
                       Du{" "}
                       {run?.month && run?.year
                         ? getPayrollPeriod(run.month, run.year)
@@ -199,6 +225,81 @@ export default function PayrollPage() {
                         ? new Date(run.createdAt).toLocaleDateString("fr-FR")
                         : "-"}
                     </Td>
+                    {user?.role === "MANAGER" ? (
+                      <Td>
+                        <Menu placement="right">
+                          <MenuButton
+                            mb={10}
+                            as={IconButton}
+                            icon={
+                              <PiDotsThreeOutlineVerticalDuotone size="1.8rem" />
+                            }
+                            color="gray.700"
+                            variant="ghost"
+                            borderRadius="full"
+                            _hover={{
+                              bg: "transparent",
+                            }}
+                            _expanded={{
+                              bg: "transparent",
+                            }}
+                            aria-label="Actions"
+                            position="relative"
+                            top="1rem"
+                          />
+
+                          <MenuList
+                            bg="#ffffff"
+                            border="1px solid #2A3D70"
+                            borderRadius="14px"
+                            minW="170px"
+                            p="6px"
+                            boxShadow="0 8px 30px rgba(0,0,0,0.35)"
+                          >
+                            <MenuItem
+                              height="20px"
+                              mb={4}
+                              pt={3}
+                              icon={
+                                <IoIosRemoveCircleOutline
+                                  color="orange"
+                                  size="1.5rem"
+                                />
+                              }
+                              bg="transparent"
+                              color="gray.800"
+                              borderRadius="10px"
+                              _hover={{
+                                bg: "rgba(255,0,0,0.08)",
+                              }}
+                              onClick={() => withdraw(run._id)}
+                            >
+                              Retirer
+                            </MenuItem>
+                            <MenuItem
+                              height="20px"
+                              mb={2}
+                              pt={3}
+                              icon={
+                                <MdOutlineDeleteForever
+                                  color="red"
+                                  size="1.5rem"
+                                />
+                              }
+                              bg="transparent"
+                              color="gray.800"
+                              borderRadius="10px"
+                              _hover={{
+                                bg: "rgba(255,0,0,0.08)",
+                              }}
+                              onClick={() => handleDelete(run._id)}
+                            >
+                              Supprimer
+                            </MenuItem>
+                          </MenuList>
+                        </Menu>
+                      </Td>
+                    ) : null}
                   </Tr>
                 ))}
               </Tbody>

@@ -2,7 +2,7 @@ import { run, get, all } from "../db.js";
 import { randomUUID } from "crypto";
 import Employee from "../../../common/types/Employee.js";
 import { addToSyncQueue } from "./sync.repository.js";
-import { initializeEmployeePayrollProfilesForEmployee } from "../../services/payrollProfile.service.js";
+import { initializeEmployeePayrollProfilesForEmployee } from "../../services/payroll/payrollProfile.service.js";
 
 export async function createEmployee(
   employee: Omit<

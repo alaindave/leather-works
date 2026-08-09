@@ -1,0 +1,35 @@
+import { registerAppIPC } from "./ipc/app.ipc.js";
+import { registerAttendanceIPC } from "./ipc/attendances.ipc.js";
+import { registerAdminUsersIPC } from "./ipc/admin_users.ipc.js";
+import { registerAttendanceExportIPC } from "./ipc/attendances_export.ipc.js";
+import { registerAuthIPC } from "./ipc/auth.ipc.js";
+import { registerEmployeeIPC } from "./ipc/employees.ipc.js";
+import { registerEmployeeDocumentIPC } from "./ipc/employees_documents.ipc.js";
+import { registerLeaveIPC } from "./ipc/leaves.ipc.js";
+import { registerNotificationIPC } from "./ipc/notification.ipc.js";
+import { registerOfflineUsersIPC } from "./ipc/offline_users.ipc.js";
+import { registerPayrollEmployeeProfileIPC } from "./ipc/payrollEmployeeProfile.ipc.js";
+import { registerPayrollComponentIPC } from "./ipc/payroll_components.ipc.js";
+import { registerPayrollGenerationIPC } from "./ipc/payroll_run.ipc.js";
+import { registerSyncIPC } from "./ipc/sync.ipc.js";
+import { registerTaskIPC } from "./ipc/tasks.ipc.js";
+import { registerTaskCommentIPC } from "./ipc/tasks_comments.ipc.js";
+
+export function registerIPCHandlers() {
+  registerAuthIPC();
+  registerOfflineUsersIPC();
+  registerEmployeeIPC();
+  registerEmployeeDocumentIPC();
+  registerAttendanceIPC();
+  registerAttendanceExportIPC();
+  registerLeaveIPC();
+  registerTaskIPC();
+  registerTaskCommentIPC();
+  registerAdminUsersIPC();
+  registerSyncIPC();
+  registerAppIPC();
+  registerPayrollComponentIPC();
+  registerPayrollEmployeeProfileIPC();
+  registerPayrollGenerationIPC();
+  registerNotificationIPC();
+}

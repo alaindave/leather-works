@@ -6,6 +6,7 @@ import {
   Select,
   Switch,
   Stack,
+  Button,
 } from "@chakra-ui/react";
 
 export default function PayrollDefaults() {
@@ -41,6 +42,7 @@ export default function PayrollDefaults() {
 
           <Switch defaultChecked />
         </FormControl>
+        <Button colorScheme="red">Retirer fiche de paye</Button>
       </Stack>
     </Box>
   );
