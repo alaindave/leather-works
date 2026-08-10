@@ -174,14 +174,14 @@ export default function PayrollPage() {
           </Text>
         ) : (
           <TableContainer
-            width="60vw"
+            maxWidth="70vw"
+            maxHeight="45vw"
             borderWidth="1px"
             borderRadius="lg"
-            overflowX="auto"
             overflowY="auto"
           >
             <Table variant="simple" size="md">
-              <Thead>
+              <Thead position="sticky" top={0} zIndex={1} bg="gray.50">
                 <Tr>
                   <Th>Période</Th>
                   <Th>Statut</Th>

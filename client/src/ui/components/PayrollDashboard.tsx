@@ -1,12 +1,8 @@
-import { Box, Card, Divider, Flex, HStack, Text } from "@chakra-ui/react";
+import { Box, Flex, HStack, Text } from "@chakra-ui/react";
 import { BsFillPeopleFill } from "react-icons/bs";
-import { CiCalendarDate, CiClock2 } from "react-icons/ci";
+import { FaRegArrowAltCircleDown, FaRegCreditCard } from "react-icons/fa";
 import { IoWalletOutline } from "react-icons/io5";
-import { FaRegArrowAltCircleDown } from "react-icons/fa";
-import { FaRegCreditCard } from "react-icons/fa";
 
-import { MdCoPresent } from "react-icons/md";
-import { FaRegClock } from "react-icons/fa6";
 import { formatCurrency } from "../util/currencyFormatter";
 
 interface Props {

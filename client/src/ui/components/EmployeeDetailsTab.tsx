@@ -75,10 +75,12 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
   };
 
   const handleView = async (document: EmployeeDocument) => {
+    console.log("VIEWING DOCUMENT LOCAL PATH", document.localPath);
     await window.electron.employees_documents.view(document.localPath);
   };
 
   const handleDownload = async (document: EmployeeDocument) => {
+    console.log("DOWNLOADING DOCUMENT LOCAL PATH", document.localPath);
     await window.electron.employees_documents.download(document);
 
     toast({

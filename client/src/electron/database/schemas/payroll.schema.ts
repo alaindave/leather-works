@@ -183,13 +183,15 @@ export async function createPayrollTables() {
   await run(`
   CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_period
   ON payroll_runs(month, year)
-  WHERE status <> 'ANNULÉ';
- `);
+  WHERE isDeleted = 0
+    AND status <> 'ANNULÉ';
+`);
 
   await run(`
   CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_result_employee_period
   ON payroll_results(employeeId, month, year)
-  WHERE status <> 'ANNULÉ';
+  WHERE isDeleted = 0
+    AND status <> 'ANNULÉ';
 `);
 
   await run(`

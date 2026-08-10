@@ -1,29 +1,24 @@
 import {
+  Badge,
   Box,
   Flex,
   HStack,
-  Text,
   Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
   TableContainer,
-  Badge,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
 } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { IoSettings } from "react-icons/io5";
 import { MdOutlineChevronRight } from "react-icons/md";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Employee from "../../common/types/Employee";
-import { useEffect, useState } from "react";
-import {
-  PayrollResultRecord,
-  PayrollRun,
-} from "../../common/types/payroll/Payroll";
+import { PayrollRun } from "../../common/types/payroll/Payroll";
 import { getPayrollPeriod } from "../util/getPayrollPeriod";
 
 type EmployeeState = {
@@ -123,7 +118,7 @@ const EmployeePayrollReport = () => {
           mt="5rem"
         >
           <Table variant="simple" size="md">
-            <Thead>
+            <Thead position="sticky" top={0} zIndex={1} bg="gray.50">
               <Tr>
                 <Th>Période</Th>
                 <Th>Statut</Th>

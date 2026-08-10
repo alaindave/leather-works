@@ -382,7 +382,7 @@ const PayrollDetailsPage = () => {
         />
       ) : null}
       {/* Payroll results table */}
-      <Box ml="0.3rem" mb="1rem">
+      <Box ml="1rem" mb="1rem">
         <PayrollResultsTable payrollResults={payrollResults} />
       </Box>
       <DeletionDialog

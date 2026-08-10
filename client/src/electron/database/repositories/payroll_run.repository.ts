@@ -517,6 +517,7 @@ export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
       operation: "update",
       payload: JSON.stringify({
         _id: result._id,
+        payrollRunId,
         status: "VERIFICATION",
         verifiedAt: now,
         updatedAt: now,
@@ -595,6 +596,7 @@ export async function approvePayrollRun(
       payload: JSON.stringify({
         _id: result._id,
         status: "APPROUVÉ",
+        payrollRunId,
         approvedAt: now,
         updatedAt: now,
       }),
@@ -672,6 +674,7 @@ export async function paymentPayrollRun(
       payload: JSON.stringify({
         _id: result._id,
         status: "PAYÉ",
+        payrollRunId,
         paidAt: now,
         updatedAt: now,
       }),
@@ -1021,6 +1024,7 @@ export async function deletePayrollRun(payrollRunId: string) {
       operation: "delete",
       payload: JSON.stringify({
         _id: item._id,
+        isDeleted: 1,
       }),
     });
   }
@@ -1033,6 +1037,7 @@ export async function deletePayrollRun(payrollRunId: string) {
       operation: "delete",
       payload: JSON.stringify({
         _id: result._id,
+        isDeleted: 1,
       }),
     });
   }
@@ -1044,6 +1049,7 @@ export async function deletePayrollRun(payrollRunId: string) {
     operation: "delete",
     payload: JSON.stringify({
       _id: payrollRunId,
+      isDeleted: 1,
     }),
   });
 

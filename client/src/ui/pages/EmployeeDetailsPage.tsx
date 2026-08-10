@@ -480,7 +480,7 @@ const EmployeeDetailsPage = () => {
                 </Box>
               </VStack>
 
-              <Box bg="transparent">
+              <Box bg="transparent" position="relative" bottom="1rem">
                 {adminUser?.role === "MANAGER" ? (
                   <Button
                     bg="red.100"
@@ -514,7 +514,7 @@ const EmployeeDetailsPage = () => {
               border="1px solid"
               borderColor="#D1D9E0"
               overflowY="auto"
-              height="70vh"
+              height="70.5vh"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <EmployeeDetailsTab employee={employee} />

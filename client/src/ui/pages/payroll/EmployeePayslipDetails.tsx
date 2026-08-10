@@ -433,9 +433,10 @@ const EmployeePayslipDetails = () => {
         {/* Earnings */}
         <Box
           width="35vw"
-          height="100%"
+          maxHeight="40vh"
           overflow="hidden"
           border="1px solid"
+          bg="#ffffff"
           borderColor="#D1D9E0"
           borderRadius="8px"
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
@@ -446,6 +447,8 @@ const EmployeePayslipDetails = () => {
               tableLayout: "fixed",
             }}
             height="100%"
+            maxHeight="40vh"
+            overflowY="auto"
           >
             <Thead>
               <Tr>
@@ -493,6 +496,7 @@ const EmployeePayslipDetails = () => {
           width="34vw"
           height="100%"
           overflow="hidden"
+          maxHeight="40vh"
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="8px"
@@ -504,6 +508,7 @@ const EmployeePayslipDetails = () => {
               tableLayout: "fixed",
             }}
             height="100%"
+            overflowY="auto"
           >
             <Thead>
               <Tr>

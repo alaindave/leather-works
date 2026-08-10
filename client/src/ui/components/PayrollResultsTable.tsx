@@ -13,10 +13,10 @@ import {
 } from "@chakra-ui/react";
 import { ViewIcon, DownloadIcon } from "@chakra-ui/icons";
 import { LuPrinter } from "react-icons/lu";
-import { PayrollResultRecord } from "../../common/types/payroll/Payroll";
+import { PayrollResult } from "../../common/types/payroll/Payroll";
 
 interface Props {
-  payrollResults: PayrollResultRecord[];
+  payrollResults: PayrollResult[];
 }
 
 const formatCurrency = (value: number) =>
@@ -41,6 +41,7 @@ export default function PayrollResultsTable({ payrollResults }: Props) {
       borderWidth="1px"
       borderRadius="lg"
       overflowY="auto"
+      width="78vw"
     >
       <Table variant="simple" size="sm">
         <Thead bg="gray.50">
