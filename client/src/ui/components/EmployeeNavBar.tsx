@@ -81,7 +81,7 @@ const EmployeeNavBar = () => {
         </Box>
       </Flex>
 
-      <Box position="relative" left="1rem">
+      <Box position="relative" bottom="2rem" left="1rem">
         <List>
           <ListItem marginBottom="10px">
             <HStack position="relative" right="1.5rem">

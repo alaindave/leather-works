@@ -366,18 +366,84 @@ export async function upsertPayrollItem(payrollItem: PayrollItem) {
 }
 
 //Update payroll status
-export async function updatePayrollStatus(_id: string, status: PayrollStatus) {
-  return await run(
+export async function updatePayrollStatus(
+  payrollRunId: string,
+  status: PayrollStatus
+) {
+  const now = new Date().toISOString();
+
+  // Get all payroll results belonging to this payroll run
+  const results = await all<{ _id: string }>(
+    `
+      SELECT _id
+      FROM payroll_results
+      WHERE payrollRunId = ?
+    `,
+    [payrollRunId]
+  );
+
+  const resultIds = results.map((result) => result._id);
+
+  // Update payroll run
+  await run(
     `
       UPDATE payroll_runs
-        SET
-          status=?,
-          updatedAt=?
-        WHERE _id=?
- `,
-    [status, new Date().toISOString(), _id]
+      SET
+        status = ?,
+        updatedAt = ?,
+        synced = 0
+      WHERE _id = ?
+    `,
+    [status, now, payrollRunId]
   );
+
+  // Update all payroll results
+  if (resultIds.length > 0) {
+    const placeholders = resultIds.map(() => "?").join(", ");
+
+    await run(
+      `
+        UPDATE payroll_results
+        SET
+          status = ?,
+          updatedAt = ?,
+          synced = 0
+        WHERE _id IN (${placeholders})
+      `,
+      [status, now, ...resultIds]
+    );
+  }
+
+  // Queue payroll run
+  await addToSyncQueue({
+    entity: "payroll_run",
+    entityId: payrollRunId,
+    operation: "update",
+    payload: JSON.stringify({
+      _id: payrollRunId,
+      status,
+      updatedAt: now,
+    }),
+  });
+
+  // Queue payroll results
+  for (const result of results) {
+    await addToSyncQueue({
+      entity: "payroll_result",
+      entityId: result._id,
+      operation: "update",
+      payload: JSON.stringify({
+        _id: result._id,
+        payrollRunId,
+        status,
+        updatedAt: now,
+      }),
+    });
+  }
+
+  return true;
 }
+
 //Cancel payroll run
 export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
   const now = new Date().toISOString();

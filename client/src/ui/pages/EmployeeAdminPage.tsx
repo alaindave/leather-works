@@ -295,7 +295,7 @@ const EmployeeAdminPage = () => {
         {/* NOTES */}
         <Box
           border="1px solid"
-          borderColor="#D1D9E0"
+          borderColor="gray.500"
           borderRadius="12px"
           bg="#FFFFFF"
           p={5}

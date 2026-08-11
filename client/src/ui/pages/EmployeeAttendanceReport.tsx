@@ -190,13 +190,17 @@ const EmployeeAttendanceReport = () => {
               <GoDotFill />
             </Box>
             <Text mt="0.8rem" color="#ffffff" fontWeight="600">
-              {attendance?.status === "PONCTUEL"
-                ? "A l'heure"
-                : attendance?.status === "RETARD"
-                ? "En retard"
-                : attendance?.status === "CONGÉ"
-                ? "En congé"
-                : "Absent"}
+              {attendance?.status === "PONCTUEL" ? (
+                "A l'heure"
+              ) : attendance?.status === "RETARD" ? (
+                "En retard"
+              ) : attendance?.status === "CONGÉ" ? (
+                "En congé"
+              ) : attendance?.status === "ABSENT" ? (
+                "ABSENT"
+              ) : (
+                <Text color="red">Pas de pointage</Text>
+              )}
             </Text>
           </HStack>
           <HStack mt="1.5rem">
@@ -215,7 +219,7 @@ const EmployeeAttendanceReport = () => {
                     hour: "2-digit",
                     minute: "2-digit",
                   })
-                : "Pas de pointage"}
+                : "----"}
             </Text>
           </HStack>
           <HStack mt="0.5rem">
@@ -230,7 +234,7 @@ const EmployeeAttendanceReport = () => {
                     hour: "2-digit",
                     minute: "2-digit",
                   })
-                : "Pas de pointage"}
+                : "----"}
             </Text>
           </HStack>
         </Flex>

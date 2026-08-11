@@ -1,5 +1,7 @@
-import { ipcMain, shell, dialog } from "electron";
+import { ipcMain, shell, dialog, app } from "electron";
 import fs from "fs/promises";
+import path from "path";
+
 import {
   updateEmployeeDocument,
   deleteEmployeeDocument,
@@ -11,29 +13,87 @@ import {
   markEmployeeDocumentUploaded,
   uploadEmployeeDocument,
 } from "../../electron/database/repositories/employees_documents.repository.js";
+
 import {
   EmployeeDocument,
   EmployeeDocumentType,
 } from "../../common/types/EmployeeDocuments.js";
 
+function resolveEmployeeDocumentPath(localPath: string): string {
+  if (!localPath) {
+    throw new Error("Employee document path is empty");
+  }
+
+  // Already an absolute path
+  if (path.isAbsolute(localPath)) {
+    return localPath;
+  }
+
+  // Normalize separators so this works with paths coming
+  // from Windows, macOS, SQLite, or MongoDB.
+  const normalizedPath = localPath.replace(/\\/g, "/");
+
+  // Stored path already includes employees_documents
+  if (normalizedPath.startsWith("employees_documents/")) {
+    return path.join(app.getPath("userData"), ...normalizedPath.split("/"));
+  }
+
+  // Stored path is relative to employees_documents
+  return path.join(
+    app.getPath("userData"),
+    "employees_documents",
+    ...normalizedPath.split("/")
+  );
+}
+
 export function registerEmployeeDocumentIPC() {
   console.log("REGISTERING EMPLOYEES DOCUMENTS IPC");
-  //View document
+
+  // View document
   ipcMain.handle("employee_documents:view", async (_, localPath: string) => {
-    await shell.openPath(localPath);
+    const absolutePath = resolveEmployeeDocumentPath(localPath);
+
+    console.log("Viewing employee document:");
+    console.log("Stored path:", localPath);
+    console.log("Absolute path:", absolutePath);
+
+    const error = await shell.openPath(absolutePath);
+
+    if (error) {
+      console.error("Failed to open employee document:", error);
+
+      throw new Error(error);
+    }
+
+    return true;
   });
 
-  //Download document
+  // Download document
   ipcMain.handle(
     "employee_documents:download",
     async (_, document: EmployeeDocument) => {
+      const absolutePath = resolveEmployeeDocumentPath(document.localPath);
+
+      console.log("Downloading employee document:");
+      console.log("Stored path:", document.localPath);
+      console.log("Absolute path:", absolutePath);
+
+      // Verify the local file exists first
+      try {
+        await fs.access(absolutePath);
+      } catch {
+        throw new Error(`Employee document does not exist: ${absolutePath}`);
+      }
+
       const result = await dialog.showSaveDialog({
         defaultPath: document.originalName,
       });
 
-      if (result.canceled || !result.filePath) return false;
+      if (result.canceled || !result.filePath) {
+        return false;
+      }
 
-      await fs.copyFile(document.localPath, result.filePath);
+      await fs.copyFile(absolutePath, result.filePath);
 
       return true;
     }
@@ -44,7 +104,7 @@ export function registerEmployeeDocumentIPC() {
     return await uploadEmployeeDocument(document);
   });
 
-  //  Update document
+  // Update document
   ipcMain.handle("employees-documents:update", async (_, document) => {
     return await updateEmployeeDocument(document);
   });
@@ -52,21 +112,30 @@ export function registerEmployeeDocumentIPC() {
   // Delete
   ipcMain.handle("employee_documents:delete", async (_, _id: string) => {
     const document = await getEmployeeDocumentById(_id);
-    if (!document) return false;
-    try {
-      await fs.unlink(document.localPath);
-    } catch {
-      // ignore if already removed
+
+    if (!document) {
+      return false;
     }
+
+    try {
+      const absolutePath = resolveEmployeeDocumentPath(document.localPath);
+
+      await fs.unlink(absolutePath);
+    } catch {
+      // Ignore if the file has already been removed
+    }
+
     await deleteEmployeeDocument(_id);
+
     return true;
   });
 
-  // Read
+  // Read by ID
   ipcMain.handle("employees-documents:get-by-id", async (_, id: string) => {
     return await getEmployeeDocumentById(id);
   });
 
+  // Get by employee
   ipcMain.handle(
     "employees-documents:get-by-employee",
     async (_, employeeId: string) => {
@@ -74,6 +143,7 @@ export function registerEmployeeDocumentIPC() {
     }
   );
 
+  // Get by type
   ipcMain.handle(
     "employees-documents:get-by-type",
     async (_, employeeId: string, documentType: EmployeeDocumentType) => {
@@ -81,6 +151,7 @@ export function registerEmployeeDocumentIPC() {
     }
   );
 
+  // Get all
   ipcMain.handle("employees-documents:get-all", async () => {
     return await getAllEmployeeDocuments();
   });
@@ -90,6 +161,7 @@ export function registerEmployeeDocumentIPC() {
     return await getUnsyncedEmployeeDocuments();
   });
 
+  // Mark synced
   ipcMain.handle("employees-documents:mark-synced", async (_, id: string) => {
     return await markEmployeeDocumentUploaded(id);
   });

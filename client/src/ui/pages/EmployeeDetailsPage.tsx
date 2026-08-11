@@ -294,8 +294,9 @@ const EmployeeDetailsPage = () => {
             <Box>
               <Box
                 border="1px solid"
-                borderColor="#D1D9E0"
+                borderColor="gray.500"
                 width="27vw"
+                height="45.5vh"
                 ml="1rem"
                 bg="#ffffff"
               >
@@ -347,7 +348,7 @@ const EmployeeDetailsPage = () => {
               >
                 <Box
                   borderWidth="1px"
-                  borderColor="gray.200"
+                  borderColor="gray.500"
                   p={4}
                   bg="white"
                   boxShadow="sm"
@@ -412,7 +413,7 @@ const EmployeeDetailsPage = () => {
                 {/* Attendance status */}
                 <Box
                   borderWidth="1px"
-                  borderColor="gray.200"
+                  borderColor="gray.500"
                   p={4}
                   bg="white"
                   boxShadow="sm"
@@ -501,12 +502,12 @@ const EmployeeDetailsPage = () => {
                   <Button
                     bg="red.100"
                     color="red.600"
-                    width="12rem"
-                    height="3rem"
+                    width="8.5rem"
+                    height="2.3rem"
                     onClick={onOpen}
                     fontSize="1rem"
                     ml="6rem"
-                    leftIcon={<FaRegTrashCan fontSize="1.3rem" />}
+                    leftIcon={<FaRegTrashCan fontSize="1.1rem" />}
                   >
                     Supprimer
                   </Button>
@@ -528,7 +529,7 @@ const EmployeeDetailsPage = () => {
             <Box
               bg="#F8F9FB"
               border="1px solid"
-              borderColor="#D1D9E0"
+              borderColor="gray.500`"
               overflowY="auto"
               height="70.5vh"
             >
