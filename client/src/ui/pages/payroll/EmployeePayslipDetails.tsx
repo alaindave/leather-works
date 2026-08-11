@@ -170,8 +170,8 @@ const EmployeePayslipDetails = () => {
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
           mt="1.2rem"
           ml="4rem"
-          height="11rem"
-          width="30rem"
+          minH="11rem"
+          minW="30rem"
         >
           <Image
             src={photo_url || defaultAvatar}
@@ -332,7 +332,7 @@ const EmployeePayslipDetails = () => {
           ) : null}
           {/* Approval date  */}
           {payrollResults?.status === "APPROUVÉ" ? (
-            <HStack position="relative" bottom="3rem" ml="5rem">
+            <HStack position="relative" bottom="2rem" ml="5rem">
               <Box
                 borderRadius="0.5rem"
                 padding="0.3rem"
@@ -344,7 +344,7 @@ const EmployeePayslipDetails = () => {
               >
                 <FcApproval color="blue.500" />
               </Box>
-              <Box>
+              <Box position="relative" bottom="0.9rem">
                 <Text color="gray.500">Date d'approbation</Text>
                 <Text position="relative" bottom="1rem" fontWeight="600">
                   {payrollResults?.approvedAt &&

@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
 export interface PayrollComponentDocument {
+  _id: string;
   name: string;
   displayName: string;
   type: "EARNING" | "DEDUCTION";
@@ -32,6 +33,11 @@ export interface PayrollComponentDocument {
 }
 
 const PayrollComponentSchema = new Schema<PayrollComponentDocument>({
+  _id: {
+    type: String,
+    required: true,
+  },
+
   name: {
     type: String,
     required: true,

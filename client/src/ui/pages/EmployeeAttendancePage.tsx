@@ -76,36 +76,36 @@ const EmployeeAttendancePage = () => {
     loadAttendance();
   }, [selectedDate]);
 
-  const loadAttendance = () => {
-    setLoading(true);
-    console.log("Selected date:", selectedDate);
-    window.electron.attendance
-      .getByDate(selectedDate)
-      .then((attendances: AttendanceWithEmployee[]) => {
-        console.log(`Fetched attendances for ${selectedDate}`, attendances);
-        setAttendances(attendances);
-      })
-      .catch((error) => {
-        console.error(
-          `An error occurred while fetching for ${selectedDate}`,
-          error
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+  const loadAttendance = async () => {
+    try {
+      setLoading(true);
+
+      const attendances = await window.electron.attendance.getByDate(
+        selectedDate
+      );
+
+      setAttendances(attendances);
+    } catch (error) {
+      console.error("Failed to load attendance:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  //Attendance sync and refresh
   const attendanceSync = async () => {
     try {
       setLoading(true);
+
       const result = await window.electron.sync();
-      if (result.success) {
-        loadAttendance();
-      } else {
+
+      if (!result.success) {
         console.error(result.message);
+        return;
       }
+
+      await loadAttendance();
+    } catch (error) {
+      console.error("Attendance sync failed:", error);
     } finally {
       setLoading(false);
     }

@@ -74,6 +74,7 @@ export async function createAttendance(employeeId: string, clockIn: string) {
 
 export async function createLeaveAttendance(employeeId: string) {
   const now = new Date().toISOString();
+  const date = now.split("T")[0];
   const _id = randomUUID();
 
   await run(
@@ -90,12 +91,12 @@ export async function createLeaveAttendance(employeeId: string) {
       )
       VALUES (?,?, ?, ?, ?, ?, ?, ?)
     `,
-    [_id, employeeId, now, "CONGÉ", now, now, 0, now]
+    [_id, employeeId, date, "CONGÉ", now, now, 0, now]
   );
   const savedAttendance = {
     _id,
     employeeId,
-    date: now,
+    date,
     status: "CONGÉ",
     createdAt: now,
     updatedAt: now,

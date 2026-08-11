@@ -36,6 +36,13 @@ const EmployeeAttendanceReport = () => {
   const { attendance } = (location.state as AttendanceState) || {};
   const [attendances, setAttendances] = useState<Attendance[]>([]);
 
+  const statusColor = {
+    PONCTUEL: "green",
+    RETARD: "orange",
+    ABSENT: "red",
+    CONGÉ: "blue",
+  } as const;
+
   useEffect(() => {
     async function getAttendanceHistory() {
       if (!employee?._id) return;
@@ -96,8 +103,9 @@ const EmployeeAttendanceReport = () => {
           borderRadius="8px"
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
           ml="5rem"
-          height="13rem"
-          width="30rem"
+          mt="1.5rem"
+          minH="13rem"
+          minW="25rem"
         >
           <Image
             src={photo_url || defaultAvatar}
@@ -152,8 +160,9 @@ const EmployeeAttendanceReport = () => {
           borderRadius="8px"
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
           ml="3rem"
-          height="13rem"
-          width="22rem"
+          mt="1.5rem"
+          height="15rem"
+          width="20rem"
         >
           <Text fontWeight="600" fontSize="1.1rem" ml="1rem" mt="0.5rem">
             Aujurdui-
@@ -166,37 +175,21 @@ const EmployeeAttendanceReport = () => {
           <HStack
             mt="0.5rem"
             ml="1rem"
-            bg={
-              attendance?.clockIn && attendance.status == "PONCTUEL"
-                ? "green.100"
-                : "red.100"
-            }
+            bg={attendance?.status && statusColor[attendance?.status]}
             borderRadius="0.2rem"
             height="2rem"
-            width="20rem"
+            width="18rem"
           >
             <Box
               mt="1rem"
-              color={
-                attendance?.clockIn && attendance.status == "PONCTUEL"
-                  ? "green.600"
-                  : "red.600"
-              }
+              color="#ffffff"
               fontSize="1.4rem"
               position="relative"
               bottom="0.5rem"
             >
               <GoDotFill />
             </Box>
-            <Text
-              mt="0.8rem"
-              color={
-                attendance?.clockIn && attendance.status == "PONCTUEL"
-                  ? "green.600"
-                  : "red.600"
-              }
-              fontWeight="600"
-            >
+            <Text mt="0.8rem" color="#ffffff" fontWeight="600">
               {attendance?.status === "PONCTUEL"
                 ? "A l'heure"
                 : attendance?.status === "RETARD"

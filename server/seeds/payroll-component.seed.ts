@@ -1,4 +1,5 @@
 import PayrollComponent from "../models/payrollComponentModel.js";
+import { randomUUID } from "crypto";
 
 const defaultPayrollComponents = [
   // ==========================
@@ -64,8 +65,7 @@ const defaultPayrollComponents = [
     name: "MEAL_ALLOWANCE",
     displayName: "Indemnité de repas",
     type: "EARNING",
-    calculationType: "FIXE",
-    defaultValue: 15000,
+    calculationType: "MANUEL",
     isSystem: 1,
     displayOrder: 6,
     requiresHRApproval: 0,
@@ -88,11 +88,12 @@ const defaultPayrollComponents = [
   // ==========================
 
   {
-    name: "TAX",
-    displayName: "IPR",
+    name: "SOCIAL_SECURITY",
+    displayName: "Sécurité sociale",
     type: "DEDUCTION",
-    calculationType: "FORMULE",
-    calculationBase: "TAXABLE_SALARY",
+    calculationType: "POURCENTAGE_BRUT",
+    calculationBase: "GROSS_SALARY",
+    defaultValue: 4,
     isSystem: 1,
     displayOrder: 101,
     requiresHRApproval: 0,
@@ -100,11 +101,11 @@ const defaultPayrollComponents = [
   },
 
   {
-    name: "SOCIAL_SECURITY",
-    displayName: "Sécurité sociale",
+    name: "TAX",
+    displayName: "IPR",
     type: "DEDUCTION",
-    calculationType: "POURCENTAGE_BRUT",
-    calculationBase: "GROSS_SALARY",
+    calculationType: "FORMULE",
+    calculationBase: "TAXABLE_SALARY",
     isSystem: 1,
     displayOrder: 102,
     requiresHRApproval: 0,
@@ -146,6 +147,7 @@ const defaultPayrollComponents = [
 ];
 async function seedPayrollComponents() {
   for (const component of defaultPayrollComponents) {
+    const _id = randomUUID();
     const exists = await PayrollComponent.findOne({
       name: component.name,
     });
@@ -153,6 +155,7 @@ async function seedPayrollComponents() {
     if (!exists) {
       await PayrollComponent.create({
         ...component,
+        _id,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

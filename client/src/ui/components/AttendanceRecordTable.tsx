@@ -11,25 +11,11 @@ import {
 } from "@chakra-ui/react";
 import Attendance from "../../common/types/Attendance";
 import { formatLateMinutes } from "./ClockIn";
+import AttendanceNotesPopover from "./AttendanceNotesPopover";
 
 interface AttendanceTableProps {
   records: Attendance[];
 }
-
-const getStatusColor = (status: Attendance["status"]) => {
-  switch (status) {
-    case "PONCTUEL":
-      return "green";
-    case "RETARD":
-      return "orange";
-    case "ABSENT":
-      return "red";
-    case "CONGÉ":
-      return "purple";
-    default:
-      return "gray";
-  }
-};
 
 export default function AttendanceTable({ records }: AttendanceTableProps) {
   return (
@@ -49,7 +35,6 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
             <Th>Pointage sortie</Th>
             <Th>Statut</Th>
             <Th>Minutes de retard</Th>
-            <Th>Notes</Th>
           </Tr>
         </Thead>
 
@@ -59,39 +44,32 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
               <Td>{new Date(record.date).toLocaleDateString("fr-FR")}</Td>
 
               <Td>
-                {record.clockIn
-                  ? new Date(record.clockIn).toLocaleTimeString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : null}
+                {record.clockIn ? (
+                  new Date(record.clockIn).toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                ) : (
+                  <Text>- - - -</Text>
+                )}
               </Td>
 
               <Td>
-                {record.clockOut
-                  ? new Date(record.clockOut).toLocaleTimeString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : null}
+                {record.clockOut ? (
+                  new Date(record.clockOut).toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                ) : (
+                  <Text>- - - -</Text>
+                )}
               </Td>
-
               <Td>
-                <Badge
-                  bg={getStatusColor(record.status)}
-                  color="#ffffff"
-                  px={3}
-                  py={1}
-                  borderRadius="full"
-                  fontSize="0.7rem"
-                >
-                  {record.status}
-                </Badge>
+                <AttendanceNotesPopover attendance={record} />
               </Td>
               <Td>
                 {record.lateMinutes && formatLateMinutes(record.lateMinutes)}
               </Td>
-              <Td>{record.notes}</Td>
             </Tr>
           ))}
         </Tbody>

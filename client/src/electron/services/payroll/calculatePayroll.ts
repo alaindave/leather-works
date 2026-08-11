@@ -85,6 +85,7 @@ export function calculatePayroll(
     if (component.enabled !== 1) continue;
     if (component.type !== "DEDUCTION") continue;
     if (component.name === "SOCIAL_SECURITY") {
+      console.log("SOCIAL RATE:", component.value);
       socialRate = component.value ?? 0;
     }
     const context: PayrollCalculationContext = {

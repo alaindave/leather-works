@@ -52,6 +52,12 @@ const EmployeeDetailsPage = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const location = useLocation();
   const { photo_url } = (location.state as PhotoState) || "";
+  const statusColor = {
+    PONCTUEL: "green",
+    RETARD: "orange",
+    ABSENT: "red",
+    CONGÉ: "blue",
+  } as const;
 
   useEffect(() => {
     if (!_id) return;
@@ -315,7 +321,7 @@ const EmployeeDetailsPage = () => {
                   >
                     {employee?.firstName} {employee?.lastName}
                   </Text>
-                  <Text color="purple.500">{employee?.role}</Text>
+                  <Text color="purple.600">{employee?.role}</Text>
                   <HStack bg="green.100" px={3} py={1} borderRadius="1.1rem">
                     <GoDotFill color="green" size="1.3rem" />
                     <Text
@@ -453,13 +459,16 @@ const EmployeeDetailsPage = () => {
                                   {attendance?.clockIn &&
                                     new Date(
                                       attendance?.clockIn
-                                    ).toLocaleTimeString("fr-FR")}
+                                    ).toLocaleTimeString("fr-FR", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
                                 </Text>
                               </HStack>
                             ) : (
                               <Text
-                                color="blue.400"
-                                fontSize="1.1rem"
+                                color="blue.600"
+                                fontSize="1.2rem"
                                 ml="7rem"
                                 mt="0.5rem"
                               >
@@ -470,7 +479,14 @@ const EmployeeDetailsPage = () => {
                         </HStack>
 
                         <HStack spacing={2}>
-                          <Text fontWeight="bold" color="green.500">
+                          <Text
+                            mt="1rem"
+                            fontWeight="bold"
+                            color={
+                              attendance?.status &&
+                              statusColor[attendance?.status]
+                            }
+                          >
                             {attendance?.status}
                           </Text>
                         </HStack>

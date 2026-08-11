@@ -4,7 +4,10 @@ import {
   getAllEmployees,
   getEmployeeById,
 } from "../../database/repositories/employees.repository.js";
-import { getEnabledPayrollComponents } from "../../database/repositories/payroll_components.repository.js";
+import {
+  getEnabledPayrollComponents,
+  getPayrollComponents,
+} from "../../database/repositories/payroll_components.repository.js";
 import {
   createEmployeePayrollProfile,
   createManyEmployeePayrollProfiles,
@@ -67,7 +70,9 @@ export async function initializeEmployeePayrollProfiles() {
   const profiles = await getAllEmployeePayrollProfiles();
 
   const existing = new Set(
-    profiles.map((profile) => `${profile.employeeId}:${profile.componentId}`)
+    profiles
+      .filter((profile) => !profile.isDeleted)
+      .map((profile) => `${profile.employeeId}:${profile.componentId}`)
   );
 
   for (const employee of employees) {
@@ -155,11 +160,11 @@ export async function updatePayrollComponentDefaults(
     (profile) => profile.componentId === component._id && !profile.isOverridden
   );
 
-  const employees = await getAllEmployees();
+  // const employees = await getAllEmployees();
 
-  const employeeMap = new Map(
-    employees.map((employee) => [employee._id, employee])
-  );
+  // const employeeMap = new Map(
+  //   employees.map((employee) => [employee._id, employee])
+  // );
 
   for (const profile of matchingProfiles) {
     profile.displayName = component.displayName;
@@ -167,15 +172,15 @@ export async function updatePayrollComponentDefaults(
     profile.calculationType = component.calculationType;
 
     // Use employee salary for BASIC_SALARY
-    if (component.name === "BASIC_SALARY") {
-      const employee = employeeMap.get(profile.employeeId);
+    // if (component.name === "BASIC_SALARY") {
+    //   const employee = employeeMap.get(profile.employeeId);
 
-      if (!employee) {
-        throw new Error(`Employee ${profile.employeeId} not found`);
-      }
+    //   if (!employee) {
+    //     throw new Error(`Employee ${profile.employeeId} not found`);
+    //   }
 
-      profile.value = employee.salary;
-    } else {
+    //   profile.value = employee.salary;
+    if (component.type !== "EARNING") {
       profile.value = component.defaultValue ?? null;
     }
 
@@ -188,11 +193,58 @@ export async function updatePayrollComponentDefaults(
   }
 }
 
+/**
+ * Removes payroll components that have been deleted
+ * from every employee's payroll profile.
+ *
+ * Uses soft deletion so the change can be synchronized
+ * to the server and retained for audit/history.
+ */
+export async function removeDeletedPayrollComponentsFromEmployeeProfiles() {
+  console.log("REMOVING DELETED PAYROLL COMPONENTS FROM EMPLOYEE PROFILES...");
+
+  const components = await getPayrollComponents();
+  const profiles = await getAllEmployeePayrollProfiles();
+
+  // Components that are still active
+  const activeComponentIds = new Set(
+    components
+      .filter((component) => !component.isDeleted)
+      .map((component) => component._id)
+  );
+
+  // Profiles whose payroll component no longer exists
+  // or whose component has been deleted.
+  const deletedProfiles = profiles.filter(
+    (profile) =>
+      !profile.isDeleted && !activeComponentIds.has(profile.componentId)
+  );
+
+  const now = new Date().toISOString();
+
+  for (const profile of deletedProfiles) {
+    profile.isDeleted = 1;
+    profile.enabled = 0;
+    profile.synced = 0;
+    profile.updatedAt = now;
+
+    console.log(
+      `Removing payroll component ${profile.componentId} from employee ${profile.employeeId}`
+    );
+
+    await updateEmployeePayrollProfile(profile);
+  }
+
+  console.log(`REMOVED ${deletedProfiles.length} DELETED PAYROLL PROFILES`);
+
+  return deletedProfiles.length;
+}
+
 // Reset back to the company defaults.
 export async function resetEmployeePayrollProfileToDefaults(
   employeeId: string
 ) {
-  const components = await getEnabledPayrollComponents();
+  const components = await getPayrollComponents();
   const profiles = await getAllEmployeePayrollProfiles();
   const employee = await getEmployeeById(employeeId);
 
@@ -217,16 +269,22 @@ export async function resetEmployeePayrollProfileToDefaults(
     profile.calculationType = component.calculationType;
 
     // Use employee salary for BASIC_SALARY
-    if (component.name === "BASIC_SALARY") {
-      profile.value = employee.salary;
-    } else {
+    // if (component.name === "BASIC_SALARY") {
+    //   profile.value = employee.salary;
+    // }
+
+    // else {
+    //   profile.value = component.defaultValue ?? null;
+    // }
+
+    if (component.type !== "EARNING") {
       profile.value = component.defaultValue ?? null;
     }
 
     profile.taxable = component.taxable;
-    profile.enabled = component.enabled;
     profile.isOverridden = 0;
     profile.isDeleted = component.isDeleted;
+    profile.enabled = component.isDeleted ? 0 : component.enabled;
     profile.synced = 0;
     profile.updatedAt = new Date().toISOString();
 

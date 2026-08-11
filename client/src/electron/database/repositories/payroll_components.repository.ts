@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import { addToSyncQueue } from "./sync.repository.js";
 import {
   addPayrollComponentToAllEmployees,
+  removeDeletedPayrollComponentsFromEmployeeProfiles,
   updatePayrollComponentDefaults,
 } from "../../services/payroll/payrollProfile.service.js";
 
@@ -307,6 +308,8 @@ export async function deletePayrollComponent(_id: string) {
     deleted: true,
     updatedAt: now,
   });
+
+  await removeDeletedPayrollComponentsFromEmployeeProfiles();
 
   await addToSyncQueue({
     entity: "payroll_component",

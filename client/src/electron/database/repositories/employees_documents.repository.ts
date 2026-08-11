@@ -81,69 +81,47 @@ export async function uploadEmployeeDocument(
 
   await upsertEmployeeDocument(document);
 
-  const syncPayload = {
-    _id,
-    employeeId: file.employeeId,
-    uploadedBy: file.uploadedBy,
-    documentType: file.documentType,
-    localPath,
-    originalName: file.name,
-    fileName,
-    mimeType: file.mimeType,
-    fileSize: file.buffer.length,
-    hash,
-    version,
-    isDeleted: 0,
-    createdAt,
-    updatedAt: now,
-  };
-
-  await addToSyncQueue({
-    entity: "employee_document",
-    entityId: document._id,
-    operation: "create",
-    payload: JSON.stringify(syncPayload),
-  });
-
   return document;
 }
 
-// Upsert
+// Upsert employee document
 export async function upsertEmployeeDocument(document: EmployeeDocument) {
   await run(
     `
-    INSERT INTO employees_documents (
-      _id,
-      employeeId,
-      uploadedBy,
-      documentType,
-      originalName,
-      fileName,
-      localPath,
-      mimeType,
-      fileSize,
-      hash,
-      version,
-      needsUpload,
-      createdAt,
-      updatedAt
-    )
-    VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO employees_documents (
+        _id,
+        employeeId,
+        uploadedBy,
+        documentType,
+        originalName,
+        fileName,
+        localPath,
+        mimeType,
+        fileSize,
+        hash,
+        version,
+        needsUpload,
+        isDeleted,
+        createdAt,
+        updatedAt
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
-    ON CONFLICT(_id)
-    DO UPDATE SET
-      employeeId = excluded.employeeId,
-      uploadedBy = excluded.uploadedBy,
-      documentType = excluded.documentType,
-      originalName = excluded.originalName,
-      fileName = excluded.fileName,
-      localPath = excluded.localPath,
-      mimeType = excluded.mimeType,
-      fileSize = excluded.fileSize,
-      hash = excluded.hash,
-      version = excluded.version,
-      needsUpload = excluded.needsUpload,
-      updatedAt = excluded.updatedAt
+      ON CONFLICT(_id)
+      DO UPDATE SET
+        employeeId = excluded.employeeId,
+        uploadedBy = excluded.uploadedBy,
+        documentType = excluded.documentType,
+        originalName = excluded.originalName,
+        fileName = excluded.fileName,
+        localPath = excluded.localPath,
+        mimeType = excluded.mimeType,
+        fileSize = excluded.fileSize,
+        hash = excluded.hash,
+        version = excluded.version,
+        needsUpload = excluded.needsUpload,
+        isDeleted = excluded.isDeleted,
+        updatedAt = excluded.updatedAt
     `,
     [
       document._id,
@@ -158,93 +136,111 @@ export async function upsertEmployeeDocument(document: EmployeeDocument) {
       document.hash,
       document.version,
       document.needsUpload ? 1 : 0,
+      document.isDeleted ? 1 : 0,
       document.createdAt,
       document.updatedAt,
     ]
   );
+
+  await addToSyncQueue({
+    entity: "employee_document",
+    entityId: document._id,
+    operation: document.isDeleted ? "delete" : "update",
+    payload: JSON.stringify(document),
+  });
 }
 
+// Get employee document
 export async function getEmployeeDocument(
   employeeId: string,
   documentType: EmployeeDocumentType
 ) {
   return get<EmployeeDocument>(
     `
-    SELECT *
-    FROM employees_documents
-    WHERE employeeId = ?
-      AND documentType = ?
-      AND isDeleted = 0
-    LIMIT 1
+      SELECT *
+      FROM employees_documents
+      WHERE employeeId = ?
+        AND documentType = ?
+        AND isDeleted = 0
+      LIMIT 1
     `,
     [employeeId, documentType]
   );
 }
 
-// Read
+// Get employee document by ID
 export async function getEmployeeDocumentById(id: string) {
   return get<EmployeeDocument>(
-    `SELECT * FROM employees_documents WHERE _id = ?`,
+    `
+      SELECT *
+      FROM employees_documents
+      WHERE _id = ?
+    `,
     [id]
   );
 }
 
+// Get all employee documents for employee
 export async function getEmployeeDocumentsByEmployee(employeeId: string) {
-  return all<EmployeeDocument[]>(
+  return all<EmployeeDocument>(
     `
-    SELECT *
-    FROM employees_documents
-    WHERE employeeId = ?
-      AND isDeleted = 0
-    ORDER BY createdAt DESC
+      SELECT *
+      FROM employees_documents
+      WHERE employeeId = ?
+        AND isDeleted = 0
+      ORDER BY createdAt DESC
     `,
     [employeeId]
   );
 }
 
+// Get employee documents by type
 export async function getEmployeeDocumentsByType(
   employeeId: string,
   documentType: EmployeeDocumentType
 ) {
   return all<EmployeeDocument>(
     `
-    SELECT *
-    FROM employees_documents
-    WHERE employeeId = ?
-      AND documentType = ?
+      SELECT *
+      FROM employees_documents
+      WHERE employeeId = ?
+        AND documentType = ?
     `,
     [employeeId, documentType]
   );
 }
 
+// Get all employee documents
 export async function getAllEmployeeDocuments() {
   return all<EmployeeDocument>(
     `
-    SELECT *
-    FROM employees_documents
-    ORDER BY updatedAt DESC
+      SELECT *
+      FROM employees_documents
+      ORDER BY updatedAt DESC
     `
   );
 }
 
-// Update
+// Update employee document
 export async function updateEmployeeDocument(document: EmployeeDocument) {
+  const now = new Date().toISOString();
+
   await run(
     `
-    UPDATE employees_documents
-    SET
-      uploadedBy = ?,
-      documentType = ?,
-      originalName = ?,
-      fileName = ?,
-      localPath = ?,
-      mimeType = ?,
-      fileSize = ?,
-      hash = ?,
-      version = ?,
-      needsUpload = ?,
-      updatedAt = ?
-    WHERE _id = ?
+      UPDATE employees_documents
+      SET
+        uploadedBy = ?,
+        documentType = ?,
+        originalName = ?,
+        fileName = ?,
+        localPath = ?,
+        mimeType = ?,
+        fileSize = ?,
+        hash = ?,
+        version = ?,
+        needsUpload = ?,
+        updatedAt = ?
+      WHERE _id = ?
     `,
     [
       document.uploadedBy,
@@ -257,64 +253,90 @@ export async function updateEmployeeDocument(document: EmployeeDocument) {
       document.hash,
       document.version,
       document.needsUpload ? 1 : 0,
-      document.updatedAt,
+      now,
       document._id,
     ]
   );
+
+  await addToSyncQueue({
+    entity: "employee_document",
+    entityId: document._id,
+    operation: "update",
+    payload: JSON.stringify({
+      ...document,
+      updatedAt: now,
+    }),
+  });
 }
 
-// Delete
+// Delete employee document
 export async function deleteEmployeeDocument(id: string) {
+  const now = new Date().toISOString();
+
   await run(
     `
-    UPDATE employees_documents
-    SET
-      isDeleted = 1,
-      needsUpload = 1,
-      updatedAt = CURRENT_TIMESTAMP
-    WHERE _id = ?
+      UPDATE employees_documents
+      SET
+        isDeleted = 1,
+        needsUpload = 1,
+        updatedAt = ?
+      WHERE _id = ?
     `,
-    [id]
+    [now, id]
   );
+
+  await addToSyncQueue({
+    entity: "employee_document",
+    entityId: id,
+    operation: "delete",
+    payload: JSON.stringify({
+      _id: id,
+      isDeleted: 1,
+      updatedAt: now,
+    }),
+  });
 }
 
-// sync
+// Get unsynced employee documents
 export async function getUnsyncedEmployeeDocuments() {
   return all<EmployeeDocument>(
     `
-    SELECT *
-    FROM employees_documents
-    WHERE needsUpload = 1
-    ORDER BY updatedAt ASC
+      SELECT *
+      FROM employees_documents
+      WHERE needsUpload = 1
+      ORDER BY updatedAt ASC
     `
   );
 }
 
+// Mark employee document uploaded
 export async function markEmployeeDocumentUploaded(id: string) {
   await run(
     `
-    UPDATE employees_documents
-    SET
-      needsUpload = 0,
-      lastSyncedAt = CURRENT_TIMESTAMP
-    WHERE _id = ?
+      UPDATE employees_documents
+      SET
+        needsUpload = 0,
+        lastSyncedAt = CURRENT_TIMESTAMP
+      WHERE _id = ?
     `,
     [id]
   );
 }
 
+// Mark employee document needs upload
 export async function markEmployeeDocumentNeedsUpload(id: string) {
   await run(
     `
-    UPDATE employees_documents
-    SET
-      needsUpload = 1
-    WHERE _id = ?
+      UPDATE employees_documents
+      SET
+        needsUpload = 1
+      WHERE _id = ?
     `,
     [id]
   );
 }
 
+// Mark employee document synced
 export async function markEmployeeDocumentSynced(_id: string) {
   await run(
     `
@@ -328,15 +350,34 @@ export async function markEmployeeDocumentSynced(_id: string) {
   );
 }
 
+// Increment document version
 export async function incrementDocumentVersion(id: string) {
+  const now = new Date().toISOString();
+
   await run(
     `
-    UPDATE employees_documents
-    SET
-      version = version + 1,
-      needsUpload = 1,
-    WHERE _id = ?
+      UPDATE employees_documents
+      SET
+        version = version + 1,
+        needsUpload = 1,
+        updatedAt = ?
+      WHERE _id = ?
     `,
-    [id]
+    [now, id]
   );
+
+  const document = await getEmployeeDocumentById(id);
+
+  if (!document) {
+    throw new Error(
+      `Employee document not found after incrementing version: ${id}`
+    );
+  }
+
+  await addToSyncQueue({
+    entity: "employee_document",
+    entityId: id,
+    operation: "update",
+    payload: JSON.stringify(document),
+  });
 }

@@ -73,6 +73,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<EmployeeData>({ resolver: zodResolver(schema) });
 
@@ -83,6 +84,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
       const employee = await window.electron.employees.create(employeeData);
       console.log("Employee successfully saved", employee);
       onAddEmployee(employee);
+      reset();
       onClose();
     } catch (error) {
       console.error("An error occured while adding employee: ", error);

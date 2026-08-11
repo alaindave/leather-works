@@ -27,7 +27,7 @@ export async function createAttendancesTable() {
   await run(`
      CREATE UNIQUE INDEX IF NOT EXISTS idx_attendance_employee_date
      ON attendances(employeeId, date)
-    WHERE isDeleted = 0;
+       WHERE isDeleted = 0;
 `);
 
   console.log("ATTENDANCES TABLE INITIALIZED");

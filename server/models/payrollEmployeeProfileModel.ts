@@ -4,6 +4,7 @@ export interface PayrollEmployeeProfileDocument {
   _id: string;
   employeeId: string;
   componentId: string;
+  name: string;
   displayName: string;
   type: "EARNING" | "DEDUCTION";
   calculationType:
@@ -50,6 +51,12 @@ const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
       type: String,
       required: true,
       index: true,
+    },
+
+    name: {
+      type: String,
+      required: true,
+      trim: true,
     },
 
     displayName: {

@@ -955,6 +955,8 @@ export async function markPayrollItemSynced(_id: string) {
  */
 
 export async function deletePayrollRun(payrollRunId: string) {
+  const updatedAt = new Date().toISOString();
+
   // Get all payroll result IDs belonging to this payroll run
   const results = await all<{ _id: string }>(
     `
@@ -1025,6 +1027,7 @@ export async function deletePayrollRun(payrollRunId: string) {
       payload: JSON.stringify({
         _id: item._id,
         isDeleted: 1,
+        updatedAt,
       }),
     });
   }
@@ -1038,6 +1041,7 @@ export async function deletePayrollRun(payrollRunId: string) {
       payload: JSON.stringify({
         _id: result._id,
         isDeleted: 1,
+        updatedAt,
       }),
     });
   }
@@ -1050,6 +1054,7 @@ export async function deletePayrollRun(payrollRunId: string) {
     payload: JSON.stringify({
       _id: payrollRunId,
       isDeleted: 1,
+      updatedAt,
     }),
   });
 

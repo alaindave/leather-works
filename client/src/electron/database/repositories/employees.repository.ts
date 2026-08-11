@@ -211,10 +211,10 @@ export async function deleteEmployee(_id: string) {
     [updatedAt, _id]
   );
 
-  console.log("Employee deletion to save to sync queue", {
+  console.log("EMPLOYEE DELETION TO SAVE TO SYNC QUEUE", {
     _id,
-    deleted: true,
-    updatedAt: updatedAt,
+    isDeleted: 1,
+    updatedAt,
   });
 
   await addToSyncQueue({

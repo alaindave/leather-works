@@ -6,7 +6,10 @@ import { initializeDatabase } from "./database/initializeDatabase.js";
 import { getPreloadPath } from "./pathResolver.js";
 import { registerIPCHandlers } from "./registerIPCHandlers.js";
 import { markEmployeesOnLeave } from "./services/attendance/markEmployeesOnLeave.service.js";
-import { initializeEmployeePayrollProfiles } from "./services/payroll/payrollProfile.service.js";
+import {
+  initializeEmployeePayrollProfiles,
+  removeDeletedPayrollComponentsFromEmployeeProfiles,
+} from "./services/payroll/payrollProfile.service.js";
 import sync from "./services/sync/sync.service.js";
 import { createSocket } from "./socket.js";
 import { ensureStorageDirectories } from "./storage/directories.js";
@@ -106,6 +109,7 @@ async function bootstrap() {
   await app.whenReady();
   console.log("Before DB init");
   await initializeDatabase();
+  await removeDeletedPayrollComponentsFromEmployeeProfiles();
   await initializeEmployeePayrollProfiles();
   console.log("After DB init");
   registerIPCHandlers();
