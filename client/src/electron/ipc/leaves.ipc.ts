@@ -8,6 +8,7 @@ import {
   getOngoingLeaves,
   updateLeave,
   deleteLeave,
+  cancelLeave,
 } from "../database/repositories/leaves.repository.js";
 import Leave from "../../common/types/Leave.js";
 
@@ -35,6 +36,10 @@ export function registerLeaveIPC() {
 
   ipcMain.handle("leave:getLeaveByMonth", async (_, month: string) => {
     return getLeaveByMonth(month);
+  });
+
+  ipcMain.handle("leave:cancel", async (_, _id: string) => {
+    return cancelLeave(_id);
   });
 
   ipcMain.handle(

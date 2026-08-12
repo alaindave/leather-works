@@ -14,8 +14,28 @@ import { BsBoxSeamFill } from "react-icons/bs";
 
 // @ts-ignore
 import Logo from "../components/Logo";
+import { useEffect } from "react";
+import { checkOnline } from "../services/connectivity_check.service";
 
 const AdminPage = () => {
+  useEffect(() => {
+    void syncOnLogin();
+  }, []);
+
+  const syncOnLogin = async () => {
+    const online = await checkOnline();
+    if (!online) {
+      return;
+    }
+    try {
+      console.log("SYNCING AFTER LOGIN...");
+      const results = await window.electron.sync();
+      console.log("LOGIN SYNC COMPLETE", results);
+    } catch (error) {
+      console.error("LOGIN SYNC FAILED:", error);
+    }
+  };
+
   return (
     <Flex
       direction="column"

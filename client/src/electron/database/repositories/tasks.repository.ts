@@ -34,7 +34,7 @@ type TaskRow = {
 };
 
 export async function createTask(task: Task) {
-  console.log("Task to create:", task);
+  console.log("TASK TO CREATE:", task);
   const _id = randomUUID();
   const taskNumber = generateTaskNumber(task.priority);
   const today = new Date();
@@ -668,8 +668,8 @@ export async function upsertTask(task: Task) {
 
 //Map task priorities to single letters
 function taskMapping(task_priority: string): string {
-  if (task_priority === "Haute") return "H";
-  if (task_priority === "Moyenne") return "M";
+  if (task_priority === "HAUTE") return "H";
+  if (task_priority === "MOYENNE") return "M";
   return "B";
 }
 

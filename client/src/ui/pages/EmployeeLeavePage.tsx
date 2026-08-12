@@ -266,8 +266,7 @@ const EmployeeLeavePage = () => {
           </Box>
           <Spacer />
           <Button
-            bg="#4F46E5"
-            color="#ffffff"
+            colorScheme="blue"
             size="md"
             onClick={onOpen}
             zIndex="1"
@@ -279,9 +278,7 @@ const EmployeeLeavePage = () => {
               {" "}
               <FaCirclePlus size="1.2rem" />
             </Box>
-            <Text bg="#4F46E5" fontSize="1.1rem" color="#ffffff" mt="0.8rem">
-              Soumettre une demande
-            </Text>
+            <Text mt="0.8rem">Soumettre une demande</Text>
           </Button>
         </Flex>
 

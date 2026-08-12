@@ -19,9 +19,9 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { FiCheckCircle, FiUser } from "react-icons/fi";
-import Task from "../../common/types/Task";
-import useAdminUser from "../../store/auth.store";
-import useTaskStore from "../../store/task.store";
+import Task from "../../../common/types/Task";
+import useAdminUser from "../../../store/auth.store";
+import useTaskStore from "../../../store/task.store";
 import { useState } from "react";
 import TaskResolutionPopover from "./TaskResolutionPopover";
 import { CiCalendarDate, CiClock2 } from "react-icons/ci";
@@ -39,41 +39,78 @@ export default function TaskDetailsDrawer({
   onClose,
   onRefresh,
 }: Props) {
-  if (!task) return null;
   const author = useAdminUser((store) => store.adminUser);
+
   const addComment = useTaskStore((store: any) => store.addComment);
-  const _task = useTaskStore((s) => s.tasks.find((t) => t._id === task._id));
+
+  const storeTask = useTaskStore((state) =>
+    task ? state.tasks.find((t) => t._id === task._id) : undefined
+  );
+
+  const currentTask = storeTask ?? task;
+
   const [comment, setComment] = useState("");
 
-  console.log("Fetched task from store:", _task);
+  if (!currentTask) {
+    return null;
+  }
+
+  console.log("CURRENT TASK FROM STORE:", currentTask);
 
   const handleTaskComment = async () => {
-    if (!comment.trim()) return;
-    await addComment(task._id, author, comment);
-    onRefresh?.();
-    setComment("");
+    if (!comment.trim()) {
+      return;
+    }
+    try {
+      await addComment(currentTask._id, author, comment);
+      setComment("");
+      onRefresh?.();
+    } catch (error) {
+      console.error("Failed to add task comment:", error);
+    }
   };
+
   const handleResolution = async (
     notes: string | undefined
   ): Promise<boolean> => {
-    console.log("Resolution notes to submit:", notes);
+    if (!currentTask) {
+      return false;
+    }
+
+    if (!author) {
+      console.error("CANNOT RESOLVE TASK: ADMIN USER NOT AVAILABLE");
+
+      return false;
+    }
     const resolvedBy = `${author.firstName} ${author.lastName}`;
 
     const updatedTask: Task = {
-      ...task,
+      ...currentTask,
       isResolved: 1,
       resolutionNotes: notes,
       resolvedAt: new Date().toISOString(),
       resolvedBy,
     };
-    console.log("Task to update", updatedTask);
+
+    console.log("TASK TO UPDATE:", updatedTask);
+
     try {
       const result = await window.electron.tasks.update(updatedTask);
-      console.log("Task update result", result);
+      console.log("TASK UPDATE RESULT:", result);
+      useTaskStore.setState((state) => ({
+        tasks: state.tasks.map((existingTask) =>
+          existingTask._id === updatedTask._id
+            ? {
+                ...existingTask,
+                ...updatedTask,
+              }
+            : existingTask
+        ),
+      }));
       onRefresh?.();
       return true;
     } catch (error) {
-      console.error("An error occured during task update:", error);
+      console.error("An error occurred during task update:", error);
       return false;
     }
   };
@@ -88,37 +125,46 @@ export default function TaskDetailsDrawer({
               <Box>
                 <HStack>
                   <Text fontWeight="bold" fontFamily="monospace">
-                    {task.taskNumber}
+                    {currentTask.taskNumber}
                   </Text>
+
                   <Badge
-                    colorScheme={task.isResolved ? "green" : "yellow"}
+                    colorScheme={currentTask.isResolved ? "green" : "yellow"}
                     mb="1rem"
                     ml="2rem"
                   >
-                    {task.isResolved ? "Resolue" : "Ouverte"}
+                    {currentTask.isResolved ? "Resolue" : "Ouverte"}
                   </Badge>
                 </HStack>
+
+                {/* Author */}
                 <HStack position="relative" bottom="1rem">
                   <Avatar
                     size="sm"
-                    name={`${task.author.firstName} ${task.author.lastName}`}
+                    name={`${currentTask.author.firstName} ${currentTask.author.lastName}`}
                   />
+
                   <Box ml="0.1rem">
                     <Text position="relative" top="0.4rem" fontSize="1.1rem">
-                      {task.author.firstName} {task.author.lastName}
+                      {currentTask.author.firstName}{" "}
+                      {currentTask.author.lastName}
                     </Text>
                   </Box>
                 </HStack>
               </Box>
 
-              {!task.isResolved && (
+              {/* Resolve button */}
+              {!currentTask.isResolved && (
                 <Box position="absolute" right="0.2rem">
                   <TaskResolutionPopover onSubmit={handleResolution} />
                 </Box>
               )}
             </Flex>
 
-            {/* Details */}
+            {/* =================================================
+                DATES
+            ================================================== */}
+
             <Flex
               bg="gray.100"
               borderRadius="0.4rem"
@@ -127,6 +173,7 @@ export default function TaskDetailsDrawer({
               justify="space-between"
               mt="0.2rem"
             >
+              {/* Opened date */}
               <HStack ml="3rem" position="relative" top="0.6rem">
                 <Box
                   position="relative"
@@ -137,20 +184,27 @@ export default function TaskDetailsDrawer({
                 >
                   <CiCalendarDate />
                 </Box>
+
                 <Box>
                   <Text mt="0.3rem" fontSize="0.93rem" color="gray.600">
                     Ouverte le
                   </Text>
+
                   <Text
                     position="relative"
                     bottom="0.98rem"
                     fontSize="0.98rem"
                     color="gray.600"
                   >
-                    {new Date(task.submittedAt!).toLocaleDateString("fr-FR")}
+                    {currentTask.submittedAt &&
+                      new Date(currentTask.submittedAt).toLocaleDateString(
+                        "fr-FR"
+                      )}
                   </Text>
                 </Box>
               </HStack>
+
+              {/* Deadline */}
               <HStack position="relative" top="0.6rem">
                 <Box
                   fontSize="1.6rem"
@@ -162,21 +216,31 @@ export default function TaskDetailsDrawer({
                 >
                   <CiClock2 />
                 </Box>
+
                 <Box mr="3rem">
                   <Text fontSize="0.94rem" color="gray.600" mt="0.3rem">
                     Date limite
                   </Text>
+
                   <Text
                     position="relative"
                     bottom="1.1rem"
                     fontSize="0.95rem"
                     color="gray.600"
                   >
-                    {new Date(task.deadline).toLocaleDateString("fr-FR")}
+                    {currentTask.deadline &&
+                      new Date(currentTask.deadline).toLocaleDateString(
+                        "fr-FR"
+                      )}
                   </Text>
                 </Box>
               </HStack>
             </Flex>
+
+            {/* =================================================
+                SUBJECT + MESSAGE
+            ================================================== */}
+
             <Flex width="42vw" justify="space-between">
               <Box>
                 <Text
@@ -185,8 +249,9 @@ export default function TaskDetailsDrawer({
                   fontSize="1.18rem"
                   color="gray.900"
                 >
-                  {task.subject}
+                  {currentTask.subject}
                 </Text>
+
                 <Text
                   position="relative"
                   bottom="0.3rem"
@@ -195,23 +260,30 @@ export default function TaskDetailsDrawer({
                   color="black"
                   fontFamily="system-ui"
                 >
-                  {task.message}
+                  {currentTask.message}
                 </Text>
               </Box>
             </Flex>
           </VStack>
         </DrawerHeader>
 
+        {/* =====================================================
+            BODY
+        ====================================================== */}
+
         <DrawerBody>
           <VStack align="stretch" spacing={1}>
-            {/* Recipients */}
+            {/* =================================================
+                RECIPIENTS
+            ================================================== */}
+
             <Box>
               <Text fontWeight="bold" mb={3} fontSize="1.2rem">
                 Destinataires
               </Text>
 
               <Stack spacing={3}>
-                {task.recipients?.map((user) => (
+                {currentTask.recipients?.map((user) => (
                   <HStack key={user._id}>
                     <Avatar
                       size="sm"
@@ -227,59 +299,74 @@ export default function TaskDetailsDrawer({
                 ))}
               </Stack>
             </Box>
-            {task.isResolved && (
+
+            {/* =================================================
+                RESOLUTION
+            ================================================== */}
+
+            {currentTask.isResolved && (
               <Box>
                 <Divider borderColor="gray.500" />
+
                 <VStack align="stretch" spacing={3}>
-                  <>
-                    <HStack>
-                      <Icon as={FiCheckCircle} color="green.500" />
-                      <Box>
-                        <Text position="relative" top="1rem">
-                          Resolue le{" "}
-                        </Text>
-                        <Text>
-                          {new Date(task.resolvedAt!)
+                  {/* Resolved date */}
+                  <HStack>
+                    <Icon as={FiCheckCircle} color="green.500" />
+
+                    <Box>
+                      <Text position="relative" top="1rem">
+                        Resolue le
+                      </Text>
+
+                      <Text>
+                        {currentTask.resolvedAt &&
+                          new Date(currentTask.resolvedAt)
                             .toLocaleString("fr-FR")
                             .replaceAll(" ", " à ")}
-                        </Text>
-                      </Box>
+                      </Text>
+                    </Box>
+                  </HStack>
+
+                  {/* Resolved by */}
+                  {currentTask.resolvedBy && (
+                    <HStack>
+                      <Icon as={FiUser} />
+
+                      <Text position="relative" top="0.4rem">
+                        par {currentTask.resolvedBy}
+                      </Text>
                     </HStack>
+                  )}
 
-                    {task.resolvedBy && (
-                      <HStack>
-                        <Icon as={FiUser} />
+                  {/* Resolution notes */}
+                  {currentTask.resolutionNotes && (
+                    <Box p={3} bg="gray.100" rounded="md">
+                      <Text fontWeight="bold" mb={1}>
+                        Notes de resolution
+                      </Text>
 
-                        <Text position="relative" top="0.4rem">
-                          par {task.resolvedBy}
-                        </Text>
-                      </HStack>
-                    )}
-
-                    {task.resolutionNotes && (
-                      <Box p={3} bg="gray.100" rounded="md">
-                        <Text fontWeight="bold" mb={1}>
-                          Notes de resolution
-                        </Text>
-
-                        <Text fontFamily="mono">{task.resolutionNotes}</Text>
-                      </Box>
-                    )}
-                  </>
+                      <Text fontFamily="mono">
+                        {currentTask.resolutionNotes}
+                      </Text>
+                    </Box>
+                  )}
                 </VStack>
               </Box>
             )}
 
             <Divider borderColor="gray.500" />
 
-            {/* Comments */}
+            {/* =================================================
+                COMMENTS
+            ================================================== */}
+
             <Box>
               <Text fontWeight="bold" mb={4}>
-                Commentaires ({_task?.comments?.length ?? 0})
+                Commentaires ({currentTask.comments?.length ?? 0})
               </Text>
 
               <Stack spacing={4}>
-                {_task?.comments?.map((comment) => (
+                {currentTask.comments?.map((comment) => (
                   <Box key={comment._id} borderWidth="1px" rounded="md" p={3}>
                     <HStack mb={2}>
                       <Avatar
@@ -303,12 +390,15 @@ export default function TaskDetailsDrawer({
                           fontSize="0.92rem"
                           color="gray.500"
                         >
-                          {new Date(comment.createdAt!).toLocaleString(
-                            "fr-FR",
-                            {
-                              timeZone: "Africa/Bujumbura",
-                            }
-                          )}
+                          {comment.createdAt &&
+                            new Date(comment.createdAt).toLocaleString(
+                              "fr-FR",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                timeZone: "Africa/Bujumbura",
+                              }
+                            )}
                         </Text>
                       </Box>
                     </HStack>
@@ -328,6 +418,10 @@ export default function TaskDetailsDrawer({
             </Box>
           </VStack>
         </DrawerBody>
+
+        {/* =====================================================
+            FOOTER / COMMENT INPUT
+        ====================================================== */}
 
         <DrawerFooter borderTopWidth="1px">
           <HStack w="100%">

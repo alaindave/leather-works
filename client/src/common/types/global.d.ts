@@ -70,6 +70,7 @@ declare global {
         update: (task: Task) => Promise<Task>;
         delete: (taskId: string) => Promise<Task>;
         getAll: () => Promise<Task[]>;
+        getById: (_id: string) => Promise<Task>;
         getTopTasks: (userId: string) => Promise<Task[]>;
         onNew: (callback: (data: Task) => void) => () => void;
       };
@@ -154,6 +155,7 @@ declare global {
         getLeaveById: (_id: string) => Promise<LeaveWithEmployee>;
         getOngoingLeaves: () => Promise<LeaveWithEmployee[]>;
         getLeaveByMonth: (month: string) => Promise<LeaveWithEmployee[]>;
+        cancel: (_id: string) => Promise<LeaveWithEmployee>;
         update: (
           _id: string,
           updates: {

@@ -87,6 +87,17 @@ export default function PayrollPage() {
     }
   };
 
+  const handlePayrollCancellation = async (_id: string) => {
+    if (!_id) return;
+    try {
+      const results = await window.electron.payrollRun.cancelPayroll(_id, user);
+      console.log("CANCELLATION RESULTS", results);
+      loadPayrollRun();
+    } catch (e) {
+      console.error("AN ERROR OCCURED DURING CANCELLATION", e);
+    }
+  };
+
   const handleDelete = async (_id: string) => {
     try {
       const results = await window.electron.payrollRun.deletePayrollRun(_id);
@@ -256,46 +267,77 @@ export default function PayrollPage() {
                             p="6px"
                             boxShadow="0 8px 30px rgba(0,0,0,0.35)"
                           >
-                            <MenuItem
-                              height="20px"
-                              mb={4}
-                              pt={3}
-                              icon={
-                                <IoIosRemoveCircleOutline
-                                  color="orange"
-                                  size="1.5rem"
-                                />
-                              }
-                              bg="transparent"
-                              color="gray.800"
-                              borderRadius="10px"
-                              _hover={{
-                                bg: "rgba(255,0,0,0.08)",
-                              }}
-                              onClick={() => withdraw(run._id)}
-                            >
-                              Retirer
-                            </MenuItem>
-                            <MenuItem
-                              height="20px"
-                              mb={2}
-                              pt={3}
-                              icon={
-                                <MdOutlineDeleteForever
-                                  color="red"
-                                  size="1.5rem"
-                                />
-                              }
-                              bg="transparent"
-                              color="gray.800"
-                              borderRadius="10px"
-                              _hover={{
-                                bg: "rgba(255,0,0,0.08)",
-                              }}
-                              onClick={() => handleDelete(run._id)}
-                            >
-                              Supprimer
-                            </MenuItem>
+                            {run.status !== "BROUILLON" &&
+                            run.status !== "ANNULÉ" ? (
+                              <MenuItem
+                                height="20px"
+                                mb={4}
+                                pt={3}
+                                icon={
+                                  <IoIosRemoveCircleOutline
+                                    color="orange"
+                                    size="1.5rem"
+                                  />
+                                }
+                                bg="transparent"
+                                color="gray.800"
+                                borderRadius="10px"
+                                _hover={{
+                                  bg: "rgba(255,0,0,0.08)",
+                                }}
+                                onClick={() => withdraw(run._id)}
+                              >
+                                Retirer
+                              </MenuItem>
+                            ) : null}
+
+                            {run.status === "BROUILLON" ? (
+                              <MenuItem
+                                height="20px"
+                                mb={2}
+                                pt={3}
+                                icon={
+                                  <MdOutlineDeleteForever
+                                    color="red"
+                                    size="1.5rem"
+                                  />
+                                }
+                                bg="transparent"
+                                color="gray.800"
+                                borderRadius="10px"
+                                _hover={{
+                                  bg: "rgba(255,0,0,0.08)",
+                                }}
+                                onClick={() =>
+                                  handlePayrollCancellation(run._id)
+                                }
+                              >
+                                Annuler
+                              </MenuItem>
+                            ) : null}
+
+                            {run.status === "ANNULÉ" ? (
+                              <MenuItem
+                                height="20px"
+                                mb={2}
+                                pt={3}
+                                icon={
+                                  <MdOutlineDeleteForever
+                                    color="red"
+                                    size="1.5rem"
+                                  />
+                                }
+                                bg="transparent"
+                                color="gray.800"
+                                borderRadius="10px"
+                                _hover={{
+                                  bg: "rgba(255,0,0,0.08)",
+                                }}
+                                onClick={() => handleDelete(run._id)}
+                              >
+                                Supprimer
+                              </MenuItem>
+                            ) : null}
                           </MenuList>
                         </Menu>
                       </Td>

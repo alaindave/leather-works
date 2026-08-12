@@ -19,7 +19,7 @@ import { IoPeopleSharp } from "react-icons/io5";
 import { MdPersonOutline } from "react-icons/md";
 import { IoIosArrowUp } from "react-icons/io";
 import { FaSignOutAlt } from "react-icons/fa";
-import { IoStatsChartSharp } from "react-icons/io5";
+import { FaTasks } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { GoDotFill } from "react-icons/go";
 import "../styles/App.css";
@@ -170,27 +170,12 @@ const EmployeeNavBar = () => {
             </HStack>
           </ListItem>
 
-          <ListItem marginBottom="10px">
-            <HStack position="relative" right="1.4rem">
-              <NavLink className="nav-button" to="/admin">
-                <HStack>
-                  <Box ml="1rem">
-                    <IoStatsChartSharp size="1.4rem" />
-                  </Box>
-                  <Text mt="1rem" fontSize="1.3rem">
-                    Rapports
-                  </Text>
-                </HStack>
-              </NavLink>
-            </HStack>
-          </ListItem>
-
           <ListItem marginBottom="20px">
             <HStack position="relative" right="1.4rem">
-              <NavLink className="nav-button" to="/admin">
+              <NavLink className="nav-button" to="/employees_admin/tasks">
                 <HStack>
                   <Box ml="1rem">
-                    <FaFileSignature size="1.4rem" />
+                    <FaTasks size="1.4rem" />
                   </Box>
                   <Text mt="1rem" fontSize="1.3rem">
                     Taches

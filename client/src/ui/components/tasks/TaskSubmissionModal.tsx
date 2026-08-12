@@ -5,8 +5,6 @@ import {
   FormLabel,
   HStack,
   Input,
-  InputGroup,
-  InputLeftElement,
   Menu,
   MenuButton,
   MenuItem,
@@ -24,19 +22,18 @@ import {
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { IoIosCheckmarkCircle } from "react-icons/io";
+import { Controller, useForm } from "react-hook-form";
 import { FaSave } from "react-icons/fa";
-import { RxCrossCircled } from "react-icons/rx";
+import { IoIosCheckmarkCircle } from "react-icons/io";
 import { MdTask } from "react-icons/md";
+import { RxCrossCircled } from "react-icons/rx";
 import { TiDelete } from "react-icons/ti";
-import { GoTag } from "react-icons/go";
-import { LuFlag } from "react-icons/lu";
+import { z } from "zod";
 
-import AdminUser from "../../common/types/AdminUser";
 import DatePicker from "react-datepicker";
-import User from "../../common/types/User";
+import AdminUser from "../../../common/types/AdminUser";
+import User from "../../../common/types/User";
+import { Priority } from "../../../common/types/Task";
 
 interface Props {
   author: Omit<User, "password" | "notes">;
@@ -56,8 +53,6 @@ const schema = z.object({
 
 type TaskData = z.infer<typeof schema>;
 
-type Priority = "Haute" | "Moyenne" | "Basse" | "";
-
 const TaskSubmissionModal = ({
   author,
   isOpen,
@@ -69,7 +64,7 @@ const TaskSubmissionModal = ({
   const [taskRecipients, setTaskRecipients] = useState<AdminUser[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [priority, setPriority] = useState<Priority>("Moyenne");
+  const [priority, setPriority] = useState<Priority>("MOYENNE");
   const { register, handleSubmit, control, reset } = useForm<TaskData>({
     resolver: zodResolver(schema),
   });
@@ -87,7 +82,7 @@ const TaskSubmissionModal = ({
   const handleFormClose = () => {
     setRecipient({} as AdminUser);
     setTaskRecipients([]);
-    setPriority("Moyenne");
+    setPriority("MOYENNE");
     reset();
     onClose();
     setErrorMessage("");
@@ -110,7 +105,7 @@ const TaskSubmissionModal = ({
         deadline: task.deadline,
         priority,
       });
-      console.log("Task successfully created:", result);
+      console.log("TASK SUCCESSFULLY CREATED:", result);
       setRecipient({} as AdminUser);
       setErrorMessage("");
       onRefresh();
@@ -118,7 +113,7 @@ const TaskSubmissionModal = ({
       onClose();
     } catch (error: any) {
       setErrorMessage("Une erreur est survenue. Veuillez contacter ADB Tech!");
-      console.error("Unable to save task:", error.message);
+      console.error("UNABLE TO SAVE TASK:", error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -336,13 +331,13 @@ const TaskSubmissionModal = ({
                     </HStack>
                   </MenuButton>
                   <MenuList>
-                    <MenuItem onClick={() => setPriority("Haute")}>
+                    <MenuItem onClick={() => setPriority("HAUTE")}>
                       Haute
                     </MenuItem>
-                    <MenuItem onClick={() => setPriority("Moyenne")}>
+                    <MenuItem onClick={() => setPriority("MOYENNE")}>
                       Moyenne
                     </MenuItem>
-                    <MenuItem onClick={() => setPriority("Basse")}>
+                    <MenuItem onClick={() => setPriority("BASSE")}>
                       Basse
                     </MenuItem>
                   </MenuList>

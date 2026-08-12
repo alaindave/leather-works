@@ -20,7 +20,7 @@ const statusColor = (status: string) => {
     case "EN ATTENTE D'APPROBATION":
       return "orange";
     case "ANNULÉ":
-      return "gray";
+      return "blue";
     default:
       return "gray";
   }

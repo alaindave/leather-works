@@ -199,6 +199,7 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
 export async function deleteEmployee(_id: string) {
   const updatedAt = new Date().toISOString();
 
+  // Soft-delete employee
   await run(
     `
     UPDATE employees
@@ -211,12 +212,46 @@ export async function deleteEmployee(_id: string) {
     [updatedAt, _id]
   );
 
-  console.log("EMPLOYEE DELETION TO SAVE TO SYNC QUEUE", {
-    _id,
-    isDeleted: 1,
-    updatedAt,
-  });
+  // Find payroll profiles belonging to this employee
+  const payrollProfiles = await all<{ _id: string }>(
+    `
+    SELECT _id
+    FROM payroll_employee_profiles
+    WHERE employeeId = ?
+      AND isDeleted = 0
+    `,
+    [_id]
+  );
 
+  // Soft-delete payroll profiles
+  for (const profile of payrollProfiles) {
+    await run(
+      `
+      UPDATE payroll_employee_profiles
+      SET
+        isDeleted = 1,
+        enabled = 0,
+        synced = 0,
+        updatedAt = ?
+      WHERE _id = ?
+      `,
+      [updatedAt, profile._id]
+    );
+
+    // Queue payroll profile deletion
+    await addToSyncQueue({
+      entity: "payroll_profile",
+      entityId: profile._id,
+      operation: "delete",
+      payload: JSON.stringify({
+        _id: profile._id,
+        employeeId: _id,
+        updatedAt,
+      }),
+    });
+  }
+
+  // Queue employee deletion
   await addToSyncQueue({
     entity: "employee",
     entityId: _id,
@@ -225,6 +260,12 @@ export async function deleteEmployee(_id: string) {
       _id,
       updatedAt,
     }),
+  });
+
+  console.log("EMPLOYEE AND PAYROLL PROFILE DELETION QUEUED", {
+    employeeId: _id,
+    payrollProfilesDeleted: payrollProfiles.length,
+    updatedAt,
   });
 }
 

@@ -431,13 +431,13 @@ export async function deleteAttendance(_id: string) {
 export async function upsertAttendance(attendance: Attendance) {
   const local = await getAttendanceById(attendance._id);
   // If local exists, apply conflict rule
-  if (local && local.updatedAt) {
+  if (local && local.updatedAt && attendance.updatedAt) {
     const localTime = new Date(local.updatedAt).getTime();
-    const remoteTime = new Date(attendance.updatedAt!).getTime();
+    const remoteTime = new Date(attendance.updatedAt).getTime();
 
     //  Keep newest local change
     if (remoteTime < localTime) {
-      console.log(`Skipping remote update (local is newer): ${attendance._id}`);
+      console.log(`SKIPPING REMOTE UPDATE.LOCAL IS NEWER: ${attendance._id}`);
       return local;
     }
   }

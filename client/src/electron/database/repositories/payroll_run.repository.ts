@@ -94,13 +94,13 @@ export async function getPayrollRuns() {
   return await all<PayrollRun>(
     `
       SELECT
-         pr.*,
-         gen.firstName || ' ' || gen.lastName AS generatedByName
+        pr.*,
+        gen.firstName || ' ' || gen.lastName AS generatedByName
       FROM payroll_runs pr
       LEFT JOIN admin_users gen
-      ON pr.generatedBy = gen._id;
-
- `
+        ON pr.generatedBy = gen._id
+      WHERE pr.isDeleted = 0
+    `
   );
 }
 

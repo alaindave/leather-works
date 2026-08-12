@@ -181,6 +181,132 @@ export async function getLeaveRecord(employeeId: string) {
   );
 }
 
+export async function cancelLeave(_id: string) {
+  const leave = await getLeaveById(_id);
+
+  if (!leave) {
+    throw new Error("LEAVE NOT FOUND");
+  }
+
+  if (leave.status === "ANNULÉ") {
+    return leave;
+  }
+
+  // Only restore leave days if they were previously deducted.
+  if (leave.status !== "APPROUVÉ") {
+    const updatedAt = new Date().toISOString();
+
+    await run(
+      `
+      UPDATE leaves
+      SET
+        status = 'ANNULÉ',
+        synced = 0,
+        updatedAt = ?
+      WHERE _id = ?
+        AND isDeleted = 0
+      `,
+      [updatedAt, _id]
+    );
+
+    await addToSyncQueue({
+      entity: "leave",
+      entityId: _id,
+      operation: "update",
+      payload: JSON.stringify({
+        _id,
+        status: "ANNULÉ",
+        updatedAt,
+      }),
+    });
+
+    return getLeaveById(_id);
+  }
+
+  // Calculate the number of leave days.
+  const startDate = new Date(leave.startDate);
+  const endDate = new Date(leave.endDate);
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    throw new Error("INVALID LEAVE DATES");
+  }
+
+  const differenceInMs = endDate.getTime() - startDate.getTime();
+
+  const leaveDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
+
+  if (leaveDays <= 0) {
+    throw new Error("INVALID LEAVE PERIOD");
+  }
+
+  const employee = await getEmployeeById(leave.employeeId);
+
+  if (!employee) {
+    throw new Error("EMPLOYEE NOT FOUND");
+  }
+
+  const updatedAt = new Date().toISOString();
+
+  // Restore the deducted leave days.
+  await run(
+    `
+    UPDATE employees
+    SET
+      remainingLeave = remainingLeave + ?,
+      updatedAt = ?,
+      synced = 0
+    WHERE _id = ?
+      AND isDeleted = 0
+    `,
+    [leaveDays, updatedAt, leave.employeeId]
+  );
+
+  // Cancel the leave.
+  await run(
+    `
+    UPDATE leaves
+    SET
+      status = 'ANNULÉ',
+      synced = 0,
+      updatedAt = ?
+    WHERE _id = ?
+      AND isDeleted = 0
+    `,
+    [updatedAt, _id]
+  );
+
+  // Queue leave update.
+  await addToSyncQueue({
+    entity: "leave",
+    entityId: _id,
+    operation: "update",
+    payload: JSON.stringify({
+      _id,
+      employeeId: leave.employeeId,
+      status: "ANNULÉ",
+      updatedAt,
+    }),
+  });
+
+  // Queue employee balance update.
+  const updatedEmployee = await getEmployeeById(leave.employeeId);
+
+  if (updatedEmployee) {
+    await addToSyncQueue({
+      entity: "employee",
+      entityId: leave.employeeId,
+      operation: "update",
+      payload: JSON.stringify({
+        _id: leave.employeeId,
+        remainingLeave: updatedEmployee.remainingLeave,
+        updatedAt,
+      }),
+    });
+  }
+
+  return getLeaveById(_id);
+}
+
 export async function updateLeave(
   _id: string,
   updates: {

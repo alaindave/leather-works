@@ -8,8 +8,8 @@ export async function createTasksTables() {
       author TEXT NOT NULL,
       subject TEXT NOT NULL,
       message TEXT NOT NULL,
-      priority TEXT NOT NULL DEFAULT 'Moyenne'
-        CHECK(priority IN ('Haute', 'Moyenne', 'Basse')),
+      priority TEXT NOT NULL DEFAULT 'MOYENNE'
+        CHECK(priority IN ('HAUTE', 'MOYENNE', 'BASSE')),
       deadline TEXT NOT NULL,
       isResolved INTEGER DEFAULT 0,
       resolutionNotes TEXT,

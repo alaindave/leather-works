@@ -162,6 +162,8 @@ contextBridge.exposeInMainWorld("electron", {
       updates:Partial<Leave>
     ) => ipcRenderer.invoke("leave:update", _id, updates),
 
+    cancel: (_id: string) => ipcRenderer.invoke("leave:cancel", _id),
+
     delete: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
   },
           
@@ -171,6 +173,8 @@ contextBridge.exposeInMainWorld("electron", {
     update:(task: Task) => ipcRenderer.invoke("tasks:update", task),
 
     getAll: () => ipcRenderer.invoke("tasks:getAll"),
+
+    getById: (_id:string) => ipcRenderer.invoke("tasks:getById",_id),
 
     getTopTasks:(userId:string)=>ipcRenderer.invoke("tasks:getTopTasks",userId),
 

@@ -68,7 +68,11 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
                 <AttendanceNotesPopover attendance={record} />
               </Td>
               <Td>
-                {record.lateMinutes && formatLateMinutes(record.lateMinutes)}
+                {record.lateMinutes ? (
+                  formatLateMinutes(record.lateMinutes)
+                ) : (
+                  <Text>- - - -</Text>
+                )}
               </Td>
             </Tr>
           ))}

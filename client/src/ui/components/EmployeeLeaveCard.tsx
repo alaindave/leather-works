@@ -181,16 +181,13 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   // // Handle cancel
   const handleCancel = () => {
     window.electron.leave
-      .update(leave._id, {
-        status: "ANNULÉ",
-      })
-
+      .cancel(leave._id)
       .then((leave) => {
-        console.log("Cancelled leave: ", leave);
+        console.log("CANCELLED LEAVE: ", leave);
         setLocalLeave(leave);
       })
       .catch((error) =>
-        console.error("An error occured while cancelling the leave", error)
+        console.error("AN ERROR OCCURED WHILE CANCELLING LEAVE", error)
       );
   };
 
@@ -283,6 +280,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
           {remainingLeave}
         </Text>
       </Box>
+      {/* Actions */}
       {adminUser?.role === "MANAGER" ? (
         // Manager area
         <Box>
@@ -372,6 +370,24 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       />
                     </MenuItem>
                   </>
+                ) : status === "APPROUVÉ" ? (
+                  <MenuItem
+                    height="20px"
+                    mb={2}
+                    pt={3}
+                    icon={
+                      <MdOutlineDeleteForever color="red.300" size="20px" />
+                    }
+                    bg="transparent"
+                    color="red.300"
+                    borderRadius="10px"
+                    _hover={{
+                      bg: "rgba(255,0,0,0.08)",
+                    }}
+                    onClick={handleCancel}
+                  >
+                    Annuler
+                  </MenuItem>
                 ) : (
                   <MenuItem
                     height="20px"
@@ -408,11 +424,10 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 variant="ghost"
                 borderRadius="full"
                 _hover={{
-                  bg: "#1D326B",
-                  color: "white",
+                  bg: "transparent",
                 }}
                 _expanded={{
-                  bg: "#1D326B",
+                  bg: "transparent",
                 }}
                 aria-label="Actions"
                 position="relative"
@@ -457,7 +472,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                         <MdOutlineDeleteForever color="red.300" size="1.2rem" />
                       }
                     >
-                      <Text fontWeight="600" fontSize="1.1rem">
+                      <Text
+                        fontWeight="600"
+                        fontSize="1.1rem"
+                        position="relative"
+                        top="0.5rem"
+                      >
                         Annuler
                       </Text>
                     </MenuItem>

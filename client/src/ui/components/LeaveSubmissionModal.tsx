@@ -156,7 +156,13 @@ const LeaveSubmissionModal = ({
                       </p>
                     )}
                   </MenuButton>
-                  <MenuList maxH="450px" overflowY="auto">
+                  <MenuList
+                    _expanded={{
+                      bg: "transparent",
+                    }}
+                    maxH="450px"
+                    overflowY="auto"
+                  >
                     {employees.map((employee) => (
                       <MenuItem
                         key={employee._id}

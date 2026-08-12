@@ -99,15 +99,13 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
   return (
     <>
       <Button
-        bg="#4F46E5"
-        color="#ffffff"
+        colorScheme="blue"
         padding="16px"
         _hover={{
-          bg: "#4338CA",
+          bg: "blue",
           color: "#e6e6e6",
           transform: "scale(1.05)",
         }}
-        borderWidth="1px"
         onClick={onOpen}
         isLoading={isSaving}
         loadingText="Patientez..."

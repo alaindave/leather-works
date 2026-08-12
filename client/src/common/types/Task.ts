@@ -2,7 +2,7 @@ import AdminUser from "./AdminUser.js";
 import PopulatedTaskComment from "./PopulatedTaskComment.js";
 import User from "./User.js";
 
-type Priority = "Haute" | "Moyenne" | "Basse" | "";
+export type Priority = "HAUTE" | "MOYENNE" | "BASSE" | "";
 
 export default interface Task {
   _id: string;

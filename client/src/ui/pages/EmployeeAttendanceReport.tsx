@@ -161,7 +161,7 @@ const EmployeeAttendanceReport = () => {
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
           ml="3rem"
           mt="1.5rem"
-          height="15rem"
+          height="16rem"
           width="20rem"
         >
           <Text fontWeight="600" fontSize="1.1rem" ml="1rem" mt="0.5rem">
@@ -204,14 +204,16 @@ const EmployeeAttendanceReport = () => {
             </Text>
           </HStack>
           <HStack mt="1.5rem">
-            <Text ml="1rem">Entrée</Text>
+            <Text ml="1rem" fontWeight="600">
+              Entrée
+            </Text>
             <Spacer />
             <Text
               mr="1rem"
               color={
                 attendance?.clockIn && attendance.status == "PONCTUEL"
-                  ? "green.600"
-                  : "red.600"
+                  ? "green.800"
+                  : "red.800"
               }
             >
               {attendance?.clockIn
@@ -223,11 +225,13 @@ const EmployeeAttendanceReport = () => {
             </Text>
           </HStack>
           <HStack mt="0.5rem">
-            <Text ml="1rem">Sortie</Text>
+            <Text ml="1rem" fontWeight="600">
+              Sortie
+            </Text>
             <Spacer />
             <Text
               mr="1rem"
-              color={attendance?.clockOut ? "purple.600" : "red.600"}
+              color={attendance?.clockOut ? "purple.800" : "red.800"}
             >
               {attendance?.clockOut
                 ? new Date(attendance?.clockOut).toLocaleTimeString("fr-FR", {
