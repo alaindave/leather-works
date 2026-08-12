@@ -6,6 +6,7 @@ export interface PayrollEmployeeProfileDocument {
   componentId: string;
   name: string;
   displayName: string;
+  displayOrder: number;
   type: "EARNING" | "DEDUCTION";
   calculationType:
     | "FIXE"
@@ -61,6 +62,12 @@ const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
 
     displayName: {
       type: String,
+      required: true,
+      trim: true,
+    },
+
+    displayOrder: {
+      type: Number,
       required: true,
       trim: true,
     },

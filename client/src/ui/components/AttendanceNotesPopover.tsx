@@ -81,7 +81,6 @@ const AttendanceNotesPopover = ({ attendance }: Props) => {
       ) : (
         <Badge
           mr="0.3rem"
-          mb="1rem"
           bg={statusColor[attendance.status]}
           color="#ffffff"
           fontSize="14px"
