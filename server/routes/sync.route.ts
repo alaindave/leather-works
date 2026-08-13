@@ -147,7 +147,7 @@ router.post(
 
           synced.push(queueId);
         } catch (error) {
-          console.error(`Push failed for ${entity}`, error);
+          console.error(`PUSH FAILED FOR ${entity}`, error);
         }
       }
 

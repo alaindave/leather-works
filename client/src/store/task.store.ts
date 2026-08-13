@@ -6,13 +6,11 @@ import User from "../common/types/User";
 interface TaskStore {
   tasks: Task[];
   loading: boolean;
-
   loadAllTasks: () => Promise<void>;
   loadTopTasks: (userId: string) => Promise<void>;
   createTask: (task: Task) => Promise<void>;
   updateTask: (task: Task) => Promise<void>;
-  deleteTask: (taskId: string) => Promise<void>;
-
+  deleteTask: (taskId: string) => void;
   addComment: (
     taskId: string,
     author: Omit<User, "password">,
@@ -34,14 +32,14 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     try {
       const tasks = await window.electron.tasks.getAll();
 
-      console.log("Loaded tasks in store:", tasks);
+      console.log("LOADED TASKED:", tasks);
 
       set({
         tasks,
         loading: false,
       });
     } catch (error) {
-      console.error("An error occured while loading tasks in Zustand", error);
+      console.error("AN ERROR OCCURED WHILE LOADING TASKS IN ZUSTAND", error);
 
       set({ loading: false });
     }
@@ -53,7 +51,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     try {
       const tasks = await window.electron.tasks.getTopTasks(userId);
 
-      console.log("Loaded top tasks in store:", tasks);
+      console.log("LOADED TOP TASKS IN STORE:", tasks);
 
       set({
         tasks,
@@ -61,7 +59,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       });
     } catch (error) {
       console.error(
-        "An error occured while loading top tasks in Zustand",
+        "AN ERROR OCCURED WHILE LOADING TOP TASKS IN ZUSTAND.",
         error
       );
 
@@ -94,7 +92,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       }));
 
       console.error(
-        "An error occured while creating the task in Zustand",
+        "AN ERROR OCCURED WHILE CREATING THE TASK IN ZUSTAND.",
         error
       );
     }
@@ -115,35 +113,20 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       set({ tasks: previous });
 
       console.error(
-        "An error occured while updating the task in Zustand",
+        "AN ERROR OCCURED WHILE UPDATING THE TASK IN ZUSTAND.",
         error
       );
     }
   },
 
-  deleteTask: async (taskId) => {
-    const previous = get().tasks;
-
+  deleteTask: (taskId) => {
     set((state) => ({
-      tasks: state.tasks.filter((t) => t._id !== taskId),
+      tasks: state.tasks.filter((task) => task._id !== taskId),
     }));
-
-    try {
-      await window.electron.tasks.delete(taskId);
-    } catch (err) {
-      set({ tasks: previous });
-
-      console.error("An error occured while deleting the task", err);
-    }
   },
 
   addComment: async (taskId, author, comment) => {
     const tempId = crypto.randomUUID();
-
-    /*
-     * Optimistically add a populated comment.
-     * This makes the UI update immediately.
-     */
     const optimisticComment: PopulatedTaskComment = {
       _id: tempId,
       taskId,
@@ -170,40 +153,11 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     }));
 
     try {
-      /*
-       * Save only the author ID to SQLite.
-       */
       await window.electron.taskComments.create({
         taskId,
         author: author._id,
         comment,
       });
-
-      /*
-       * IMPORTANT:
-       *
-       * Do NOT put the result of taskComments.create()
-       * directly into task.comments.
-       *
-       * create() returns the raw database comment:
-       *
-       * {
-       *   author: "admin-id"
-       * }
-       *
-       * But the UI expects:
-       *
-       * {
-       *   author: {
-       *     _id: "admin-id",
-       *     firstName: "Alain",
-       *     lastName: "Bedetse"
-       *   }
-       * }
-       *
-       * Therefore reload the complete task, which uses
-       * getTaskCommentsWithAuthor().
-       */
       const refreshedTask = await window.electron.tasks.getById(taskId);
 
       if (!refreshedTask) {
@@ -211,20 +165,12 @@ const useTaskStore = create<TaskStore>((set, get) => ({
           `Task ${taskId} could not be reloaded after adding comment`
         );
       }
-
-      /*
-       * Replace the stale task in Zustand with the
-       * fully populated task.
-       */
       set((state) => ({
         tasks: state.tasks.map((task) =>
           task._id === taskId ? refreshedTask : task
         ),
       }));
     } catch (error) {
-      /*
-       * Remove optimistic comment if saving/reloading failed.
-       */
       set((state) => ({
         tasks: state.tasks.map((task) =>
           task._id !== taskId
@@ -235,9 +181,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
               }
         ),
       }));
-
       console.error("An error occured while saving the comment", error);
-
       throw error;
     }
   },

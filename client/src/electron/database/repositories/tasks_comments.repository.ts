@@ -35,7 +35,7 @@ export async function createTaskComment(comment: TaskComment) {
     updatedAt: time,
   };
 
-  console.log("Task comment to save to sync queue", savedTaskComment);
+  console.log("TASK COMMENT TO SAVE TO SYNC QUEUE", savedTaskComment);
 
   await addToSyncQueue({
     entity: "task_comment",
@@ -94,23 +94,35 @@ export async function getTaskCommentsWithAuthor(taskId: string) {
 }
 
 //Update comments
-export async function updateTaskComment(
-  _id: string,
-  message: string,
-  updatedAt: string
-) {
+export async function updateTaskComment(_id: string, comment: string) {
+  const today = new Date();
+  const updatedAt = today.toISOString();
+
   await run(
     `
     UPDATE task_comments
-    SET message = ?, updatedAt = ?
+    SET comment = ?, updatedAt = ?
     WHERE _id = ?
     `,
-    [message, updatedAt, _id]
+    [comment, updatedAt, _id]
   );
+
+  await addToSyncQueue({
+    entity: "task_comment",
+    entityId: _id,
+    operation: "update",
+    payload: JSON.stringify({
+      _id,
+      comment,
+      updatedAt,
+    }),
+  });
 }
 
 //Delete comments
 export async function deleteTaskComment(_id: string) {
+  const today = new Date();
+  const updatedAt = today.toISOString();
   await run(
     `
     DELETE FROM task_comments
@@ -118,6 +130,16 @@ export async function deleteTaskComment(_id: string) {
     `,
     [_id]
   );
+
+  await addToSyncQueue({
+    entity: "task_comment",
+    entityId: _id,
+    operation: "delete",
+    payload: JSON.stringify({
+      _id,
+      updatedAt,
+    }),
+  });
 }
 
 export async function upsertTaskComment(comment: PopulatedTaskComment) {

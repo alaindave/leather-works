@@ -25,13 +25,20 @@ interface AdminCredentials {
   password: string;
 }
 
+interface SignUpCredentials {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
 interface LoggedUser {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: "manager" | "admin";
-  notes: string;
+  role: "MANAGER" | "ADMIN";
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,6 +59,7 @@ declare global {
 
       auth: {
         login: (credentials: AdminCredentials) => Promise<LoggedUser>;
+        sign_up: (credentials: SignUpCredentials) => Promise<LoggedUser>;
         logout: () => boolean;
       };
 
@@ -71,6 +79,7 @@ declare global {
         delete: (taskId: string) => Promise<Task>;
         getAll: () => Promise<Task[]>;
         getById: (_id: string) => Promise<Task>;
+        getUserTasks: (userId: string) => Promise<Task[]>;
         getTopTasks: (userId: string) => Promise<Task[]>;
         onNew: (callback: (data: Task) => void) => () => void;
       };

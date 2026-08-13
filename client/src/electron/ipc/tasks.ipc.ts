@@ -6,6 +6,7 @@ import {
   deleteTask,
   getTopTasks,
   getTaskById,
+  getAllTasksForUser,
 } from "../database/repositories/tasks.repository.js";
 
 const API_URL = app.isPackaged
@@ -49,6 +50,18 @@ export function registerTaskIPC() {
       return task;
     } catch (error) {
       console.error("AN ERROR OCCURED WHILE FETCHING TASK BY ID:", error);
+      throw error;
+    }
+  });
+
+  //Get tasks for user(eithr author or recipient )
+  ipcMain.handle("tasks:getUserTasks", async (_, userId) => {
+    try {
+      const tasks = await getAllTasksForUser(userId);
+      console.log("TASKS FETCHED: ", tasks);
+      return tasks;
+    } catch (error) {
+      console.error("ERROR OCCURED WHILE FETCHING TASKS: ", error);
       throw error;
     }
   });

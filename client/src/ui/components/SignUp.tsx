@@ -78,9 +78,6 @@ const inputStyle = {
 };
 
 const labelColor = "#374151";
-// const secondaryText = "#6B7280";
-// const primaryBlue = "#0078D4";
-// const errorColor = "#D13438";
 
 const SignUp = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -98,28 +95,28 @@ const SignUp = () => {
   const onSubmit = async (data: FieldValues) => {
     setIsLoggingIn(true);
     setErrorMessage("");
-    console.log("Form submitted:", data);
+    console.log("FORM SUBMITTED:", data);
 
     try {
-      const res = await axios.post(`${API_URL}/adminUsers`, {
+      const res = await window.electron.auth.sign_up({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
       });
 
-      console.log("User successfully created: ", res.data);
+      console.log("USER SIGN UP SUCCESS: ", res);
       setAuth(
-        res.data._id,
-        res.data.firstName,
-        res.data.lastName,
-        res.data.email,
-        res.data.roles,
-        res.data.notes
+        res._id,
+        res.firstName,
+        res.lastName,
+        res.email,
+        res.role,
+        res.notes ?? ""
       );
       navigate("/admin");
     } catch (error) {
-      console.error("An error occured while signing up", error);
+      console.error("AN ERROR OCCURED WHILE SIGNING UP", error);
       setErrorMessage("Une erreur est survenue. Veuillez contacter ADB Tech.");
     } finally {
       setIsLoggingIn(false);
@@ -215,7 +212,8 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="0.9rem"
+                        fontSize="0.8rem"
+                        whiteSpace="nowrap"
                       >
                         {errors.lastName?.message}
                       </Text>
@@ -246,7 +244,8 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="0.9rem"
+                        fontSize="0.8rem"
+                        whiteSpace="nowrap"
                       >
                         {errors.firstName?.message}
                       </Text>
@@ -277,7 +276,8 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="0.9rem"
+                        fontSize="0.8rem"
+                        whiteSpace="nowrap"
                       >
                         {errors.email?.message}
                       </Text>
@@ -309,7 +309,8 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="0.9rem"
+                        fontSize="0.8rem"
+                        whiteSpace="nowrap"
                       >
                         {errors.password?.message}
                       </Text>
@@ -341,7 +342,8 @@ const SignUp = () => {
                       <Text
                         position="absolute"
                         className="text-danger"
-                        fontSize="sm"
+                        fontSize="0.8rem"
+                        whiteSpace="nowrap"
                       >
                         {errors.confirmPassword?.message}
                       </Text>

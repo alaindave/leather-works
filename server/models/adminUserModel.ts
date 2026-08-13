@@ -2,7 +2,7 @@ import mongoose, { Schema, HydratedDocument, Model } from "mongoose";
 import Joi from "joi";
 import jwt from "jsonwebtoken";
 
-export type AdminRole = "manager" | "admin";
+export type AdminRole = "MANAGER" | "ADMIN";
 
 export interface AdminUser {
   _id: string;
@@ -11,8 +11,8 @@ export interface AdminUser {
   email: string;
   password: string;
   role: AdminRole;
-  notes: string;
-  isDeleted: boolean;
+  notes?: string;
+  isDeleted: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,17 +56,16 @@ const AdminUserSchema = new Schema<AdminUser, AdminUserModel, AdminUserMethods>(
     },
     role: {
       type: String,
-      enum: ["manager", "admin"],
-      default: "admin",
+      enum: ["MANAGER", "ADMIN"],
+      default: "ADMIN",
     },
     notes: {
       type: String,
-      required: true,
     },
     isDeleted: {
-      type: Boolean,
+      type: Number,
       required: true,
-      default: false,
+      default: 0,
     },
     createdAt: {
       type: Date,

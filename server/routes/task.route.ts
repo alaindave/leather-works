@@ -34,13 +34,13 @@ router.post(
 
       const savedTask = await saveTask(task);
 
-      console.log("SavedTask:", savedTask);
+      console.log("SAVED TASK:", savedTask);
 
       io.emit("new-task", savedTask);
 
       return res.status(201).send(savedTask);
     } catch (error) {
-      console.error("Backend error while creating task:", error);
+      console.error("AN ERROR OCCURED WHILE CREATING TASK:", error);
 
       return res.status(500).send(error);
     }

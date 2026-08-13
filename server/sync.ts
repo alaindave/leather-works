@@ -188,28 +188,51 @@ export async function syncTaskComment(
     throw new Error(`TASK ${data.taskId} NOT FOUND`);
   }
 
+  console.log("TASK COMMENT DATA:", data);
+
   switch (operation) {
-    case "create":
-      if (!task.comments.some((comment) => comment._id === data._id)) {
-        task.comments.push(data as any);
+    case "create": {
+      const existingComment = task.comments.find(
+        (comment) => comment._id === data._id
+      );
+
+      if (!existingComment) {
+        task.comments.push({
+          _id: data._id,
+          taskId: data.taskId,
+          author: data.author,
+          comment: data.comment,
+          createdAt: data.createdAt
+            ? new Date(data.createdAt as string)
+            : new Date(),
+          updatedAt: data.updatedAt
+            ? new Date(data.updatedAt as string)
+            : new Date(),
+          isDeleted: data.isDeleted ?? 0,
+        } as any);
       }
 
-      console.log("SYNCED TASK COMMENT:", await Task.findById(data._id));
-
       break;
+    }
 
-    case "update":
+    case "update": {
       const comment = task.comments.find((c) => c._id === data._id);
 
       if (!comment) {
         throw new Error(`COMMENT ${data._id} NOT FOUND`);
       }
 
-      Object.assign(comment, data);
+      Object.assign(comment, {
+        ...data,
+        updatedAt: data.updatedAt
+          ? new Date(data.updatedAt as string)
+          : new Date(),
+      });
 
       break;
+    }
 
-    case "delete":
+    case "delete": {
       const deletedComment = task.comments.find((c) => c._id === data._id);
 
       if (!deletedComment) {
@@ -220,11 +243,22 @@ export async function syncTaskComment(
       deletedComment.updatedAt = new Date();
 
       break;
+    }
   }
 
-  task.updatedAt = new Date(data.updatedAt as string);
+  task.updatedAt = data.updatedAt
+    ? new Date(data.updatedAt as string)
+    : new Date();
 
   await task.save();
+
+  const savedTask = await Task.findById(data.taskId);
+
+  const savedComment = savedTask?.comments.find(
+    (comment) => comment._id === data._id
+  );
+
+  console.log("SYNCED TASK COMMENT:", savedComment);
 }
 
 // ================= USER NOTES =================

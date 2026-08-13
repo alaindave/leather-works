@@ -10,7 +10,7 @@ interface AdminUserStore {
     firstName: string,
     lastName: string,
     email: string,
-    role: "manager" | "admin",
+    role: "MANAGER" | "ADMIN",
     notes: string
   ) => void;
   logout: () => void;

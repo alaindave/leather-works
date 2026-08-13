@@ -20,6 +20,14 @@ interface LoginCredentials {
   password: string;
 }
 
+interface SignUpCredentials {
+  firstName:string;
+  lastName:string;
+  email: string;
+  password: string;
+}
+
+
 console.log("PRELOAD LOADED!!!");
 
 contextBridge.exposeInMainWorld("electron", {
@@ -29,6 +37,8 @@ contextBridge.exposeInMainWorld("electron", {
   auth: {
     login: (credentials: LoginCredentials) =>
       ipcRenderer.invoke("auth:login", credentials),
+    sign_up: (credentials: SignUpCredentials) =>
+      ipcRenderer.invoke("auth:signup", credentials),
     logout: () => ipcRenderer.invoke("auth:logout"),
   },
 
@@ -175,6 +185,8 @@ contextBridge.exposeInMainWorld("electron", {
     getAll: () => ipcRenderer.invoke("tasks:getAll"),
 
     getById: (_id:string) => ipcRenderer.invoke("tasks:getById",_id),
+
+    getUserTasks:(userId:string)=>ipcRenderer.invoke("tasks:getUserTasks",userId),
 
     getTopTasks:(userId:string)=>ipcRenderer.invoke("tasks:getTopTasks",userId),
 

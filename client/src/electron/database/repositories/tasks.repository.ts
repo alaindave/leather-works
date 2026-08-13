@@ -92,7 +92,7 @@ export async function createTask(task: Task) {
     updatedAt: time,
   };
 
-  console.log("Task to save to sync queue", savedTask);
+  console.log("TASK TO SAVE TO SYNC QUEUE", savedTask);
 
   await addToSyncQueue({
     entity: "task",
@@ -163,7 +163,7 @@ export async function updateTask(task: Task) {
       updatedAt,
     };
 
-    console.log("Task to save to sync queue", updatedTask);
+    console.log("TASK TO SAVE TO SYNC QUEUE", updatedTask);
 
     await addToSyncQueue({
       entity: "task",
@@ -283,7 +283,7 @@ export async function getTaskById(_id: string) {
   };
 }
 
-//Get top tasks
+//Get top tasks for dashboard display
 export async function getTopTasks(userId: string) {
   const rows = await all<TaskRow>(
     `
@@ -409,6 +409,142 @@ export async function getTopTasks(userId: string) {
 
   return tasks;
 }
+
+//Get all tasks(either author or recipients)
+export async function getAllTasksForUser(userId: string) {
+  const rows = await all<TaskRow>(
+    `
+    SELECT
+      t._id AS taskId,
+      t.taskNumber,
+      t.subject,
+      t.message,
+      t.submittedAt,
+      t.createdAt,
+      t.isDeleted,
+      t.author,
+      t.priority,
+      t.deadline,
+      t.isResolved,
+      t.resolutionNotes,
+      t.resolvedAt,
+      t.resolvedBy,
+
+      -- author
+      a._id AS author,
+      a.firstName AS authorFirstName,
+      a.lastName AS authorLastName,
+      a.email AS authorEmail,
+      a.role AS authorRole,
+
+      -- recipient
+      r._id AS recipientId,
+      r.firstName AS recipientFirstName,
+      r.lastName AS recipientLastName,
+      r.email AS recipientEmail,
+      r.role AS recipientRole
+
+    FROM tasks t
+
+    LEFT JOIN admin_users a
+      ON a._id = t.author
+
+    LEFT JOIN task_recipients tr
+      ON tr.taskId = t._id
+
+    LEFT JOIN admin_users r
+      ON r._id = tr.recipient
+
+    WHERE t.isDeleted = 0
+
+      AND (
+        t.author = ?
+
+        OR EXISTS (
+          SELECT 1
+          FROM task_recipients tr2
+          WHERE tr2.taskId = t._id
+            AND tr2.recipient = ?
+        )
+      )
+
+    ORDER BY
+      CASE t.priority
+        WHEN 'Haute' THEN 3
+        WHEN 'Moyenne' THEN 2
+        WHEN 'Basse' THEN 1
+        ELSE 0
+      END DESC,
+
+      datetime(t.createdAt) DESC
+    `,
+    [userId, userId]
+  );
+
+  const map = new Map<string, Task>();
+
+  for (const row of rows) {
+    if (!map.has(row.taskId)) {
+      map.set(row.taskId, {
+        _id: row.taskId,
+        taskNumber: row.taskNumber,
+        subject: row.subject,
+        message: row.message,
+
+        priority: row.priority,
+        deadline: row.deadline,
+
+        isResolved: row.isResolved ?? null,
+        resolutionNotes: row.resolutionNotes ?? null,
+        resolvedAt: row.resolvedAt ?? null,
+        resolvedBy: row.resolvedBy ?? null,
+
+        submittedAt: row.submittedAt,
+        isDeleted: row.isDeleted,
+
+        author: {
+          _id: row.author,
+          firstName: row.authorFirstName,
+          lastName: row.authorLastName,
+          email: row.authorEmail,
+          role: row.authorRole,
+        },
+
+        recipients: [],
+
+        comments: [],
+      } as Task);
+    }
+
+    const task = map.get(row.taskId)!;
+
+    if (row.recipientId) {
+      const exists = task.recipients.some(
+        (recipient) => recipient._id === row.recipientId
+      );
+
+      if (!exists) {
+        task.recipients.push({
+          _id: row.recipientId,
+          firstName: row.recipientFirstName ?? "",
+          lastName: row.recipientLastName ?? "",
+          email: row.recipientEmail ?? "",
+          role: row.recipientRole ?? "",
+        });
+      }
+    }
+  }
+
+  const tasks = Array.from(map.values());
+  await Promise.all(
+    tasks.map(async (task) => {
+      task.comments = await getTaskCommentsWithAuthor(task._id);
+    })
+  );
+
+  return tasks;
+}
+
 //Get all tasks
 export async function getAllTasks() {
   const rows = await all<TaskRow>(

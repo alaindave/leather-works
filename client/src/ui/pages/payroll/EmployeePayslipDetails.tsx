@@ -200,7 +200,7 @@ const EmployeePayslipDetails = () => {
                 {employee?.matricule}
               </Text>
             </HStack>
-            <HStack w="120px" position="relative" bottom="1.5rem">
+            <HStack w="120px" position="relative" bottom="1.7rem">
               <Text color="gray.600" fontSize="1.1rem">
                 Poste:
               </Text>
@@ -321,12 +321,25 @@ const EmployeePayslipDetails = () => {
               </Box>
               <Box>
                 <Text color="gray.500">Soumise pour verification</Text>
-                <Text position="relative" bottom="1rem" fontWeight="600">
-                  {payrollResults?.verifiedAt &&
-                    new Date(payrollResults?.verifiedAt).toLocaleDateString(
-                      "fr-FR"
-                    )}
-                </Text>
+                <HStack>
+                  <Text position="relative" bottom="1rem" fontWeight="600">
+                    {payrollResults?.verifiedAt &&
+                      new Date(payrollResults?.verifiedAt).toLocaleDateString(
+                        "fr-FR"
+                      )}
+                  </Text>
+                  <Text position="relative" bottom="1rem">
+                    à{" "}
+                    {payrollResults?.verifiedAt &&
+                      new Date(payrollResults?.verifiedAt).toLocaleTimeString(
+                        "fr-FR",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                  </Text>
+                </HStack>
               </Box>
             </HStack>
           ) : null}
@@ -339,19 +352,32 @@ const EmployeePayslipDetails = () => {
                 bg="blue.100"
                 fontSize="1.8rem"
                 position="relative"
-                bottom="0.7rem"
+                bottom="2rem"
                 mr="1rem"
               >
                 <FcApproval color="blue.500" />
               </Box>
               <Box position="relative" bottom="0.9rem">
                 <Text color="gray.500">Date d'approbation</Text>
-                <Text position="relative" bottom="1rem" fontWeight="600">
-                  {payrollResults?.approvedAt &&
-                    new Date(payrollResults?.approvedAt).toLocaleDateString(
-                      "fr-FR"
-                    )}
-                </Text>
+                <HStack>
+                  <Text position="relative" bottom="1rem" fontWeight="600">
+                    {payrollResults?.approvedAt &&
+                      new Date(payrollResults?.approvedAt).toLocaleDateString(
+                        "fr-FR"
+                      )}
+                  </Text>
+                  <Text position="relative" bottom="1rem">
+                    à{" "}
+                    {payrollResults?.approvedAt &&
+                      new Date(payrollResults?.approvedAt).toLocaleTimeString(
+                        "fr-FR",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                  </Text>
+                </HStack>
               </Box>
             </HStack>
           ) : null}
@@ -371,12 +397,25 @@ const EmployeePayslipDetails = () => {
               </Box>
               <Box>
                 <Text color="gray.500">Date de paiement</Text>
-                <Text position="relative" bottom="1rem" fontWeight="600">
-                  {payrollResults?.paidAt &&
-                    new Date(payrollResults?.paidAt).toLocaleDateString(
-                      "fr-FR"
-                    )}
-                </Text>
+                <HStack>
+                  <Text position="relative" bottom="1rem" fontWeight="600">
+                    {payrollResults?.paidAt &&
+                      new Date(payrollResults?.paidAt).toLocaleDateString(
+                        "fr-FR"
+                      )}
+                  </Text>
+                  <Text position="relative" bottom="1rem">
+                    à{" "}
+                    {payrollResults?.paidAt &&
+                      new Date(payrollResults?.paidAt).toLocaleTimeString(
+                        "fr-FR",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                  </Text>
+                </HStack>
               </Box>
             </HStack>
           ) : null}

@@ -143,9 +143,9 @@ const EmployeeAdminPage = () => {
     console.log("ID to delete,", _id);
     try {
       const deletedTask = await deleteTask(_id);
-      console.log("Deleted task: ", deletedTask);
+      console.log("DELETED TASK: ", deletedTask);
     } catch (e) {
-      console.error("An error occured while deleting the task.", e);
+      console.error("AN ERROR OCCURED WHILE DELETING TASK.", e);
     }
   };
 

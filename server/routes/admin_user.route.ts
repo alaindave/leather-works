@@ -24,14 +24,14 @@ router.post("/", async (req: Request, res: Response) => {
     const { error } = validateAdminUser(req.body);
 
     if (error) {
-      console.log("Validation error:", error.details[0].message);
+      console.log("VALIDATION ERROR:", error.details[0].message);
       return res.status(400).send(error.details[0].message);
     }
 
     let adminUser = await getAdminUserByEmail(req.body.email);
 
     if (adminUser) {
-      console.log("This user is already registered", adminUser);
+      console.log("USER ALREADY REGISTERED", adminUser);
       return res.status(400).send("Admin user already registered");
     }
 
@@ -42,7 +42,7 @@ router.post("/", async (req: Request, res: Response) => {
       _.pick(req.body, ["firstName", "lastName", "email", "password"])
     );
 
-    console.log("Registered admin user:", adminUser);
+    console.log("REGISTERED ADMIN USER:", adminUser);
 
     const token = adminUser.generateAuthToken();
 
@@ -51,7 +51,7 @@ router.post("/", async (req: Request, res: Response) => {
       .header("x-auth-token", token)
       .send(_.pick(adminUser, ["_id", "firstName", "lastName", "email"]));
   } catch (error) {
-    console.error("Error creating admin user:", error);
+    console.error("ERROR CREATING ADMIN USER:", error);
     return res.status(500).send(error);
   }
 });
@@ -65,11 +65,11 @@ router.get("/", async (req: Request, res: Response) => {
       return res.status(404).send("No admins found.");
     }
 
-    console.log("Fetched admins:", admins);
+    console.log("FETCHED ADMIN USERS:", admins);
 
     return res.status(200).send(admins);
   } catch (error) {
-    console.error("An error occurred while fetching admin users:", error);
+    console.error("AN ERROR OCCURED WHILE FETCHING ADMIN USERS:", error);
 
     return res.status(500).send(error);
   }
@@ -77,21 +77,21 @@ router.get("/", async (req: Request, res: Response) => {
 
 // Fetch admin user info
 router.get("/:_id", async (req: Request<AdminParams>, res: Response) => {
-  console.log("ID of admin to fetch:", req.params._id);
+  console.log("ADMIN ID:", req.params._id);
 
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params._id)) {
-      return res.status(400).send("Invalid admin ID");
+      return res.status(400).send("INVALID ADMIN ID");
     }
 
     const admin = await getAdminUserByID(req.params._id);
 
     if (!admin) {
-      console.log("No admin found with the given ID.");
+      console.log("NO ADMIN FOUND WITH THE GIVEN ID.");
       return res.status(404).send("No admin found with the given ID.");
     }
 
-    console.log("Fetched admin:", admin);
+    console.log("FETCHED ADMIN:", admin);
 
     return res.status(200).send({
       firstName: admin.firstName,
@@ -100,7 +100,7 @@ router.get("/:_id", async (req: Request<AdminParams>, res: Response) => {
       notes: admin.notes,
     });
   } catch (error) {
-    console.error("An error occurred while fetching admin user:", error);
+    console.error("AN ERROR OCCURED WHILE FETCHING ADMIN:", error);
 
     return res.status(500).send(error);
   }
@@ -119,16 +119,16 @@ router.put("/:_id", async (req: Request<AdminParams>, res: Response) => {
       return res.status(404).send("No admin found with the given ID.");
     }
 
-    console.log("Admin to update:", admin);
-    console.log("Info to modify:", req.body);
+    console.log("ADMIN TO UPDATE:", admin);
+    console.log("INFO TO MODIFY:", req.body);
 
     const updatedAdmin = await updateAdminUser(req.params._id, req.body);
 
-    console.log("Updated admin:", updatedAdmin);
+    console.log("UPDATED ADMIN:", updatedAdmin);
 
     return res.status(200).send(updatedAdmin);
   } catch (error) {
-    console.error("An error occurred while updating admin info:", error);
+    console.error("AN ERROR OCCURED WHILE UPDATING ADMIN INFO:", error);
 
     return res.status(500).send(error);
   }

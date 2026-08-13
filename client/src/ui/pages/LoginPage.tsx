@@ -67,7 +67,7 @@ const LoginPage = () => {
           offlineUser.lastName,
           offlineUser.email,
           offlineUser.role,
-          offlineUser.notes
+          offlineUser.notes ?? ""
         );
 
         navigate("/admin", { replace: true });
@@ -98,7 +98,7 @@ const LoginPage = () => {
           adminUser.lastName,
           adminUser.email,
           adminUser.role,
-          adminUser.notes
+          adminUser.notes ?? ""
         );
 
         navigate("/admin", { replace: true });

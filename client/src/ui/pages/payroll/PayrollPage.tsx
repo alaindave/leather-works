@@ -283,7 +283,7 @@ export default function PayrollPage() {
                                 color="gray.800"
                                 borderRadius="10px"
                                 _hover={{
-                                  bg: "rgba(255,0,0,0.08)",
+                                  bg: "transparent",
                                 }}
                                 onClick={() => withdraw(run._id)}
                               >
@@ -331,7 +331,7 @@ export default function PayrollPage() {
                                 color="gray.800"
                                 borderRadius="10px"
                                 _hover={{
-                                  bg: "rgba(255,0,0,0.08)",
+                                  bg: "transparent",
                                 }}
                                 onClick={() => handleDelete(run._id)}
                               >
