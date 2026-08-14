@@ -62,6 +62,11 @@ import {
   upsertPayrollResult,
   upsertPayrollRun,
 } from "../../database/repositories/payroll_run.repository.js";
+import { PayrollSettings } from "../../../common/types/payroll/Payroll.js";
+import {
+  markPayrollSettingsSynced,
+  upsertPayrollSettings,
+} from "../../database/repositories/payroll_settings.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -86,6 +91,7 @@ export async function pullLatestChanges() {
       attendances,
       leaves,
       tasks,
+      payrollSettings,
       payrollComponents,
       payrollEmployeeProfiles,
       payrollRuns,
@@ -101,6 +107,7 @@ export async function pullLatestChanges() {
     console.log("FETCHED ATTENDANCES:", attendances);
     console.log("FETCHED LEAVES:", leaves);
     console.log("FETCHED TASKS:", tasks);
+    console.log("FETCHED PAYROLL SETTINGS:", payrollSettings);
     console.log("FETCHED PAYROLL COMPONENTS:", payrollComponents);
     console.log("FETCHED PAYROLL EMPLOYEE PROFILES:", payrollEmployeeProfiles);
     console.log("FETCHED PAYROLL RUNS:", payrollRuns);
@@ -114,6 +121,7 @@ export async function pullLatestChanges() {
     await syncAttendances(attendances);
     await syncLeaves(leaves);
     await syncTasks(tasks);
+    await syncPayrollSettings(payrollSettings);
     await syncPayrollComponents(payrollComponents);
     await syncPayrollEmployeeProfiles(payrollEmployeeProfiles);
     await syncPayrollRuns(payrollRuns);
@@ -293,6 +301,19 @@ async function syncEmployeeDocuments(employeeDocuments: EmployeeDocument[]) {
     } catch (error) {
       console.error(`FAILED TO SYNC DOCUMENT ${document._id}`, error);
     }
+  }
+}
+
+async function syncPayrollSettings(payrollSettings: PayrollSettings) {
+  try {
+    await upsertPayrollSettings(payrollSettings);
+    await markPayrollSettingsSynced(payrollSettings._id);
+  } catch (error) {
+    console.error(
+      "FAILED TO SYNC PULLED PAYROLL SETTINGS:",
+      payrollSettings._id,
+      error
+    );
   }
 }
 

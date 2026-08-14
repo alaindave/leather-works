@@ -6,7 +6,6 @@ import {
   TableContainer,
   Tbody,
   Td,
-  Text,
   Th,
   Thead,
   Tr,
@@ -14,17 +13,12 @@ import {
 import { ViewIcon, DownloadIcon } from "@chakra-ui/icons";
 import { LuPrinter } from "react-icons/lu";
 import { PayrollResult } from "../../common/types/payroll/Payroll";
+import { formatCurrency } from "../util/currencyFormatter";
+import { usePayrollSettings } from "../hooks/payroll_settings.hook";
 
 interface Props {
   payrollResults: PayrollResult[];
 }
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("fr-BI", {
-    style: "currency",
-    currency: "FBU",
-    maximumFractionDigits: 0,
-  }).format(value);
 
 const statusColor = {
   BROUILLON: "yellow",
@@ -35,6 +29,9 @@ const statusColor = {
 } as const;
 
 export default function PayrollResultsTable({ payrollResults }: Props) {
+  const payrollSettings = usePayrollSettings();
+  const currency = payrollSettings?.currency ?? "BIF";
+
   return (
     <TableContainer
       height="50vh"
@@ -88,16 +85,18 @@ export default function PayrollResultsTable({ payrollResults }: Props) {
 
               <Td fontSize="0.9rem">{result.department}</Td>
 
-              <Td isNumeric>{formatCurrency(result.baseSalary)}</Td>
+              <Td isNumeric>{formatCurrency(result.baseSalary, currency)}</Td>
 
-              <Td isNumeric>{formatCurrency(result.totalEarnings)}</Td>
+              <Td isNumeric>
+                {formatCurrency(result.totalEarnings, currency)}
+              </Td>
 
               <Td isNumeric color="red.500">
-                {formatCurrency(result.totalDeductions)}
+                {formatCurrency(result.totalDeductions, currency)}
               </Td>
 
               <Td isNumeric fontWeight="bold" color="green.500">
-                {formatCurrency(result.netSalary)}
+                {formatCurrency(result.netSalary, currency)}
               </Td>
 
               <Td>

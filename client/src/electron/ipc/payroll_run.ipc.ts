@@ -16,9 +16,11 @@ import {
   approvePayrollRun,
   paymentPayrollRun,
 } from "../database/repositories/payroll_run.repository.js";
+import { getPayrollSettings } from "../database/repositories/payroll_settings.repository.js";
 import User from "../../common/types/User.js";
 import AdminUser from "../../common/types/AdminUser.js";
 import { validatePayrolls } from "../services/payroll/validatePayroll.js";
+import { getPayrollAttendanceSummary } from "../database/repositories/attendances.repository.js";
 
 export function registerPayrollGenerationIPC() {
   console.log("REGISTERING PAYROLL GENERATION IPC");
@@ -27,14 +29,65 @@ export function registerPayrollGenerationIPC() {
   ipcMain.handle(
     "payroll:createDraft",
     async (_, admin: Omit<User, "password" | "notes">) => {
+      // Current payroll period
+      const date = new Date();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+
+      //  Fetch payroll settings
+      const payrollSettings = await getPayrollSettings();
+      if (!payrollSettings) {
+        throw new Error(
+          "PAYROLL SETTINGS NOT FOUND. PLEASE CONFIGURE PAYROLL SETTINGS FIRST."
+        );
+      }
+      console.log("PAYROLL SETTINGS:", payrollSettings);
+
+      // Employee payroll inputs
       const inputs = await getAllEmployeePayrollInputs();
-      console.log("FTECHED PAYROLL INPUTS");
-      const validation = validatePayrolls(inputs);
+
+      console.log(
+        `FETCHED ${inputs.length} EMPLOYEE PAYROLL INPUTS FOR ${month}/${year}`
+      );
+
+      // Fetch attendance summary
+      const payrollInputsWithAttendance = await Promise.all(
+        inputs.map(async (employee) => {
+          const attendance = await getPayrollAttendanceSummary(
+            employee.employeeId,
+            month,
+            year
+          );
+          console.log(`ATTENDANCE FOR ${employee.employeeId}:`, attendance);
+
+          return {
+            ...employee,
+            attendance,
+          };
+        })
+      );
+
+      // Validate payroll
+      const validation = validatePayrolls(payrollInputsWithAttendance);
+
       if (!validation.valid) {
         throw new Error(validation.message);
       }
-      const batch = calculatePayrollsWithSummary(inputs, admin);
+
+      // Calculate payroll
+
+      const batch = await calculatePayrollsWithSummary(
+        payrollInputsWithAttendance,
+        admin,
+        payrollSettings
+      );
+
+      // Create payroll run
+
       const payrollRun = await createPayrollRun(batch, admin);
+
+      // Save payroll results
+
       await savePayrollResults(payrollRun._id, batch.results);
 
       return {

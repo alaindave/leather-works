@@ -7,7 +7,7 @@ const defaultPayrollComponents = [
   // ==========================
 
   {
-    name: "BASIC_SALARY",
+    name: "BASE_SALARY",
     displayName: "Salaire de base",
     type: "EARNING",
     calculationType: "MANUEL",
@@ -104,7 +104,7 @@ const defaultPayrollComponents = [
     name: "TAX",
     displayName: "IPR",
     type: "DEDUCTION",
-    calculationType: "FORMULE",
+    calculationType: "FORMULE_IPR",
     calculationBase: "TAXABLE_SALARY",
     isSystem: 1,
     displayOrder: 102,
@@ -127,7 +127,8 @@ const defaultPayrollComponents = [
     name: "ABSENCE",
     displayName: "Retenue pour absence",
     type: "DEDUCTION",
-    calculationType: "MANUEL",
+    calculationType: "FORMULE_ABSENCE",
+    calculationBase: "BASE_SALARY",
     isSystem: 1,
     displayOrder: 104,
     requiresHRApproval: 1,
@@ -138,7 +139,8 @@ const defaultPayrollComponents = [
     name: "LATE_PENALTY",
     displayName: "Retenue pour retard",
     type: "DEDUCTION",
-    calculationType: "MANUEL",
+    calculationType: "FORMULE_RETARD",
+    calculationBase: "BASE_SALARY",
     isSystem: 1,
     displayOrder: 105,
     requiresHRApproval: 1,

@@ -17,6 +17,7 @@ import {
   syncPayrollRun,
   syncPayrollResult,
   syncPayrollItem,
+  syncPayrollSettings,
 } from "../sync.js";
 
 import Employee from "../models/employeeModel.js";
@@ -30,6 +31,7 @@ import PayrollEmployeeProfile from "../models/payrollEmployeeProfileModel.js";
 import PayrollResult from "../models/payrollResultModel.js";
 import PayrollItem from "../models/payrollItemModel.js";
 import PayrollRun from "../models/payrollRunModel.js";
+import PayrollSettings from "../models/payrollSettingsModel.js";
 
 const router = express.Router();
 
@@ -121,6 +123,10 @@ router.post(
               break;
             }
 
+            case "payroll_settings":
+              await syncPayrollSettings(operation, data);
+              break;
+
             case "payroll_component":
               await syncPayrollComponent(operation, data);
               break;
@@ -186,6 +192,7 @@ router.get(
         attendances,
         leaves,
         tasks,
+        payrollSettings,
         payrollComponents,
         payrollEmployeeProfiles,
         payrollRuns,
@@ -215,6 +222,10 @@ router.get(
         }).lean(),
 
         Task.find({
+          updatedAt: { $gt: date },
+        }).lean(),
+
+        PayrollSettings.find({
           updatedAt: { $gt: date },
         }).lean(),
 
@@ -249,6 +260,7 @@ router.get(
         attendances,
         leaves,
         tasks,
+        payrollSettings,
         payrollComponents,
         payrollEmployeeProfiles,
         payrollRuns,

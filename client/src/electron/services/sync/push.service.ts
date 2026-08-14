@@ -23,6 +23,7 @@ import {
   markPayrollResultSynced,
   markPayrollRunSynced,
 } from "../../database/repositories/payroll_run.repository.js";
+import { markPayrollSettingsSynced } from "../../database/repositories/payroll_settings.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -132,6 +133,10 @@ export async function pushPendingChanges() {
 
       case "task_comment":
         await markTaskCommentsSynced(data._id);
+        break;
+
+      case "payroll_settings":
+        await markPayrollSettingsSynced(data._id);
         break;
 
       case "payroll_component":

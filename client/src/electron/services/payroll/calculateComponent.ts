@@ -1,16 +1,8 @@
+import { PayrollCalculationContext } from "../../../common/types/payroll/Payroll.js";
+import { calculateAbsenceDeduction } from "./calculateAbsentDeduction.js";
 import calculateIPR from "./calculateIPR.js";
-import { PayrollComponentInput } from "./types.js";
-
-export interface PayrollCalculationContext {
-  employeeId?: string;
-  baseSalary: number;
-  grossSalary: number;
-  taxableSalary: number;
-  socialRate?: number;
-  totalEarnings: number;
-  totalDeductions: number;
-  netSalary: number;
-}
+import { PayrollComponentInput } from "../../../common/types/payroll/Payroll.js";
+import { calculateLateDeduction } from "./calculateLateDeduction.js";
 
 export function calculateComponent(
   component: PayrollComponentInput,
@@ -35,7 +27,7 @@ export function calculateComponent(
     case "QUANTITE_TAUX":
       return (component.quantity ?? 0) * (component.rate ?? 0);
 
-    case "FORMULE": {
+    case "FORMULE_IPR": {
       console.log(
         `TAXABLE SALARY FOR EMPLOYEE ID ${context.employeeId} IS ${context.taxableSalary}.
         THE GROSS SALARY IS ${context.grossSalary}
@@ -46,6 +38,34 @@ export function calculateComponent(
         context.taxableSalary,
         context.grossSalary,
         context.socialRate
+      );
+    }
+
+    case "FORMULE_ABSENCE": {
+      console.log(
+        `BASE SALARY FOR EMPLOYEE ID ${context.employeeId} IS ${context.baseSalary}.
+        THE GROSS SALARY IS ${context.grossSalary}
+        `
+      );
+      return calculateAbsenceDeduction(
+        context.employeeId,
+        context.baseSalary,
+        context.absentDays,
+        context.payrollSettings
+      );
+    }
+
+    case "FORMULE_RETARD": {
+      console.log(
+        `BASE SALARY FOR EMPLOYEE ID ${context.employeeId} IS ${context.baseSalary}.
+        THE GROSS SALARY IS ${context.grossSalary}
+        `
+      );
+      return calculateLateDeduction(
+        context.employeeId,
+        context.baseSalary,
+        context.totalLateMinutes,
+        context.payrollSettings
       );
     }
 

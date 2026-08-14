@@ -14,15 +14,17 @@ export interface PayrollEmployeeProfileDocument {
     | "POURCENTAGE_BASE"
     | "POURCENTAGE_BRUT"
     | "POURCENTAGE_IMPOSABLE"
-    | "FORMULE";
-  calculationBase:
+    | "FORMULE"
+    | "FORMULE_IPR"
+    | "FORMULE_ABSENCE"
+    | "FORMULE_RETARD";
+  calculationBase?:
     | "BASE_SALARY"
     | "GROSS_SALARY"
     | "TAXABLE_SALARY"
     | "TOTAL_EARNINGS"
     | "TOTAL_DEDUCTIONS"
-    | "NET_SALARY"
-    | null;
+    | "NET_SALARY";
   value: number;
   taxable: number;
   requiresHRApproval: number;
@@ -86,7 +88,9 @@ const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
         "POURCENTAGE_BASE",
         "POURCENTAGE_BRUT",
         "POURCENTAGE_IMPOSABLE",
-        "FORMULE",
+        "FORMULE_IPR",
+        "FORMULE_ABSENCE",
+        "FORMULE_RETARD",
       ],
       required: true,
     },
@@ -94,10 +98,12 @@ const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
     calculationBase: {
       type: String,
       enum: [
-        "BASIC_SALARY",
+        "BASE_SALARY",
         "GROSS_SALARY",
-        "TOTAL_EARNINGS",
         "TAXABLE_SALARY",
+        "TOTAL_EARNINGS",
+        "TOTAL_DEDUCTIONS",
+        "NET_SALARY",
       ],
     },
 

@@ -1,20 +1,21 @@
-import AdminUser, {
+import AdminUser from "../../../common/types/AdminUser.js";
+import {
   PayrollEmployeeInput,
   PayrollResult,
   PayrollItem,
   PayrollBatchResult,
-} from "./types.js";
-
-import {
-  calculateComponent,
   PayrollCalculationContext,
-} from "./calculateComponent.js";
+} from "../../../common/types/payroll/Payroll.js";
+import { PayrollSettings } from "../../../common/types/payroll/Payroll.js";
+
+import { calculateComponent } from "./calculateComponent.js";
 
 // Calculate payroll for one employee
-export function calculatePayroll(
+export async function calculatePayroll(
   employee: PayrollEmployeeInput,
-  admin: AdminUser
-): PayrollResult {
+  admin: AdminUser,
+  payrollSettings: PayrollSettings
+): Promise<PayrollResult> {
   const earnings: PayrollItem[] = [];
   const deductions: PayrollItem[] = [];
   const baseSalary = employee.baseSalary;
@@ -25,6 +26,9 @@ export function calculatePayroll(
   const date = new Date();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
+  const lateDays = employee.attendance?.lateDays;
+  const totalLateMinutes = employee.attendance?.totalLateMinutes;
+  const absentDays = employee.attendance?.absentDays;
 
   /*
    * ============================================================
@@ -38,15 +42,19 @@ export function calculatePayroll(
     if (component.type !== "EARNING") continue;
 
     const context: PayrollCalculationContext = {
+      payrollSettings,
       baseSalary,
       grossSalary,
+      lateDays: lateDays ?? 0,
+      totalLateMinutes: totalLateMinutes ?? 0,
+      absentDays: absentDays ?? 0,
       taxableSalary: grossSalary,
       totalEarnings,
       totalDeductions,
       netSalary: grossSalary - totalDeductions,
     };
 
-    const amount = calculateComponent(component, context);
+    const amount = await calculateComponent(component, context);
 
     earnings.push({
       componentId: component._id,
@@ -89,8 +97,12 @@ export function calculatePayroll(
       socialRate = component.value ?? 0;
     }
     const context: PayrollCalculationContext = {
+      payrollSettings,
       employeeId: employee.employeeId,
       baseSalary,
+      lateDays: lateDays ?? 0,
+      totalLateMinutes: totalLateMinutes ?? 0,
+      absentDays: absentDays ?? 0,
       grossSalary,
       taxableSalary,
       socialRate,
@@ -99,7 +111,7 @@ export function calculatePayroll(
       netSalary: grossSalary - totalDeductions,
     };
 
-    const amount = calculateComponent(component, context);
+    const amount = await calculateComponent(component, context);
 
     deductions.push({
       componentId: component._id,
@@ -144,19 +156,25 @@ export function calculatePayroll(
 }
 
 // Calculate payroll for all employees
-export function calculatePayrolls(
+export async function calculatePayrolls(
   employees: PayrollEmployeeInput[],
-  admin: AdminUser
-): PayrollResult[] {
-  return employees.map((employee) => calculatePayroll(employee, admin));
+  admin: AdminUser,
+  payrollSettings: PayrollSettings
+): Promise<PayrollResult[]> {
+  return Promise.all(
+    employees.map((employee) =>
+      calculatePayroll(employee, admin, payrollSettings)
+    )
+  );
 }
 
 // Calculate payroll and return summary
-export function calculatePayrollsWithSummary(
+export async function calculatePayrollsWithSummary(
   employees: PayrollEmployeeInput[],
-  admin: AdminUser
-): PayrollBatchResult {
-  const results = calculatePayrolls(employees, admin);
+  admin: AdminUser,
+  payrollSettings: PayrollSettings
+): Promise<PayrollBatchResult> {
+  const results = await calculatePayrolls(employees, admin, payrollSettings);
 
   return {
     results,
@@ -177,6 +195,7 @@ export function calculatePayrollsWithSummary(
       (sum, result) => sum + result.totalDeductions,
       0
     ),
+
     totalNetSalary: results.reduce((sum, result) => sum + result.netSalary, 0),
   };
 }

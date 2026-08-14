@@ -30,8 +30,8 @@ import {
   MdPayment,
 } from "react-icons/md";
 import { PiCreditCardLight } from "react-icons/pi";
+import { FaDollarSign } from "react-icons/fa";
 import { Link, useLocation, useParams } from "react-router-dom";
-import Attendance from "../../../common/types/Attendance";
 import Employee from "../../../common/types/Employee";
 import { PayrollResult } from "../../../common/types/payroll/Payroll";
 import { PayrollItem } from "../../../common/types/payroll/Payroll";
@@ -39,6 +39,7 @@ import defaultAvatar from "../../assets/default-avatar.jpeg";
 import PayslipItemDisplay from "../../components/payroll/PayslipItemDisplay";
 import { formatCurrency } from "../../util/currencyFormatter";
 import { getPayrollPeriod } from "../../util/getPayrollPeriod";
+import { usePayrollSettings } from "../../hooks/payroll_settings.hook";
 
 type EmployeeState = {
   employee?: Employee;
@@ -46,10 +47,6 @@ type EmployeeState = {
 
 type PhotoState = {
   photo_url?: string;
-};
-
-type AttendanceState = {
-  attendance?: Attendance;
 };
 
 const EmployeePayslipDetails = () => {
@@ -63,21 +60,18 @@ const EmployeePayslipDetails = () => {
   const [payrollItems, setPayrollItems] = useState<PayrollItem[] | null>([]);
   console.log("Employee ID:", employeeId);
   console.log("PAYROLL ID", payslipId);
-
   const earnings = payrollItems?.filter((p) => p.type === "EARNING") ?? [];
-
   const deductions = payrollItems?.filter((p) => p.type === "DEDUCTION") ?? [];
-
   const totalEarnings = earnings.reduce(
     (total, item) => total + item.amount,
     0
   );
-
   const totalDeductions = deductions.reduce(
     (total, item) => total + item.amount,
     0
   );
-
+  const payrollSettings = usePayrollSettings();
+  const currency = payrollSettings?.currency ?? "BIF";
   const statusColor = {
     BROUILLON: "#e6b800",
     VERIFICATION: "#1a53ff",
@@ -85,7 +79,6 @@ const EmployeePayslipDetails = () => {
     PAYÉ: "pink.600",
     ANNULÉ: "red",
   } as const;
-
   const statusBgColor = {
     BROUILLON: "yellow.200",
     VERIFICATION: "blue.200",
@@ -169,7 +162,7 @@ const EmployeePayslipDetails = () => {
           borderRadius="8px"
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
           mt="1.2rem"
-          ml="4rem"
+          ml="1rem"
           minH="11rem"
           minW="30rem"
         >
@@ -219,19 +212,19 @@ const EmployeePayslipDetails = () => {
           </VStack>
         </Flex>
         {/* Payroll info */}
-        <Box
+        <VStack
           bg="#F8F9FB"
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="8px"
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
           mt="1rem"
-          ml="8rem"
-          height="11rem"
-          width="25rem"
+          ml="0.5rem"
+          height="13rem"
+          width="44vw"
         >
           {/* Periode de paie */}
-          <HStack mt="0.4rem" ml="5rem">
+          <HStack mt="0.4rem" ml="1rem">
             <Box
               borderRadius="0.5rem"
               padding="0.3rem"
@@ -243,8 +236,15 @@ const EmployeePayslipDetails = () => {
               <CiCalendar size="2rem" color="purple.800" />
             </Box>
             <Box>
-              <Text color="gray.500">Periode de paie</Text>
-              <Text position="relative" bottom="1rem" fontWeight="600">
+              <Text color="gray.500" whiteSpace="nowrap">
+                Periode de paie
+              </Text>
+              <Text
+                position="relative"
+                bottom="1rem"
+                fontWeight="600"
+                whiteSpace="nowrap"
+              >
                 {payrollResults?.month && payrollResults?.year
                   ? getPayrollPeriod(payrollResults.month, payrollResults.year)
                   : ""}
@@ -252,7 +252,7 @@ const EmployeePayslipDetails = () => {
             </Box>
           </HStack>
           {/* Payroll status */}
-          <HStack position="relative" bottom="1.5rem" ml="5rem">
+          <HStack mt="0.4rem" ml="1rem">
             <Box
               borderRadius="0.5rem"
               padding="0.3rem"
@@ -280,9 +280,36 @@ const EmployeePayslipDetails = () => {
               </Text>
             </Box>
           </HStack>
+          {/* Creation date */}
+
+          {payrollResults?.status === "BROUILLON" ? (
+            <HStack mt="0.4rem" ml="1rem">
+              <Box
+                borderRadius="0.5rem"
+                padding="0.3rem"
+                bg="red.300"
+                fontSize="1.8rem"
+                position="relative"
+                bottom="0.7rem"
+                mr="1rem"
+              >
+                <MdFreeCancellation />
+              </Box>
+              <Box>
+                <Text color="gray.500">Date de creation</Text>
+                <Text position="relative" bottom="1rem" fontWeight="600">
+                  {payrollResults?.createdAt &&
+                    new Date(payrollResults?.createdAt).toLocaleDateString(
+                      "fr-FR"
+                    )}
+                </Text>
+              </Box>
+            </HStack>
+          ) : null}
+
           {/* Cancellation date */}
           {payrollResults?.status === "ANNULÉ" ? (
-            <HStack position="relative" bottom="3.2rem" ml="5rem">
+            <HStack mt="0.4rem" ml="1rem">
               <Box
                 borderRadius="0.5rem"
                 padding="0.3rem"
@@ -307,7 +334,7 @@ const EmployeePayslipDetails = () => {
           ) : null}
           {/* Date de verification */}
           {payrollResults?.status === "VERIFICATION" ? (
-            <HStack position="relative" bottom="3rem" ml="5rem">
+            <HStack mt="0.4rem" ml="1rem">
               <Box
                 borderRadius="0.5rem"
                 padding="0.3rem"
@@ -320,7 +347,9 @@ const EmployeePayslipDetails = () => {
                 <FaRegCalendarCheck color="purple.500" />
               </Box>
               <Box>
-                <Text color="gray.500">Soumise pour verification</Text>
+                <Text color="gray.500" whiteSpace="nowrap">
+                  Soumise pour verification
+                </Text>
                 <HStack>
                   <Text position="relative" bottom="1rem" fontWeight="600">
                     {payrollResults?.verifiedAt &&
@@ -419,7 +448,7 @@ const EmployeePayslipDetails = () => {
               </Box>
             </HStack>
           ) : null}
-        </Box>
+        </VStack>
       </Flex>
       {/* Salary breakdown */}
       <HStack
@@ -429,41 +458,47 @@ const EmployeePayslipDetails = () => {
         borderRadius="8px"
         boxShadow="0 2px 8px rgba(0,0,0,0.5)"
         height="15vh"
-        width="70vw"
+        width="78vw"
         mt="0.5rem"
-        ml="4rem"
+        ml="1rem"
         gap={10}
         padding={10}
       >
         <PayslipItemDisplay
           itemName="Salaire de base"
-          amount={payrollResults?.baseSalary!}
+          amount={payrollResults?.baseSalary ?? 0}
           icon={IoWalletOutline}
           color="green"
         />
         <PayslipItemDisplay
           itemName="Remunerations"
-          amount={payrollResults?.totalEarnings!}
+          amount={payrollResults?.totalEarnings ?? 0}
           icon={FaArrowTrendUp}
           color="blue"
         />
         <PayslipItemDisplay
+          itemName="Salaire brut"
+          amount={payrollResults?.grossSalary ?? 0}
+          icon={FaDollarSign}
+          color="purple"
+        />
+        <PayslipItemDisplay
           itemName="Deductions"
-          amount={payrollResults?.totalDeductions!}
+          amount={payrollResults?.totalDeductions ?? 0}
           icon={FaArrowDownLong}
           color="red"
         />
         <PayslipItemDisplay
           itemName="Salaire net"
-          amount={payrollResults?.netSalary!}
+          amount={payrollResults?.netSalary ?? 0}
           icon={PiCreditCardLight}
           color="purple"
         />
       </HStack>
       {/* Earnings and deductions breakdown */}
       <HStack
-        ml="4rem"
-        mt="1rem"
+        ml="1rem"
+        mt="0.5rem"
         spacing="1rem"
         width="calc(100% - 4rem)"
         height="400px"
@@ -471,8 +506,8 @@ const EmployeePayslipDetails = () => {
       >
         {/* Earnings */}
         <Box
-          width="35vw"
-          maxHeight="40vh"
+          width="40vw"
+          maxHeight="43vh"
           overflow="hidden"
           border="1px solid"
           bg="#ffffff"
@@ -486,7 +521,7 @@ const EmployeePayslipDetails = () => {
               tableLayout: "fixed",
             }}
             height="100%"
-            maxHeight="40vh"
+            maxHeight="43vh"
             overflowY="auto"
           >
             <Thead>
@@ -502,7 +537,7 @@ const EmployeePayslipDetails = () => {
               {earnings.map((item) => (
                 <Tr key={item.componentId}>
                   <Td>{item.displayName}</Td>
-                  <Td isNumeric>{formatCurrency(item.amount)}</Td>
+                  <Td isNumeric>{formatCurrency(item.amount, currency)}</Td>
                 </Tr>
               ))}
             </Tbody>
@@ -524,7 +559,7 @@ const EmployeePayslipDetails = () => {
                   fontWeight="800"
                   isNumeric
                 >
-                  {formatCurrency(totalEarnings)}
+                  {formatCurrency(totalEarnings, currency)}
                 </Th>
               </Tr>
             </Tfoot>
@@ -532,10 +567,11 @@ const EmployeePayslipDetails = () => {
         </Box>
         {/* Deductions */}
         <Box
-          width="34vw"
+          ml="0.1rem"
+          width="40vw"
           height="100%"
           overflow="hidden"
-          maxHeight="40vh"
+          maxHeight="43vh"
           border="1px solid"
           borderColor="#D1D9E0"
           borderRadius="8px"
@@ -548,6 +584,7 @@ const EmployeePayslipDetails = () => {
             }}
             height="100%"
             overflowY="auto"
+            maxHeight="43vh"
           >
             <Thead>
               <Tr>
@@ -562,7 +599,7 @@ const EmployeePayslipDetails = () => {
               {deductions.map((item) => (
                 <Tr key={item.componentId}>
                   <Td>{item.displayName}</Td>
-                  <Td isNumeric>{formatCurrency(item.amount)}</Td>
+                  <Td isNumeric>{formatCurrency(item.amount, currency)}</Td>
                 </Tr>
               ))}
             </Tbody>
@@ -584,7 +621,7 @@ const EmployeePayslipDetails = () => {
                   fontWeight="800"
                   isNumeric
                 >
-                  {formatCurrency(totalDeductions)}
+                  {formatCurrency(totalDeductions, currency)}
                 </Th>
               </Tr>
             </Tfoot>

@@ -7,7 +7,9 @@ export type PayrollCalculationType =
   | "POURCENTAGE_IMPOSABLE"
   | "MANUEL"
   | "QUANTITE_TAUX"
-  | "FORMULE";
+  | "FORMULE_IPR"
+  | "FORMULE_ABSENCE"
+  | "FORMULE_RETARD";
 
 export default interface PayrollComponent {
   _id: string;
@@ -15,14 +17,13 @@ export default interface PayrollComponent {
   displayName: string;
   type: PayrollComponentType;
   calculationType: PayrollCalculationType;
-  calculationBase:
+  calculationBase?:
     | "BASE_SALARY"
     | "GROSS_SALARY"
     | "TAXABLE_SALARY"
     | "TOTAL_EARNINGS"
     | "TOTAL_DEDUCTIONS"
-    | "NET_SALARY"
-    | null;
+    | "NET_SALARY";
   defaultValue?: number | null;
   taxable?: number;
   displayOrder: number;

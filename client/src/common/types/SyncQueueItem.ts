@@ -9,6 +9,7 @@ export default interface SyncQueueItem {
     | "user_notes"
     | "employee_photo"
     | "employee_document"
+    | "payroll_settings"
     | "payroll_component"
     | "payroll_profile"
     | "payroll_run"

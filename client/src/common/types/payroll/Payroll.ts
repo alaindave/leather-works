@@ -1,3 +1,16 @@
+export interface PayrollSettings {
+  _id: string;
+  currency: string;
+  workingDays: number;
+  workingHours: number;
+  paymentDay: number;
+  synced: number;
+  createdAt: string;
+  updatedAt: string;
+  lastSyncedAt?: string;
+  isDeleted: number;
+}
+
 export type PayrollStatus =
   | "BROUILLON"
   | "VERIFICATION"
@@ -40,6 +53,7 @@ export interface PayrollRun {
 
 export interface PayrollResult {
   _id?: string;
+  generatedBy: string;
   payrollRunId?: string;
   month: number;
   year: number;
@@ -49,6 +63,7 @@ export interface PayrollResult {
   department?: string;
   baseSalary: number;
   grossSalary: number;
+  taxableSalary: number;
   earnings: PayrollItem[];
   deductions: PayrollItem[];
   totalEarnings: number;
@@ -73,7 +88,9 @@ export type CalculationType =
   | "POURCENTAGE_IMPOSABLE"
   | "MANUEL"
   | "QUANTITE_TAUX"
-  | "FORMULE";
+  | "FORMULE_IPR"
+  | "FORMULE_ABSENCE"
+  | "FORMULE_RETARD";
 
 export interface PayrollComponentInput {
   _id?: string;
@@ -82,26 +99,19 @@ export interface PayrollComponentInput {
   displayOrder: number;
   type: PayrollComponentType;
   calculationType: CalculationType;
-  calculationBase:
+  calculationBase?:
     | "BASE_SALARY"
     | "GROSS_SALARY"
     | "TAXABLE_SALARY"
     | "TOTAL_EARNINGS"
     | "TOTAL_DEDUCTIONS"
-    | "NET_SALARY"
-    | null;
+    | "NET_SALARY";
   value?: number | null;
   quantity?: number | null;
   rate?: number | null;
   formula?: string | null;
   taxable?: number;
   enabled: number;
-}
-
-export interface PayrollEmployeeInput {
-  employeeId: string;
-  baseSalary: number;
-  components: PayrollComponentInput[];
 }
 
 export interface PayrollItem {
@@ -118,6 +128,66 @@ export interface PayrollItem {
   taxable?: number;
   quantity?: number;
   notes?: string;
+  synced?: number;
+  isDeleted?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
+}
+
+//Payroll Summary interface
+export interface PayrollBatchResult {
+  results: PayrollResult[];
+  employeeCount: number;
+  totalBasicSalary: number;
+  totalEarnings: number;
+  totalDeductions: number;
+  totalNetSalary: number;
+}
+
+export interface PayrollAttendanceSummary {
+  employeeId: string;
+  lateDays: number;
+  totalLateMinutes: number;
+  absentDays: number;
+}
+
+export interface PayrollEmployeeInput {
+  employeeId: string;
+  attendance?: PayrollAttendanceSummary;
+  baseSalary: number;
+  components: PayrollComponentInput[];
+}
+
+export interface PayrollCalculationContext {
+  employeeId?: string;
+  payrollSettings: PayrollSettings;
+  lateDays: number;
+  totalLateMinutes: number;
+  absentDays: number;
+  baseSalary: number;
+  grossSalary: number;
+  taxableSalary: number;
+  socialRate?: number;
+  totalEarnings: number;
+  totalDeductions: number;
+  netSalary: number;
+}
+
+export interface PayrollItem {
+  _id?: string;
+  payrollResultId?: string;
+  componentId?: string;
+  name: string;
+  displayName?: string;
+  type: PayrollComponentType;
+  amount: number;
+  // Fields for audit
+  calculationMethod?: string; // "Fixed", "Percentage", "Formula"
+  rate?: number; // e.g. 3 for 3%
+  taxable?: number;
+  quantity?: number; // e.g. overtime hours
+  notes?: string; // "15 overtime hours × 5,000 BIF"
   synced?: number;
   isDeleted?: number;
   createdAt?: string;

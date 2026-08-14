@@ -178,6 +178,35 @@ declare global {
         delete: (_id: string) => Promise<LeaveWithEmployee>;
       };
 
+      payrollSettings: {
+        get: () => Promise<PayrollSettings | null>;
+        getById: (_id: string) => Promise<PayrollSettings | null>;
+        create: (data: {
+          currency: string;
+          workingDays: number;
+          workingHours: number;
+          paymentDay: number;
+        }) => Promise<PayrollSettings>;
+        update: (settings: PayrollSettings) => Promise<PayrollSettings>;
+        updateFields: (
+          _id: string,
+          fields: Partial<
+            Pick<
+              PayrollSettings,
+              "currency" | "workingDays" | "workingHours" | "paymentDay"
+            >
+          >
+        ) => Promise<PayrollSettings>;
+        delete: (_id: string) => Promise<{
+          success: boolean;
+        }>;
+        restore: (_id: string) => Promise<PayrollSettings>;
+        markSynced: (_id: string) => Promise<{
+          success: boolean;
+        }>;
+        getUnsynced: () => Promise<PayrollSettings[]>;
+      };
+
       payrollComponents: {
         create: (component: PayrollComponent) => Promise<PayrollComponent>;
         getAll: (type?: "EARNING" | "DEDUCTION") => Promise<PayrollComponent[]>;

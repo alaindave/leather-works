@@ -2,8 +2,8 @@ import { Box, Flex, HStack, Text } from "@chakra-ui/react";
 import { BsFillPeopleFill } from "react-icons/bs";
 import { FaRegArrowAltCircleDown, FaRegCreditCard } from "react-icons/fa";
 import { IoWalletOutline } from "react-icons/io5";
-
 import { formatCurrency } from "../util/currencyFormatter";
+import { usePayrollSettings } from "../hooks/payroll_settings.hook";
 
 interface Props {
   employeeCount: number;
@@ -20,6 +20,9 @@ const PayrollDashboard = ({
   totalDeductions,
   totalNetSalary,
 }: Props) => {
+  const payrollSettings = usePayrollSettings();
+  const currency = payrollSettings?.currency ?? "BIF";
+
   return (
     <Flex position="relative" bottom="2rem" justify="space-evenly" width="100%">
       <Box
@@ -112,7 +115,7 @@ const PayrollDashboard = ({
           top="1.8rem"
           fontWeight="700"
         >
-          {formatCurrency(totalBasicSalary)}
+          {formatCurrency(totalBasicSalary, currency)}
         </Text>
       </Box>
 
@@ -158,7 +161,7 @@ const PayrollDashboard = ({
           left="3.5rem"
           fontWeight="700"
         >
-          {formatCurrency(totalEarnings)}
+          {formatCurrency(totalEarnings, currency)}
         </Text>
       </Box>
       <Box
@@ -203,7 +206,7 @@ const PayrollDashboard = ({
           left="2rem"
           fontWeight="700"
         >
-          {formatCurrency(totalDeductions)}
+          {formatCurrency(totalDeductions, currency)}
         </Text>
       </Box>
       <Box
@@ -248,7 +251,7 @@ const PayrollDashboard = ({
           left="1.5rem"
           fontWeight="700"
         >
-          {formatCurrency(totalNetSalary)}
+          {formatCurrency(totalNetSalary, currency)}
         </Text>
       </Box>
     </Flex>

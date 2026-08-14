@@ -2,6 +2,22 @@ import { run } from "../db.js";
 
 export async function createPayrollTables() {
   //Creating tables
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS payroll_settings (
+      _id TEXT PRIMARY KEY,
+      currency TEXT NOT NULL,
+      workingDays REAL NOT NULL DEFAULT 25,
+      workingHours REAL NOT NULL DEFAULT 8,
+      paymentDay INTEGER NOT NULL DEFAULT 30,
+      synced INTEGER NOT NULL DEFAULT 0,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL,
+      lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      isDeleted INTEGER NOT NULL DEFAULT 0
+    );
+  `);
+
   await run(`
     CREATE TABLE IF NOT EXISTS payroll_components (
       _id TEXT PRIMARY KEY,
@@ -10,10 +26,10 @@ export async function createPayrollTables() {
       type TEXT NOT NULL
         CHECK(type IN ('EARNING','DEDUCTION')),
       calculationType TEXT NOT NULL
-        CHECK(calculationType IN ('FIXE','MANUEL','POURCENTAGE_BASE','POURCENTAGE_BRUT','POURCENTAGE_IMPOSABLE','FORMULE'))
+        CHECK(calculationType IN ('FIXE','MANUEL','POURCENTAGE_BASE','POURCENTAGE_BRUT','POURCENTAGE_IMPOSABLE','FORMULE_IPR','FORMULE_ABSENCE','FORMULE_RETARD'))
         DEFAULT 'MANUEL',
       calculationBase TEXT
-        CHECK(calculationBase IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_SALARY')),
+        CHECK(calculationBase IN ('BASE_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_SALARY')),
       defaultValue REAL DEFAULT 0,
       displayOrder INTEGER NOT NULL,
       isSystem INTEGER NOT NULL DEFAULT 1,
@@ -38,14 +54,14 @@ export async function createPayrollTables() {
       displayOrder INTEGER NOT NULL,
       type TEXT NOT NULL,
       calculationType TEXT NOT NULL
-        CHECK(calculationType IN ('FIXE','MANUEL','POURCENTAGE_BASE','POURCENTAGE_BRUT','POURCENTAGE_IMPOSABLE','FORMULE'))
+        CHECK(calculationType IN ('FIXE','MANUEL','POURCENTAGE_BASE','POURCENTAGE_BRUT','POURCENTAGE_IMPOSABLE','FORMULE_IPR','FORMULE_ABSENCE','FORMULE_RETARD'))
         DEFAULT 'MANUEL',
       value REAL,
       taxable INTEGER NOT NULL DEFAULT 1,
       isOverridden INTEGER DEFAULT 0,
       requiresHRApproval INTEGER NOT NULL DEFAULT 0,
       calculationBase TEXT
-        CHECK(calculationBase IN ('BASIC_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_SALARY')),
+        CHECK(calculationBase IN ('BASE_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_SALARY')),
       enabled INTEGER DEFAULT 1,
       createdAt TEXT,
       updatedAt TEXT,
@@ -169,7 +185,13 @@ export async function createPayrollTables() {
     );
   `);
 
-  // Creating Index
+  // Creating Indexes
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_payroll_settings_synced
+      ON payroll_settings(synced);
+  `);
+
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_components_type
       ON payroll_components(type);
@@ -178,6 +200,12 @@ export async function createPayrollTables() {
   await run(`
     CREATE INDEX IF NOT EXISTS idx_payroll_components_synced
       ON payroll_components(synced);
+  `);
+
+  await run(`
+   CREATE UNIQUE INDEX IF NOT EXISTS idx_payroll_profile_employee_component
+    ON payroll_employee_profiles(employeeId, componentId)
+   WHERE isDeleted = 0;
   `);
 
   await run(`

@@ -10,6 +10,7 @@ import supabase from "./services/supabase.service.js";
 import PayrollRun from "./models/payrollRunModel.js";
 import PayrollResult from "./models/payrollResultModel.js";
 import PayrollItem from "./models/payrollItemModel.js";
+import PayrollSettings from "./models/payrollSettingsModel.js";
 
 export type SyncOperation = "create" | "update" | "delete";
 
@@ -381,6 +382,48 @@ export async function syncEmployeeDocument(
 }
 
 // ================= PAYROLL =================
+
+export async function syncPayrollSettings(
+  operation: SyncOperation,
+  data: SyncData
+) {
+  switch (operation) {
+    case "delete":
+      await PayrollSettings.updateOne(
+        {
+          _id: data._id,
+        },
+        {
+          $set: {
+            isDeleted: 1,
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      return;
+
+    case "create":
+    case "update":
+      await PayrollSettings.updateOne(
+        {
+          _id: data._id,
+        },
+        {
+          $set: data,
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      return;
+
+    default:
+      throw new Error(`UNSUPPORTED PAYROLL SETTINGS OPERATION: ${operation}`);
+  }
+}
+
 export async function syncPayrollComponent(
   operation: SyncOperation,
   data: SyncData

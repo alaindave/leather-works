@@ -228,6 +228,89 @@ contextBridge.exposeInMainWorld("electron", {
   sync: () => ipcRenderer.invoke("sync:run"),
 
 
+ payrollSettings: {
+  get: () =>
+      ipcRenderer.invoke(
+        "payroll-settings:get"
+      ),
+
+  getById: (_id: string) =>
+      ipcRenderer.invoke(
+        "payroll-settings:getById",
+        _id
+      ),
+
+  create: (data: {
+      currency: string;
+      workingDays: number;
+      workingHours: number;
+      paymentDay: number;
+    }) =>
+      ipcRenderer.invoke(
+        "payroll-settings:create",
+        data
+      ),
+  update: (settings: {
+      _id: string;
+      currency: string;
+      workingDays: number;
+      workingHours: number;
+      paymentDay: number;
+      synced: number;
+      createdAt: string;
+      updatedAt: string;
+      lastSyncedAt?: string;
+      isDeleted: number;
+    }) =>
+      ipcRenderer.invoke(
+        "payroll-settings:update",
+        settings
+      ),
+
+  updateFields: (
+      _id: string,
+      fields: {
+        currency?: string;
+        workingDays?: number;
+        workingHours?: number;
+        paymentDay?: number;
+      }
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-settings:updateFields",
+        _id,
+        fields
+      ),
+
+  delete: (_id: string) =>
+      ipcRenderer.invoke(
+        "payroll-settings:delete",
+        _id
+      ),
+
+  restore: (_id: string) =>
+      ipcRenderer.invoke(
+        "payroll-settings:restore",
+        _id
+      ),
+
+  markSynced: (_id: string) =>
+      ipcRenderer.invoke(
+        "payroll-settings:markSynced",
+        _id
+      ),
+
+  getUnsynced: () =>
+      ipcRenderer.invoke(
+        "payroll-settings:getUnsynced"
+      ),
+  },
+
+
+
+
+
+
  payrollComponents: {
   create: (component:CreatePayrollComponentDto) =>
     ipcRenderer.invoke("payroll-components:create", component),

@@ -4,6 +4,7 @@ import { all, get, run } from "../db.js";
 import { getEmployeeById } from "./employees.repository.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import Employee from "../../../common/types/Employee.js";
+import { PayrollAttendanceSummary } from "../../../common/types/Attendance.js";
 
 export async function createAttendance(employeeId: string, clockIn: string) {
   const employee = await getEmployeeById(employeeId);
@@ -112,6 +113,69 @@ export async function createLeaveAttendance(employeeId: string) {
   });
 
   return getAttendanceById(_id);
+}
+
+export async function getPayrollAttendanceSummary(
+  employeeId: string,
+  month: number,
+  year: number
+): Promise<PayrollAttendanceSummary> {
+  const result = await get<{
+    lateDays: number;
+    totalLateMinutes: number;
+    absentDays: number;
+  }>(
+    `
+    SELECT
+      COUNT(
+        CASE
+          WHEN status = 'RETARD' THEN 1
+        END
+      ) AS lateDays,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN status = 'RETARD'
+            THEN lateMinutes
+            ELSE 0
+          END
+        ),
+        0
+      ) AS totalLateMinutes,
+
+      COUNT(
+        CASE
+          WHEN status = 'ABSENT' THEN 1
+        END
+      ) AS absentDays
+
+    FROM attendances
+
+    WHERE employeeId = ?
+      AND date >= ?
+      AND date < ?
+      AND isDeleted = 0
+    `,
+    [
+      employeeId,
+      `${year}-${String(month).padStart(2, "0")}-01`,
+      getNextMonthDate(year, month),
+    ]
+  );
+
+  return {
+    employeeId,
+    lateDays: result?.lateDays ?? 0,
+    totalLateMinutes: result?.totalLateMinutes ?? 0,
+    absentDays: result?.absentDays ?? 0,
+  };
+}
+
+function getNextMonthDate(year: number, month: number): string {
+  const nextMonth = new Date(year, month, 1);
+
+  return nextMonth.toISOString().split("T")[0];
 }
 
 export async function getEmployeesWhoDidNotClockIn(

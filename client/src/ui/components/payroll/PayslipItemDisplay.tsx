@@ -1,6 +1,7 @@
 import { HStack, Text, Icon as ChakraIcon, Box } from "@chakra-ui/react";
 import { IconType } from "react-icons";
 import { formatCurrency } from "../../util/currencyFormatter";
+import { usePayrollSettings } from "../../hooks/payroll_settings.hook";
 
 interface Props {
   itemName: string;
@@ -10,6 +11,8 @@ interface Props {
 }
 
 const PayslipItemDisplay = ({ itemName, amount, color, icon }: Props) => {
+  const payrollSettings = usePayrollSettings();
+  const currency = payrollSettings?.currency ?? "BIF";
   const cardBgColor = `${color}.50`;
   const iconBgColor = `${color}.100`;
   const iconColor = `${color}.600`;
@@ -38,7 +41,7 @@ const PayslipItemDisplay = ({ itemName, amount, color, icon }: Props) => {
           {itemName}
         </Text>
         <Text fontSize="1.1rem" fontWeight="600">
-          {formatCurrency(amount)}
+          {formatCurrency(amount, currency)}
         </Text>
       </Box>
     </HStack>

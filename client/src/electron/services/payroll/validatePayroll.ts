@@ -1,4 +1,4 @@
-import { PayrollEmployeeInput } from "./types.js";
+import { PayrollEmployeeInput } from "../../../common/types/payroll/Payroll.js";
 
 export interface PayrollValidationResult {
   valid: boolean;
@@ -45,7 +45,9 @@ export function validatePayroll(
         "POURCENTAGE_BASE",
         "POURCENTAGE_BRUT",
         "POURCENTAGE_IMPOSABLE",
-        "FORMULE",
+        "FORMULE_IPR",
+        "FORMULE_ABSENCE",
+        "FORMULE_RETARD",
       ].includes(component.calculationType)
     ) {
       errors.push(`Component "${component.name}": Invalid calculation type.`);

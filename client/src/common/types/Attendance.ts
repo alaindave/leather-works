@@ -14,3 +14,10 @@ export default interface Attendance {
   synced?: number;
   isDeleted?: number;
 }
+
+export interface PayrollAttendanceSummary {
+  employeeId: string;
+  lateDays: number;
+  totalLateMinutes: number;
+  absentDays: number;
+}

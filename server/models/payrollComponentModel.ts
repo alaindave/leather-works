@@ -11,19 +11,20 @@ export interface PayrollComponentDocument {
     | "POURCENTAGE_BASE"
     | "POURCENTAGE_BRUT"
     | "POURCENTAGE_IMPOSABLE"
-    | "FORMULE";
+    | "FORMULE_IPR"
+    | "FORMULE_ABSENCE"
+    | "FORMULE_RETARD";
   defaultValue: number;
   taxable?: Number;
   displayOrder: number;
   isSystem: number;
-  calculationBase:
+  calculationBase?:
     | "BASE_SALARY"
     | "GROSS_SALARY"
     | "TAXABLE_SALARY"
     | "TOTAL_EARNINGS"
     | "TOTAL_DEDUCTIONS"
-    | "NET_SALARY"
-    | null;
+    | "NET_SALARY";
   requiresHRApproval: number | null;
   enabled: number;
   createdAt: Date;
@@ -62,13 +63,22 @@ const PayrollComponentSchema = new Schema<PayrollComponentDocument>({
       "POURCENTAGE_BASE",
       "POURCENTAGE_BRUT",
       "POURCENTAGE_IMPOSABLE",
-      "FORMULE",
+      "FORMULE_IPR",
+      "FORMULE_ABSENCE",
+      "FORMULE_RETARD",
     ],
     default: "MANUEL",
   },
   calculationBase: {
     type: String,
-    enum: ["BASIC_SALARY", "GROSS_SALARY", "TOTAL_EARNINGS", "TAXABLE_SALARY"],
+    enum: [
+      "BASE_SALARY",
+      "GROSS_SALARY",
+      "TAXABLE_SALARY",
+      "TOTAL_EARNINGS",
+      "TOTAL_DEDUCTIONS",
+      "NET_SALARY",
+    ],
   },
   defaultValue: {
     type: Number,

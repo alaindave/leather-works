@@ -14,6 +14,7 @@ import { registerPayrollGenerationIPC } from "./ipc/payroll_run.ipc.js";
 import { registerSyncIPC } from "./ipc/sync.ipc.js";
 import { registerTaskIPC } from "./ipc/tasks.ipc.js";
 import { registerTaskCommentIPC } from "./ipc/tasks_comments.ipc.js";
+import { registerPayrollSettingsIPC } from "./ipc/payroll_settings.ipc.js";
 
 export function registerIPCHandlers() {
   registerAuthIPC();
@@ -28,6 +29,7 @@ export function registerIPCHandlers() {
   registerAdminUsersIPC();
   registerSyncIPC();
   registerAppIPC();
+  registerPayrollSettingsIPC();
   registerPayrollComponentIPC();
   registerPayrollEmployeeProfileIPC();
   registerPayrollGenerationIPC();

@@ -347,7 +347,7 @@ export async function getAllEmployeePayrollInputs(): Promise<
     }
 
     // Base salary is the value of the BASIC_SALARY component
-    if (row.name === "BASIC_SALARY") {
+    if (row.name === "BASE_SALARY") {
       employee.baseSalary = row.value ?? 0;
       continue;
     }
