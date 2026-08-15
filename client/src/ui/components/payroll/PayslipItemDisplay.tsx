@@ -40,7 +40,7 @@ const PayslipItemDisplay = ({ itemName, amount, color, icon }: Props) => {
         <Text fontSize="0.9rem" fontWeight="500">
           {itemName}
         </Text>
-        <Text fontSize="1.1rem" fontWeight="600">
+        <Text whiteSpace="nowrap" fontSize="1.1rem" fontWeight="600">
           {formatCurrency(amount, currency)}
         </Text>
       </Box>

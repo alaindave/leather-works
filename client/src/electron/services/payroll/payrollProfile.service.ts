@@ -42,6 +42,7 @@ export async function initializeEmployeePayrollProfilesForEmployee(
       displayOrder: component.displayOrder,
       type: component.type,
       calculationType: component.calculationType,
+      calculationBase: component.calculationBase,
       value,
       taxable: component.taxable,
       requiresHRApproval: component.requiresHRApproval,
@@ -93,12 +94,12 @@ export async function initializeEmployeePayrollProfiles() {
         componentId: component._id,
         type: component.type,
         calculationType: component.calculationType,
+        calculationBase: component.calculationBase,
         value: value ?? null,
         taxable: component.taxable,
         requiresHRApproval: component.requiresHRApproval,
       });
 
-      // IMPORTANT: remember that we just created it
       existing.add(key);
     }
   }
@@ -146,9 +147,6 @@ export async function addPayrollComponentToAllEmployees(
 /**
  * Applies updated payroll component defaults
  * to employee profiles.
- *
- * Only updates profiles whose values have not
- * been customized.
  */
 export async function updatePayrollComponentDefaults(
   component: PayrollComponent
@@ -163,6 +161,7 @@ export async function updatePayrollComponentDefaults(
     profile.displayName = component.displayName;
     profile.displayOrder = component.displayOrder;
     profile.calculationType = component.calculationType;
+    profile.calculationBase = component.calculationBase;
     profile.value = component.defaultValue ?? null;
     profile.taxable = component.taxable;
     profile.enabled = component.enabled;
@@ -177,8 +176,6 @@ export async function updatePayrollComponentDefaults(
  * Removes payroll components that have been deleted
  * from every employee's payroll profile.
  *
- * Uses soft deletion so the change can be synchronized
- * to the server and retained for audit/history.
  */
 export async function removeDeletedPayrollComponentsFromEmployeeProfiles() {
   console.log("REMOVING DELETED PAYROLL COMPONENTS FROM EMPLOYEE PROFILES...");
@@ -247,6 +244,7 @@ export async function resetEmployeePayrollProfileToDefaults(
     profile.displayOrder = component.displayOrder;
     profile.type = component.type;
     profile.calculationType = component.calculationType;
+    profile.calculationBase = component.calculationBase;
 
     // Use employee salary for BASIC_SALARY
     if (component.name === "BASE_SALARY") {
@@ -254,11 +252,7 @@ export async function resetEmployeePayrollProfileToDefaults(
     } else {
       profile.value = component.defaultValue ?? null;
     }
-
-    if (component.type !== "EARNING") {
-      profile.value = component.defaultValue ?? null;
-    }
-
+    profile.value = component.defaultValue ?? null;
     profile.taxable = component.taxable;
     profile.isOverridden = 0;
     profile.isDeleted = component.isDeleted;

@@ -502,11 +502,11 @@ const EmployeeDetailsPage = () => {
                   <Button
                     bg="red.100"
                     color="red.600"
-                    width="8.5rem"
+                    width="9rem"
                     height="2.3rem"
                     onClick={onOpen}
                     fontSize="1rem"
-                    ml="6rem"
+                    ml="8rem"
                     leftIcon={<FaRegTrashCan fontSize="1.1rem" />}
                   >
                     Supprimer
