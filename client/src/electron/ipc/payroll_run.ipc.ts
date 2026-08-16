@@ -83,11 +83,9 @@ export function registerPayrollGenerationIPC() {
       );
 
       // Create payroll run
-
       const payrollRun = await createPayrollRun(batch, admin);
 
       // Save payroll results
-
       await savePayrollResults(payrollRun._id, batch.results);
 
       return {

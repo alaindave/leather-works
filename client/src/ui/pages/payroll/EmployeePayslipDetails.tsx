@@ -526,41 +526,62 @@ const EmployeePayslipDetails = () => {
         {/* Earnings */}
         <Box
           width="40vw"
-          maxHeight="43vh"
-          overflow="hidden"
+          height="43vh"
           border="1px solid"
           bg="#ffffff"
           borderColor="#D1D9E0"
           borderRadius="8px"
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+          overflow="hidden"
+          display="flex"
+          flexDirection="column"
         >
-          <Table
-            variant="simple"
-            sx={{
-              tableLayout: "fixed",
-            }}
-            height="100%"
-            maxHeight="43vh"
-            overflowY="auto"
-          >
+          {/* Fixed Header */}
+          <Table variant="simple" sx={{ tableLayout: "fixed" }} flexShrink={0}>
             <Thead>
               <Tr>
                 <Th color="purple.600" fontSize="0.8rem">
-                  Rémunerations
+                  Rémunérations
                 </Th>
                 <Th isNumeric>Montant</Th>
               </Tr>
             </Thead>
+          </Table>
 
-            <Tbody>
-              {earnings.map((item) => (
-                <Tr key={item.componentId}>
-                  <Td>{item.displayName}</Td>
-                  <Td isNumeric>{formatCurrency(item.amount, currency)}</Td>
-                </Tr>
-              ))}
-            </Tbody>
+          {/* ONLY THIS SECTION SCROLLS */}
+          <Box
+            flex="1"
+            overflowY="auto"
+            overflowX="hidden"
+            sx={{
+              "&::-webkit-scrollbar": {
+                width: "6px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background: "#CBD5E0",
+                borderRadius: "10px",
+              },
+            }}
+          >
+            <Table
+              variant="simple"
+              sx={{
+                tableLayout: "fixed",
+              }}
+            >
+              <Tbody>
+                {earnings.map((item) => (
+                  <Tr key={item.componentId}>
+                    <Td>{item.displayName}</Td>
+                    <Td isNumeric>{formatCurrency(item.amount, currency)}</Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
 
+          {/* Fixed Footer */}
+          <Table variant="simple" sx={{ tableLayout: "fixed" }} flexShrink={0}>
             <Tfoot>
               <Tr>
                 <Th
@@ -586,43 +607,63 @@ const EmployeePayslipDetails = () => {
         </Box>
         {/* Deductions */}
         <Box
-          ml="0.1rem"
           width="40vw"
-          height="100%"
-          overflow="hidden"
-          maxHeight="43vh"
+          height="43vh"
           border="1px solid"
+          bg="#ffffff"
           borderColor="#D1D9E0"
           borderRadius="8px"
           boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+          overflow="hidden"
+          display="flex"
+          flexDirection="column"
         >
-          <Table
-            variant="simple"
-            sx={{
-              tableLayout: "fixed",
-            }}
-            height="100%"
-            overflowY="auto"
-            maxHeight="43vh"
-          >
+          {/* Fixed Header */}
+          <Table variant="simple" sx={{ tableLayout: "fixed" }} flexShrink={0}>
             <Thead>
               <Tr>
-                <Th color="red.600" fontSize="0.8rem">
+                <Th color="purple.600" fontSize="0.8rem">
                   Déductions
                 </Th>
                 <Th isNumeric>Montant</Th>
               </Tr>
             </Thead>
+          </Table>
 
-            <Tbody>
-              {deductions.map((item) => (
-                <Tr key={item.componentId}>
-                  <Td>{item.displayName}</Td>
-                  <Td isNumeric>{formatCurrency(item.amount, currency)}</Td>
-                </Tr>
-              ))}
-            </Tbody>
+          {/* ONLY THIS SECTION SCROLLS */}
+          <Box
+            flex="1"
+            overflowY="auto"
+            overflowX="hidden"
+            sx={{
+              "&::-webkit-scrollbar": {
+                width: "6px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background: "#CBD5E0",
+                borderRadius: "10px",
+              },
+            }}
+          >
+            <Table
+              variant="simple"
+              sx={{
+                tableLayout: "fixed",
+              }}
+            >
+              <Tbody>
+                {deductions.map((item) => (
+                  <Tr key={item.componentId}>
+                    <Td>{item.displayName}</Td>
+                    <Td isNumeric>{formatCurrency(item.amount, currency)}</Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
 
+          {/* Fixed Footer */}
+          <Table variant="simple" sx={{ tableLayout: "fixed" }} flexShrink={0}>
             <Tfoot>
               <Tr>
                 <Th

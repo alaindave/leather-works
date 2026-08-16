@@ -100,6 +100,7 @@ export async function getPayrollRuns() {
       LEFT JOIN admin_users gen
         ON pr.generatedBy = gen._id
       WHERE pr.isDeleted = 0
+      ORDER BY pr.createdAt DESC
     `
   );
 }
@@ -241,6 +242,7 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
 
 // Upsert payroll results
 export async function upsertPayrollResult(payrollResult: PayrollResult) {
+  console.log("PAYROLL RESULT TO UPSERT", payrollResult);
   await run(
     `
       INSERT INTO payroll_results (
@@ -985,10 +987,12 @@ export async function markPayrollRunSynced(_id: string) {
   return await run(
     `
       UPDATE payroll_runs
-      SET synced = 1
+      SET 
+        synced = 1,
+        lastSyncedAt = ?
       WHERE _id = ?
     `,
-    [_id]
+    [new Date().toISOString(), _id]
   );
 }
 
@@ -996,10 +1000,12 @@ export async function markPayrollResultSynced(_id: string) {
   return await run(
     `
       UPDATE payroll_results
-      SET synced = 1
+      SET 
+        synced = 1,
+        lastSyncedAt = ?
       WHERE _id = ?
     `,
-    [_id]
+    [new Date().toISOString(), _id]
   );
 }
 
@@ -1007,19 +1013,16 @@ export async function markPayrollItemSynced(_id: string) {
   return await run(
     `
       UPDATE payroll_items
-      SET synced = 1
+        SET 
+        synced = 1,
+        lastSyncedAt = ?
       WHERE _id = ?
     `,
-    [_id]
+    [new Date().toISOString(), _id]
   );
 }
 
-/**
- * Delete payroll run data
- *
- *
- */
-
+// Delete payroll run
 export async function deletePayrollRun(payrollRunId: string) {
   const updatedAt = new Date().toISOString();
 

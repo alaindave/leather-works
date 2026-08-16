@@ -125,13 +125,23 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
 
   return (
     <Box maxH="90vh" w="47vw">
-      <Tabs variant="enclosed" h="100%" display="flex" flexDirection="column">
+      <Tabs
+        variant="enclosed"
+        h="100%"
+        minH={0}
+        display="flex"
+        flexDirection="column"
+      >
         <TabList
+          flexShrink={0}
+          position="sticky"
+          top={0}
+          zIndex={10}
+          bg="white"
           borderBottomColor="rgba(255,255,255,0.08)"
-          overflowX="hidden"
+          overflowX="auto"
           overflowY="hidden"
           whiteSpace="nowrap"
-          flexShrink={0}
           sx={{
             "&::-webkit-scrollbar": {
               height: "4px",
@@ -210,7 +220,14 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
           </Tab>
         </TabList>
 
-        <TabPanels flex="1" overflowY="auto" px={{ base: 2, md: 4 }} py={4}>
+        <TabPanels
+          flex="1"
+          minH={0}
+          overflowY="auto"
+          overflowX="hidden"
+          px={{ base: 2, md: 4 }}
+          py={4}
+        >
           <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Nom"

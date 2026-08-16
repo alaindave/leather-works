@@ -225,7 +225,7 @@ router.get(
           updatedAt: { $gt: date },
         }).lean(),
 
-        PayrollSettings.find({
+        PayrollSettings.findOne({
           updatedAt: { $gt: date },
         }).lean(),
 

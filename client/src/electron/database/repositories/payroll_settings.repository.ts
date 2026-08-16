@@ -123,56 +123,48 @@ export async function createPayrollSettings(
 export async function upsertPayrollSettings(
   settings: PayrollSettings
 ): Promise<PayrollSettings> {
-  const existing = await getPayrollSettingsById(settings._id);
-  if (!existing) {
-    await run(
-      `
-      INSERT INTO payroll_settings (
-        _id,
-        currency,
-        workingDays,
-        workingHours,
-        paymentDay,
-        synced,
-        createdAt,
-        updatedAt,
-        lastSyncedAt,
-        isDeleted
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      [
-        settings._id,
-        settings.currency,
-        settings.workingDays,
-        settings.workingHours,
-        settings.paymentDay,
-        settings.synced ?? 1,
-        settings.createdAt,
-        settings.updatedAt,
-        settings.lastSyncedAt ?? null,
-        settings.isDeleted ?? 0,
-      ]
-    );
-
-    return settings;
-  }
+  console.log("SETTINGS TO UPSERT", settings);
+  console.log("UPSERT VALUES:", [
+    settings._id,
+    settings.currency,
+    settings.workingDays,
+    settings.workingHours,
+    settings.paymentDay,
+    settings.synced ?? 1,
+    settings.createdAt,
+    settings.updatedAt,
+    settings.lastSyncedAt ?? null,
+    settings.isDeleted ?? 0,
+  ]);
   await run(
     `
-    UPDATE payroll_settings
-    SET
-      currency = ?,
-      workingDays = ?,
-      workingHours = ?,
-      paymentDay = ?,
-      synced = ?,
-      createdAt = ?,
-      updatedAt = ?,
-      lastSyncedAt = ?,
-      isDeleted = ?
-    WHERE _id = ?
+    INSERT INTO payroll_settings (
+      _id,
+      currency,
+      workingDays,
+      workingHours,
+      paymentDay,
+      synced,
+      createdAt,
+      updatedAt,
+      lastSyncedAt,
+      isDeleted
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+    ON CONFLICT(_id) DO UPDATE SET
+      currency = excluded.currency,
+      workingDays = excluded.workingDays,
+      workingHours = excluded.workingHours,
+      paymentDay = excluded.paymentDay,
+      synced = excluded.synced,
+      createdAt = excluded.createdAt,
+      updatedAt = excluded.updatedAt,
+      lastSyncedAt = excluded.lastSyncedAt,
+      isDeleted = excluded.isDeleted
     `,
     [
+      settings._id,
       settings.currency,
       settings.workingDays,
       settings.workingHours,
@@ -182,7 +174,6 @@ export async function upsertPayrollSettings(
       settings.updatedAt,
       settings.lastSyncedAt ?? null,
       settings.isDeleted ?? 0,
-      settings._id,
     ]
   );
 

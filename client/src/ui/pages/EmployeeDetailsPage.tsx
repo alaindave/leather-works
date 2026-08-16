@@ -531,7 +531,7 @@ const EmployeeDetailsPage = () => {
               border="1px solid"
               borderColor="gray.500`"
               overflowY="auto"
-              height="71vh"
+              height="70.6vh"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <EmployeeDetailsTab employee={employee} />
