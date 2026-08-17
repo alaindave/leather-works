@@ -122,20 +122,9 @@ export async function createPayrollSettings(
 
 export async function upsertPayrollSettings(
   settings: PayrollSettings
-): Promise<PayrollSettings> {
+): Promise<PayrollSettings | null> {
+  if (!settings) return null;
   console.log("SETTINGS TO UPSERT", settings);
-  console.log("UPSERT VALUES:", [
-    settings._id,
-    settings.currency,
-    settings.workingDays,
-    settings.workingHours,
-    settings.paymentDay,
-    settings.synced ?? 1,
-    settings.createdAt,
-    settings.updatedAt,
-    settings.lastSyncedAt ?? null,
-    settings.isDeleted ?? 0,
-  ]);
   await run(
     `
     INSERT INTO payroll_settings (

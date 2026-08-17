@@ -313,7 +313,12 @@ export async function getAttendanceByDate(date: string) {
     WHERE a.date = ?
       AND a.isDeleted = 0
       AND e.isDeleted = 0
-    ORDER BY a.clockIn ASC
+    ORDER BY
+      a.clockIn IS NULL ASC,
+      CASE
+        WHEN a.clockIn IS NOT NULL THEN a.clockIn
+        ELSE a.createdAt
+      END ASC
     `,
     [date]
   );
@@ -330,6 +335,8 @@ export async function getAttendanceRecord(
     WHERE employeeId = ?
       AND date = ?
       AND isDeleted = 0
+    ORDER BY createdAt ASC
+
     `,
     [employeeId, date]
   );

@@ -125,7 +125,7 @@ const ReminderModal = ({ isReminderOpen, onReminderClose, notes }: Props) => {
 
   return (
     <Modal isOpen={isReminderOpen} onClose={onReminderClose} isCentered>
-      <ModalOverlay bg="blackAlpha.400" />
+      <ModalOverlay backdropFilter="auto" backdropBlur="0.3rem" />
 
       <ModalContent
         borderRadius="12px"
