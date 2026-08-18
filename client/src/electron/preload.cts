@@ -15,6 +15,13 @@ type EmployeePayrollProfile = import("../common/types/payroll/PayrollEmployeePro
 // type PayrollResultRecord =import("../common/types/payroll/Payroll",{ with: { "resolution-mode": "require" } }).default;
 // type PayrollStatus =import("../common/types/payroll/Payroll",{ with: { "resolution-mode": "require" } }).default;
 
+type AttendanceDailyCheckPreparationInput =typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
+type LockAttendanceDailyCheckInput = typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
+type MarkManagerNotifiedInput =typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
+type VerifyAttendanceDailyCheckInput = typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
+
+
+
 interface LoginCredentials {
   email: string;
   password: string;
@@ -122,6 +129,9 @@ contextBridge.exposeInMainWorld("electron", {
     create: (employeeId: string, clockIn: string) =>
       ipcRenderer.invoke("attendance:create", employeeId, clockIn),
 
+    createAbsenceLeave: (employeeId: string, status: "CONGÉ" | "ABSENT") =>
+      ipcRenderer.invoke("attendance:createAbsenceLeave", employeeId, status),
+
     getAll: () => ipcRenderer.invoke("attendance:getAll"),
 
     getById: (_id: string) => ipcRenderer.invoke("attendance:getById", _id),
@@ -138,14 +148,63 @@ contextBridge.exposeInMainWorld("electron", {
     update: (_id: string, updates: Partial<AttendanceWithEmployee>) =>
       ipcRenderer.invoke("attendance:update", _id, updates),
 
-    markAbsent: () =>
+    markAbsent: (date:string) =>
       ipcRenderer.invoke(
-        "attendance:mark-absent"),
+        "attendance:mark-absent",date),
 
     delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
 
 
   },
+
+ attendanceDailyCheck: {
+  create: (input: AttendanceDailyCheckPreparationInput) =>
+    ipcRenderer.invoke(
+      "attendanceDailyCheck:create",
+      input
+    ),
+
+  getById: (_id: string) =>
+    ipcRenderer.invoke(
+      "attendanceDailyCheck:getById",
+      _id
+    ),
+
+  getByDate: (date: string) =>
+    ipcRenderer.invoke(
+      "attendanceDailyCheck:getByDate",
+      date
+    ),
+
+  getAll: () =>
+    ipcRenderer.invoke(
+      "attendanceDailyCheck:getAll"
+    ),
+
+  completeMarkAbsent: (completedAt: string) =>
+    ipcRenderer.invoke(
+      "attendanceDailyCheck:completeMarkAbsent",
+      completedAt
+    ),
+
+  verify: (input: VerifyAttendanceDailyCheckInput) =>
+    ipcRenderer.invoke(
+      "attendanceDailyCheck:verify",
+      input
+    ),
+
+  notifyManager: (input: MarkManagerNotifiedInput) =>
+    ipcRenderer.invoke(
+      "attendanceDailyCheck:notifyManager",
+      input
+    ),
+
+  lock: (input: LockAttendanceDailyCheckInput) =>
+    ipcRenderer.invoke(
+      "attendanceDailyCheck:lock",
+      input
+    ),
+},
 
   leave: {
     create: (

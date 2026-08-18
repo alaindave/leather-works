@@ -9,6 +9,7 @@ import {
   updateAttendance,
   deleteAttendance,
   getAttendanceRecord,
+  createAbsenceLeaveAttendance,
 } from "../database/repositories/attendances.repository.js";
 import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee.js";
 import { markEmployeesAbsent } from "../services/attendance/markEmployeesAbsent.service.js";
@@ -22,6 +23,14 @@ export function registerAttendanceIPC() {
       return createAttendance(employeeId, clockIn);
     }
   );
+
+  ipcMain.handle(
+    "attendance:createAbsenceLeave",
+    async (_, employeeId: string, status: "CONGÉ" | "ABSENT") => {
+      return createAbsenceLeaveAttendance(employeeId, status);
+    }
+  );
+
   ipcMain.handle("attendance:getAll", async () => {
     return getAllAttendance();
   });

@@ -3,6 +3,7 @@ export default interface SyncQueueItem {
   entity:
     | "employee"
     | "attendance"
+    | "attendance_daily_check"
     | "leave"
     | "task"
     | "task_comment"

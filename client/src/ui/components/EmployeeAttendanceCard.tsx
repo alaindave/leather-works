@@ -425,7 +425,7 @@ const EmployeeAttendanceCard = ({
             isOpen={!!errorMessage}
           >
             <Editable
-              value={draftClockOut ?? "--:--"}
+              value={draftClockOut ?? "----"}
               onChange={setDraftClockOut}
               onSubmit={handleSubmitClockOut}
               submitOnBlur={false}
@@ -467,8 +467,8 @@ const EmployeeAttendanceCard = ({
             </Editable>
           </Tooltip>
         ) : (
-          <Text color="gray.400" width="80px" fontSize="18px">
-            --:--
+          <Text mt="1rem" color="gray.600" width="80px" fontSize="1.2rem">
+            - - - -
           </Text>
         )}
       </Box>

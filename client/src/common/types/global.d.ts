@@ -138,8 +138,30 @@ declare global {
         upsert: (document: EmployeeDocument) => Promise<EmployeeDocument>;
       };
 
+      attendanceDailyCheck: {
+        create(
+          data: CreateAttendanceDailyCheckInput
+        ): Promise<AttendanceDailyCheck>;
+        getById(_id: string): Promise<AttendanceDailyCheck | null>;
+        getByDate(date: string): Promise<AttendanceDailyCheck | null>;
+        getAll(): Promise<AttendanceDailyCheck[]>;
+        verify(
+          input: VerifyAttendanceDailyCheckInput
+        ): Promise<VerifyDailyAttendanceResult>;
+        notifyManager: (
+          input: MarkManagerNotifiedInput
+        ) => Promise<AttendanceDailyCheck>;
+        lock(
+          input: LockAttendanceDailyCheckInput
+        ): Promise<AttendanceDailyCheck>;
+      };
+
       attendance: {
         create: (employeeID: string, clockIn: string) => Promise<Attendance>;
+        createAbsenceLeave: (
+          employeeID: string,
+          status: "CONGÉ" | "ABSENT"
+        ) => Promise<Attendance>;
         getAll: () => Promise<AttendanceWithEmployee[]>;
         getById: (_id: string) => Promise<AttendanceWithEmployee | null>;
         getByEmployee: (employeeId: string) => Promise<Attendance[]>;
@@ -153,7 +175,7 @@ declare global {
           updates: Partial<AttendanceWithEmployee>
         ) => Promise<AttendanceWithEmployee>;
 
-        markAbsent: () => Promise<AttendanceWithEmployee[]>;
+        markAbsent: (date: string) => Promise<AttendanceWithEmployee[]>;
 
         delete: (_id: string) => Promise<AttendanceWithEmployee>;
       };

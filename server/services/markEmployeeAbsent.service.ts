@@ -3,9 +3,8 @@ import { randomUUID } from "crypto";
 import Employee from "../models/employeeModel.js";
 import Attendance from "../models/attendanceModel.js";
 
-export async function markAbsentEmployees() {
+export async function markAbsentEmployees(date: string) {
   const CURRENT_TIMESTAMP = new Date();
-  const date = CURRENT_TIMESTAMP.toISOString().split("T")[0];
 
   const employees = await Employee.find({
     status: "ACTIF",

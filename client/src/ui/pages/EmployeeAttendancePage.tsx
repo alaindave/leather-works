@@ -21,13 +21,16 @@ import { HiOutlineDownload } from "react-icons/hi";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import { RiPresentationFill } from "react-icons/ri";
-
+import { FaCheckDouble } from "react-icons/fa";
 import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
 import DateDropdown from "../components/DateDropdown";
 import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee";
 import { FaSyncAlt } from "react-icons/fa";
+import { AttendanceDailyCheck } from "../../common/types/AttendanceDailyCheck";
+import { FaLock } from "react-icons/fa";
+import useAdminUser from "../../store/auth.store";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -59,8 +62,13 @@ const EmployeeAttendancePage = () => {
   const [filter, setFilter] = useState("");
   const [time, setTime] = useState(new Date());
   const [loading, setLoading] = useState(false);
+  const [canVerify, setCanVerify] = useState(false);
+  const [dailyCheck, setDailyCheck] = useState<AttendanceDailyCheck>(
+    {} as AttendanceDailyCheck
+  );
   const [unlocked, setUnlocked] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const user = useAdminUser((store) => store.adminUser);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const gridTemplate = `
   1.6fr 1.5fr 1.3fr 1.3fr 1fr 1fr 0.8fr
@@ -74,16 +82,31 @@ const EmployeeAttendancePage = () => {
   /* Initial data fetch*/
   useEffect(() => {
     loadAttendance();
+    loadDailyCheck();
   }, [selectedDate]);
+
+  const loadDailyCheck = async () => {
+    try {
+      const dailyCheck: AttendanceDailyCheck =
+        await window.electron.attendanceDailyCheck.getByDate(selectedDate);
+      console.log("DAILY CHECK RETRIEVED", dailyCheck);
+      if (dailyCheck.markAbsentCompleted && dailyCheck.markLeaveCompleted) {
+        setCanVerify(true);
+        setDailyCheck(dailyCheck);
+        loadAttendance();
+      }
+      return;
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE CHECKING CAN VERIFY", e);
+    }
+  };
 
   const loadAttendance = async () => {
     try {
       setLoading(true);
-
       const attendances = await window.electron.attendance.getByDate(
         selectedDate
       );
-
       setAttendances(attendances);
     } catch (error) {
       console.error("Failed to load attendance:", error);
@@ -95,17 +118,14 @@ const EmployeeAttendancePage = () => {
   const attendanceSync = async () => {
     try {
       setLoading(true);
-
       const result = await window.electron.sync();
-
       if (!result.success) {
         console.error(result.message);
-        return;
       }
-
       await loadAttendance();
+      await loadDailyCheck();
     } catch (error) {
-      console.error("Attendance sync failed:", error);
+      console.error("AN ERROR OCCURED WHILE SYNCING ATTENDANCE:", error);
     } finally {
       setLoading(false);
     }
@@ -126,11 +146,75 @@ const EmployeeAttendancePage = () => {
 
   const markAbsent = async () => {
     try {
-      const absences = await window.electron.attendance.markAbsent();
+      setLoading(true);
+      const absences = await window.electron.attendance.markAbsent(
+        selectedDate
+      );
       console.log("ABSENCES CREATED", absences);
-      attendanceSync();
+      await loadAttendance();
+      await loadDailyCheck();
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE MARKING ABSENCES", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verify = async () => {
+    try {
+      setLoading(true);
+      const now = new Date();
+      const date = now.toISOString().split("T")[0];
+      const verify = await window.electron.attendanceDailyCheck.verify({
+        date,
+        verifiedBy: user._id,
+      });
+      console.log("VERIFIED ATTENDANCES", verify);
+      await loadAttendance();
+      await loadDailyCheck();
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE VERIFYING ATTENDANCES", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const notify = async () => {
+    try {
+      setLoading(true);
+      const now = new Date();
+      const date = now.toISOString().split("T")[0];
+
+      const notify = await window.electron.attendanceDailyCheck.notifyManager({
+        date,
+      });
+      console.log("NOTIFIED MANAGER ATTENDANCES", notify);
+      await loadAttendance();
+      await loadDailyCheck();
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE NOTIFYING MANAGER", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const lock = async () => {
+    try {
+      setLoading(true);
+      const now = new Date();
+      const date = now.toISOString().split("T")[0];
+
+      const locked = await window.electron.attendanceDailyCheck.lock({
+        date,
+        lockedBy: user._id,
+      });
+      console.log("LOCKED ATTENDANCE", locked);
+      await loadAttendance();
+      await loadDailyCheck();
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE LOCKING ATTENDANCE.", e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -247,7 +331,6 @@ const EmployeeAttendancePage = () => {
               </Text>
               <Button
                 bg="transparent"
-                isLoading={loading}
                 color="gray.800"
                 _hover={{ bg: "transparent" }}
                 fontSize="1rem"
@@ -255,6 +338,7 @@ const EmployeeAttendancePage = () => {
                 bottom="0.2rem"
                 right="1rem"
                 onClick={attendanceSync}
+                isLoading={loading}
               >
                 <FaSyncAlt />
               </Button>
@@ -272,17 +356,83 @@ const EmployeeAttendancePage = () => {
           </Box>
 
           <Spacer />
-          <Button
-            colorScheme="red"
-            onClick={markAbsent}
-            mt="0.5rem"
-            mr="1.3rem"
-          >
-            <HStack>
-              <RiPresentationFill />
-              <Text mt="1rem">Marquer les absences</Text>
-            </HStack>
-          </Button>
+          {canVerify && dailyCheck.status === "OPEN" ? (
+            <Button
+              colorScheme="green"
+              onClick={verify}
+              mt="0.5rem"
+              mr="1.3rem"
+              isLoading={loading}
+            >
+              <HStack>
+                <FaCheckDouble />
+                <Text mt="1rem">Verifier</Text>
+              </HStack>
+            </Button>
+          ) : canVerify &&
+            dailyCheck.status === "VERIFIED" &&
+            user.role === "ADMIN" ? (
+            <Button
+              colorScheme="red"
+              onClick={notify}
+              mt="0.5rem"
+              mr="1.3rem"
+              isLoading={loading}
+            >
+              <HStack>
+                <RiPresentationFill />
+                <Text mt="1rem">Confirmation</Text>
+              </HStack>
+            </Button>
+          ) : canVerify &&
+            dailyCheck.status === "VERIFIED" &&
+            user.role === "ADMIN" ? (
+            <Button
+              colorScheme="red"
+              onClick={notify}
+              mt="0.5rem"
+              mr="1.3rem"
+              isLoading={loading}
+            >
+              <HStack>
+                <RiPresentationFill />
+                <Text mt="1rem">Confirmation</Text>
+              </HStack>
+            </Button>
+          ) : canVerify &&
+            dailyCheck.status === "MANAGER_NOTIFIED" &&
+            user.role === "MANAGER" ? (
+            <Button
+              colorScheme="yellow"
+              onClick={lock}
+              mt="0.5rem"
+              mr="1.3rem"
+              isLoading={loading}
+            >
+              <HStack>
+                <FaLock />
+                <Text mt="1rem">Confirmer</Text>
+              </HStack>
+            </Button>
+          ) : canVerify && dailyCheck.status === "LOCKED" ? (
+            <Box mt="1.3rem">
+              <FaLock size="1.5rem" color="brown" />
+            </Box>
+          ) : (
+            <Button
+              colorScheme="red"
+              onClick={markAbsent}
+              mt="0.5rem"
+              mr="1.3rem"
+              isLoading={loading}
+            >
+              <HStack>
+                <RiPresentationFill />
+                <Text mt="1rem">Marquer les absences</Text>
+              </HStack>
+            </Button>
+          )}
+
           <Spacer />
           <Button
             bg="#4F46E5"
@@ -421,14 +571,16 @@ const EmployeeAttendancePage = () => {
           <DateDropdown onChange={setSelectedDate} />
         </Box>
 
-        <Box mt="0.8rem">
-          <Switch
-            colorScheme="blue"
-            size="lg"
-            isChecked={unlocked}
-            onChange={(e) => setUnlocked(e.target.checked)}
-          />
-        </Box>
+        {dailyCheck.status !== "LOCKED" ? (
+          <Box mt="0.8rem">
+            <Switch
+              colorScheme="blue"
+              size="lg"
+              isChecked={unlocked}
+              onChange={(e) => setUnlocked(e.target.checked)}
+            />
+          </Box>
+        ) : null}
 
         <Box
           color="gray.800"

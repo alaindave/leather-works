@@ -1,14 +1,16 @@
 import { getOngoingLeaves } from "../../database/repositories/leaves.repository.js";
 import {
-  createLeaveAttendance,
+  createAbsenceLeaveAttendance,
   getAttendanceRecord,
 } from "../../database/repositories/attendances.repository.js";
 import Leave from "../../../common/types/Leave.js";
+import { createAttendanceDailyCheck } from "../../database/repositories/attendanceDailyCheck.repository.js";
 
 export async function markEmployeesOnLeave() {
   console.log("markEmployeesOnLeave SERVICE INITIATED... ");
   const leaves: Leave[] = await getOngoingLeaves();
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date().toISOString();
+  const today = now.split("T")[0];
   console.log("ONGOING LEAVES:", leaves);
   console.log("TODAY:", today);
 
@@ -21,6 +23,24 @@ export async function markEmployeesOnLeave() {
     if (existingAttendance) {
       continue;
     }
-    await createLeaveAttendance(leave.employeeId);
+    await createAbsenceLeaveAttendance(leave.employeeId, "CONGÉ");
   }
+
+  console.log("markEmployeesOnLeave COMPLETED");
+
+  await createAttendanceDailyCheck({
+    markAbsentCompleted: {
+      completed: false,
+      completedAt: null,
+    },
+    markLeaveCompleted: {
+      completed: true,
+      completedAt: now,
+    },
+  });
+
+  return {
+    completed: true,
+    completedAt: now,
+  };
 }

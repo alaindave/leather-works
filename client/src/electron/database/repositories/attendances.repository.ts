@@ -5,24 +5,27 @@ import { getEmployeeById } from "./employees.repository.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import Employee from "../../../common/types/Employee.js";
 import { PayrollAttendanceSummary } from "../../../common/types/Attendance.js";
+import { isAttendanceDateLocked } from "./attendanceDailyCheck.repository.js";
 
 export async function createAttendance(employeeId: string, clockIn: string) {
-  const employee = await getEmployeeById(employeeId);
-  if (!employee) {
-    throw new Error("No employee found with the given ID");
-  }
-
   const _id = randomUUID();
   const now = new Date();
   const time = now.toISOString();
   const date = now.toISOString().split("T")[0];
+  const locked = await isAttendanceDateLocked(date);
+  if (locked) {
+    throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
+  }
+  const employee = await getEmployeeById(employeeId);
+  if (!employee) {
+    throw new Error("NO EMPLOYEE FOUND WITH THE GIVEN ID");
+  }
   const existingAttendance = await getAttendanceRecord(employeeId, date);
-  console.log("Existing attendance:", existingAttendance);
+  console.log("EXISTING ATTENDANCE:", existingAttendance);
 
   if (existingAttendance) {
-    throw new Error("The employee has already clocked in");
+    throw new Error("THE EMPLOYEE HAS ALREADY CLOCKED IN");
   }
-
   const clockInDate = new Date(clockIn);
   const scheduledHour = 8;
   const scheduledMinute = 0;
@@ -73,9 +76,16 @@ export async function createAttendance(employeeId: string, clockIn: string) {
   return getAttendanceById(_id);
 }
 
-export async function createLeaveAttendance(employeeId: string) {
+export async function createAbsenceLeaveAttendance(
+  employeeId: string,
+  status: "CONGÉ" | "ABSENT"
+) {
   const now = new Date().toISOString();
   const date = now.split("T")[0];
+  const locked = await isAttendanceDateLocked(date);
+  if (locked) {
+    throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
+  }
   const _id = randomUUID();
 
   await run(
@@ -92,13 +102,13 @@ export async function createLeaveAttendance(employeeId: string) {
       )
       VALUES (?,?, ?, ?, ?, ?, ?, ?)
     `,
-    [_id, employeeId, date, "CONGÉ", now, now, 0, now]
+    [_id, employeeId, date, status, now, now, 0, now]
   );
   const savedAttendance = {
     _id,
     employeeId,
     date,
-    status: "CONGÉ",
+    status,
     createdAt: now,
     updatedAt: now,
   };
@@ -212,6 +222,12 @@ export async function getEmployeesWhoDidNotClockIn(
 export async function createAbsentAttendance(
   attendance: Attendance
 ): Promise<Attendance> {
+  const locked = await isAttendanceDateLocked(attendance.date);
+  if (locked) {
+    throw new Error(
+      `ATTENDANCE FOR ${attendance.date} IS LOCKED AND CANNOT BE MODIFIED`
+    );
+  }
   await run(
     `
       INSERT OR IGNORE INTO attendances (
@@ -290,7 +306,7 @@ export async function getAttendanceByEmployee(employeeId: string) {
   );
 }
 
-export async function getAttendanceByDate(date: string) {
+export async function getAttendanceByDate(date: string): Promise<Attendance[]> {
   return all(
     `
     SELECT
@@ -302,6 +318,7 @@ export async function getAttendanceByDate(date: string) {
       a.status,
       a.lateMinutes,
       a.notes,
+      a.isDeleted,
       e.matricule,
       e.firstName,
       e.lastName,
@@ -346,8 +363,13 @@ export async function updateAttendance(
   _id: string,
   updates: Partial<Attendance>
 ) {
+  const now = new Date().toISOString();
+  const date = now.split("T")[0];
+  const locked = await isAttendanceDateLocked(date);
+  if (locked) {
+    throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
+  }
   const existing = await getAttendanceById(_id);
-
   console.log("ATTENDANCE TO UPDATE", existing);
   console.log("UPDATES", updates);
 
@@ -473,6 +495,12 @@ export async function updateAttendance(
 }
 
 export async function deleteAttendance(_id: string) {
+  const now = new Date().toISOString();
+  const date = now.split("T")[0];
+  const locked = await isAttendanceDateLocked(date);
+  if (locked) {
+    throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
+  }
   await run(
     `
     UPDATE attendances

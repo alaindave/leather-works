@@ -64,8 +64,8 @@ export default function LeaveHistoryTable({ leaves }: Props) {
 
               <Td fontWeight="medium">{leave.subject}</Td>
 
-              <Td maxW="300px">
-                <Text mt="1rem" noOfLines={3}>
+              <Td maxW="16rem">
+                <Text whiteSpace="normal" mt="1rem" noOfLines={3}>
                   {leave.notes}
                 </Text>
               </Td>

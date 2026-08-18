@@ -3,8 +3,9 @@ import { markAbsentEmployees } from "../services/markEmployeeAbsent.service.js";
 
 export async function markAbsentEmployeesHandler(req: Request, res: Response) {
   console.log("ABSENCE SERVICE ROUTE HIT");
+  const { date } = req.body;
   try {
-    const result = await markAbsentEmployees();
+    const result = await markAbsentEmployees(date);
 
     console.log("MARK ABSENT SUCCESS", result);
 

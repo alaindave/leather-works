@@ -7,8 +7,15 @@ import {
   EditablePreview,
   Flex,
   HStack,
+  IconButton,
   Image,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Portal,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { GiClockwork } from "react-icons/gi";
 import { GoDotFill } from "react-icons/go";
@@ -22,6 +29,7 @@ import "../styles/App.css";
 import AddClockInNotesPopover from "./AddClockInNotesPopover";
 import defaultAvatar from "../assets/default-avatar.jpeg";
 import AbsenceNotesPopover from "./AbsenceNotesPopover";
+import Leave from "../../common/types/Leave";
 
 interface Props {
   employee: Employee;
@@ -82,6 +90,7 @@ const EmployeeCard = ({ employee }: Props) => {
   const [showEditable, setShowEditable] = useState(false);
   const [loadingAttendance, setLoadingAttendance] = useState(true);
   const [photo_url, setPhotoUrl] = useState("");
+  const toast = useToast();
 
   //Fetch attendance
   useEffect(() => {
@@ -171,6 +180,100 @@ const EmployeeCard = ({ employee }: Props) => {
     } catch (error) {
       console.error("AN ERROR OCCURED WHILE SAVING NOTES: ", error);
       return false;
+    }
+  };
+
+  const handleMenuAction = async (action: "CONGÉ" | "ABSENT") => {
+    if (action === "CONGÉ") {
+      try {
+        if (!employee) {
+          toast({
+            title: "Employé introuvable",
+            description:
+              "Impossible de trouver l'employé pour vérifier son solde de congé.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+            position: "top-right",
+          });
+
+          return;
+        }
+        const remainingLeave = employee.remainingLeave ?? 0;
+        const leaveDays = 1;
+
+        if (remainingLeave < leaveDays) {
+          toast({
+            title: "Solde de congé insuffisant",
+            description: "L'employé ne dispose d'aucun jour de congé restant.",
+            status: "info",
+            duration: 5000,
+            isClosable: true,
+            position: "top-right",
+          });
+
+          return;
+        }
+
+        const today = new Date();
+        const date = today.toISOString().split("T")[0];
+
+        const leave: Partial<Leave> = {
+          employeeId: employee._id,
+          startDate: date,
+          endDate: date,
+          subject: "Absence approuvée",
+          notes: "Employé absent.Congé approuvé",
+          status: "APPROUVÉ",
+        };
+
+        // Create leave
+        const savedLeave = await window.electron.leave.create(leave);
+        console.log("LEAVE SUCCESSFULLY SAVED:", savedLeave);
+
+        toast({
+          title: "Demande de congé ",
+          description: "Congé enregistré  avec succès.",
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+          position: "top-right",
+        });
+
+        // Deduct one leave day
+        const updatedEmployee = await window.electron.employees.update(
+          employee._id,
+          {
+            remainingLeave: remainingLeave - leaveDays,
+          }
+        );
+
+        console.log("EMPLOYEE LEAVE BALANCE UPDATED:", updatedEmployee);
+
+        // Create leave absence
+        const results = await window.electron.attendance.createAbsenceLeave(
+          employee._id,
+          "CONGÉ"
+        );
+        console.log("ATTENDANCE RESULTS", results);
+        loadData();
+      } catch (e) {
+        console.error("AN ERROR OCCURED WHILE SUBMITTING LEAVE ATTENDANCE", e);
+      }
+      return;
+    }
+
+    if (action === "ABSENT") {
+      try {
+        const results = await window.electron.attendance.createAbsenceLeave(
+          employee._id,
+          "ABSENT"
+        );
+        console.log("ATTENDANCE RESULTS", results);
+        loadData();
+      } catch (e) {
+        console.error("AN ERROR OCCURED WHILE SUBMITTING ATTENDANCE", e);
+      }
     }
   };
 
@@ -316,11 +419,38 @@ const EmployeeCard = ({ employee }: Props) => {
             )}
           </Box>
         </HStack>
-      </Flex>
+        <Box position="absolute" top="1.2rem" right="7rem">
+          <Menu placement="left">
+            <MenuButton
+              as={IconButton}
+              icon={<BsThreeDotsVertical size="1.5rem" />}
+              variant="ghost"
+              size="md"
+              aria-label="Options"
+              flexShrink={0}
+              isDisabled={attendance ? true : false}
+            />
 
-      <Box fontSize="1.5rem" mt="1.2rem" mr="5rem">
-        <BsThreeDotsVertical />
-      </Box>
+            <Portal>
+              <MenuList zIndex={9999} minW="140px">
+                <MenuItem
+                  onClick={() => handleMenuAction("CONGÉ")}
+                  _hover={{ bg: "blue", color: "#ffffff" }}
+                >
+                  Congé
+                </MenuItem>
+
+                <MenuItem
+                  onClick={() => handleMenuAction("ABSENT")}
+                  _hover={{ bg: "brown", color: "#ffffff" }}
+                >
+                  Absence
+                </MenuItem>
+              </MenuList>
+            </Portal>
+          </Menu>
+        </Box>
+      </Flex>
     </Flex>
   );
 };

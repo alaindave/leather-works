@@ -329,7 +329,7 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked, awayStatus }: Props) => {
             <Editable
               position="relative"
               bottom="0.5rem"
-              value={draftClockIn!}
+              value={draftClockIn ?? "_ _ _ _"}
               onChange={setDraftClockIn}
               submitOnBlur={false}
               width="80px"
