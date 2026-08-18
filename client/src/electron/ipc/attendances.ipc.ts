@@ -10,19 +10,18 @@ import {
   deleteAttendance,
   getAttendanceRecord,
   createAbsenceLeaveAttendance,
+  getEmployeesWithoutAttendance,
 } from "../database/repositories/attendances.repository.js";
 import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee.js";
 import { markEmployeesAbsent } from "../services/attendance/markEmployeesAbsent.service.js";
+import { CreateAttendanceDto } from "../../common/types/Attendance.js";
 
 export function registerAttendanceIPC() {
   console.log("REGISTERING ATTENDANCES IPC");
 
-  ipcMain.handle(
-    "attendance:create",
-    async (_, employeeId: string, clockIn: string) => {
-      return createAttendance(employeeId, clockIn);
-    }
-  );
+  ipcMain.handle("attendance:create", async (_, input: CreateAttendanceDto) => {
+    return createAttendance(input);
+  });
 
   ipcMain.handle(
     "attendance:createAbsenceLeave",
@@ -42,6 +41,13 @@ export function registerAttendanceIPC() {
   ipcMain.handle("attendance:getByEmployee", async (_, employeeId: string) => {
     return getAttendanceByEmployee(employeeId);
   });
+
+  ipcMain.handle(
+    "attendance:getEmployeesWithoutAttendance",
+    async (_, date: string) => {
+      return getEmployeesWithoutAttendance(date);
+    }
+  );
 
   ipcMain.handle("attendance:getByDate", async (_, date: string) => {
     return getAttendanceByDate(date);

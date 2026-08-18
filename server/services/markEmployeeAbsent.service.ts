@@ -45,7 +45,6 @@ export async function markAbsentEmployees(
   }));
 
   const result = await Attendance.bulkWrite(operations);
-
   const created = result.upsertedCount;
   const alreadyExists = employees.length - created;
 

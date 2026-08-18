@@ -81,7 +81,7 @@ attendanceSchema.index(
   { employeeId: 1, date: 1 },
   {
     unique: true,
-    partialFilterExpression: { isdeleted: 0 },
+    partialFilterExpression: { isDeleted: 0 },
   }
 );
 

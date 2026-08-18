@@ -15,14 +15,17 @@ import {
   Text,
   useDisclosure,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { HiOutlineDownload } from "react-icons/hi";
+import { FaCirclePlus } from "react-icons/fa6";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import { GiConfirmed } from "react-icons/gi";
 import { RiPresentationFill } from "react-icons/ri";
 import { FaCheckDouble } from "react-icons/fa";
+import { PiSealCheck } from "react-icons/pi";
 import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
@@ -32,6 +35,7 @@ import { FaSyncAlt } from "react-icons/fa";
 import { AttendanceDailyCheck } from "../../common/types/AttendanceDailyCheck";
 import { FaLock } from "react-icons/fa";
 import useAdminUser from "../../store/auth.store";
+import AddAttendanceModal from "../components/AddAttendanceModal";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -64,16 +68,57 @@ const EmployeeAttendancePage = () => {
   const [time, setTime] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [canVerify, setCanVerify] = useState(false);
-  const [dailyCheck, setDailyCheck] = useState<AttendanceDailyCheck>(
-    {} as AttendanceDailyCheck
+  const [dailyCheck, setDailyCheck] = useState<AttendanceDailyCheck | null>(
+    null
   );
   const [unlocked, setUnlocked] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isAddAttendanceOpen,
+    onOpen: onAddAttendanceOpen,
+    onClose: onAddAttendanceClose,
+  } = useDisclosure();
   const user = useAdminUser((store) => store.adminUser);
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const toast = useToast();
+  const getErrorMessage = (error: Error | string): string => {
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === "string"
+        ? error
+        : "Une erreur est survenue.";
+
+    const ipcErrorPrefix = /^Error invoking remote method '[^']+':\s*Error:\s*/;
+
+    return message.replace(ipcErrorPrefix, "").trim();
+  };
+  const showActionError = (
+    title: string,
+    error: unknown,
+    fallbackMessage: string
+  ) => {
+    console.error(title, error);
+
+    const message =
+      error instanceof Error || typeof error === "string"
+        ? getErrorMessage(error)
+        : fallbackMessage;
+
+    toast({
+      title,
+      description: message,
+      status: "error",
+      duration: 3500,
+      isClosable: true,
+      position: "top-left",
+    });
+  };
   const gridTemplate = `
   1.6fr 1.5fr 1.3fr 1.3fr 1fr 1fr 0.8fr
+  
 `;
+
   /* ================= CLOCK ================= */
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -82,6 +127,7 @@ const EmployeeAttendancePage = () => {
 
   /* Initial data fetch*/
   useEffect(() => {
+    setDailyCheck(null);
     loadAttendance();
     loadDailyCheck();
   }, [selectedDate]);
@@ -97,7 +143,7 @@ const EmployeeAttendancePage = () => {
       }
       if (dailyCheck?.markAbsentCompleted && dailyCheck?.markLeaveCompleted) {
         setCanVerify(true);
-        setDailyCheck(dailyCheck);
+        setDailyCheck(dailyCheck ?? null);
         loadAttendance();
       }
       return;
@@ -157,6 +203,15 @@ const EmployeeAttendancePage = () => {
         selectedDate
       );
       console.log("ABSENCES CREATED", absences);
+
+      toast({
+        title: "Absences",
+        description: "Les employés absents ont été enregistrés avec succès.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "top-left",
+      });
       await loadAttendance();
       await loadDailyCheck();
     } catch (e) {
@@ -169,17 +224,31 @@ const EmployeeAttendancePage = () => {
   const verify = async () => {
     try {
       setLoading(true);
-      const now = new Date();
-      const date = now.toISOString().split("T")[0];
-      const verify = await window.electron.attendanceDailyCheck.verify({
-        date,
+
+      const result = await window.electron.attendanceDailyCheck.verify({
+        date: selectedDate,
         verifiedBy: user._id,
       });
-      console.log("VERIFIED ATTENDANCES", verify);
+
+      console.log("VERIFIED ATTENDANCES", result);
+
+      toast({
+        title: "Présence vérifiée",
+        description: "La liste de présence a été vérifiée avec succès.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "top-left",
+      });
+
       await loadAttendance();
       await loadDailyCheck();
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE VERIFYING ATTENDANCES", e);
+    } catch (error) {
+      showActionError(
+        "Échec de la vérification",
+        error,
+        "Impossible de vérifier la liste de présence."
+      );
     } finally {
       setLoading(false);
     }
@@ -188,17 +257,31 @@ const EmployeeAttendancePage = () => {
   const notify = async () => {
     try {
       setLoading(true);
-      const now = new Date();
-      const date = now.toISOString().split("T")[0];
 
-      const notify = await window.electron.attendanceDailyCheck.notifyManager({
-        date,
+      const result = await window.electron.attendanceDailyCheck.notifyManager({
+        date: selectedDate,
       });
-      console.log("NOTIFIED MANAGER ATTENDANCES", notify);
+
+      console.log("NOTIFIED MANAGER ATTENDANCES", result);
+
+      toast({
+        title: "Manager notifié",
+        description:
+          "La demande de confirmation a été envoyée au gestionnaire.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "top-left",
+      });
+
       await loadAttendance();
       await loadDailyCheck();
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE NOTIFYING MANAGER", e);
+    } catch (error) {
+      showActionError(
+        "Échec de la notification",
+        error,
+        "Impossible de notifier le manager."
+      );
     } finally {
       setLoading(false);
     }
@@ -207,18 +290,32 @@ const EmployeeAttendancePage = () => {
   const lock = async () => {
     try {
       setLoading(true);
-      const now = new Date();
-      const date = now.toISOString().split("T")[0];
 
-      const locked = await window.electron.attendanceDailyCheck.lock({
-        date,
+      const result = await window.electron.attendanceDailyCheck.lock({
+        date: selectedDate,
         lockedBy: user._id,
+        lockedByRole: user.role,
       });
-      console.log("LOCKED ATTENDANCE", locked);
+
+      console.log("LOCKED ATTENDANCE", result);
+
+      toast({
+        title: "Présence confirmée",
+        description: "La liste de présence a été confirmée et verrouillée.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "top-left",
+      });
+
       await loadAttendance();
       await loadDailyCheck();
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE LOCKING ATTENDANCE.", e);
+    } catch (error) {
+      showActionError(
+        "Échec de la confirmation",
+        error,
+        "Impossible de confirmer et verrouiller la liste de présence."
+      );
     } finally {
       setLoading(false);
     }
@@ -235,11 +332,36 @@ const EmployeeAttendancePage = () => {
     await window.electron.file.save(csv);
   };
 
-  //Get attendances without leaves
-  // const attendancesWithoutLeaves = attendances?.filter(
-  //   (a) => a.status != "CONGÉ" && a.status != "ABSENT"
-  // );
+  const getAttendanceAction = () => {
+    if (!canVerify) {
+      return "MARK_ABSENT";
+    }
 
+    if (dailyCheck?.status === "OPEN") {
+      return "VERIFY";
+    }
+
+    if (dailyCheck?.status === "VERIFIED") {
+      return user.role === "ADMIN" ? "NOTIFY_MANAGER" : "CONFIRM";
+    }
+
+    if (dailyCheck?.status === "MANAGER_NOTIFIED") {
+      return user.role === "ADMIN"
+        ? "WAITING_CONFIRMATION"
+        : user.role === "MANAGER"
+        ? "CONFIRM"
+        : null;
+    }
+
+    if (dailyCheck?.status === "LOCKED") {
+      return "LOCKED";
+    }
+
+    return null;
+  };
+
+  const attendanceAction = getAttendanceAction();
+  console.log("IS UNLOCKED?", unlocked);
   return (
     <Flex direction="column" ml="0.02rem" width="100vw" h="95.1vh" bg="#F8FAFC">
       {/* ================= ALERT DIALOG ================= */}
@@ -320,7 +442,6 @@ const EmployeeAttendancePage = () => {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
-
       {/* ================= HEADER ================= */}
       <Flex direction="column" bg="#F8F9FB" height="10rem" width="80vw">
         <Flex>
@@ -362,9 +483,9 @@ const EmployeeAttendancePage = () => {
           </Box>
 
           <Spacer />
-          {canVerify && dailyCheck.status === "OPEN" ? (
+          {attendanceAction === "VERIFY" && (
             <Button
-              colorScheme="purple"
+              colorScheme="blue"
               onClick={verify}
               mt="0.5rem"
               mr="1.3rem"
@@ -372,43 +493,43 @@ const EmployeeAttendancePage = () => {
             >
               <HStack>
                 <FaCheckDouble />
-                <Text mt="1rem">Verifier</Text>
+                <Text mt="1rem">Vérifier</Text>
               </HStack>
             </Button>
-          ) : canVerify &&
-            dailyCheck.status === "VERIFIED" &&
-            user.role === "ADMIN" ? (
+          )}
+
+          {attendanceAction === "NOTIFY_MANAGER" && (
             <Button
-              colorScheme="green"
+              colorScheme="purple"
               onClick={notify}
               mt="0.5rem"
               mr="1.3rem"
               isLoading={loading}
             >
               <HStack>
-                <GiConfirmed />
+                <PiSealCheck size="1.1rem" />
                 <Text mt="1rem">Confirmation</Text>
               </HStack>
             </Button>
-          ) : canVerify &&
-            dailyCheck.status === "MANAGER_NOTIFIED" &&
-            user.role === "ADMIN" ? (
+          )}
+
+          {attendanceAction === "WAITING_CONFIRMATION" && (
             <Button
-              colorScheme="brown"
-              onClick={notify}
+              colorScheme="orange"
+              pointerEvents="none"
               mt="0.5rem"
               mr="1.3rem"
-              isLoading={loading}
             >
               <HStack>
                 <GiConfirmed />
                 <Text mt="1rem">En attente de confirmation</Text>
               </HStack>
             </Button>
-          ) : (canVerify && dailyCheck.status === "MANAGER_NOTIFIED") ||
-            (dailyCheck.status === "VERIFIED" && user.role === "MANAGER") ? (
+          )}
+
+          {attendanceAction === "CONFIRM" && (
             <Button
-              colorScheme="yellow"
+              colorScheme="green"
               onClick={lock}
               mt="0.5rem"
               mr="1.3rem"
@@ -419,11 +540,15 @@ const EmployeeAttendancePage = () => {
                 <Text mt="1rem">Confirmer</Text>
               </HStack>
             </Button>
-          ) : canVerify && dailyCheck.status === "LOCKED" ? (
+          )}
+
+          {attendanceAction === "LOCKED" && (
             <Box mt="1.3rem">
-              <FaLock size="1.5rem" color="brown" />
+              <FaLock size="1.7rem" color="#D4A017" />
             </Box>
-          ) : !canVerify ? (
+          )}
+
+          {attendanceAction === "MARK_ABSENT" && (
             <Button
               colorScheme="red"
               onClick={markAbsent}
@@ -436,10 +561,10 @@ const EmployeeAttendancePage = () => {
                 <Text mt="1rem">Marquer les absences</Text>
               </HStack>
             </Button>
-          ) : null}
+          )}
 
           <Spacer />
-          <Button
+          {/* <Button
             bg="#4F46E5"
             color="#ffffff"
             onClick={handleExport}
@@ -452,6 +577,22 @@ const EmployeeAttendancePage = () => {
               </Box>
               <Text mt="1rem">Exporter</Text>
             </HStack>
+          </Button> */}
+
+          <Button
+            colorScheme="blue"
+            size="md"
+            onClick={onAddAttendanceOpen}
+            zIndex="1"
+            mt="0.5rem"
+            mr="1.3rem"
+            _hover={{ backgroundColor: "#4F46E5" }}
+          >
+            <Box mr="0.5rem">
+              {" "}
+              <FaCirclePlus size="1.2rem" />
+            </Box>
+            <Text mt="0.8rem">Ajouter un employé</Text>
           </Button>
         </Flex>
 
@@ -466,7 +607,6 @@ const EmployeeAttendancePage = () => {
           </Box>
         </Flex>
       </Flex>
-
       {/* ================= TABLE HEADER  ================= */}
       <Grid
         templateColumns={gridTemplate}
@@ -505,7 +645,6 @@ const EmployeeAttendancePage = () => {
           Actions
         </Text>
       </Grid>
-
       {/* ================= BODY ================= */}
       <Box height="90vh" overflowY="auto" overflowX="hidden">
         {loading ? (
@@ -552,7 +691,6 @@ const EmployeeAttendancePage = () => {
             ))
         )}
       </Box>
-
       {/* ================= FOOTER  ================= */}
       <Flex
         bg="linear-gradient(
@@ -576,7 +714,7 @@ const EmployeeAttendancePage = () => {
           <DateDropdown onChange={setSelectedDate} />
         </Box>
 
-        {dailyCheck.status !== "LOCKED" ? (
+        {(!dailyCheck || dailyCheck.status !== "LOCKED") && (
           <Box mt="0.8rem">
             <Switch
               colorScheme="blue"
@@ -585,7 +723,7 @@ const EmployeeAttendancePage = () => {
               onChange={(e) => setUnlocked(e.target.checked)}
             />
           </Box>
-        ) : null}
+        )}
 
         <Box
           color="gray.800"
@@ -599,6 +737,12 @@ const EmployeeAttendancePage = () => {
           {String(time.getSeconds()).padStart(2, "0")}
         </Box>
       </Flex>
+      <AddAttendanceModal
+        date={selectedDate}
+        isOpen={isAddAttendanceOpen}
+        onClose={onAddAttendanceClose}
+        onCreated={loadAttendance}
+      />
     </Flex>
   );
 };

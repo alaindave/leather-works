@@ -36,6 +36,8 @@ export interface AttendanceDailyCheckPreparationInput {
     completed: boolean;
     completedAt: string | null;
   };
+
+  date: string;
 }
 
 export interface VerifyAttendanceDailyCheckInput {
@@ -60,4 +62,5 @@ export interface MarkManagerNotifiedInput {
 export interface LockAttendanceDailyCheckInput {
   date: string;
   lockedBy: string;
+  lockedByRole: "ADMIN" | "MANAGER";
 }

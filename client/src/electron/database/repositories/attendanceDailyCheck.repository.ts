@@ -22,7 +22,9 @@ export async function createAttendanceDailyCheck(
       "ATTENDANCE DAILY CHECK CANNOT BE CREATED BEFORE EMPLOYEES ON LEAVE HAVE BEEN PROCESSED."
     );
   }
-  const date = now().split("T")[0];
+
+  console.log("CREATING ATTENDANCE DAILY CHECK NOW...");
+  const date = input.date;
   const existing = await get<AttendanceDailyCheck>(
     `
       SELECT *
@@ -34,6 +36,8 @@ export async function createAttendanceDailyCheck(
   );
 
   if (existing) {
+    console.log("EXISTING ATTENDANCE DAILY CHECK: ", existing);
+
     return existing;
   }
   const _id = randomUUID();
@@ -173,6 +177,7 @@ export async function prepareDailyAttendance(date: string) {
         completed: true,
         completedAt: markLeaveResult.completedAt,
       },
+      date,
     });
   }
   return;
@@ -237,11 +242,11 @@ export async function verifyAttendanceDailyCheck(
   const existing = await getAttendanceDailyCheckByDate(input.date);
 
   if (!existing) {
-    throw new Error(`Attendance daily check does not exist for ${input.date}`);
+    throw new Error(`ATTENDANCE DAILY CHECK DOES NOT EXIST FOR ${input.date}`);
   }
 
   if (existing.status === "LOCKED") {
-    throw new Error(`Attendance for ${input.date} is already locked`);
+    throw new Error(`ATTENDANCE FOR ${input.date} IS ALREADY LOCKED`);
   }
 
   const timestamp = now();
@@ -265,7 +270,7 @@ export async function verifyAttendanceDailyCheck(
   const updated = await getAttendanceDailyCheckById(existing._id);
 
   if (!updated) {
-    throw new Error("Failed to verify attendance daily check");
+    throw new Error("FAILED TO VERIFY ATTENDANCE DAILY CHECK.");
   }
 
   await addToSyncQueue({
@@ -341,13 +346,18 @@ export async function lockAttendanceDailyCheck(
     return existing;
   }
 
-  if (existing.status !== "MANAGER_NOTIFIED") {
-    throw new Error("MANAGER MUST BE NOTIFIED BEFORE ATTENDANCE CAN BE LOCKED");
+  if (
+    existing.status !== "MANAGER_NOTIFIED" &&
+    input.lockedByRole !== "MANAGER"
+  ) {
+    throw new Error(
+      "Le gestionnaire doit être notifié avant de verouillé la liste de présence. "
+    );
   }
 
-  if (!existing.managerNotifiedAt) {
+  if (!existing.managerNotifiedAt && input.lockedByRole !== "MANAGER") {
     throw new Error(
-      "ATTENDANCE CANNOT BE LOCKED BEFORE MANAGER HAS BEEN NOTIFIED"
+      "La liste de présence ne peut pas être verouillé avant d'avoir notifié le gestionnaire. "
     );
   }
 
@@ -364,7 +374,6 @@ export async function lockAttendanceDailyCheck(
         synced = 0
       WHERE _id = ?
         AND isDeleted = 0
-        AND status = 'MANAGER_NOTIFIED'
     `,
     [timestamp, input.lockedBy, timestamp, existing._id]
   );
@@ -372,7 +381,9 @@ export async function lockAttendanceDailyCheck(
   const updated = await getAttendanceDailyCheckById(existing._id);
 
   if (!updated) {
-    throw new Error("Failed to lock attendance daily check");
+    throw new Error(
+      "Impossible de verrouiller la présence.Une erreur est survenue."
+    );
   }
 
   await addToSyncQueue({

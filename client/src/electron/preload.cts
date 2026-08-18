@@ -11,16 +11,11 @@ type CreatePayrollComponentDto = import("../common/types/payroll/CreatePayrollCo
 type CreatePayrollProfileDto = import("../common/types/payroll/CreatePayrollProfileDto", { with: { "resolution-mode": "require" } }).default;
 type PayrollComponent = import("../common/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
 type EmployeePayrollProfile = import("../common/types/payroll/PayrollEmployeeProfile", { with: { "resolution-mode": "require" } }).default;
-// type PayrollRun =import("../common/types/payroll/Payroll",{ with: { "resolution-mode": "require" } }).default;
-// type PayrollResultRecord =import("../common/types/payroll/Payroll",{ with: { "resolution-mode": "require" } }).default;
-// type PayrollStatus =import("../common/types/payroll/Payroll",{ with: { "resolution-mode": "require" } }).default;
-
 type AttendanceDailyCheckPreparationInput =typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
 type LockAttendanceDailyCheckInput = typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
 type MarkManagerNotifiedInput =typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
 type VerifyAttendanceDailyCheckInput = typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
-
-
+type CreateAttendanceDto = typeof import("../common/types/Attendance", { with: { "resolution-mode": "require" } });
 
 interface LoginCredentials {
   email: string;
@@ -126,8 +121,8 @@ contextBridge.exposeInMainWorld("electron", {
   },
 
   attendance: {
-    create: (employeeId: string, clockIn: string) =>
-      ipcRenderer.invoke("attendance:create", employeeId, clockIn),
+    create: (input: CreateAttendanceDto) =>
+      ipcRenderer.invoke("attendance:create", input),
 
     createAbsenceLeave: (employeeId: string, status: "CONGÉ" | "ABSENT") =>
       ipcRenderer.invoke("attendance:createAbsenceLeave", employeeId, status),
@@ -138,6 +133,9 @@ contextBridge.exposeInMainWorld("electron", {
 
     getByEmployee: (employeeId: string) =>
       ipcRenderer.invoke("attendance:getByEmployee", employeeId),
+
+    getEmployeesWithoutAttendance: (date: string) =>
+      ipcRenderer.invoke("attendance:getEmployeesWithoutAttendance", date),
 
     getByDate: (date: string) =>
       ipcRenderer.invoke("attendance:getByDate", date),

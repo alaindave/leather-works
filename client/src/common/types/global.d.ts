@@ -157,7 +157,7 @@ declare global {
       };
 
       attendance: {
-        create: (employeeID: string, clockIn: string) => Promise<Attendance>;
+        create: (input: CreateAttendanceDto) => Promise<Attendance>;
         createAbsenceLeave: (
           employeeID: string,
           status: "CONGÉ" | "ABSENT"
@@ -166,6 +166,9 @@ declare global {
         getById: (_id: string) => Promise<AttendanceWithEmployee | null>;
         getByEmployee: (employeeId: string) => Promise<Attendance[]>;
         getByDate: (date: string) => Promise<AttendanceWithEmployee[]>;
+        getEmployeesWithoutAttendance: (
+          date: string
+        ) => romise<AttendanceWithEmployee[]>;
         getAttendanceRecord: (
           employeeId: string,
           date: string

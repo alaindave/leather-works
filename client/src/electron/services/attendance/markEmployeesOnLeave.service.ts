@@ -38,6 +38,7 @@ export async function markEmployeesOnLeave(
       completed: true,
       completedAt: now,
     },
+    date,
   });
 
   return {

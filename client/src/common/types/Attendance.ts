@@ -21,3 +21,11 @@ export interface PayrollAttendanceSummary {
   totalLateMinutes: number;
   absentDays: number;
 }
+
+export interface CreateAttendanceDto {
+  employeeId: string;
+  date: string;
+  clockIn?: string;
+  clockOut?: string;
+  status?: string;
+}

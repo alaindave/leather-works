@@ -9,10 +9,12 @@ import {
   Text,
   Tooltip,
   Image,
+  Badge,
 } from "@chakra-ui/react";
 import { memo, useEffect, useState } from "react";
 import { GiClockwork } from "react-icons/gi";
 import { FaWindowClose } from "react-icons/fa";
+import { FaLock } from "react-icons/fa";
 import ClockIn from "./ClockIn";
 import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee";
 import Employee from "../../common/types/Employee";
@@ -240,7 +242,7 @@ const EmployeeAttendanceCard = ({
       setClockOutMode("completed");
       toggleOff();
     } catch (error) {
-      console.error("Error clocking out:", error);
+      console.error("ERROR CLOCKING OUT:", error);
       setClockOutMode("editing");
     }
   };
@@ -252,30 +254,52 @@ const EmployeeAttendanceCard = ({
       return false;
     }
 
+    if (!localAttendance?.clockOut) return;
     try {
       setDraftClockOut(formattedClockOut);
       setClockOutValue(formattedClockOut);
+
       const [hours, minutes] = formattedClockOut.split(":").map(Number);
-      const updatedClockOut = new Date(localAttendance?.clockOut!);
+
+      if (!localAttendance?.clockOut) {
+        console.error("Cannot update clock out: no existing clock out date.");
+        return;
+      }
+
+      const updatedClockOut = new Date(localAttendance.clockOut);
+
+      if (Number.isNaN(updatedClockOut.getTime())) {
+        console.error(
+          "Cannot update clock out: existing clock out is invalid:",
+          localAttendance.clockOut
+        );
+
+        return;
+      }
+
       updatedClockOut.setHours(hours, minutes, 0, 0);
+
+      const clockOutISO = updatedClockOut.toISOString();
+
       // Optimistic UI update
       setLocalAttendance((prev) => {
         if (!prev) return null;
 
         return {
           ...prev,
-          clockOut: updatedClockOut.toISOString(),
+          clockOut: clockOutISO,
         };
       });
+
       const updatedAttendance = await window.electron.attendance.update(_id, {
-        clockOut: updatedClockOut.toISOString(),
+        clockOut: clockOutISO,
       });
 
       setLocalAttendance(updatedAttendance);
       toggleOff();
       return;
     } catch (error) {
-      console.error("Error editing clock out:", error);
+      console.error("ERROR EDITING CLOCK OUT:", error);
       return;
     }
   };
@@ -466,41 +490,57 @@ const EmployeeAttendanceCard = ({
               />{" "}
             </Editable>
           </Tooltip>
+        ) : localAttendance?.status === "ABSENT" ||
+          localAttendance?.status === "CONGÉ" ? (
+          <Badge
+            mb="1.1rem"
+            fontSize="0.9rem"
+            bg={attendance.status === "CONGÉ" ? "#3182CE" : "#E53E3E"}
+            color="gray.200"
+          >
+            {attendance.status}
+          </Badge>
         ) : (
-          <Text mt="1rem" color="gray.600" width="80px" fontSize="1.2rem">
-            - - - -
-          </Text>
+          <Badge mb="1rem" bg="#ECFDF5" color="#047857" fontSize="0.85rem">
+            En cours
+          </Badge>
         )}
       </Box>
 
       {/* Action buttons */}
-      <Box position="relative" right="1rem" mb="1rem">
-        {!localAttendance?.clockOut &&
-        localAttendance?.status !== "ABSENT" &&
-        localAttendance?.status !== "CONGÉ" ? (
-          <Button
-            bg="transparent"
-            _hover={{
-              bg: "transparent",
-            }}
-            color={clockOutMode === "editing" ? "red.300" : "yellow.600"}
-            onClick={handleToggleClockOut}
-          >
-            <GiClockwork size="1.8rem" />
-          </Button>
-        ) : (
-          <Button
-            bg="transparent"
-            _hover={{
-              bg: "transparent",
-            }}
-            color="red.600"
-            onClick={onDelete}
-          >
-            <FaWindowClose size="1.1rem" />
-          </Button>
-        )}
-      </Box>
+      {isUnlocked ? (
+        <Box position="relative" right="1rem" mb="1rem">
+          {!localAttendance?.clockOut &&
+          localAttendance?.status !== "ABSENT" &&
+          localAttendance?.status !== "CONGÉ" ? (
+            <Button
+              bg="transparent"
+              _hover={{
+                bg: "transparent",
+              }}
+              color={clockOutMode === "editing" ? "red.300" : "yellow.600"}
+              onClick={handleToggleClockOut}
+            >
+              <GiClockwork size="1.8rem" />
+            </Button>
+          ) : (
+            <Button
+              bg="transparent"
+              _hover={{
+                bg: "transparent",
+              }}
+              color="red.600"
+              onClick={onDelete}
+            >
+              <FaWindowClose size="1.1rem" />
+            </Button>
+          )}
+        </Box>
+      ) : (
+        <Box mb="1.2rem">
+          <FaLock size="1.3rem" color="#D4A017" />
+        </Box>
+      )}
     </Grid>
   );
 };

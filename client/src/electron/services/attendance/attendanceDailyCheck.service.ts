@@ -60,14 +60,14 @@ export async function verifyDailyAttendance(
    * 3. Prevent verification of locked attendance.
    */
   if (check.status === "LOCKED") {
-    throw new Error(`ATTENDANCE FOR ${input.date} IS ALREADY LOCKED.`);
+    throw new Error(`LA PRESENCE DU ${input.date} EST DEJA VERROUILLE.`);
   }
 
   /*
    * 4. Prevent duplicate verification.
    */
   if (check.status === "VERIFIED") {
-    throw new Error(`ATTENDANCE FOR ${input.date} HAS ALREADY BEEN VERIFIED.`);
+    throw new Error(`LA PRESENCE DU ${input.date} A DEJA ETE VERIFIER.`);
   }
 
   /*
@@ -93,10 +93,10 @@ export async function verifyDailyAttendance(
       .map((attendance) => attendance.employeeId)
   );
 
-  console.log("TODAY'S ATTENDANCE RECORDS", attendances);
+  console.log(`ATTENDANCE RECORDS FOR ${input.date}`, attendances);
 
   console.log(
-    "SET OF EMPLOYEES WITH TODAY'S ATTENDANCE RECORDS",
+    `SET OF EMPLOYEES WITH ATTENDANCE RECORDS FOR ${input.date}`,
     attendanceEmployeeIds
   );
 
@@ -108,7 +108,7 @@ export async function verifyDailyAttendance(
     .map((employee) => employee._id);
 
   console.log(
-    " EMPLOYEES WITH MISSING TODAY'S ATTENDANCE RECORDS",
+    ` EMPLOYEES WITH MISSING ATTENDANCE RECORDS FOR ${input.date}`,
     missingEmployeeIds
   );
 
@@ -118,9 +118,11 @@ export async function verifyDailyAttendance(
    */
   if (missingEmployeeIds.length > 0) {
     throw new Error(
-      `CANNOT VERIFY ATTENDANCE FOR ${input.date}. ` +
-        `${missingEmployeeIds.length} ACTIVE EMPLOYEE(S) ` +
-        `HAVE NO ATTENDANCE RECORD.`
+      `Impossible de vérifier la présence pour la date du ${new Date(
+        input.date
+      ).toLocaleDateString("fr-FR")}. ` +
+        `${missingEmployeeIds.length} employé(s) ` +
+        `manquent a l'appel.`
     );
   }
 

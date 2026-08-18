@@ -4,35 +4,44 @@ import { all, get, run } from "../db.js";
 import { getEmployeeById } from "./employees.repository.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import Employee from "../../../common/types/Employee.js";
-import { PayrollAttendanceSummary } from "../../../common/types/Attendance.js";
+import {
+  CreateAttendanceDto,
+  PayrollAttendanceSummary,
+} from "../../../common/types/Attendance.js";
 import { isAttendanceDateLocked } from "./attendanceDailyCheck.repository.js";
 
-export async function createAttendance(employeeId: string, clockIn: string) {
+export async function createAttendance(input: CreateAttendanceDto) {
+  let { employeeId, date, clockIn, clockOut, status } = input;
+  let lateMinutes = 0;
   const _id = randomUUID();
-  const now = new Date();
-  const time = now.toISOString();
-  const date = now.toISOString().split("T")[0];
+  const now = new Date().toISOString();
   const locked = await isAttendanceDateLocked(date);
   if (locked) {
-    throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
+    throw new Error(
+      `La présence du ${date} est vérouillé et ne peut pas être modifié`
+    );
   }
   const employee = await getEmployeeById(employeeId);
   if (!employee) {
-    throw new Error("NO EMPLOYEE FOUND WITH THE GIVEN ID");
+    throw new Error("Il n'y a pas d'employé avec cet identifiant");
   }
   const existingAttendance = await getAttendanceRecord(employeeId, date);
   console.log("EXISTING ATTENDANCE:", existingAttendance);
 
   if (existingAttendance) {
-    throw new Error("THE EMPLOYEE HAS ALREADY CLOCKED IN");
+    throw new Error("L'employé a déja pointé");
   }
-  const clockInDate = new Date(clockIn);
-  const scheduledHour = 8;
-  const scheduledMinute = 0;
-  const expectedMinutes = scheduledHour * 60 + scheduledMinute;
-  const actualMinutes = clockInDate.getHours() * 60 + clockInDate.getMinutes();
-  const lateMinutes = Math.max(0, actualMinutes - expectedMinutes);
-  const status = lateMinutes > 0 ? "RETARD" : "PONCTUEL";
+
+  if (clockIn) {
+    const clockInDate = new Date(clockIn);
+    const scheduledHour = 8;
+    const scheduledMinute = 0;
+    const expectedMinutes = scheduledHour * 60 + scheduledMinute;
+    const actualMinutes =
+      clockInDate.getHours() * 60 + clockInDate.getMinutes();
+    lateMinutes = Math.max(0, actualMinutes - expectedMinutes);
+    status = lateMinutes > 0 ? "RETARD" : "PONCTUEL";
+  }
 
   await run(
     `
@@ -41,6 +50,7 @@ export async function createAttendance(employeeId: string, clockIn: string) {
       employeeId,
       date,
       clockIn,
+      clockOut,
       status,
       lateMinutes,
       synced,
@@ -48,9 +58,9 @@ export async function createAttendance(employeeId: string, clockIn: string) {
       createdAt,
       updatedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, 0, 0, datetime('now'), datetime('now'))
+    VALUES (?, ?, ?, ?, ?,?, ?, 0, 0, datetime('now'), datetime('now'))
     `,
-    [_id, employeeId, date, clockIn, status, lateMinutes]
+    [_id, input.employeeId, date, clockIn, clockOut, status, lateMinutes]
   );
 
   const savedAttendance = {
@@ -58,13 +68,14 @@ export async function createAttendance(employeeId: string, clockIn: string) {
     employeeId,
     date,
     clockIn,
+    clockOut: clockOut ?? null,
     status,
     lateMinutes,
-    createdAt: time,
-    updatedAt: time,
+    createdAt: now,
+    updatedAt: now,
   };
 
-  console.log("Attendance to save to sync queue", savedAttendance);
+  console.log("ATTENDANCE TO SAVE TO SYNC QUEUE", savedAttendance);
 
   await addToSyncQueue({
     entity: "attendance",
@@ -123,6 +134,29 @@ export async function createAbsenceLeaveAttendance(
   });
 
   return getAttendanceById(_id);
+}
+
+export async function getEmployeesWithoutAttendance(
+  date: string
+): Promise<Employee[]> {
+  return all(
+    `
+    SELECT
+      e._id,
+      e.firstName,
+      e.lastName
+    FROM employees e
+    LEFT JOIN attendances a
+      ON a.employeeId = e._id
+      AND a.date = ?
+      AND a.isDeleted = 0
+    WHERE e.isDeleted = 0
+      AND e.status = 'ACTIF'
+      AND a._id IS NULL
+    ORDER BY e.lastName ASC, e.firstName ASC
+    `,
+    [date]
+  );
 }
 
 export async function getPayrollAttendanceSummary(
