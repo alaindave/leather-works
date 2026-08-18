@@ -78,15 +78,15 @@ export async function createAttendance(employeeId: string, clockIn: string) {
 
 export async function createAbsenceLeaveAttendance(
   employeeId: string,
-  status: "CONGÉ" | "ABSENT"
+  status: "CONGÉ" | "ABSENT",
+  date: string = new Date().toISOString().split("T")[0]
 ) {
-  const now = new Date().toISOString();
-  const date = now.split("T")[0];
   const locked = await isAttendanceDateLocked(date);
   if (locked) {
     throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
   }
   const _id = randomUUID();
+  const now = new Date().toISOString();
 
   await run(
     `

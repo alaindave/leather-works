@@ -221,7 +221,7 @@ contextBridge.exposeInMainWorld("electron", {
     getLeaveByEmployeeId: (employeeId: string) =>
       ipcRenderer.invoke("leave:getLeaveByEmployeeId", employeeId),
 
-    getOngoingLeaves:()=>ipcRenderer.invoke("leave:getOnGoing"),
+    getOngoingLeaves:(date:string)=>ipcRenderer.invoke("leave:getOnGoing",date),
 
     getLeaveByMonth: (month: string) =>
       ipcRenderer.invoke("leave:getLeaveByMonth", month),

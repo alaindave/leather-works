@@ -109,10 +109,9 @@ export async function createAttendanceDailyCheck(
 }
 
 export async function completeMarkAbsent(
-  completedAt: string
+  completedAt: string,
+  date: string = new Date().toISOString().split("T")[0]
 ): Promise<AttendanceDailyCheck> {
-  const date = now().split("T")[0];
-
   const existing = await get<AttendanceDailyCheck>(
     `
       SELECT *
@@ -196,7 +195,7 @@ export async function getAttendanceDailyCheckById(
 export async function getAttendanceDailyCheckByDate(
   date: string
 ): Promise<AttendanceDailyCheck | null> {
-  return get<AttendanceDailyCheck>(
+  return get<AttendanceDailyCheck | null>(
     `
       SELECT *
       FROM attendance_daily_checks
@@ -282,6 +281,7 @@ export async function verifyAttendanceDailyCheck(
 export async function markAttendanceManagerNotified(
   input: MarkManagerNotifiedInput
 ): Promise<AttendanceDailyCheck> {
+  console.log("NOTIFY MANAGER INPUT", input);
   const existing = await getAttendanceDailyCheckByDate(input.date);
 
   if (!existing) {

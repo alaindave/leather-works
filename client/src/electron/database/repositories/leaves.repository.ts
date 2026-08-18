@@ -125,17 +125,17 @@ export async function getLeaveByEmployeeId(employeeId: string) {
   );
 }
 
-export async function getOngoingLeaves(): Promise<Leave[]> {
+export async function getOngoingLeaves(date: string): Promise<Leave[]> {
   return all(
     `
-    SELECT * 
-    FROM leaves 
-    WHERE startDate <= date('now') 
-      AND endDate >= date('now')
+    SELECT *
+    FROM leaves
+    WHERE startDate <= date(?)
+      AND endDate >= date(?)
       AND status = 'APPROUVÉ'
       AND isDeleted = 0
-
-    `
+    `,
+    [date, date]
   );
 }
 

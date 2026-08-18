@@ -61,8 +61,8 @@ export function registerAttendanceIPC() {
     }
   );
 
-  ipcMain.handle("attendance:mark-absent", async () => {
-    return markEmployeesAbsent();
+  ipcMain.handle("attendance:mark-absent", async (_, date: string) => {
+    return markEmployeesAbsent(date);
   });
 
   ipcMain.handle("attendance:delete", async (_, _id: string) => {

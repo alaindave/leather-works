@@ -9,6 +9,7 @@ export async function markAbsentEmployees(
 
   const employees = await Employee.find({
     status: "ACTIF",
+    isDeleted: 0,
   });
 
   console.log("FETCHED ACTIVE EMPLOYEES", employees);

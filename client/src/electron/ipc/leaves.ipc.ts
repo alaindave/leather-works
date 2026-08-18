@@ -30,8 +30,8 @@ export function registerLeaveIPC() {
     return getLeaveById(_id);
   });
 
-  ipcMain.handle("leave:getOnGoing", async () => {
-    return getOngoingLeaves();
+  ipcMain.handle("leave:getOnGoing", async (_, date: string) => {
+    return getOngoingLeaves(date);
   });
 
   ipcMain.handle("leave:getLeaveByMonth", async (_, month: string) => {

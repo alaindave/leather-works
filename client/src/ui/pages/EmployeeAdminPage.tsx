@@ -101,7 +101,9 @@ const EmployeeAdminPage = () => {
       );
       setAttendances(attendances);
       console.log("FETCHED ATTENDANCES:", attendances);
-      const leaves = await window.electron.leave.getOngoingLeaves();
+      const leaves = await window.electron.leave.getOngoingLeaves(
+        new Date().toISOString().split("T")[0]
+      );
       setLeaves(leaves);
       console.log("FETCHED ONGOING LEAVES:", leaves);
       const admin_users = await window.electron.adminUsers.getAll();

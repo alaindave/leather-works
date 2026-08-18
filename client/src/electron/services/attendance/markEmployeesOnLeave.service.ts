@@ -6,24 +6,25 @@ import {
 import Leave from "../../../common/types/Leave.js";
 import { createAttendanceDailyCheck } from "../../database/repositories/attendanceDailyCheck.repository.js";
 
-export async function markEmployeesOnLeave() {
+export async function markEmployeesOnLeave(
+  date: string = new Date().toISOString().split("T")[0]
+) {
   console.log("markEmployeesOnLeave SERVICE INITIATED... ");
-  const leaves: Leave[] = await getOngoingLeaves();
+  const leaves: Leave[] = await getOngoingLeaves(date);
   const now = new Date().toISOString();
-  const today = now.split("T")[0];
   console.log("ONGOING LEAVES:", leaves);
-  console.log("TODAY:", today);
+  console.log("Date:", date);
 
   for (const leave of leaves) {
     const existingAttendance = await getAttendanceRecord(
       leave.employeeId,
-      today
+      date
     );
 
     if (existingAttendance) {
       continue;
     }
-    await createAbsenceLeaveAttendance(leave.employeeId, "CONGÉ");
+    await createAbsenceLeaveAttendance(leave.employeeId, "CONGÉ", date);
   }
 
   console.log("markEmployeesOnLeave COMPLETED");

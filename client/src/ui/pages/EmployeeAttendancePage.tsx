@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import { HiOutlineDownload } from "react-icons/hi";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
+import { GiConfirmed } from "react-icons/gi";
 import { RiPresentationFill } from "react-icons/ri";
 import { FaCheckDouble } from "react-icons/fa";
 import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
@@ -87,10 +88,14 @@ const EmployeeAttendancePage = () => {
 
   const loadDailyCheck = async () => {
     try {
-      const dailyCheck: AttendanceDailyCheck =
+      const dailyCheck: AttendanceDailyCheck | null =
         await window.electron.attendanceDailyCheck.getByDate(selectedDate);
       console.log("DAILY CHECK RETRIEVED", dailyCheck);
-      if (dailyCheck.markAbsentCompleted && dailyCheck.markLeaveCompleted) {
+      if (!dailyCheck) {
+        setCanVerify(false);
+        return;
+      }
+      if (dailyCheck?.markAbsentCompleted && dailyCheck?.markLeaveCompleted) {
         setCanVerify(true);
         setDailyCheck(dailyCheck);
         loadAttendance();
@@ -102,6 +107,7 @@ const EmployeeAttendancePage = () => {
   };
 
   const loadAttendance = async () => {
+    console.log("SELECTED DATE:", selectedDate);
     try {
       setLoading(true);
       const attendances = await window.electron.attendance.getByDate(
@@ -358,7 +364,7 @@ const EmployeeAttendancePage = () => {
           <Spacer />
           {canVerify && dailyCheck.status === "OPEN" ? (
             <Button
-              colorScheme="green"
+              colorScheme="purple"
               onClick={verify}
               mt="0.5rem"
               mr="1.3rem"
@@ -373,35 +379,34 @@ const EmployeeAttendancePage = () => {
             dailyCheck.status === "VERIFIED" &&
             user.role === "ADMIN" ? (
             <Button
-              colorScheme="red"
+              colorScheme="green"
               onClick={notify}
               mt="0.5rem"
               mr="1.3rem"
               isLoading={loading}
             >
               <HStack>
-                <RiPresentationFill />
-                <Text mt="1rem">Confirmation</Text>
-              </HStack>
-            </Button>
-          ) : canVerify &&
-            dailyCheck.status === "VERIFIED" &&
-            user.role === "ADMIN" ? (
-            <Button
-              colorScheme="red"
-              onClick={notify}
-              mt="0.5rem"
-              mr="1.3rem"
-              isLoading={loading}
-            >
-              <HStack>
-                <RiPresentationFill />
+                <GiConfirmed />
                 <Text mt="1rem">Confirmation</Text>
               </HStack>
             </Button>
           ) : canVerify &&
             dailyCheck.status === "MANAGER_NOTIFIED" &&
-            user.role === "MANAGER" ? (
+            user.role === "ADMIN" ? (
+            <Button
+              colorScheme="brown"
+              onClick={notify}
+              mt="0.5rem"
+              mr="1.3rem"
+              isLoading={loading}
+            >
+              <HStack>
+                <GiConfirmed />
+                <Text mt="1rem">En attente de confirmation</Text>
+              </HStack>
+            </Button>
+          ) : (canVerify && dailyCheck.status === "MANAGER_NOTIFIED") ||
+            (dailyCheck.status === "VERIFIED" && user.role === "MANAGER") ? (
             <Button
               colorScheme="yellow"
               onClick={lock}
@@ -418,7 +423,7 @@ const EmployeeAttendancePage = () => {
             <Box mt="1.3rem">
               <FaLock size="1.5rem" color="brown" />
             </Box>
-          ) : (
+          ) : !canVerify ? (
             <Button
               colorScheme="red"
               onClick={markAbsent}
@@ -431,7 +436,7 @@ const EmployeeAttendancePage = () => {
                 <Text mt="1rem">Marquer les absences</Text>
               </HStack>
             </Button>
-          )}
+          ) : null}
 
           <Spacer />
           <Button
