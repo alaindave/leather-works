@@ -186,7 +186,7 @@ export default function PayrollPage() {
         ) : (
           <TableContainer
             maxWidth="70vw"
-            maxHeight="45vw"
+            maxHeight="70vh"
             borderWidth="1px"
             borderRadius="lg"
             overflowY="auto"
@@ -238,7 +238,7 @@ export default function PayrollPage() {
                     </Td>
                     {user?.role === "MANAGER" ? (
                       <Td>
-                        <Menu placement="right">
+                        <Menu placement="bottom">
                           <MenuButton
                             mb={10}
                             as={IconButton}
@@ -270,13 +270,14 @@ export default function PayrollPage() {
                             {run.status !== "BROUILLON" &&
                             run.status !== "ANNULÉ" ? (
                               <MenuItem
-                                height="20px"
-                                mb={4}
-                                pt={3}
+                                height="10px"
+                                ml="1rem"
+                                mb="0.2rem"
+                                pt={2}
                                 icon={
                                   <IoIosRemoveCircleOutline
                                     color="orange"
-                                    size="1.5rem"
+                                    size="1.2rem"
                                   />
                                 }
                                 bg="transparent"

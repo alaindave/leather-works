@@ -155,11 +155,11 @@ const EmployeeCard = ({ employee }: Props) => {
       clockIn.toISOString()
     );
     await window.electron.attendance
-      .create(
-        employee._id,
-        clockIn.toISOString().split("T")[0],
-        clockIn.toISOString()
-      )
+      .create({
+        employeeId: employee._id,
+        date: clockIn.toISOString().split("T")[0],
+        clockIn: clockIn.toISOString(),
+      })
       .then((attendance) => {
         console.log("Attendance creation success:", attendance);
         setAttendance(attendance);

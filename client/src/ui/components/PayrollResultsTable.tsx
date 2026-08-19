@@ -15,6 +15,7 @@ import { LuPrinter } from "react-icons/lu";
 import { PayrollResult } from "../../common/types/payroll/Payroll";
 import { formatCurrency } from "../util/currencyFormatter";
 import { usePayrollSettings } from "../hooks/payroll_settings.hook";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   payrollResults: PayrollResult[];
@@ -31,6 +32,7 @@ const statusColor = {
 export default function PayrollResultsTable({ payrollResults }: Props) {
   const payrollSettings = usePayrollSettings();
   const currency = payrollSettings?.currency ?? "BIF";
+  const navigate = useNavigate();
 
   return (
     <TableContainer
@@ -112,6 +114,11 @@ export default function PayrollResultsTable({ payrollResults }: Props) {
                     icon={<ViewIcon />}
                     size="xs"
                     variant="ghost"
+                    onClick={() =>
+                      navigate(
+                        `/employees_admin/employees_list/${result.employeeId}/payslips/${result.payrollRunId}`
+                      )
+                    }
                   />
 
                   <IconButton

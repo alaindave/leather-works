@@ -74,15 +74,15 @@ export function registerEmployeeDocumentIPC() {
     async (_, document: EmployeeDocument) => {
       const absolutePath = resolveEmployeeDocumentPath(document.localPath);
 
-      console.log("Downloading employee document:");
-      console.log("Stored path:", document.localPath);
-      console.log("Absolute path:", absolutePath);
+      console.log("DOWNLOADING EMPLOYEE DOCUMENT:");
+      console.log("STORED PATH:", document.localPath);
+      console.log("ABSOLUTE PATH:", absolutePath);
 
       // Verify the local file exists first
       try {
         await fs.access(absolutePath);
       } catch {
-        throw new Error(`Employee document does not exist: ${absolutePath}`);
+        throw new Error(`EMPLOYEE DOCUMENT DOES NOT EXIST: ${absolutePath}`);
       }
 
       const result = await dialog.showSaveDialog({

@@ -369,18 +369,13 @@ const PayrollDetailsPage = () => {
           </Badge>
         )}
       </HStack>
-      {/* Payroll dashboard */}
-      {payrollRun?.employeeCount &&
-      payrollRun?.totalEarnings &&
-      payrollRun?.totalDeductions ? (
-        <PayrollDashboard
-          employeeCount={payrollRun?.employeeCount}
-          totalBasicSalary={payrollRun.totalBasicSalary}
-          totalEarnings={payrollRun?.totalEarnings}
-          totalDeductions={payrollRun?.totalDeductions}
-          totalNetSalary={payrollRun.totalNetSalary}
-        />
-      ) : null}
+      <PayrollDashboard
+        employeeCount={payrollRun?.employeeCount ?? 0}
+        totalBasicSalary={payrollRun?.totalBasicSalary ?? 0}
+        totalEarnings={payrollRun?.totalEarnings ?? 0}
+        totalDeductions={payrollRun?.totalDeductions ?? 0}
+        totalNetSalary={payrollRun?.totalNetSalary ?? 0}
+      />
       {/* Payroll results table */}
       <Box ml="1rem" mb="1rem">
         <PayrollResultsTable payrollResults={payrollResults} />

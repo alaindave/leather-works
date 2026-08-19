@@ -31,7 +31,7 @@ import {
 } from "react-icons/md";
 import { PiCreditCardLight } from "react-icons/pi";
 import { FaDollarSign } from "react-icons/fa";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Employee from "../../../common/types/Employee";
 import { PayrollResult } from "../../../common/types/payroll/Payroll";
 import { PayrollItem } from "../../../common/types/payroll/Payroll";
@@ -41,19 +41,11 @@ import { formatCurrency } from "../../util/currencyFormatter";
 import { getPayrollPeriod } from "../../util/getPayrollPeriod";
 import { usePayrollSettings } from "../../hooks/payroll_settings.hook";
 
-type EmployeeState = {
-  employee?: Employee;
-};
-
-type PhotoState = {
-  photo_url?: string;
-};
-
 const EmployeePayslipDetails = () => {
   const { _id: employeeId, payslipId } = useParams();
-  const location = useLocation();
-  const { employee } = (location.state as EmployeeState) || {};
-  const { photo_url } = (location.state as PhotoState) || "";
+  const navigate = useNavigate();
+  const [photo_url, setPhotoUrl] = useState("");
+  const [employee, setEmployee] = useState<Employee | null>(null);
   const [payrollResults, setPayrollResults] = useState<PayrollResult | null>(
     {} as PayrollResult
   );
@@ -88,8 +80,30 @@ const EmployeePayslipDetails = () => {
   } as const;
 
   useEffect(() => {
+    loadEmployee();
+    loadEmployeePhoto();
     loadPayroll();
-  }, []);
+  }, [employee?.photo_path]);
+
+  const loadEmployee = async () => {
+    if (!employeeId) return;
+
+    try {
+      const employee = await window.electron.employees.getById(employeeId);
+      console.log("FETCHED EMPLOYEE:", employee);
+      setEmployee(employee);
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE FETCHING THE EMPLOYEE", e);
+    }
+  };
+
+  const loadEmployeePhoto = async () => {
+    if (!employee?.photo_path) return;
+    const base64 = await window.electron.employees.getPhotoUrl(
+      employee.photo_path
+    );
+    setPhotoUrl(`data:image/jpeg;base64,${base64}`);
+  };
 
   const loadPayroll = async () => {
     if (!employeeId || !payslipId) return;
@@ -118,27 +132,28 @@ const EmployeePayslipDetails = () => {
     <Flex bg="#ffffff" width="100%" direction="column">
       {/* Header */}
       <HStack>
-        <Link
+        {/* <Link
           to={{
             pathname: `/employees_admin/employees_list/${employeeId}/payslips`,
           }}
           state={{ employee, photo_url }}
+        > */}
+        <Box
+          position="absolute"
+          top="1rem"
+          ml="0.4rem"
+          mr="2rem"
+          p={2}
+          border="1px solid #14376b"
+          borderRadius="10px"
+          onClick={() => navigate(-1)}
         >
-          <Box
-            position="absolute"
-            top="1rem"
-            ml="0.4rem"
-            mr="2rem"
-            p={2}
-            border="1px solid #14376b"
-            borderRadius="10px"
-          >
-            <FaArrowLeftLong color="black" />
-          </Box>
-        </Link>
+          <FaArrowLeftLong color="black" />
+        </Box>
+        {/* </Link> */}
         <Box ml="2rem">
           <HStack>
-            <Text mt="0.8rem" ml="0.5rem" fontSize="1.4rem" fontWeight="600">
+            <Text mt="0.8rem" ml="1.1rem" fontSize="1.4rem" fontWeight="600">
               Fiches de paye
             </Text>
             <Box>

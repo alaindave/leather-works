@@ -562,18 +562,75 @@ export async function deleteAttendance(_id: string) {
 }
 
 export async function upsertAttendance(attendance: Attendance) {
-  const local = await getAttendanceById(attendance._id);
-  // If local exists, apply conflict rule
+  // 1. Try to find the record by remote/local ID
+  let local = await getAttendanceById(attendance._id);
+
+  // 2. If it doesn't exist, try the natural unique key
+  //    employeeId + date
+  if (!local) {
+    local = await getAttendanceByEmployeeAndDate(
+      attendance.employeeId,
+      attendance.date
+    );
+  }
+
+  // 3. Conflict resolution
   if (local && local.updatedAt && attendance.updatedAt) {
     const localTime = new Date(local.updatedAt).getTime();
     const remoteTime = new Date(attendance.updatedAt).getTime();
 
-    //  Keep newest local change
+    // Local version is newer
     if (remoteTime < localTime) {
-      console.log(`SKIPPING REMOTE UPDATE.LOCAL IS NEWER: ${attendance._id}`);
+      console.log(
+        `SKIPPING REMOTE ATTENDANCE. LOCAL IS NEWER: ${attendance._id}`
+      );
+
       return local;
     }
   }
+
+  // 4. If a local record exists with a different _id,
+  //    update that existing record instead of inserting.
+  if (local) {
+    await run(
+      `
+      UPDATE attendances
+      SET
+        _id = ?,
+        employeeId = ?,
+        date = ?,
+        clockIn = ?,
+        clockOut = ?,
+        status = ?,
+        source = ?,
+        lateMinutes = ?,
+        notes = ?,
+        isDeleted = ?,
+        createdAt = ?,
+        updatedAt = ?
+      WHERE _id = ?
+      `,
+      [
+        attendance._id,
+        attendance.employeeId,
+        attendance.date,
+        attendance.clockIn,
+        attendance.clockOut,
+        attendance.status,
+        attendance.source,
+        attendance.lateMinutes,
+        attendance.notes,
+        attendance.isDeleted ?? 0,
+        attendance.createdAt,
+        attendance.updatedAt,
+        local._id,
+      ]
+    );
+
+    return getAttendanceById(attendance._id);
+  }
+
+  // 5. No local record exists at all, so insert it.
   await run(
     `
     INSERT INTO attendances (
@@ -590,20 +647,7 @@ export async function upsertAttendance(attendance: Attendance) {
       createdAt,
       updatedAt
     )
-    VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(_id)
-    DO UPDATE SET
-      employeeId = excluded.employeeId,
-      date = excluded.date,
-      clockIn = excluded.clockIn,
-      clockOut = excluded.clockOut,
-      status = excluded.status,
-      source = excluded.source,
-      lateMinutes = excluded.lateMinutes,
-      notes = excluded.notes,
-      isDeleted = excluded.isDeleted,
-      createdAt = excluded.createdAt,
-      updatedAt = excluded.updatedAt
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       attendance._id,
@@ -622,6 +666,22 @@ export async function upsertAttendance(attendance: Attendance) {
   );
 
   return getAttendanceById(attendance._id);
+}
+
+export async function getAttendanceByEmployeeAndDate(
+  employeeId: string,
+  date: string
+): Promise<Attendance | null> {
+  return get(
+    `
+    SELECT *
+    FROM attendances
+    WHERE employeeId = ?
+      AND date = ?
+    LIMIT 1
+    `,
+    [employeeId, date]
+  );
 }
 
 export async function markAttendanceSynced(_id: string) {

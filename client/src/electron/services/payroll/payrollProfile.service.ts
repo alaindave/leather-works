@@ -80,7 +80,6 @@ export async function initializeEmployeePayrollProfiles() {
       if (existing.has(key)) {
         continue;
       }
-
       let value = component.defaultValue;
 
       if (component.name === "BASE_SALARY") {
@@ -245,14 +244,11 @@ export async function resetEmployeePayrollProfileToDefaults(
     profile.type = component.type;
     profile.calculationType = component.calculationType;
     profile.calculationBase = component.calculationBase;
-
+    profile.value = component.defaultValue ?? null;
     // Use employee salary for BASIC_SALARY
     if (component.name === "BASE_SALARY") {
       profile.value = employee.salary;
-    } else {
-      profile.value = component.defaultValue ?? null;
     }
-    profile.value = component.defaultValue ?? null;
     profile.taxable = component.taxable;
     profile.isOverridden = 0;
     profile.isDeleted = component.isDeleted;

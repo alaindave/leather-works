@@ -62,7 +62,7 @@ const PayrollDashboard = ({
 
         <Text
           color="gray.600"
-          fontSize="1.1rem"
+          fontSize="1.3rem"
           position="relative"
           left="5.5rem"
           top="1.8rem"
@@ -109,7 +109,7 @@ const PayrollDashboard = ({
 
         <Text
           color="gray.600"
-          fontSize="1.1rem"
+          fontSize="1.15rem"
           position="relative"
           left="3rem"
           top="1.8rem"
@@ -156,7 +156,7 @@ const PayrollDashboard = ({
         </HStack>
         <Text
           color="gray.600"
-          fontSize="1.1rem"
+          fontSize="1.15rem"
           position="relative"
           left="3.5rem"
           fontWeight="700"
@@ -201,7 +201,7 @@ const PayrollDashboard = ({
         </HStack>
         <Text
           color="gray.600"
-          fontSize="1.1rem"
+          fontSize="1.15rem"
           position="relative"
           left="2rem"
           fontWeight="700"
@@ -246,7 +246,7 @@ const PayrollDashboard = ({
         </HStack>
         <Text
           color="gray.600"
-          fontSize="1.1rem"
+          fontSize="1.15rem"
           position="relative"
           left="1.5rem"
           fontWeight="700"
