@@ -408,7 +408,7 @@ const EmployeeLeavePage = () => {
         onClose={onConfirmationClose}
         onConfirmation={handleLeaveDelete}
         header="Supprimer"
-        body="Etes vous sur de vouloir supprimer cette demande?"
+        body="Êtes vous sur de vouloir supprimer cette demande?"
       />
     </>
   );

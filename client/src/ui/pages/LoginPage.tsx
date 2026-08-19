@@ -23,6 +23,7 @@ import logo from "../assets/afritan_logo.png";
 import SignUp from "../components/SignUp";
 import "../styles/App.css";
 import { checkOnline } from "../services/connectivity_check.service";
+import useTaskStore from "../../store/task.store";
 
 const schema = z.object({
   email: z.string(),
@@ -36,6 +37,8 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const setLogIn = useAdminUser((store) => store.login);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const clearTasks = useTaskStore((store) => store.clearTasks);
+  const loadTopTasks = useTaskStore((store) => store.loadTopTasks);
 
   const { register, handleSubmit } = useForm<AuthData>({
     resolver: zodResolver(schema),
@@ -43,10 +46,11 @@ const LoginPage = () => {
 
   const handleLogin = async (credentials: AuthData) => {
     setIsLoggingIn(true);
+    await clearTasks();
 
     try {
       const online = await checkOnline();
-      console.log("Am I online?", online);
+      console.log("ONLINE:", online);
 
       if (!online) {
         //Offline login
@@ -70,6 +74,7 @@ const LoginPage = () => {
           offlineUser.notes ?? ""
         );
 
+        await loadTopTasks(offlineUser._id);
         navigate("/admin", { replace: true });
 
         return;
@@ -100,7 +105,7 @@ const LoginPage = () => {
           adminUser.role,
           adminUser.notes ?? ""
         );
-
+        await loadTopTasks(adminUser._id);
         navigate("/admin", { replace: true });
       }
     } catch (error) {

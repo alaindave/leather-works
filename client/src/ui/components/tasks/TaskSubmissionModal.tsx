@@ -65,7 +65,13 @@ const TaskSubmissionModal = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [priority, setPriority] = useState<Priority>("MOYENNE");
-  const { register, handleSubmit, control, reset } = useForm<TaskData>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<TaskData>({
     resolver: zodResolver(schema),
   });
 
@@ -124,7 +130,9 @@ const TaskSubmissionModal = ({
       <ModalOverlay backdropFilter="auto" backdropBlur="0.5rem" />
       <ModalContent bg="gray.100">
         <form
-          onSubmit={handleSubmit(onSubmit, (errors) => console.log(errors))}
+          onSubmit={handleSubmit(onSubmit, (errors) =>
+            console.error(errors.message?.message)
+          )}
         >
           <ModalHeader color="#ffffff">
             <Flex justify="space-between">
@@ -385,6 +393,18 @@ const TaskSubmissionModal = ({
                 color="red.500"
               >
                 {errorMessage}
+              </Text>
+              <Text
+                fontWeight="500"
+                fontSize="1.1rem"
+                position="relative"
+                top="10px"
+                right="20px"
+                color="red.500"
+              >
+                {errors.message && (
+                  <p className="text-danger">{errors.message?.message}</p>
+                )}
               </Text>
               <HStack height="50px">
                 {taskRecipients?.map((recipient) => (

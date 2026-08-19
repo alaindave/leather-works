@@ -108,6 +108,7 @@ export default function TaskDetailsDrawer({
         ),
       }));
       onRefresh?.();
+      onClose();
       return true;
     } catch (error) {
       console.error("An error occurred during task update:", error);
@@ -189,18 +190,34 @@ export default function TaskDetailsDrawer({
                   <Text mt="0.3rem" fontSize="0.93rem" color="gray.600">
                     Ouverte le
                   </Text>
-
-                  <Text
-                    position="relative"
-                    bottom="0.98rem"
-                    fontSize="0.98rem"
-                    color="gray.600"
-                  >
-                    {currentTask.submittedAt &&
-                      new Date(currentTask.submittedAt).toLocaleDateString(
-                        "fr-FR"
-                      )}
-                  </Text>
+                  <HStack>
+                    <Text
+                      position="relative"
+                      bottom="0.98rem"
+                      fontSize="0.98rem"
+                      color="gray.600"
+                    >
+                      {currentTask.submittedAt &&
+                        new Date(currentTask.submittedAt).toLocaleDateString(
+                          "fr-FR"
+                        )}{" "}
+                    </Text>
+                    <Text
+                      position="relative"
+                      bottom="0.98rem"
+                      fontSize="0.98rem"
+                      color="gray.600"
+                    >
+                      {currentTask.submittedAt &&
+                        new Date(currentTask?.submittedAt).toLocaleTimeString(
+                          "fr-FR",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
+                    </Text>
+                  </HStack>
                 </Box>
               </HStack>
 

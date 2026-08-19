@@ -24,6 +24,7 @@ import LeaveEdit from "./LeaveEdit";
 import { LeaveWithEmployee } from "../../common/types/LeaveWithEmployee";
 import defaultAvatar from "../assets/default-avatar.jpeg";
 import Employee from "../../common/types/Employee";
+import DeletionDialog from "./DeletionDialog";
 
 interface Props {
   leave: LeaveWithEmployee;
@@ -35,6 +36,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
   const [localLeave, setLocalLeave] = useState<LeaveWithEmployee>(leave);
   const [employee, setEmployee] = useState<Employee>({} as Employee);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isCancelOpen,
+    onOpen: onCancelOpen,
+    onClose: onCancelClose,
+  } = useDisclosure();
+
   const [photo_url, setPhotoUrl] = useState("");
   const toast = useToast();
   const {
@@ -178,13 +185,27 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       );
   };
 
-  // // Handle cancel
-  const handleCancel = () => {
+  // Handle cancel
+  // const handleCancel = () => {
+  //   window.electron.leave
+  //     .cancel(leave._id)
+  //     .then((leave) => {
+  //       console.log("CANCELLED LEAVE: ", leave);
+  //       setLocalLeave(leave);
+  //     })
+  //     .catch((error) =>
+  //       console.error("AN ERROR OCCURED WHILE CANCELLING LEAVE", error)
+  //     );
+  // };
+
+  // Handle cancel confirmation
+  const handleCancelConfirmation = () => {
     window.electron.leave
       .cancel(leave._id)
       .then((leave) => {
         console.log("CANCELLED LEAVE: ", leave);
         setLocalLeave(leave);
+        onCancelClose();
       })
       .catch((error) =>
         console.error("AN ERROR OCCURED WHILE CANCELLING LEAVE", error)
@@ -285,7 +306,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         // Manager area
         <Box>
           <Text color="gray.200" fontSize="1.1rem">
-            <Menu placement="bottom-end">
+            <Menu placement="left">
               <MenuButton
                 mb={10}
                 as={IconButton}
@@ -300,7 +321,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                   color: "white",
                 }}
                 _expanded={{
-                  bg: "#1D326B",
+                  bg: "#ffffff",
                 }}
                 aria-label="Actions"
                 position="relative"
@@ -379,12 +400,12 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       <MdOutlineDeleteForever color="red.300" size="20px" />
                     }
                     bg="transparent"
-                    color="red.300"
+                    color="gray.200"
                     borderRadius="10px"
                     _hover={{
                       bg: "rgba(255,0,0,0.08)",
                     }}
-                    onClick={handleCancel}
+                    onClick={() => onCancelOpen()}
                   >
                     Annuler
                   </MenuItem>
@@ -397,7 +418,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       <MdOutlineDeleteForever color="red.300" size="20px" />
                     }
                     bg="transparent"
-                    color="red.300"
+                    color="gray.200"
                     borderRadius="10px"
                     _hover={{
                       bg: "rgba(255,0,0,0.08)",
@@ -415,7 +436,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
         // Admin area
         <Box>
           <Text color="gray.200" fontSize="1.1rem">
-            <Menu placement="bottom-end">
+            <Menu placement="left">
               <MenuButton
                 mb={10}
                 as={IconButton}
@@ -433,16 +454,15 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                 position="relative"
                 top="1rem"
               />
-
-              <MenuList
-                bg="#132250"
-                border="1px solid #2A3D70"
-                borderRadius="14px"
-                minW="170px"
-                p="6px"
-                boxShadow="0 8px 30px rgba(0,0,0,0.35)"
-              >
-                {status === "ATTENTE_APPROBATION" ? (
+              {status === "ATTENTE_APPROBATION" && (
+                <MenuList
+                  bg="#132250"
+                  border="1px solid #2A3D70"
+                  borderRadius="14px"
+                  minW="170px"
+                  p="6px"
+                  boxShadow="0 8px 30px rgba(0,0,0,0.35)"
+                >
                   <>
                     <MenuItem
                       icon={<FaRegEdit color="orange.300" size="1rem" />}
@@ -452,6 +472,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       _hover={{ bg: "#1D326B" }}
                       onClick={onOpen}
                       fontSize="1.1rem"
+                      height="2.2rem"
                     >
                       Modifier la demande
                     </MenuItem>
@@ -464,6 +485,7 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                     <MenuItem
                       bg="transparent"
                       borderTop="1px solid #2A3D70"
+                      height="2.2rem"
                       color="white"
                       borderRadius="10px"
                       _hover={{ bg: "#1D326B" }}
@@ -482,24 +504,19 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
                       </Text>
                     </MenuItem>
                   </>
-                ) : (
-                  <MenuItem
-                    bg="transparent"
-                    color="white"
-                    borderRadius="10px"
-                    _hover={{ bg: "#1D326B" }}
-                    fontSize="1rem"
-                    fontWeight="600"
-                    onClick={handleCancel}
-                  >
-                    Annuler
-                  </MenuItem>
-                )}
-              </MenuList>
+                </MenuList>
+              )}
             </Menu>
           </Text>
         </Box>
       )}
+      <DeletionDialog
+        isOpen={isCancelOpen}
+        onClose={onCancelClose}
+        onConfirmation={handleCancelConfirmation}
+        header="Annuler la demande de congé"
+        body="Êtes vous sur de vouloir annuler ce congé?"
+      />
     </Grid>
   );
 };

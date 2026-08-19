@@ -1,5 +1,5 @@
 import type Task from "../../../common/types/Task.js";
-import { all, run } from "../db.js";
+import { all, get, run } from "../db.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import { randomUUID } from "crypto";
 import { getTaskCommentsWithAuthor } from "./tasks_comments.repository.js";
@@ -37,9 +37,7 @@ export async function createTask(task: Task) {
   console.log("TASK TO CREATE:", task);
   const _id = randomUUID();
   const taskNumber = generateTaskNumber(task.priority);
-  const today = new Date();
-  const submittedAt = today.toISOString().split("T")[0];
-  const time = today.toISOString();
+  const now = new Date().toISOString();
 
   //Create task
   await run(
@@ -52,12 +50,12 @@ export async function createTask(task: Task) {
       message,
       deadline,
       priority,
-      submittedAt,
       synced,
+      submittedAt,
       createdAt,
       updatedAt
     )
-    VALUES (?,?,?,?,?,?,?,?,0, datetime('now'), datetime('now'))
+    VALUES (?,?,?,?,?,?,?,0,?,?,?)
     `,
     [
       _id,
@@ -67,7 +65,9 @@ export async function createTask(task: Task) {
       task.message,
       task.deadline,
       task.priority,
-      submittedAt,
+      now,
+      now,
+      now,
     ]
   );
 
@@ -87,9 +87,9 @@ export async function createTask(task: Task) {
     _id,
     taskNumber,
     recipients: task.recipients.map((r) => r._id),
-    submittedAt,
-    createdAt: time,
-    updatedAt: time,
+    submittedAt: now,
+    createdAt: now,
+    updatedAt: now,
   };
 
   console.log("TASK TO SAVE TO SYNC QUEUE", savedTask);
@@ -183,7 +183,7 @@ export async function updateTask(task: Task) {
 
 //Get task by ID
 export async function getTaskById(_id: string) {
-  const rows = await all<TaskRow>(
+  const row = await get<TaskRow>(
     `
     SELECT 
       t._id AS taskId,
@@ -197,88 +197,77 @@ export async function getTaskById(_id: string) {
       t.resolutionNotes,
       t.resolvedAt,
       t.resolvedBy,
+      t.submittedAt,
 
       -- author
       a._id AS author,
       a.firstName AS authorFirstName,
       a.lastName AS authorLastName,
       a.email AS authorEmail,
-      a.role AS authorRole,
-
-      -- recipient
-      r._id AS recipientId,
-      r.firstName AS recipientFirstName,
-      r.lastName AS recipientLastName,
-      r.email AS recipientEmail,
-      r.role AS recipientRole
+      a.role AS authorRole
 
     FROM tasks t
 
     LEFT JOIN admin_users a 
       ON a._id = t.author
 
-    LEFT JOIN task_recipients tr 
-      ON tr.taskId = t._id
-
-    LEFT JOIN admin_users r 
-      ON r._id = tr.recipient
-
     WHERE t._id = ?
     `,
     [_id]
   );
 
-  if (!rows.length) return null;
+  if (!row) return null;
 
-  const taskMap = {
-    _id: rows[0].taskId,
-    taskNumber: rows[0].taskNumber,
-    subject: rows[0].subject,
-    message: rows[0].message,
-    priority: rows[0].priority,
-    deadline: rows[0].deadline,
-    isResolved: rows[0].isResolved ?? null,
-    resolutionNotes: rows[0].resolutionNotes ?? null,
-    resolvedAt: rows[0].resolvedAt ?? null,
-    resolvedBy: rows[0].resolvedBy ?? null,
+  // Fetch all recipients for this task
+  const recipients = await all<{
+    _id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    role: string | null;
+  }>(
+    `
+    SELECT
+      u._id,
+      u.firstName,
+      u.lastName,
+      u.email,
+      u.role
+    FROM task_recipients tr
 
-    author: {
-      _id: rows[0].author,
-      firstName: rows[0].authorFirstName,
-      lastName: rows[0].authorLastName,
-      email: rows[0].authorEmail,
-      role: rows[0].authorRole,
-    },
+    LEFT JOIN admin_users u
+      ON u._id = tr.recipient
 
-    recipients: [] as {
-      _id: string;
-      firstName: string | null;
-      lastName: string | null;
-      email: string | null;
-      role: string | null;
-    }[],
-  };
-
-  const seen = new Set();
-
-  for (const row of rows) {
-    if (row.recipientId && !seen.has(row.recipientId)) {
-      seen.add(row.recipientId);
-
-      taskMap.recipients.push({
-        _id: row.recipientId,
-        firstName: row.recipientFirstName,
-        lastName: row.recipientLastName,
-        email: row.recipientEmail,
-        role: row.recipientRole,
-      });
-    }
-  }
+    WHERE tr.taskId = ?
+    `,
+    [_id]
+  );
 
   const comments = await getTaskCommentsWithAuthor(_id);
 
   return {
-    ...taskMap,
+    _id: row.taskId,
+    taskNumber: row.taskNumber,
+    subject: row.subject,
+    message: row.message,
+    priority: row.priority,
+    deadline: row.deadline,
+    isResolved: row.isResolved ?? null,
+    resolutionNotes: row.resolutionNotes ?? null,
+    resolvedAt: row.resolvedAt ?? null,
+    resolvedBy: row.resolvedBy ?? null,
+    submittedAt: row.submittedAt,
+
+    author: {
+      _id: row.author,
+      firstName: row.authorFirstName,
+      lastName: row.authorLastName,
+      email: row.authorEmail,
+      role: row.authorRole,
+    },
+
+    recipients,
+
     comments,
   };
 }
@@ -328,26 +317,38 @@ export async function getTopTasks(userId: string) {
       ON r._id = tr.recipient
 
     WHERE t.isDeleted = 0
-    AND ( 
-      t.author = ? 
-      OR EXISTS (
-      SELECT 1
-      FROM task_recipients tr2
-      WHERE tr2.taskId = t._id
-        AND tr2.recipient = ?
-    )
-  )
+      AND t.isResolved = 0
+      AND (
+        t.author = ?
+        OR EXISTS (
+          SELECT 1
+          FROM task_recipients tr2
+          WHERE tr2.taskId = t._id
+            AND tr2.recipient = ?
+        )
+      )
 
     ORDER BY
+      -- Tasks with deadlines come before tasks without deadlines
+      CASE
+        WHEN t.deadline IS NULL THEN 1
+        ELSE 0
+      END ASC,
+
+      -- Closest deadline first
+      datetime(t.deadline) ASC,
+
+      -- Highest priority first when deadlines are equal
       CASE t.priority
         WHEN 'Haute' THEN 3
         WHEN 'Moyenne' THEN 2
         WHEN 'Basse' THEN 1
         ELSE 0
       END DESC,
+
+      -- Final tie-breaker
       datetime(t.createdAt) ASC
 
-    LIMIT 5
     `,
     [userId, userId]
   );
@@ -406,7 +407,6 @@ export async function getTopTasks(userId: string) {
       task.comments = await getTaskCommentsWithAuthor(task._id);
     })
   );
-
   return tasks;
 }
 

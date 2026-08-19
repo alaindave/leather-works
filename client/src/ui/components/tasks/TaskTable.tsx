@@ -6,14 +6,13 @@ import {
   TableContainer,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
-  Text,
 } from "@chakra-ui/react";
-import { FiCheckCircle, FiClock } from "react-icons/fi";
-import Task from "../../../common/types/Task";
 import { useNavigate } from "react-router-dom";
+import Task from "../../../common/types/Task";
 
 interface TaskTableProps {
   tasks: Pick<
@@ -64,11 +63,17 @@ const TaskTable = ({ tasks }: TaskTableProps) => {
       borderColor="gray.200"
       borderRadius="xl"
       boxShadow="sm"
-      maxW="75vw"
+      maxW="70vw"
     >
-      <TableContainer>
+      <TableContainer
+        maxWidth="70vw"
+        maxHeight="72vh"
+        borderWidth="1px"
+        borderRadius="lg"
+        overflowY="auto"
+      >
         <Table variant="simple">
-          <Thead position="sticky" top="0" bg="white" zIndex={1}>
+          <Thead position="sticky" top={0} bg="gray.50" zIndex={1}>
             <Tr>
               <Th>Numero de tache</Th>
               <Th>Auteur</Th>

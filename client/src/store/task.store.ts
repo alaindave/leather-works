@@ -6,7 +6,6 @@ import User from "../common/types/User";
 interface TaskStore {
   tasks: Task[];
   loading: boolean;
-  loadAllTasks: () => Promise<void>;
   loadTopTasks: (userId: string) => Promise<void>;
   createTask: (task: Task) => Promise<void>;
   updateTask: (task: Task) => Promise<void>;
@@ -18,6 +17,7 @@ interface TaskStore {
   ) => Promise<void>;
 
   setTasks: (tasks: Task[]) => void;
+  clearTasks: () => void;
 }
 
 const useTaskStore = create<TaskStore>((set, get) => ({
@@ -25,25 +25,6 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   loading: false,
 
   setTasks: (tasks) => set({ tasks }),
-
-  loadAllTasks: async () => {
-    set({ loading: true });
-
-    try {
-      const tasks = await window.electron.tasks.getAll();
-
-      console.log("LOADED TASKED:", tasks);
-
-      set({
-        tasks,
-        loading: false,
-      });
-    } catch (error) {
-      console.error("AN ERROR OCCURED WHILE LOADING TASKS IN ZUSTAND", error);
-
-      set({ loading: false });
-    }
-  },
 
   loadTopTasks: async (userId: string) => {
     set({ loading: true });
@@ -124,6 +105,12 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       tasks: state.tasks.filter((task) => task._id !== taskId),
     }));
   },
+
+  clearTasks: () =>
+    set({
+      tasks: [],
+      loading: false,
+    }),
 
   addComment: async (taskId, author, comment) => {
     const tempId = crypto.randomUUID();

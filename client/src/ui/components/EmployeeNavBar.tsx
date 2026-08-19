@@ -29,10 +29,13 @@ import { ErrorBoundary } from "react-error-boundary";
 import PageErrorFallback from "../pages/PageErrorFallback";
 import { checkOnline } from "../services/connectivity_check.service";
 import { useEffect, useState } from "react";
+import useTaskStore from "../../store/task.store";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const setLogOut = useAdminUser((store) => store.logout);
+  const clearTasks = useTaskStore((store) => store.clearTasks);
+
   const navigate = useNavigate();
   const [online, setOnline] = useState<boolean>(false);
 
@@ -55,6 +58,7 @@ const EmployeeNavBar = () => {
       const logout = await window.electron.auth.logout();
       if (logout) {
         setLogOut();
+        await clearTasks();
         navigate("/", { replace: true });
       }
     } catch (error) {

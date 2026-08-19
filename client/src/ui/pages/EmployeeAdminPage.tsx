@@ -8,6 +8,8 @@ import {
   Textarea,
   useDisclosure,
 } from "@chakra-ui/react";
+import { IoReloadOutline } from "react-icons/io5";
+
 import { useEffect, useState } from "react";
 import { CiCalendarDate, CiClock2 } from "react-icons/ci";
 import type Attendance from "../../common/types/Attendance";
@@ -109,8 +111,6 @@ const EmployeeAdminPage = () => {
       const admin_users = await window.electron.adminUsers.getAll();
       setAdminUsersList(admin_users);
       console.log("FETCHED ADMIN USERS", admin_users);
-      const top_tasks = await loadTopTasks(user._id);
-      console.log("FETCHED TOP TASKS:", top_tasks);
     } finally {
       setLoading(false);
     }
@@ -131,8 +131,16 @@ const EmployeeAdminPage = () => {
     }
   };
 
+  const loadTasks = async () => {
+    try {
+      await loadTopTasks(user._id);
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE FETCHING TASKS", e);
+    }
+  };
+
   const handleTaskCreate = () => {
-    console.log("Task create clicked");
+    console.log("TASK CREATE CLICKED");
     onCreateOpen();
   };
 
@@ -142,7 +150,7 @@ const EmployeeAdminPage = () => {
   };
 
   const handleTaskDelete = async (_id: string) => {
-    console.log("ID to delete,", _id);
+    console.log("ID TO DELETE,", _id);
     try {
       const deletedTask = await deleteTask(_id);
       console.log("DELETED TASK: ", deletedTask);
@@ -156,7 +164,7 @@ const EmployeeAdminPage = () => {
     try {
       await loadTopTasks(user._id);
     } catch (error) {
-      console.log("An error occured while refreshing tasks:", error);
+      console.log("AN ERROR OCCURED WHILE REFRESHING TASKS:", error);
     }
   };
 
@@ -234,6 +242,20 @@ const EmployeeAdminPage = () => {
           </Text>
         </Box>
 
+        <Button
+          position="relative"
+          bottom="2rem"
+          colorScheme="blue"
+          onClick={loadTasks}
+        >
+          <Box>
+            <IoReloadOutline />
+          </Box>
+          <Text ml="0.5rem" mt="1rem">
+            Taches
+          </Text>
+        </Button>
+
         {/* DATE / TIME */}
         <Flex
           bg="#F8F9FB"
@@ -309,6 +331,7 @@ const EmployeeAdminPage = () => {
           mt={4}
           overflowY="auto"
           position="relative"
+          left={tasks.length === 0 ? "15rem" : "0.5rem"}
         >
           <Flex align="center" gap={2} mb={3}>
             <Text

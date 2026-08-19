@@ -14,9 +14,9 @@ import {
 } from "@chakra-ui/react";
 import { FiCheckCircle } from "react-icons/fi";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import { FaHourglassStart } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-
 import Task from "../../../common/types/Task";
 import useAdminUser from "../../../store/auth.store";
 import useTaskStore from "../../../store/task.store";
@@ -24,19 +24,10 @@ import TaskResolutionPopover from "./TaskResolutionPopover";
 
 export default function TaskDetailsPage() {
   const { _id } = useParams();
-
   const [task, setTask] = useState<Task | null>(null);
   const [comment, setComment] = useState("");
-
   const author = useAdminUser((store) => store.adminUser);
-
   const addComment = useTaskStore((store: any) => store.addComment);
-
-  const storeTask = useTaskStore((state) =>
-    task ? state.tasks.find((t) => t._id === task._id) : undefined
-  );
-
-  const currentTask = storeTask ?? task;
 
   useEffect(() => {
     loadTask();
@@ -47,21 +38,12 @@ export default function TaskDetailsPage() {
 
     try {
       const result = await window.electron.tasks.getById(_id);
-
       if (!result) {
-        setTask(null);
         return;
       }
-
       setTask(result);
-
-      useTaskStore.setState((state) => ({
-        tasks: state.tasks.map((existingTask) =>
-          existingTask._id === result._id ? result : existingTask
-        ),
-      }));
     } catch (error) {
-      console.error("AN ERROR OCCURED WHILE FETCHING TASK", error);
+      console.error("AN ERROR OCCURED WHILE FETCHING TASKS", error);
     }
   };
 
@@ -71,10 +53,8 @@ export default function TaskDetailsPage() {
     }
 
     try {
-      await addComment(currentTask?._id, author, comment);
-
+      await addComment(task?._id, author, comment);
       setComment("");
-
       await loadTask();
     } catch (error) {
       console.error("FAILED TO ADD TASK COMMENT:", error);
@@ -84,7 +64,7 @@ export default function TaskDetailsPage() {
   const handleResolution = async (
     notes: string | undefined
   ): Promise<boolean> => {
-    if (!currentTask) {
+    if (!task) {
       return false;
     }
 
@@ -97,7 +77,7 @@ export default function TaskDetailsPage() {
     const resolvedBy = `${author.firstName} ${author.lastName}`;
 
     const updatedTask: Task = {
-      ...currentTask,
+      ...task,
       isResolved: 1,
       resolutionNotes: notes,
       resolvedAt: new Date().toISOString(),
@@ -119,7 +99,6 @@ export default function TaskDetailsPage() {
       }));
 
       await loadTask();
-
       return true;
     } catch (error) {
       console.error("AN ERROR OCCURED DURING TASK UPDATE:", error);
@@ -127,6 +106,8 @@ export default function TaskDetailsPage() {
       return false;
     }
   };
+
+  console.log("currentTask?.submittedAt", task);
 
   return (
     <Flex
@@ -154,10 +135,6 @@ export default function TaskDetailsPage() {
         justify="space-between"
         zIndex={10}
       >
-        {/* LEFT
-            Back + Task Number
-        */}
-
         <HStack spacing={4}>
           <Link to="/employees_admin/tasks">
             <Button variant="ghost" size="sm" leftIcon={<FaArrowLeftLong />}>
@@ -174,26 +151,30 @@ export default function TaskDetailsPage() {
             color="gray.800"
             mt="1rem"
           >
-            {currentTask?.taskNumber}
+            {task?.taskNumber}
+          </Text>
+        </HStack>
+        {/* Deadline */}
+        <HStack>
+          <FaHourglassStart size="1.2rem" color="brown" />
+          <Text mt="1rem" fontSize="1.1rem">
+            {task?.deadline &&
+              new Date(task?.deadline).toLocaleDateString("fr-FR")}
           </Text>
         </HStack>
 
-        {/* RIGHT
-            Status + Resolve
-        */}
-
         <HStack spacing={4}>
           <Badge
-            colorScheme={currentTask?.isResolved ? "green" : "yellow"}
+            colorScheme={task?.isResolved ? "green" : "yellow"}
             borderRadius="full"
             px={4}
             py={1.5}
             fontSize="sm"
           >
-            {currentTask?.isResolved ? "Résolue" : "Ouverte"}
+            {task?.isResolved ? "Résolue" : "Ouverte"}
           </Badge>
 
-          {!currentTask?.isResolved && (
+          {!task?.isResolved && (
             <TaskResolutionPopover onSubmit={handleResolution} />
           )}
         </HStack>
@@ -217,7 +198,12 @@ export default function TaskDetailsPage() {
             ================================================== */}
             <Flex width="100%" justify="space-between">
               <Box>
-                <Text fontSize="md" fontWeight="600" color="gray.500" mb={3}>
+                <Text
+                  fontSize="1.1rem"
+                  fontWeight="600"
+                  color="gray.500"
+                  mb={3}
+                >
                   Auteur
                 </Text>
 
@@ -225,8 +211,8 @@ export default function TaskDetailsPage() {
                   <Avatar
                     size="sm"
                     name={
-                      currentTask?.author
-                        ? `${currentTask.author.firstName} ${currentTask.author.lastName}`
+                      task?.author
+                        ? `${task.author.firstName} ${task.author.lastName}`
                         : "Auteur"
                     }
                     position="relative"
@@ -235,23 +221,35 @@ export default function TaskDetailsPage() {
 
                   <Box>
                     <Text fontSize="md" fontWeight="600" color="gray.800">
-                      {currentTask?.author
-                        ? `${currentTask.author.firstName} ${currentTask.author.lastName}`
+                      {task?.author
+                        ? `${task.author.firstName} ${task.author.lastName}`
                         : "Auteur inconnu"}
                     </Text>
-
-                    {currentTask?.submittedAt && (
+                    <HStack>
                       <Text
                         position="relative"
                         bottom="1rem"
-                        fontSize="sm"
-                        color="gray.500"
+                        fontSize="1rem"
+                        color="gray.600"
                       >
-                        {new Date(currentTask.submittedAt).toLocaleString(
-                          "fr-FR"
-                        )}
+                        {task?.submittedAt &&
+                          new Date(task.submittedAt).toLocaleDateString(
+                            "fr-FR"
+                          )}
                       </Text>
-                    )}
+                      <Text
+                        position="relative"
+                        bottom="1rem"
+                        fontSize="1rem"
+                        color="gray.600"
+                      >
+                        {task?.submittedAt &&
+                          new Date(task.submittedAt).toLocaleTimeString(
+                            "fr-FR",
+                            { hour: "2-digit", minute: "2-digit" }
+                          )}
+                      </Text>
+                    </HStack>
                   </Box>
                 </HStack>
               </Box>
@@ -267,9 +265,9 @@ export default function TaskDetailsPage() {
                   Destinataires
                 </Text>
 
-                {currentTask?.recipients?.length ? (
+                {task?.recipients?.length ? (
                   <HStack spacing={3} flexWrap="wrap">
-                    {currentTask?.recipients.map((user) => (
+                    {task?.recipients.map((user) => (
                       <HStack
                         key={user._id}
                         spacing={2}
@@ -281,7 +279,7 @@ export default function TaskDetailsPage() {
                         py={1.5}
                       >
                         <Avatar
-                          size="xs"
+                          size="sm"
                           name={`${user.firstName} ${user.lastName}`}
                         />
 
@@ -311,20 +309,17 @@ export default function TaskDetailsPage() {
             ================================================== */}
 
             <Box>
-              <Text fontSize="md" fontWeight="600" color="gray.500" mb={2}>
+              <Text fontSize="1.1rem" fontWeight="600" color="gray.500" mb={2}>
                 Sujet
               </Text>
 
               <Text
-                fontSize={{
-                  base: "xl",
-                  md: "2xl",
-                }}
-                fontWeight="700"
-                color="gray.900"
-                lineHeight="1.3"
+                fontSize="1.2rem"
+                fontWeight="600"
+                color="gray.800"
+                lineHeight="1.1"
               >
-                {currentTask?.subject}
+                {task?.subject}
               </Text>
             </Box>
 
@@ -333,17 +328,17 @@ export default function TaskDetailsPage() {
             ================================================== */}
 
             <Box>
-              <Text fontSize="md" fontWeight="600" color="gray.500" mb={2}>
+              <Text fontSize="1.1rem" fontWeight="600" color="gray.500" mb={2}>
                 Message
               </Text>
 
               <Text
-                fontSize="md"
+                fontSize="1.2rem"
                 color="gray.700"
                 lineHeight="1.8"
                 whiteSpace="pre-wrap"
               >
-                {currentTask?.message}
+                {task?.message}
               </Text>
             </Box>
 
@@ -353,7 +348,7 @@ export default function TaskDetailsPage() {
                 RESOLUTION
             ================================================== */}
 
-            {currentTask?.isResolved && (
+            {task?.isResolved && (
               <Box
                 bg="green.50"
                 border="1px solid"
@@ -369,20 +364,20 @@ export default function TaskDetailsPage() {
                   </Text>
                 </HStack>
 
-                {currentTask.resolvedAt && (
+                {task.resolvedAt && (
                   <Text fontSize="sm" color="gray.600">
                     Résolue le{" "}
-                    {new Date(currentTask.resolvedAt).toLocaleString("fr-FR")}
+                    {new Date(task.resolvedAt).toLocaleString("fr-FR")}
                   </Text>
                 )}
 
-                {currentTask.resolvedBy && (
+                {task.resolvedBy && (
                   <Text fontSize="md" color="gray.600" mt={1}>
-                    Par {currentTask.resolvedBy}
+                    Par {task.resolvedBy}
                   </Text>
                 )}
 
-                {currentTask.resolutionNotes && (
+                {task.resolutionNotes && (
                   <Box mt={3}>
                     <Text
                       fontSize="md"
@@ -394,7 +389,7 @@ export default function TaskDetailsPage() {
                     </Text>
 
                     <Text fontSize="md" color="gray.700" whiteSpace="pre-wrap">
-                      {currentTask.resolutionNotes}
+                      {task.resolutionNotes}
                     </Text>
                   </Box>
                 )}
@@ -412,17 +407,17 @@ export default function TaskDetailsPage() {
                 </Text>
 
                 <Badge borderRadius="full" colorScheme="gray" px={3}>
-                  {currentTask?.comments?.length ?? 0}
+                  {task?.comments?.length ?? 0}
                 </Badge>
               </Flex>
 
               <Stack spacing={5}>
-                {currentTask?.comments?.length ? (
-                  currentTask?.comments.map((comment) => (
+                {task?.comments?.length ? (
+                  task?.comments.map((comment) => (
                     <Box key={comment._id}>
                       <HStack align="start" spacing={3}>
                         <Avatar
-                          size="md"
+                          size="sm"
                           name={
                             comment.author
                               ? `${comment.author.firstName} ${comment.author.lastName}`
