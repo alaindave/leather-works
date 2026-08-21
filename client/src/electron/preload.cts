@@ -143,8 +143,8 @@ contextBridge.exposeInMainWorld("electron", {
     getAttendanceRecord: (employeeId: string, date: string) =>
       ipcRenderer.invoke("attendance:getAttendanceRecord", employeeId, date),
 
-    update: (_id: string, updates: Partial<AttendanceWithEmployee>) =>
-      ipcRenderer.invoke("attendance:update", _id, updates),
+    update: (_id: string,date:string, updates: Partial<AttendanceWithEmployee>) =>
+      ipcRenderer.invoke("attendance:update", _id,date,updates),
 
     markAbsent: (date:string) =>
       ipcRenderer.invoke(
@@ -285,6 +285,23 @@ contextBridge.exposeInMainWorld("electron", {
   sync: () => ipcRenderer.invoke("sync:run"),
 
 
+ onSyncCompleted: (
+  callback: (data: { timestamp: string }) => void
+) => {
+  const listener = (
+    _event: Electron.IpcRendererEvent,
+    data: { timestamp: string }
+  ) => {
+    callback(data);
+  };
+
+  ipcRenderer.on("sync:completed", listener);
+
+  return () => {
+    ipcRenderer.removeListener("sync:completed", listener);
+  };
+},
+
  payrollSettings: {
   get: () =>
       ipcRenderer.invoke(
@@ -362,11 +379,6 @@ contextBridge.exposeInMainWorld("electron", {
         "payroll-settings:getUnsynced"
       ),
   },
-
-
-
-
-
 
  payrollComponents: {
   create: (component:CreatePayrollComponentDto) =>

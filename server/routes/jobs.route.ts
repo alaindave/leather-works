@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 
 import { markAbsentEmployees } from "../services/markEmployeeAbsent.service.js";
 
-import SystemJob from "../models/systemJobModel.js";
+import SystemJob from "../models/systemJob.model.js";
 
 const router = express.Router();
 

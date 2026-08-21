@@ -3,10 +3,11 @@ import { useRef } from "react";
 import { SlMagnifier } from "react-icons/sl";
 
 interface Props {
+  placeholderText: string;
   onSearch: (searchText: string) => void;
 }
 
-const SearchBar = ({ onSearch }: Props) => {
+const SearchBar = ({ placeholderText, onSearch }: Props) => {
   const ref = useRef<HTMLInputElement>(null);
   return (
     <form
@@ -27,10 +28,10 @@ const SearchBar = ({ onSearch }: Props) => {
           border="1px solid #E2E8F0"
           boxShadow="0 2px 10px rgba(15,23,42,.06)"
           bg="#FFFFFF"
-          placeholder="Rechercher un employé"
+          placeholder={placeholderText}
           _placeholder={{ color: "gray", fontSize: "1rem", fontWeight: "500" }}
           variant="filled"
-          width="34vw"
+          width="28vw"
           height="45px"
           textColor="black"
           _focus={{ bg: "#FFFFFF" }}

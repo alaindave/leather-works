@@ -10,7 +10,7 @@ export function registerSyncIPC() {
         success: true,
       };
     } catch (error) {
-      console.error("Sync IPC failed:", error);
+      console.error("SYNC IPC FAILED:", error);
 
       return {
         success: false,

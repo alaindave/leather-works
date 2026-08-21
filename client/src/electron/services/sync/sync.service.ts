@@ -1,8 +1,8 @@
-import axios from "axios";
 import { app } from "electron";
+import { BrowserWindow } from "electron";
 import { pushPendingChanges } from "./push.service.js";
 import { pullLatestChanges } from "./pull.service.js";
-import { markEmployeesOnLeave } from "../attendance/markEmployeesOnLeave.service.js";
+import { NetworkService } from "./network.service.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -15,11 +15,9 @@ export default async function sync() {
   if (syncing) return;
   syncing = true;
   try {
-    try {
-      const result = await axios.get(`${API_URL}/health`);
-      console.log("BACKEND AVAILABLE: ", result.status);
-    } catch (error) {
-      console.error("BACKEND UNAVAILABLE: ", error);
+    const backendAvailable = await NetworkService.canReachBackend();
+    if (!backendAvailable) {
+      console.log("BACKEND UNAVAILABLE.SYNC SKIPPED.");
       return;
     }
     // PUSH
@@ -28,7 +26,7 @@ export default async function sync() {
       if (result) {
         console.log("PUSH RESULTS: ", result.status);
       }
-      console.log("NO ITEMS TO PUSH");
+      console.log("NO MORE ITEMS TO PUSH");
     } catch (error) {
       console.error("PUSH FAILED:", error);
     }
@@ -37,7 +35,7 @@ export default async function sync() {
     try {
       const result = await pullLatestChanges();
       console.log("PULL RESULTS: ", result.status);
-      await markEmployeesOnLeave();
+      notifyRendererSyncCompleted();
     } catch (error) {
       console.error("PULL FAILED:", error);
     }
@@ -46,4 +44,15 @@ export default async function sync() {
   } finally {
     syncing = false;
   }
+}
+
+function notifyRendererSyncCompleted() {
+  console.log("NOTIFY RENDERER CALLED");
+  BrowserWindow.getAllWindows().forEach((window) => {
+    if (!window.isDestroyed()) {
+      window.webContents.send("sync:completed", {
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
 }

@@ -14,28 +14,26 @@ import {
   Switch,
   Text,
   useDisclosure,
-  VStack,
   useToast,
+  VStack,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
-import { HiOutlineDownload } from "react-icons/hi";
+import { FaCheckDouble, FaLock, FaSyncAlt } from "react-icons/fa";
 import { FaCirclePlus } from "react-icons/fa6";
-import { MdAutoDelete } from "react-icons/md";
-import { RxCrossCircled } from "react-icons/rx";
 import { GiConfirmed } from "react-icons/gi";
-import { RiPresentationFill } from "react-icons/ri";
-import { FaCheckDouble } from "react-icons/fa";
+import { MdAutoDelete } from "react-icons/md";
 import { PiSealCheck } from "react-icons/pi";
+import { RiPresentationFill } from "react-icons/ri";
+import { RxCrossCircled } from "react-icons/rx";
+import { AttendanceDailyCheck } from "../../common/types/AttendanceDailyCheck";
+import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee";
+import useAdminUser from "../../store/auth.store";
+import useSyncStore from "../../store/sync.store";
+import AddAttendanceModal from "../components/AddAttendanceModal";
+import DateDropdown from "../components/DateDropdown";
 import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
-import DateDropdown from "../components/DateDropdown";
-import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee";
-import { FaSyncAlt } from "react-icons/fa";
-import { AttendanceDailyCheck } from "../../common/types/AttendanceDailyCheck";
-import { FaLock } from "react-icons/fa";
-import useAdminUser from "../../store/auth.store";
-import AddAttendanceModal from "../components/AddAttendanceModal";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -67,6 +65,7 @@ const EmployeeAttendancePage = () => {
   const [filter, setFilter] = useState("");
   const [time, setTime] = useState(new Date());
   const [loading, setLoading] = useState(false);
+  const [checkLoading, setCheckLoading] = useState(false);
   const [canVerify, setCanVerify] = useState(false);
   const [dailyCheck, setDailyCheck] = useState<AttendanceDailyCheck | null>(
     null
@@ -79,6 +78,7 @@ const EmployeeAttendancePage = () => {
     onClose: onAddAttendanceClose,
   } = useDisclosure();
   const user = useAdminUser((store) => store.adminUser);
+  const syncVersion = useSyncStore((store) => store.syncVersion);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const toast = useToast();
   const getErrorMessage = (error: Error | string): string => {
@@ -119,7 +119,7 @@ const EmployeeAttendancePage = () => {
   
 `;
 
-  /* ================= CLOCK ================= */
+  /* CLOCK  */
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
@@ -127,10 +127,11 @@ const EmployeeAttendancePage = () => {
 
   /* Initial data fetch*/
   useEffect(() => {
+    console.log("ATTENDANCE PAGE: SYNC COMPLETED, RELOADING ATTENDANCE");
     setDailyCheck(null);
     loadAttendance();
     loadDailyCheck();
-  }, [selectedDate]);
+  }, [selectedDate, syncVersion]);
 
   const loadDailyCheck = async () => {
     try {
@@ -144,7 +145,6 @@ const EmployeeAttendancePage = () => {
       if (dailyCheck?.markAbsentCompleted && dailyCheck?.markLeaveCompleted) {
         setCanVerify(true);
         setDailyCheck(dailyCheck ?? null);
-        loadAttendance();
       }
       return;
     } catch (e) {
@@ -161,7 +161,7 @@ const EmployeeAttendancePage = () => {
       );
       setAttendances(attendances);
     } catch (error) {
-      console.error("Failed to load attendance:", error);
+      console.error("FAILED TO LOAD ATTENDANCE:", error);
     } finally {
       setLoading(false);
     }
@@ -198,40 +198,18 @@ const EmployeeAttendancePage = () => {
 
   const markAbsent = async () => {
     try {
-      setLoading(true);
+      setCheckLoading(true);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       const absences = await window.electron.attendance.markAbsent(
         selectedDate
       );
       console.log("ABSENCES CREATED", absences);
-
-      toast({
-        title: "Absences",
-        description: "Les employés absents ont été enregistrés avec succès.",
-        status: "success",
-        duration: 4000,
-        isClosable: true,
-        position: "top-left",
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
       });
-      await loadAttendance();
       await loadDailyCheck();
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE MARKING ABSENCES", e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verify = async () => {
-    try {
-      setLoading(true);
-
-      const result = await window.electron.attendanceDailyCheck.verify({
-        date: selectedDate,
-        verifiedBy: user._id,
-      });
-
-      console.log("VERIFIED ATTENDANCES", result);
-
       toast({
         title: "Présence vérifiée",
         description: "La liste de présence a été vérifiée avec succès.",
@@ -240,9 +218,36 @@ const EmployeeAttendancePage = () => {
         isClosable: true,
         position: "top-left",
       });
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE MARKING ABSENCES", e);
+    } finally {
+      setCheckLoading(false);
+    }
+  };
 
-      await loadAttendance();
+  const verify = async () => {
+    try {
+      setCheckLoading(true);
+
+      const result = await window.electron.attendanceDailyCheck.verify({
+        date: selectedDate,
+        verifiedBy: user._id,
+      });
+
+      console.log("VERIFIED ATTENDANCES", result);
+
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       await loadDailyCheck();
+      toast({
+        title: "Présence vérifiée",
+        description: "La liste de présence a été vérifiée avec succès.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "top-left",
+      });
     } catch (error) {
       showActionError(
         "Échec de la vérification",
@@ -250,20 +255,23 @@ const EmployeeAttendancePage = () => {
         "Impossible de vérifier la liste de présence."
       );
     } finally {
-      setLoading(false);
+      setCheckLoading(false);
     }
   };
 
   const notify = async () => {
     try {
-      setLoading(true);
+      setCheckLoading(true);
 
       const result = await window.electron.attendanceDailyCheck.notifyManager({
         date: selectedDate,
       });
-
       console.log("NOTIFIED MANAGER ATTENDANCES", result);
 
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
+      await loadDailyCheck();
       toast({
         title: "Manager notifié",
         description:
@@ -273,9 +281,6 @@ const EmployeeAttendancePage = () => {
         isClosable: true,
         position: "top-left",
       });
-
-      await loadAttendance();
-      await loadDailyCheck();
     } catch (error) {
       showActionError(
         "Échec de la notification",
@@ -283,13 +288,13 @@ const EmployeeAttendancePage = () => {
         "Impossible de notifier le manager."
       );
     } finally {
-      setLoading(false);
+      setCheckLoading(false);
     }
   };
 
   const lock = async () => {
     try {
-      setLoading(true);
+      setCheckLoading(true);
 
       const result = await window.electron.attendanceDailyCheck.lock({
         date: selectedDate,
@@ -299,6 +304,10 @@ const EmployeeAttendancePage = () => {
 
       console.log("LOCKED ATTENDANCE", result);
 
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
+      await loadDailyCheck();
       toast({
         title: "Présence confirmée",
         description: "La liste de présence a été confirmée et verrouillée.",
@@ -307,9 +316,6 @@ const EmployeeAttendancePage = () => {
         isClosable: true,
         position: "top-left",
       });
-
-      await loadAttendance();
-      await loadDailyCheck();
     } catch (error) {
       showActionError(
         "Échec de la confirmation",
@@ -317,20 +323,20 @@ const EmployeeAttendancePage = () => {
         "Impossible de confirmer et verrouiller la liste de présence."
       );
     } finally {
-      setLoading(false);
+      setCheckLoading(false);
     }
   };
 
-  const handleExport = async () => {
-    const csv = attendances
-      .map(
-        (a) =>
-          `${a.firstName} ${a.lastName},${a.matricule},${a.clockIn},${a.date}`
-      )
-      .join("\n");
+  // const handleExport = async () => {
+  //   const csv = attendances
+  //     .map(
+  //       (a) =>
+  //         `${a.firstName} ${a.lastName},${a.matricule},${a.clockIn},${a.date}`
+  //     )
+  //     .join("\n");
 
-    await window.electron.file.save(csv);
-  };
+  //   await window.electron.file.save(csv);
+  // };
 
   const getAttendanceAction = () => {
     if (!canVerify) {
@@ -361,7 +367,7 @@ const EmployeeAttendancePage = () => {
   };
 
   const attendanceAction = getAttendanceAction();
-  console.log("IS UNLOCKED?", unlocked);
+
   return (
     <Flex direction="column" ml="0.02rem" width="100vw" h="95.1vh" bg="#F8FAFC">
       {/* ================= ALERT DIALOG ================= */}
@@ -489,7 +495,7 @@ const EmployeeAttendancePage = () => {
               onClick={verify}
               mt="0.5rem"
               mr="1.3rem"
-              isLoading={loading}
+              isLoading={checkLoading}
             >
               <HStack>
                 <FaCheckDouble />
@@ -504,7 +510,7 @@ const EmployeeAttendancePage = () => {
               onClick={notify}
               mt="0.5rem"
               mr="1.3rem"
-              isLoading={loading}
+              isLoading={checkLoading}
             >
               <HStack>
                 <PiSealCheck size="1.1rem" />
@@ -533,7 +539,7 @@ const EmployeeAttendancePage = () => {
               onClick={lock}
               mt="0.5rem"
               mr="1.3rem"
-              isLoading={loading}
+              isLoading={checkLoading}
             >
               <HStack>
                 <FaLock />
@@ -543,8 +549,8 @@ const EmployeeAttendancePage = () => {
           )}
 
           {attendanceAction === "LOCKED" && (
-            <Box mt="1.3rem">
-              <FaLock size="1.7rem" color="#D4A017" />
+            <Box position="absolute" top="1rem" right="1.5rem">
+              <FaLock size="2rem" color="#D4A017" />
             </Box>
           )}
 
@@ -554,7 +560,7 @@ const EmployeeAttendancePage = () => {
               onClick={markAbsent}
               mt="0.5rem"
               mr="1.3rem"
-              isLoading={loading}
+              isLoading={checkLoading}
             >
               <HStack>
                 <RiPresentationFill />
@@ -578,22 +584,23 @@ const EmployeeAttendancePage = () => {
               <Text mt="1rem">Exporter</Text>
             </HStack>
           </Button> */}
-
-          <Button
-            colorScheme="blue"
-            size="md"
-            onClick={onAddAttendanceOpen}
-            zIndex="1"
-            mt="0.5rem"
-            mr="1.3rem"
-            _hover={{ backgroundColor: "#4F46E5" }}
-          >
-            <Box mr="0.5rem">
-              {" "}
-              <FaCirclePlus size="1.2rem" />
-            </Box>
-            <Text mt="0.8rem">Ajouter un employé</Text>
-          </Button>
+          {dailyCheck?.status !== "LOCKED" ? (
+            <Button
+              colorScheme="blue"
+              size="md"
+              onClick={onAddAttendanceOpen}
+              zIndex="1"
+              mt="0.5rem"
+              mr="1.3rem"
+              _hover={{ backgroundColor: "#4F46E5" }}
+            >
+              <Box mr="0.5rem">
+                {" "}
+                <FaCirclePlus size="1.2rem" />
+              </Box>
+              <Text mt="0.8rem">Ajouter un employé</Text>
+            </Button>
+          ) : null}
         </Flex>
 
         <Flex>
@@ -603,7 +610,10 @@ const EmployeeAttendancePage = () => {
 
           <Spacer />
           <Box mr="1rem">
-            <SearchBar onSearch={setSearchText} />
+            <SearchBar
+              placeholderText="Rechercher un employé"
+              onSearch={setSearchText}
+            />
           </Box>
         </Flex>
       </Flex>
@@ -680,6 +690,7 @@ const EmployeeAttendancePage = () => {
               <EmployeeAttendanceCard
                 key={attendance._id}
                 attendance={attendance}
+                selectedDate={selectedDate}
                 gridTemplate={gridTemplate}
                 onDelete={() => {
                   setAttendance(attendance);

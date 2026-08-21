@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { CiCalendar } from "react-icons/ci";
+import { FaDollarSign } from "react-icons/fa";
 import {
   FaArrowDownLong,
   FaArrowLeftLong,
@@ -30,16 +31,17 @@ import {
   MdPayment,
 } from "react-icons/md";
 import { PiCreditCardLight } from "react-icons/pi";
-import { FaDollarSign } from "react-icons/fa";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Employee from "../../../common/types/Employee";
-import { PayrollResult } from "../../../common/types/payroll/Payroll";
-import { PayrollItem } from "../../../common/types/payroll/Payroll";
+import {
+  PayrollItem,
+  PayrollResult,
+} from "../../../common/types/payroll/Payroll";
 import defaultAvatar from "../../assets/default-avatar.jpeg";
 import PayslipItemDisplay from "../../components/payroll/PayslipItemDisplay";
+import { usePayrollSettings } from "../../hooks/payroll_settings.hook";
 import { formatCurrency } from "../../util/currencyFormatter";
 import { getPayrollPeriod } from "../../util/getPayrollPeriod";
-import { usePayrollSettings } from "../../hooks/payroll_settings.hook";
 
 const EmployeePayslipDetails = () => {
   const { _id: employeeId, payslipId } = useParams();
@@ -132,12 +134,6 @@ const EmployeePayslipDetails = () => {
     <Flex bg="#ffffff" width="100%" direction="column">
       {/* Header */}
       <HStack>
-        {/* <Link
-          to={{
-            pathname: `/employees_admin/employees_list/${employeeId}/payslips`,
-          }}
-          state={{ employee, photo_url }}
-        > */}
         <Box
           position="absolute"
           top="1rem"
@@ -150,7 +146,6 @@ const EmployeePayslipDetails = () => {
         >
           <FaArrowLeftLong color="black" />
         </Box>
-        {/* </Link> */}
         <Box ml="2rem">
           <HStack>
             <Text mt="0.8rem" ml="1.1rem" fontSize="1.4rem" fontWeight="600">
@@ -236,7 +231,7 @@ const EmployeePayslipDetails = () => {
           mt="1rem"
           ml="0.5rem"
           height="13rem"
-          width="44vw"
+          width="47.2vw"
         >
           {/* Periode de paie */}
           <HStack mt="0.4rem" ml="1rem">

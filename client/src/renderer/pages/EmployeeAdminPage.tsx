@@ -24,6 +24,7 @@ import QuickActions from "../components/QuickActions";
 import TaskDetailsDrawer from "../components/tasks/TaskDetailsDrawer";
 import Task from "../../common/types/Task";
 import useTaskStore from "../../store/task.store";
+import useSyncStore from "../../store/sync.store";
 import { FaSyncAlt } from "react-icons/fa";
 import { FaBell } from "react-icons/fa";
 import ReminderModal from "../components/ReminderModal";
@@ -38,6 +39,7 @@ const EmployeeAdminPage = () => {
   const saveNotes = useAdminUser((store) => store.saveNotes);
   const loadTopTasks = useTaskStore((store) => store.loadTopTasks);
   const deleteTask = useTaskStore((store) => store.deleteTask);
+  const syncVersion = useSyncStore((store) => store.syncVersion);
   const tasks = useTaskStore((store) => store.tasks);
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState(user.notes);
@@ -71,7 +73,13 @@ const EmployeeAdminPage = () => {
       attendance.status === "PONCTUEL" || attendance.status === "RETARD"
   );
 
-  //useEffect for initial data fetch and live clock
+  //useEffect for initial data fetch
+  useEffect(() => {
+    console.log("EMPLOYEE ADMIN PAGE: SYNC COMPLETED, RELOADING DATA");
+    loadData();
+  }, [syncVersion]);
+
+  //useEffect for live clock
   useEffect(() => {
     const interval = setInterval(() => {
       setTime(new Date());

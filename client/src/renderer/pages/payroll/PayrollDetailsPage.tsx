@@ -81,6 +81,9 @@ const PayrollDetailsPage = () => {
         adminUser
       );
       console.log("CANCELLATION RESULTS", results);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       loadPayrollRun();
       loadPayrollResuts();
     } catch (e) {
@@ -96,6 +99,9 @@ const PayrollDetailsPage = () => {
         adminUser
       );
       console.log("VERIFICATION RESULTS", results);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       loadPayrollRun();
       loadPayrollResuts();
     } catch (e) {
@@ -111,6 +117,9 @@ const PayrollDetailsPage = () => {
         adminUser
       );
       console.log("APPROVAL RESULTS", results);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       loadPayrollRun();
       loadPayrollResuts();
     } catch (e) {
@@ -125,6 +134,9 @@ const PayrollDetailsPage = () => {
         adminUser
       );
       console.log("PAYMENT RESULTS", results);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       loadPayrollRun();
       loadPayrollResuts();
     } catch (e) {

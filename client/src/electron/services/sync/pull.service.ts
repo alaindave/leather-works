@@ -67,6 +67,11 @@ import {
   markPayrollSettingsSynced,
   upsertPayrollSettings,
 } from "../../database/repositories/payroll_settings.repository.js";
+import { AttendanceDailyCheck } from "../../../common/types/AttendanceDailyCheck.js";
+import {
+  markAttendanceDailyCheckSynced,
+  upsertAttendanceDailyCheck,
+} from "../../database/repositories/attendanceDailyCheck.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -89,6 +94,7 @@ export async function pullLatestChanges() {
       employees,
       employeesDocuments,
       attendances,
+      attendanceDailyChecks,
       leaves,
       tasks,
       payrollSettings,
@@ -105,6 +111,7 @@ export async function pullLatestChanges() {
     console.log("FETCHED EMPLOYEES:", employees);
     console.log("FETCHED EMPLOYEES DOCUMENTS:", employeesDocuments);
     console.log("FETCHED ATTENDANCES:", attendances);
+    console.log("FETCHED ATTENDANCE DAILY CHECK:", attendanceDailyChecks);
     console.log("FETCHED LEAVES:", leaves);
     console.log("FETCHED TASKS:", tasks);
     console.log("FETCHED PAYROLL SETTINGS:", payrollSettings);
@@ -119,6 +126,7 @@ export async function pullLatestChanges() {
     await syncEmployeePhotos(employees);
     await syncEmployeeDocuments(employeesDocuments);
     await syncAttendances(attendances);
+    await syncAttendanceDailyChecks(attendanceDailyChecks);
     await syncLeaves(leaves);
     await syncTasks(tasks);
     await syncPayrollSettings(payrollSettings);
@@ -154,6 +162,25 @@ async function syncAttendances(attendances: Attendance[]) {
       await markAttendanceSynced(attendance._id);
     } catch (error) {
       console.error("FAILED TO SYNC PULLED ATTENDANCE:", attendance._id, error);
+    }
+  }
+}
+
+async function syncAttendanceDailyChecks(
+  attendanceDailyChecks: AttendanceDailyCheck[]
+) {
+  if (!attendanceDailyChecks || attendanceDailyChecks.length === 0) return;
+  console.log("PULLED ATTENDANCE DAILY CHECKS:", attendanceDailyChecks);
+  for (const attendanceDailyCheck of attendanceDailyChecks) {
+    try {
+      await upsertAttendanceDailyCheck(attendanceDailyCheck);
+      await markAttendanceDailyCheckSynced(attendanceDailyCheck._id);
+    } catch (error) {
+      console.error(
+        "FAILED TO SYNC PULLED ATTENDANCE DAILY CHECK:",
+        attendanceDailyCheck._id,
+        error
+      );
     }
   }
 }
@@ -305,6 +332,7 @@ async function syncEmployeeDocuments(employeeDocuments: EmployeeDocument[]) {
 }
 
 async function syncPayrollSettings(payrollSettings: PayrollSettings) {
+  if (!payrollSettings) return;
   try {
     await upsertPayrollSettings(payrollSettings);
     await markPayrollSettingsSynced(payrollSettings._id);

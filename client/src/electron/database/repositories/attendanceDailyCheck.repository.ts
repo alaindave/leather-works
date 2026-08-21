@@ -112,6 +112,194 @@ export async function createAttendanceDailyCheck(
   return record;
 }
 
+export async function upsertAttendanceDailyCheck(
+  dailyCheck: AttendanceDailyCheck
+): Promise<AttendanceDailyCheck> {
+  // First try to find the record by its ID
+  let local = await get<AttendanceDailyCheck>(
+    `
+      SELECT *
+      FROM attendance_daily_checks
+      WHERE _id = ?
+    `,
+    [dailyCheck._id]
+  );
+
+  // If the ID doesn't exist locally, try the business key.
+  // There can only be one daily check for a given date.
+  if (!local) {
+    local = await get<AttendanceDailyCheck>(
+      `
+        SELECT *
+        FROM attendance_daily_checks
+        WHERE date = ?
+      `,
+      [dailyCheck.date]
+    );
+  }
+
+  // If we already have a local record, use the timestamp
+  // to prevent an older server record from overwriting
+  // a newer local record.
+  if (local && local.updatedAt && dailyCheck.updatedAt) {
+    const localTime = new Date(local.updatedAt).getTime();
+    const remoteTime = new Date(dailyCheck.updatedAt).getTime();
+
+    if (remoteTime < localTime) {
+      console.log(
+        `SKIPPING REMOTE ATTENDANCE DAILY CHECK. LOCAL IS NEWER: ${dailyCheck._id}`
+      );
+
+      return local;
+    }
+  }
+
+  // Existing local record
+  if (local) {
+    await run(
+      `
+        UPDATE attendance_daily_checks
+        SET
+          date = ?,
+          status = ?,
+          markAbsentCompleted = ?,
+          markAbsentCompletedAt = ?,
+          markLeaveCompleted = ?,
+          markLeaveCompletedAt = ?,
+          totalEmployees = ?,
+          verifiedEmployees = ?,
+          verifiedAt = ?,
+          verifiedBy = ?,
+          managerId = ?,
+          managerNotifiedAt = ?,
+          managerNotifiedTo = ?,
+          lockedAt = ?,
+          lockedBy = ?,
+          createdAt = ?,
+          updatedAt = ?,
+          synced = 1,
+          lastSyncedAt = CURRENT_TIMESTAMP,
+          isDeleted = ?
+        WHERE _id = ?
+      `,
+      [
+        dailyCheck.date,
+        dailyCheck.status,
+        dailyCheck.markAbsentCompleted ? 1 : 0,
+        dailyCheck.markAbsentCompletedAt ?? null,
+        dailyCheck.markLeaveCompleted ? 1 : 0,
+        dailyCheck.markLeaveCompletedAt ?? null,
+        dailyCheck.totalEmployees ?? 0,
+        dailyCheck.verifiedEmployees ?? 0,
+        dailyCheck.verifiedAt ?? null,
+        dailyCheck.verifiedBy ?? null,
+        dailyCheck.managerId ?? null,
+        dailyCheck.managerNotifiedAt ?? null,
+        dailyCheck.managerNotifiedTo ?? null,
+        dailyCheck.lockedAt ?? null,
+        dailyCheck.lockedBy ?? null,
+        dailyCheck.createdAt,
+        dailyCheck.updatedAt,
+        dailyCheck.isDeleted ? 1 : 0,
+        local._id,
+      ]
+    );
+
+    const updated = await getAttendanceDailyCheckById(local._id);
+
+    if (!updated) {
+      throw new Error(
+        `FAILED TO RETRIEVE UPSERTED ATTENDANCE DAILY CHECK: ${dailyCheck._id}`
+      );
+    }
+
+    return updated;
+  }
+
+  // No local record exists, so create it.
+  await run(
+    `
+      INSERT INTO attendance_daily_checks (
+        _id,
+        date,
+        status,
+        markAbsentCompleted,
+        markAbsentCompletedAt,
+        markLeaveCompleted,
+        markLeaveCompletedAt,
+        totalEmployees,
+        verifiedEmployees,
+        verifiedAt,
+        verifiedBy,
+        managerId,
+        managerNotifiedAt,
+        managerNotifiedTo,
+        lockedAt,
+        lockedBy,
+        createdAt,
+        updatedAt,
+        synced,
+        lastSyncedAt,
+        isDeleted
+      )
+      VALUES (
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        1,
+        CURRENT_TIMESTAMP,
+        ?
+      )
+    `,
+    [
+      dailyCheck._id,
+      dailyCheck.date,
+      dailyCheck.status,
+      dailyCheck.markAbsentCompleted ? 1 : 0,
+      dailyCheck.markAbsentCompletedAt ?? null,
+      dailyCheck.markLeaveCompleted ? 1 : 0,
+      dailyCheck.markLeaveCompletedAt ?? null,
+      dailyCheck.totalEmployees ?? 0,
+      dailyCheck.verifiedEmployees ?? 0,
+      dailyCheck.verifiedAt ?? null,
+      dailyCheck.verifiedBy ?? null,
+      dailyCheck.managerId ?? null,
+      dailyCheck.managerNotifiedAt ?? null,
+      dailyCheck.managerNotifiedTo ?? null,
+      dailyCheck.lockedAt ?? null,
+      dailyCheck.lockedBy ?? null,
+      dailyCheck.createdAt,
+      dailyCheck.updatedAt,
+      dailyCheck.isDeleted ? 1 : 0,
+    ]
+  );
+
+  const created = await getAttendanceDailyCheckById(dailyCheck._id);
+
+  if (!created) {
+    throw new Error(
+      `FAILED TO CREATE PULLED ATTENDANCE DAILY CHECK: ${dailyCheck._id}`
+    );
+  }
+
+  return created;
+}
+
 export async function completeMarkAbsent(
   completedAt: string,
   date: string = new Date().toISOString().split("T")[0]
@@ -410,4 +598,17 @@ export async function isAttendanceDateLocked(date: string): Promise<boolean> {
   );
 
   return record?.status === "LOCKED";
+}
+
+export async function markAttendanceDailyCheckSynced(_id: string) {
+  await run(
+    `
+    UPDATE attendance_daily_checks
+    SET
+      synced = 1,
+      lastSyncedAt = CURRENT_TIMESTAMP
+    WHERE _id = ?
+    `,
+    [_id]
+  );
 }

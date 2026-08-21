@@ -30,11 +30,13 @@ import PageErrorFallback from "../pages/PageErrorFallback";
 import { checkOnline } from "../services/connectivity_check.service";
 import { useEffect, useState } from "react";
 import useTaskStore from "../../store/task.store";
+import useSyncStore from "../../store/sync.store";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const setLogOut = useAdminUser((store) => store.logout);
   const clearTasks = useTaskStore((store) => store.clearTasks);
+  const lastSyncAt = useSyncStore((store) => store.lastSyncAt);
 
   const navigate = useNavigate();
   const [online, setOnline] = useState<boolean>(false);
@@ -282,6 +284,16 @@ const EmployeeNavBar = () => {
       >
         <Text ml="1rem" mt="0.4rem" fontSize="1rem" color="gray.800">
           Afritan-Gestion de personnel
+        </Text>
+
+        <Text mt="0.4rem">
+          Dernière synchronisation:{" "}
+          {lastSyncAt
+            ? new Date(lastSyncAt).toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "-"}
         </Text>
 
         <HStack mt="0.3rem" mr="2rem" fontSize="1rem" color="gray.600">

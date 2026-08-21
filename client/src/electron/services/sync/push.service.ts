@@ -24,6 +24,7 @@ import {
   markPayrollRunSynced,
 } from "../../database/repositories/payroll_run.repository.js";
 import { markPayrollSettingsSynced } from "../../database/repositories/payroll_settings.repository.js";
+import { markAttendanceDailyCheckSynced } from "../../database/repositories/attendanceDailyCheck.repository.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -121,6 +122,10 @@ export async function pushPendingChanges() {
 
       case "attendance":
         await markAttendanceSynced(data._id);
+        break;
+
+      case "attendance_daily_check":
+        await markAttendanceDailyCheckSynced(data._id);
         break;
 
       case "leave":

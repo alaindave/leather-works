@@ -108,7 +108,9 @@ export default function TaskDetailsDrawer({
         ),
       }));
       onRefresh?.();
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 2000);
       return true;
     } catch (error) {
       console.error("An error occurred during task update:", error);
@@ -400,23 +402,35 @@ export default function TaskDetailsDrawer({
                         <Text fontWeight="semibold">
                           {comment.author.firstName} {comment.author.lastName}
                         </Text>
-
-                        <Text
-                          position="relative"
-                          bottom="1.1rem"
-                          fontSize="0.92rem"
-                          color="gray.500"
-                        >
-                          {comment.createdAt &&
-                            new Date(comment.createdAt).toLocaleString(
-                              "fr-FR",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                timeZone: "Africa/Bujumbura",
-                              }
-                            )}
-                        </Text>
+                        <HStack>
+                          <Text
+                            position="relative"
+                            bottom="1.1rem"
+                            fontSize="0.92rem"
+                            color="gray.500"
+                          >
+                            {comment.createdAt &&
+                              new Date(comment.createdAt).toLocaleDateString(
+                                "fr-FR"
+                              )}
+                          </Text>
+                          <Text
+                            position="relative"
+                            bottom="1.1rem"
+                            fontSize="0.92rem"
+                            color="gray.500"
+                          >
+                            {comment.createdAt &&
+                              new Date(comment.createdAt).toLocaleTimeString(
+                                "fr-FR",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  timeZone: "Africa/Bujumbura",
+                                }
+                              )}
+                          </Text>
+                        </HStack>
                       </Box>
                     </HStack>
 

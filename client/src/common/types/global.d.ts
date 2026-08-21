@@ -175,6 +175,7 @@ declare global {
         ) => Promise<AttendanceWithEmployee>;
         update: (
           _id: string,
+          date: String,
           updates: Partial<AttendanceWithEmployee>
         ) => Promise<AttendanceWithEmployee>;
 
@@ -338,6 +339,10 @@ declare global {
         success: boolean;
         message?: string;
       }>;
+
+      onSyncCompleted: (
+        callback: (data: { timestamp: string }) => void
+      ) => () => void;
 
       notifications: {
         scheduleReminder(

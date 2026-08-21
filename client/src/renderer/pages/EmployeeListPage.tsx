@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { FaAddressBook } from "react-icons/fa6";
 import type Employee from "../../common/types/Employee";
 import useAdminUser from "../../store/auth.store";
+import useSyncStore from "../../store/sync.store";
 import AddEmployee from "../components/AddEmployee";
 import EmployeeCard from "../components/EmployeeCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
@@ -29,36 +30,33 @@ const EmployeeListPage = () => {
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const adminUser = useAdminUser((store) => store.adminUser);
+  const syncVersion = useSyncStore((store) => store.syncVersion);
 
-  //Initial data fetch
   useEffect(() => {
-    window.electron.employees
-      .getAll()
-      .then((employees) => {
-        setEmployees(employees);
-        console.log("Employees fetched: ", employees);
-      })
-      .catch((error) =>
-        console.error(
-          "An error occured while fetching employees from sqlite DB",
-          error
-        )
-      )
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+    console.log("EMPLOYEE PAGE: SYNC COMPLETED, RELOADING EMPLOYEES");
+    loadEmployees();
+  }, [syncVersion]);
 
-  //Employee sync and refresh
+  const loadEmployees = async () => {
+    try {
+      setLoading(true);
+      const employees = await window.electron.employees.getAll();
+      setEmployees(employees);
+      console.log("EMPLOYEES FETCHED:", employees);
+    } catch (error) {
+      console.error("AN ERROR OCCURED WHILE FETCHING EMPLOYEES", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEmployeeSync = async () => {
     try {
       setLoading(true);
       const result = await window.electron.sync();
       if (result.success) {
-        console.log("Sync completed");
-        const employees = await window.electron.employees.getAll();
-        setEmployees(employees);
-        console.log("Fetched synced employees:", employees);
+        console.log("SYNC COMPLETED");
+        loadEmployees();
       } else {
         console.error(result.message);
       }
@@ -69,14 +67,6 @@ const EmployeeListPage = () => {
 
   const handleAddEmployee = (employee: Employee) => {
     setEmployees([...employees, employee]);
-  };
-
-  const handleOnSearch = (searchText: string) => {
-    setSearchText(searchText);
-  };
-
-  const handleFilterClicked = (filter: string) => {
-    setFilter(filter);
   };
 
   return (
@@ -152,11 +142,14 @@ const EmployeeListPage = () => {
           gap={3}
         >
           <Flex wrap="wrap" gap={2} ml="1rem">
-            <EmployeeFilterMenu onFilterClicked={handleFilterClicked} />
+            <EmployeeFilterMenu onFilterClicked={setFilter} />
           </Flex>
 
           <Flex position="relative" left="1.1rem" wrap="wrap" mr="3.5rem">
-            <SearchBar onSearch={handleOnSearch} />
+            <SearchBar
+              placeholderText="Rechercher un employé"
+              onSearch={setSearchText}
+            />
           </Flex>
         </Flex>
       </Flex>

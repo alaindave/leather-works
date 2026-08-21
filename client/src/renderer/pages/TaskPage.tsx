@@ -5,20 +5,29 @@ import {
   HStack,
   Button,
   useDisclosure,
+  Grid,
 } from "@chakra-ui/react";
 import { FaSyncAlt } from "react-icons/fa";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Task from "../../common/types/Task";
 import useAdminUser from "../../store/auth.store";
+import useSyncStore from "../../store/sync.store";
 import TaskTable from "../components/tasks/TaskTable";
 import TaskSubmissionModal from "../components/tasks/TaskSubmissionModal";
 import AdminUser from "../../common/types/AdminUser";
+import SearchBar from "../components/SearchBar";
+import TaskPriorityFilter from "../components/TaskPriorityFilter";
+import TaskStatusFilter from "../components/TaskStatusFilter";
 
 const TaskPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [adminUsersList, setAdminUsersList] = useState<AdminUser[]>([]);
   const user = useAdminUser((store) => store.adminUser);
+  const syncVersion = useSyncStore((store) => store.syncVersion);
 
   const {
     isOpen: isCreateOpen,
@@ -27,9 +36,10 @@ const TaskPage = () => {
   } = useDisclosure();
 
   useEffect(() => {
+    console.log("TASK PAGE: SYNC COMPLETED, RELOADING TASKS");
     loadTasks();
     loadAdminUsers();
-  }, []);
+  }, [syncVersion]);
 
   const loadTasks = async () => {
     try {
@@ -74,6 +84,8 @@ const TaskPage = () => {
       setLoading(false);
     }
   };
+
+  console.log("search text", searchText);
 
   return (
     <Flex direction="column" width="100%">
@@ -123,8 +135,45 @@ const TaskPage = () => {
           Créer une nouvelle tache
         </Button>
       </Flex>
-      <Box mt="3rem" ml="2rem">
-        <TaskTable tasks={tasks} />
+      <Grid templateColumns="6fr 2fr 2fr">
+        <Flex
+          width="200px"
+          position="relative"
+          top="2rem"
+          left="0.5rem"
+          wrap="wrap"
+        >
+          <SearchBar
+            placeholderText="Rechercher une tache"
+            onSearch={setSearchText}
+          />
+        </Flex>
+        <Flex
+          width="200px"
+          position="relative"
+          top="2rem"
+          right="3rem"
+          wrap="wrap"
+        >
+          <TaskPriorityFilter onFilterClicked={setPriorityFilter} />
+        </Flex>
+        <Flex
+          width="200px"
+          position="relative"
+          top="2rem"
+          left="0.5rem"
+          wrap="wrap"
+        >
+          <TaskStatusFilter onFilterClicked={setStatusFilter} />
+        </Flex>
+      </Grid>
+      <Box mt="3rem" ml="0.5rem">
+        <TaskTable
+          tasks={tasks}
+          searchText={searchText}
+          priorityFilter={priorityFilter}
+          statusFilter={statusFilter}
+        />
       </Box>
       <TaskSubmissionModal
         isOpen={isCreateOpen}

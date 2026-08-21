@@ -245,7 +245,7 @@ const EmployeeCard = ({ employee }: Props) => {
           status: "success",
           duration: 4000,
           isClosable: true,
-          position: "top-right",
+          position: "top",
         });
 
         // Deduct one leave day

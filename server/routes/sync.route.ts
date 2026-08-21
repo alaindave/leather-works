@@ -5,6 +5,7 @@ import upload from "../middlewares/sync_upload.js";
 import {
   syncEmployee,
   syncAttendance,
+  syncAttendanceDailyCheck,
   syncLeave,
   syncTask,
   syncTaskComment,
@@ -20,18 +21,19 @@ import {
   syncPayrollSettings,
 } from "../sync.js";
 
-import Employee from "../models/employeeModel.js";
-import Attendance from "../models/attendanceModel.js";
-import Leave from "../models/leaveModel.js";
-import Task from "../models/taskModel.js";
-import AdminUser from "../models/adminUserModel.js";
-import EmployeeDocuments from "../models/employeesDocumentsModel.js";
-import PayrollComponent from "../models/payrollComponentModel.js";
-import PayrollEmployeeProfile from "../models/payrollEmployeeProfileModel.js";
-import PayrollResult from "../models/payrollResultModel.js";
-import PayrollItem from "../models/payrollItemModel.js";
-import PayrollRun from "../models/payrollRunModel.js";
-import PayrollSettings from "../models/payrollSettingsModel.js";
+import Employee from "../models/employee.model.js";
+import Attendance from "../models/attendance.model.js";
+import Leave from "../models/leave.model.js";
+import Task from "../models/task.model.js";
+import AdminUser from "../models/adminUser.model.js";
+import EmployeeDocuments from "../models/employeesDocuments.model.js";
+import PayrollComponent from "../models/payrollComponent.model.js";
+import PayrollEmployeeProfile from "../models/payrollEmployeeProfile.model.js";
+import PayrollResult from "../models/payrollResult.model.js";
+import PayrollItem from "../models/payrollItem.model.js";
+import PayrollRun from "../models/payrollRun.model.js";
+import PayrollSettings from "../models/payrollSettings.model.js";
+import AttendanceDailyCheck from "../models/attendanceDailyCheck.model.js";
 
 const router = express.Router();
 
@@ -85,6 +87,10 @@ router.post(
 
             case "attendance":
               await syncAttendance(operation, data);
+              break;
+
+            case "attendance_daily_check":
+              await syncAttendanceDailyCheck(operation, data);
               break;
 
             case "leave":
@@ -190,6 +196,7 @@ router.get(
         employees,
         employeesDocuments,
         attendances,
+        attendanceDailyCheck,
         leaves,
         tasks,
         payrollSettings,
@@ -214,6 +221,10 @@ router.get(
         }).lean(),
 
         Attendance.find({
+          updatedAt: { $gt: date },
+        }).lean(),
+
+        AttendanceDailyCheck.find({
           updatedAt: { $gt: date },
         }).lean(),
 
@@ -258,6 +269,7 @@ router.get(
         employees,
         employeesDocuments,
         attendances,
+        attendanceDailyCheck,
         leaves,
         tasks,
         payrollSettings,

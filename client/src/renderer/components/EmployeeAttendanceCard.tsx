@@ -22,6 +22,7 @@ import defaultAvatar from "../assets/default-avatar.jpeg";
 
 interface Props {
   attendance: AttendanceWithEmployee | null;
+  selectedDate: string;
   onDelete: () => void;
   gridTemplate: string;
   isUnlocked: boolean;
@@ -118,14 +119,24 @@ const formatTime = (input?: string | Date) => {
 
 const EmployeeAttendanceCard = ({
   attendance,
+  selectedDate,
   onDelete,
   gridTemplate,
   isUnlocked,
   toggleOff,
 }: Props) => {
   if (!attendance) return null;
-  const { _id, employeeId, firstName, lastName, matricule, role, department } =
-    attendance;
+  const {
+    _id,
+    date: attendanceDate,
+    employeeId,
+    firstName,
+    lastName,
+    matricule,
+    role,
+    department,
+  } = attendance;
+  if (attendanceDate !== selectedDate) return;
   const [localAttendance, setLocalAttendance] =
     useState<AttendanceWithEmployee | null>(attendance);
   const [errorMessage, setErrorMessage] = useState("");
@@ -226,9 +237,13 @@ const EmployeeAttendanceCard = ({
         };
       });
 
-      const updated = await window.electron.attendance.update(_id, {
-        clockOut: clockOutDate.toISOString(),
-      });
+      const updated = await window.electron.attendance.update(
+        _id,
+        attendanceDate,
+        {
+          clockOut: clockOutDate.toISOString(),
+        }
+      );
 
       setLocalAttendance((prev) => {
         if (!prev) return null;
@@ -291,9 +306,13 @@ const EmployeeAttendanceCard = ({
         };
       });
 
-      const updatedAttendance = await window.electron.attendance.update(_id, {
-        clockOut: clockOutISO,
-      });
+      const updatedAttendance = await window.electron.attendance.update(
+        _id,
+        attendanceDate,
+        {
+          clockOut: clockOutISO,
+        }
+      );
 
       setLocalAttendance(updatedAttendance);
       toggleOff();

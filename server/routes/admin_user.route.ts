@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import _ from "lodash";
 
-import { validateAdminUser } from "../models/adminUserModel.js";
+import { validateAdminUser } from "../models/adminUser.model.js";
 import {
   createAdminUser,
   updateAdminUser,

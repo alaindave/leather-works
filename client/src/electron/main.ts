@@ -1,66 +1,204 @@
 import "dotenv/config";
-import { BrowserWindow, app } from "electron";
+
+import { app, BrowserWindow } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
+
 import { initializeDatabase } from "./database/initializeDatabase.js";
 import { getPreloadPath } from "./pathResolver.js";
 import { registerIPCHandlers } from "./registerIPCHandlers.js";
+
 import { markEmployeesOnLeave } from "./services/attendance/markEmployeesOnLeave.service.js";
+
 import {
   initializeEmployeePayrollProfiles,
   removeDeletedPayrollComponentsFromEmployeeProfiles,
 } from "./services/payroll/payrollProfile.service.js";
-import sync from "./services/sync/sync.service.js";
+
+import {
+  startBackgroundSync,
+  stopBackgroundSync,
+} from "./services/sync/backgroundSync.service.js";
+
 import { createSocket } from "./socket.js";
 import { ensureStorageDirectories } from "./storage/directories.js";
 import { isDev } from "./util/env.util.js";
 
-const environment = isDev() ? "Development" : "Production";
+/* =========================================================
+   PATHS
+========================================================= */
 
-console.log("MAIN STARTED");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-console.log("ENVIRONMENT:", environment);
+/* =========================================================
+   ENVIRONMENT
+========================================================= */
+
+const DEV = isDev();
+
+const environment = DEV ? "Development" : "Production";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
+
+console.log("========================================");
+console.log("LEATHER WORKS STARTING");
+console.log("========================================");
+console.log("ENVIRONMENT:", environment);
 console.log("API URL:", API_URL);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-//Create main and splash windows
-let mainWindow: BrowserWindow;
-let splash: BrowserWindow;
-let splashStartTime = 0;
+/* =========================================================
+   ELECTRON CONFIGURATION
+========================================================= */
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+/*
+ * IMPORTANT:
+ * Must be called BEFORE app.whenReady().
+ */
+app.disableHardwareAcceleration();
 
-const createSplashWindow = () => {
-  splash = new BrowserWindow({
+/* =========================================================
+   WINDOWS
+========================================================= */
+
+let mainWindow: BrowserWindow | null = null;
+let splashWindow: BrowserWindow | null = null;
+
+/* =========================================================
+   SPLASH CONFIGURATION
+========================================================= */
+
+const SPLASH_MINIMUM_TIME = 4000;
+const SPLASH_FADE_TIME = 500;
+
+let splashStartedAt = 0;
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+const delay = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/* =========================================================
+   SPLASH WINDOW
+========================================================= */
+
+function createSplashWindow(): BrowserWindow {
+  const splash = new BrowserWindow({
     width: 780,
     height: 580,
     center: true,
-    show: true,
+    show: false,
     frame: false,
     resizable: false,
+    movable: false,
     alwaysOnTop: true,
     backgroundColor: "#020817",
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
   });
 
-  const splashPath = isDev()
+  const splashPath = DEV
     ? path.join(process.cwd(), "src/electron/splash.html")
     : path.join(__dirname, "../../dist/splash.html");
-  splash.loadFile(splashPath);
+
+  console.log("SPLASH PATH:", splashPath);
 
   splash.once("ready-to-show", () => {
-    splash.show();
+    if (!splash.isDestroyed()) {
+      splash.show();
+    }
   });
 
-  splashStartTime = Date.now();
-};
+  splash.webContents.once(
+    "did-fail-load",
+    (_event, errorCode, errorDescription) => {
+      console.error("SPLASH FAILED TO LOAD:", errorCode, errorDescription);
 
-const createMainWindow = async () => {
-  mainWindow = new BrowserWindow({
+      /*
+       * Show the splash anyway so the user isn't
+       * left staring at a blank screen.
+       */
+      if (!splash.isDestroyed()) {
+        splash.show();
+      }
+    }
+  );
+
+  splash.loadFile(splashPath).catch((error) => {
+    console.error("FAILED TO LOAD SPLASH:", error);
+  });
+
+  splashStartedAt = Date.now();
+
+  return splash;
+}
+
+/* =========================================================
+   CLOSE SPLASH WINDOW
+========================================================= */
+
+async function closeSplashWindow(): Promise<void> {
+  if (!splashWindow || splashWindow.isDestroyed()) {
+    return;
+  }
+
+  /*
+   * Make sure the splash has been displayed
+   * for at least the minimum amount of time.
+   */
+  const elapsed = Date.now() - splashStartedAt;
+
+  if (elapsed < SPLASH_MINIMUM_TIME) {
+    await delay(SPLASH_MINIMUM_TIME - elapsed);
+  }
+
+  if (!splashWindow || splashWindow.isDestroyed()) {
+    return;
+  }
+
+  /*
+   * Fade out the splash.
+   *
+   * The splash.html must contain:
+   *
+   * body {
+   *   opacity: 1;
+   *   transition: opacity 0.5s ease;
+   * }
+   *
+   * body.fade-out {
+   *   opacity: 0;
+   * }
+   */
+  try {
+    await splashWindow.webContents.executeJavaScript(`
+      document.body.classList.add("fade-out");
+    `);
+
+    await delay(SPLASH_FADE_TIME);
+  } catch (error) {
+    console.warn("FAILED TO ANIMATE SPLASH WINDOW:", error);
+  }
+
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.close();
+  }
+
+  splashWindow = null;
+}
+
+/* =========================================================
+   MAIN WINDOW
+========================================================= */
+
+async function createMainWindow(): Promise<BrowserWindow> {
+  const window = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 900,
@@ -73,68 +211,365 @@ const createMainWindow = async () => {
       preload: getPreloadPath(),
     },
   });
-  await createSocket(mainWindow);
 
-  mainWindow.webContents.once("did-finish-load", async () => {
-    if (splash && !splash.isDestroyed()) {
-      // minimum splash display time
-      const elapsed = Date.now() - splashStartTime;
-      const minimumSplashTime = 4000;
+  mainWindow = window;
 
-      if (elapsed < minimumSplashTime) {
-        await delay(minimumSplashTime - elapsed);
-      }
+  console.log("CREATING MAIN WINDOW...");
 
-      // trigger fade-out animation
-      splash.webContents.executeJavaScript(`
-          document.body.classList.add("fade-out");
-        `);
+  /* -------------------------------------------------------
+     SOCKET
+  ------------------------------------------------------- */
 
-      // wait for animation to finish
-      await delay(500);
-      splash.close();
+  try {
+    await createSocket(window);
+
+    console.log("SOCKET INITIALIZED.");
+  } catch (error) {
+    /*
+     * Socket failure should not prevent
+     * the application from starting.
+     */
+    console.error("FAILED TO INITIALIZE SOCKET:", error);
+  }
+
+  /* -------------------------------------------------------
+     LOAD RENDERER
+  ------------------------------------------------------- */
+
+  try {
+    if (DEV) {
+      console.log("LOADING DEVELOPMENT RENDERER...");
+
+      await window.loadURL("http://localhost:5173");
+    } else {
+      console.log("LOADING PRODUCTION RENDERER...");
+
+      await window.loadFile(path.join(__dirname, "../../dist/index.html"));
     }
-    mainWindow.show();
+
+    console.log("RENDERER FINISHED LOADING.");
+  } catch (error) {
+    console.error("FAILED TO LOAD RENDERER:", error);
+
+    throw error;
+  }
+
+  /* -------------------------------------------------------
+     CLOSE SPLASH
+  ------------------------------------------------------- */
+
+  await closeSplashWindow();
+
+  /* -------------------------------------------------------
+     SHOW MAIN WINDOW
+  ------------------------------------------------------- */
+
+  if (!window.isDestroyed()) {
+    window.show();
+    window.focus();
+
+    console.log("MAIN WINDOW DISPLAYED.");
+  }
+
+  /* -------------------------------------------------------
+     CLEANUP
+  ------------------------------------------------------- */
+
+  window.on("closed", () => {
+    if (mainWindow === window) {
+      mainWindow = null;
+    }
   });
 
-  if (isDev()) {
-    await mainWindow.loadURL("http://localhost:5173");
-  } else {
-    mainWindow.loadFile(path.join(__dirname, "../../dist/index.html"));
-  }
-};
-
-async function bootstrap() {
-  app.disableHardwareAcceleration();
-  await app.whenReady();
-  console.log("Before DB init");
-  await initializeDatabase();
-  await removeDeletedPayrollComponentsFromEmployeeProfiles();
-  await initializeEmployeePayrollProfiles();
-  console.log("After DB init");
-  registerIPCHandlers();
-  console.log("After IPC registration");
-  await ensureStorageDirectories();
-  await createSplashWindow();
-  await createMainWindow();
-  await sync();
-  // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-  // Menu.setApplicationMenu(mainMenu);
-  // Create CONGE attendances for today's approved leaves
-  await markEmployeesOnLeave();
+  return window;
 }
 
-bootstrap().catch((error) => {
-  console.error("STARTUP ERROR:", error);
-});
+/* =========================================================
+   DATABASE INITIALIZATION
+========================================================= */
+
+async function initializeAppDatabase(): Promise<void> {
+  console.log("INITIALIZING DATABASE...");
+
+  await initializeDatabase();
+
+  console.log("DATABASE INITIALIZED.");
+
+  /*
+   * Payroll maintenance.
+   */
+
+  console.log("REMOVING DELETED PAYROLL COMPONENTS...");
+
+  await removeDeletedPayrollComponentsFromEmployeeProfiles();
+
+  console.log("INITIALIZING EMPLOYEE PAYROLL PROFILES...");
+
+  await initializeEmployeePayrollProfiles();
+
+  console.log("PAYROLL INITIALIZATION COMPLETE.");
+}
+
+/* =========================================================
+   LOCAL STORAGE INITIALIZATION
+========================================================= */
+
+async function initializeLocalStorage(): Promise<void> {
+  console.log("INITIALIZING STORAGE DIRECTORIES...");
+
+  await ensureStorageDirectories();
+
+  console.log("STORAGE DIRECTORIES READY.");
+}
+
+/* =========================================================
+   IPC INITIALIZATION
+========================================================= */
+
+function initializeIPC(): void {
+  console.log("REGISTERING IPC HANDLERS...");
+
+  registerIPCHandlers();
+
+  console.log("IPC HANDLERS REGISTERED.");
+}
+
+/* =========================================================
+   ATTENDANCE INITIALIZATION
+========================================================= */
+
+async function initializeAttendance(): Promise<void> {
+  console.log("PROCESSING TODAY'S APPROVED LEAVES...");
+
+  try {
+    const result = await markEmployeesOnLeave();
+
+    console.log("MARK EMPLOYEES ON LEAVE RESULT:", result);
+  } catch (error) {
+    /*
+     * Attendance preparation should not
+     * prevent the application from starting.
+     */
+    console.error("FAILED TO PROCESS EMPLOYEES ON LEAVE:", error);
+  }
+}
+
+/* =========================================================
+   BACKGROUND SERVICES
+========================================================= */
+
+function startBackgroundServices(): void {
+  console.log("STARTING BACKGROUND SERVICES...");
+
+  try {
+    startBackgroundSync();
+
+    console.log("BACKGROUND SERVICES STARTED.");
+  } catch (error) {
+    console.error("FAILED TO START BACKGROUND SERVICES:", error);
+  }
+}
+
+/* =========================================================
+   APPLICATION BOOTSTRAP
+========================================================= */
+
+async function bootstrap(): Promise<void> {
+  try {
+    /*
+     * -----------------------------------------------------
+     * 1. ELECTRON READY
+     * -----------------------------------------------------
+     */
+
+    await app.whenReady();
+
+    console.log("ELECTRON READY.");
+
+    /*
+     * -----------------------------------------------------
+     * 2. CREATE SPLASH IMMEDIATELY
+     * -----------------------------------------------------
+     *
+     * Everything else happens behind it.
+     */
+
+    splashWindow = createSplashWindow();
+
+    /*
+     * -----------------------------------------------------
+     * 3. DATABASE
+     * -----------------------------------------------------
+     */
+
+    await initializeAppDatabase();
+
+    /*
+     * -----------------------------------------------------
+     * 4. STORAGE
+     * -----------------------------------------------------
+     */
+
+    await initializeLocalStorage();
+
+    /*
+     * -----------------------------------------------------
+     * 5. IPC
+     * -----------------------------------------------------
+     */
+
+    initializeIPC();
+
+    /*
+     * -----------------------------------------------------
+     * 6. MAIN WINDOW
+     * -----------------------------------------------------
+     *
+     * createMainWindow() will:
+     *
+     * - Load React
+     * - Wait for renderer
+     * - Close splash
+     * - Show main window
+     */
+
+    await createMainWindow();
+
+    /*
+     * -----------------------------------------------------
+     * 7. ATTENDANCE
+     * -----------------------------------------------------
+     */
+
+    await initializeAttendance();
+
+    /*
+     * -----------------------------------------------------
+     * 8. BACKGROUND SERVICES
+     * -----------------------------------------------------
+     */
+
+    startBackgroundServices();
+
+    /*
+     * -----------------------------------------------------
+     * STARTUP COMPLETE
+     * -----------------------------------------------------
+     */
+
+    console.log("========================================");
+
+    console.log("LEATHER WORKS STARTED SUCCESSFULLY");
+
+    console.log("========================================");
+  } catch (error) {
+    console.error("========================================");
+
+    console.error("APPLICATION STARTUP FAILED");
+
+    console.error("========================================");
+
+    console.error(error);
+
+    /*
+     * Close splash if startup fails.
+     */
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.close();
+      splashWindow = null;
+    }
+
+    /*
+     * Close main window if startup
+     * failed after it was created.
+     */
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.close();
+      mainWindow = null;
+    }
+  }
+}
+
+/* =========================================================
+   APPLICATION EVENTS
+========================================================= */
 
 app.on("window-all-closed", () => {
+  /*
+   * macOS:
+   * Keep application alive when all windows
+   * are closed.
+   */
+
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-process.on("uncaughtException", (err) => {
-  console.error("UNCAUGHT EXCEPTION:");
-  console.error(err);
+/* =========================================================
+   MACOS ACTIVATE
+========================================================= */
+
+app.on("activate", async () => {
+  /*
+   * macOS:
+   * Clicking the Dock icon when no window
+   * exists should recreate the main window.
+   */
+
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    console.log("APPLICATION ACTIVATED WITHOUT MAIN WINDOW.");
+
+    splashWindow = createSplashWindow();
+
+    try {
+      await createMainWindow();
+    } catch (error) {
+      console.error("FAILED TO RECREATE MAIN WINDOW:", error);
+    }
+  }
 });
+
+/* =========================================================
+   APPLICATION QUIT
+========================================================= */
+
+app.on("will-quit", () => {
+  console.log("APPLICATION QUITTING...");
+
+  try {
+    stopBackgroundSync();
+  } catch (error) {
+    console.error("FAILED TO STOP BACKGROUND SYNC:", error);
+  }
+});
+
+/* =========================================================
+   PROCESS ERROR HANDLERS
+========================================================= */
+
+process.on("uncaughtException", (error) => {
+  console.error("========================================");
+
+  console.error("UNCAUGHT EXCEPTION");
+
+  console.error("========================================");
+
+  console.error(error);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("========================================");
+
+  console.error("UNHANDLED PROMISE REJECTION");
+
+  console.error("========================================");
+
+  console.error(reason);
+});
+
+/* =========================================================
+   START APPLICATION
+========================================================= */
+
+bootstrap();

@@ -5,6 +5,7 @@ import {
   Button,
   Divider,
   Flex,
+  Grid,
   HStack,
   Icon,
   Stack,
@@ -196,7 +197,7 @@ export default function TaskDetailsPage() {
             {/* =================================================
                 AUTHOR
             ================================================== */}
-            <Flex width="100%" justify="space-between">
+            <Grid templateColumns="3fr 2fr">
               <Box>
                 <Text
                   fontSize="1.1rem"
@@ -219,7 +220,7 @@ export default function TaskDetailsPage() {
                     bottom="0.3rem"
                   />
 
-                  <Box>
+                  <Box position="relative" top="0.5rem">
                     <Text fontSize="md" fontWeight="600" color="gray.800">
                       {task?.author
                         ? `${task.author.firstName} ${task.author.lastName}`
@@ -260,7 +261,7 @@ export default function TaskDetailsPage() {
                 RECIPIENTS
             ================================================== */}
 
-              <Box>
+              <Box ml="3rem">
                 <Text fontSize="md" fontWeight="600" color="gray.500" mb={3}>
                   Destinataires
                 </Text>
@@ -300,37 +301,35 @@ export default function TaskDetailsPage() {
                   </Text>
                 )}
               </Box>
-            </Flex>
+            </Grid>
 
-            <Divider />
+            <Divider borderColor="gray.400" />
 
             {/* =================================================
                 SUBJECT
             ================================================== */}
 
-            <Box>
-              <Text fontSize="1.1rem" fontWeight="600" color="gray.500" mb={2}>
+            <VStack>
+              {/* <Text fontSize="1.1rem" fontWeight="600" color="gray.500" mb={2}>
                 Sujet
-              </Text>
+              </Text> */}
 
               <Text
-                fontSize="1.2rem"
+                fontSize="1.1rem"
                 fontWeight="600"
-                color="gray.800"
+                color="gray.700"
                 lineHeight="1.1"
               >
                 {task?.subject}
               </Text>
-            </Box>
 
-            {/* =================================================
+              {/* =================================================
                 MESSAGE
             ================================================== */}
 
-            <Box>
-              <Text fontSize="1.1rem" fontWeight="600" color="gray.500" mb={2}>
+              {/* <Text fontSize="1.1rem" fontWeight="600" color="gray.500" mb={2}>
                 Message
-              </Text>
+              </Text> */}
 
               <Text
                 fontSize="1.2rem"
@@ -340,9 +339,9 @@ export default function TaskDetailsPage() {
               >
                 {task?.message}
               </Text>
-            </Box>
+            </VStack>
 
-            <Divider />
+            <Divider borderColor="gray.400" />
 
             {/* =================================================
                 RESOLUTION
@@ -359,15 +358,29 @@ export default function TaskDetailsPage() {
                 <HStack spacing={3} mb={3}>
                   <Icon as={FiCheckCircle} color="green.500" boxSize={5} />
 
-                  <Text fontWeight="600" color="green.700">
+                  <Text
+                    position="relative"
+                    top="0.5rem"
+                    fontWeight="600"
+                    color="green.700"
+                  >
                     Tâche résolue
                   </Text>
                 </HStack>
 
                 {task.resolvedAt && (
-                  <Text fontSize="sm" color="gray.600">
+                  <Text
+                    position="relative"
+                    left="2rem"
+                    bottom="0.8rem"
+                    fontSize="sm"
+                    color="gray.600"
+                  >
                     Résolue le{" "}
-                    {new Date(task.resolvedAt).toLocaleString("fr-FR")}
+                    {new Date(task.resolvedAt).toLocaleString("fr-FR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </Text>
                 )}
 

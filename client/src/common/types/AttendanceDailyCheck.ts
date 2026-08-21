@@ -13,6 +13,8 @@ export interface AttendanceDailyCheck {
   markAbsentCompletedAt: string | null;
   markLeaveCompleted: number | null;
   markLeaveCompletedAt: string | null;
+  totalEmployees: number;
+  verifiedEmployees: number;
   verifiedAt: string | null;
   verifiedBy: string | null;
   managerId: string | null;

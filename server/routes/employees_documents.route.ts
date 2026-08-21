@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 
-import EmployeeDocument from "../models/employeesDocumentsModel.js";
+import EmployeeDocument from "../models/employeesDocuments.model.js";
 import supabase from "../services/supabase.service.js";
 
 const router = express.Router();

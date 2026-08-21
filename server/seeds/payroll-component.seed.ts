@@ -1,4 +1,4 @@
-import PayrollComponent from "../models/payrollComponentModel.js";
+import PayrollComponent from "../models/payrollComponent.model.js";
 import { randomUUID } from "crypto";
 
 const defaultPayrollComponents = [

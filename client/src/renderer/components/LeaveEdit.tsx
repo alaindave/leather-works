@@ -47,9 +47,9 @@ const LeaveEdit = ({ leave, onUpdated, isOpen, onClose }: Props) => {
   const [ServerErrorMessage, setServerErrorMessage] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 
-  console.log("LeaveEdit received:", leave);
+  console.log("LEAVE TO UPDATE:", leave);
   if (!leave) {
-    console.log("Leave is undefined");
+    console.log("LEAVE IS UNDEFINED");
     return null;
   }
   const {

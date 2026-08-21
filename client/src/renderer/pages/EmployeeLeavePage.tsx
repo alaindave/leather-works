@@ -18,6 +18,7 @@ import MonthDropDown from "../components/MonthDropDown";
 import LeaveSubmissionModal from "../components/LeaveSubmissionModal";
 import DeletionDialog from "../components/DeletionDialog";
 import { FaSyncAlt } from "react-icons/fa";
+import useSyncStore from "../../store/sync.store";
 
 const shimmerKeyframes = `
 @keyframes shimmer {
@@ -53,44 +54,52 @@ const EmployeeLeavePage = () => {
   const [leave, setLeave] = useState<LeaveWithEmployee | null>(null);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
+  const syncVersion = useSyncStore((store) => store.syncVersion);
 
   const [submissionMonth, setSubmissionMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
 
   useEffect(() => {
-    window.electron.employees
-      .getAll()
-      .then((employees) => {
-        setEmployees(employees);
-        console.log("Fetched employees:", employees);
-      })
-      .catch((error) => {
-        console.error("Error while fetching employees: ", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+    console.log("LEAVE PAGE: SYNC COMPLETED, RELOADING EMPLOYEES");
+    loadEmployees();
+  }, [syncVersion]);
 
   useEffect(() => {
-    console.log("Selected month: ", submissionMonth);
-    window.electron.leave
-      .getLeaveByMonth(submissionMonth)
-      .then((leaves) => {
-        setLeaves(leaves);
-        console.log(
-          `Fetched leaves for the month of ${submissionMonth}:${leaves}`
-        );
-      })
-      .catch((error) => {
-        console.error("Error while fetching leaves: ", error);
-      })
-      .finally(() => {
-        setLoading(false);
-        setRefresh(false);
-      });
-  }, [submissionMonth, refresh]);
+    console.log("LEAVE PAGE: SYNC COMPLETED, RELOADING LEAVES");
+    loadLeaves();
+  }, [syncVersion, submissionMonth, refresh]);
+
+  const loadLeaves = async () => {
+    console.log("SELECTED MONTH:", submissionMonth);
+    try {
+      const leaves = await window.electron.leave.getLeaveByMonth(
+        submissionMonth
+      );
+      setLeaves(leaves);
+      console.log(
+        `FETCHED LEAVES FOR THE MONTH OF ${submissionMonth}:`,
+        leaves
+      );
+    } catch (error) {
+      console.error("ERROR WHILE FETCHING LEAVES:", error);
+    } finally {
+      setLoading(false);
+      setRefresh(false);
+    }
+  };
+
+  const loadEmployees = async () => {
+    try {
+      const employees = await window.electron.employees.getAll();
+      setEmployees(employees);
+      console.log("FETCHED EMPLOYEES:", employees);
+    } catch (error) {
+      console.error("ERROR WHILE FETCHING EMPLOYEES:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   //Leave sync and refresh
   const handleLeaveSync = async () => {
@@ -98,14 +107,8 @@ const EmployeeLeavePage = () => {
       setLoading(true);
       const result = await window.electron.sync();
       if (result.success) {
-        console.log("Sync completed");
-        const leaves = await window.electron.leave.getLeaveByMonth(
-          submissionMonth
-        );
-        setLeaves(leaves);
-        console.log(
-          `Fetched leaves for the month of ${submissionMonth}:${leaves}`
-        );
+        console.log("SYNC COMPLETED");
+        loadLeaves();
       } else {
         console.error(result.message);
       }
@@ -116,13 +119,13 @@ const EmployeeLeavePage = () => {
 
   //Submit leave delete request
   const handleLeaveDelete = async () => {
-    console.log("Leave to delete: ", leave);
-    console.log("Leave ID to delete: ", leave?._id);
+    console.log("LEAVE TO DELETE: ", leave);
+    console.log("LEAVE ID TO DELETE: ", leave?._id);
     if (!leave?._id) return;
     await window.electron.leave
       .delete(leave?._id)
       .then((leave) => {
-        console.log("Deleted leave: ", leave);
+        console.log("DELETED LEAVE: ", leave);
         const updatedLeaves = leaves.filter((l) => l._id !== leave?._id);
         setLeaves(updatedLeaves);
         setRefresh(true);
@@ -130,7 +133,7 @@ const EmployeeLeavePage = () => {
         onConfirmationClose();
       })
       .catch((error) =>
-        console.error("An error occured while deleting attendance: ", error)
+        console.error("AN ERROR OCCURED WHILE DELETING ATTENDANCE: ", error)
       );
   };
 

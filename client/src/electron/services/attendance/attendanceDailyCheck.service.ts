@@ -126,8 +126,34 @@ export async function verifyDailyAttendance(
     );
   }
 
+  //  10. Make sure every employee who worked
+  //      has clocked out.
+
+  const employeesWithoutClockOut = attendances.filter(
+    (attendance) =>
+      attendance.isDeleted === 0 &&
+      attendance.status !== "ABSENT" &&
+      attendance.status !== "CONGÉ" &&
+      !attendance.clockOut
+  );
+
+  console.log(
+    `EMPLOYEES WITHOUT CLOCK OUT FOR ${input.date}`,
+    employeesWithoutClockOut
+  );
+
+  if (employeesWithoutClockOut.length > 0) {
+    throw new Error(
+      `Impossible de vérifier la présence pour la date du ${new Date(
+        input.date
+      ).toLocaleDateString("fr-FR")}. ` +
+        `${employeesWithoutClockOut.length} employé(s) ` +
+        `n'ont pas encore enregistré leur heure de sortie.`
+    );
+  }
+
   /*
-   * 10. All validation passed.
+   * 11. All validation passed.
    *
    * The repository now performs the actual state
    * transition from OPEN → VERIFIED.

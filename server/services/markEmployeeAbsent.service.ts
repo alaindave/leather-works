@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
-import Employee from "../models/employeeModel.js";
-import Attendance from "../models/attendanceModel.js";
+import Employee from "../models/employee.model.js";
+import Attendance from "../models/attendance.model.js";
 
 export async function markAbsentEmployees(
   date: string = new Date().toISOString().split("T")[0]

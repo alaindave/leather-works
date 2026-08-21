@@ -1,10 +1,10 @@
 import { randomUUID } from "crypto";
 
-import Employee from "./models/employeeModel.js";
-import Attendance from "./models/attendanceModel.js";
-import Leave from "./models/leaveModel.js";
-import AdminUser from "./models/adminUserModel.js";
-import Task from "./models/taskModel.js";
+import Employee from "./models/employee.model.js";
+import Attendance from "./models/attendance.model.js";
+import Leave from "./models/leave.model.js";
+import AdminUser from "./models/adminUser.model.js";
+import Task from "./models/task.model.js";
 
 interface EmployeeInput {
   firstName: string;

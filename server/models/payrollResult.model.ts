@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { PayrollItemDocument } from "./payrollItemModel.js";
+import { PayrollItemDocument } from "./payrollItem.model.js";
 
 export interface PayrollResultDocument {
   _id: string;

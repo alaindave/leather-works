@@ -62,8 +62,13 @@ export function registerAttendanceIPC() {
 
   ipcMain.handle(
     "attendance:update",
-    async (_, _id: string, updates: Partial<AttendanceWithEmployee>) => {
-      return updateAttendance(_id, updates);
+    async (
+      _,
+      _id: string,
+      date: string,
+      updates: Partial<AttendanceWithEmployee>
+    ) => {
+      return updateAttendance(_id, date, updates);
     }
   );
 

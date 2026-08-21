@@ -1,9 +1,14 @@
+import { useEffect } from "react";
+import { initializeRendererSync } from "./services/syncManager.service";
 import "./styles/App.css";
 import { Box, Flex } from "@chakra-ui/react";
 import LoginPage from "./pages/LoginPage";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
+  useEffect(() => {
+    initializeRendererSync();
+  }, []);
   return (
     <Flex
       margin="0"

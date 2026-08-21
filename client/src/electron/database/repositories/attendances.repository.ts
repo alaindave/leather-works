@@ -395,16 +395,15 @@ export async function getAttendanceRecord(
 
 export async function updateAttendance(
   _id: string,
+  date: string,
   updates: Partial<Attendance>
 ) {
-  const now = new Date().toISOString();
-  const date = now.split("T")[0];
   const locked = await isAttendanceDateLocked(date);
   if (locked) {
     throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
   }
   const existing = await getAttendanceById(_id);
-  console.log("ATTENDANCE TO UPDATE", existing);
+  console.log("EXISTING ATTENDANCE TO UPDATE", existing);
   console.log("UPDATES", updates);
 
   if (!existing) {

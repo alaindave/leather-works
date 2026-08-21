@@ -20,9 +20,20 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["./src/**/*", "ui/components", "ui/pages", "ui/App.tsx", "ui/Attendance.ts", "ui/Employee.ts", "ui/global.*d.ts", "ui/Leave.ts", "ui/main.tsx", "ui/routes.tsx",  "../../src/types/**/*.d.ts"
-],
-  "exclude":["src/electron"]
+  "include": [
+    "./src/**/*",
+    "renderer/components",
+    "renderer/pages",
+    "renderer/App.tsx",
+    "renderer/Attendance.ts",
+    "renderer/Employee.ts",
+    "renderer/global.*d.ts",
+    "renderer/Leave.ts",
+    "renderer/main.tsx",
+    "renderer/routes.tsx",
+    "../../src/types/**/*.d.ts"
+  ],
+  "exclude": ["src/electron"]
 }

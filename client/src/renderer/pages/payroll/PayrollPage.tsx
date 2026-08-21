@@ -43,9 +43,13 @@ export default function PayrollPage() {
   }, []);
 
   const loadPayrollRun = async () => {
-    const payrollRuns = await window.electron.payrollRun.getPayrollRuns();
-    console.log("FETCHED PAYROLL RUNS", payrollRuns);
-    setPayrollRuns(payrollRuns);
+    try {
+      const payrollRuns = await window.electron.payrollRun.getPayrollRuns();
+      console.log("FETCHED PAYROLL RUNS", payrollRuns);
+      setPayrollRuns(payrollRuns);
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE LOADING PAYROLL RUNS", e);
+    }
   };
 
   const handlePayrollGeneration = async () => {
@@ -71,7 +75,7 @@ export default function PayrollPage() {
         console.error(result.message);
       }
     } catch (e) {
-      console.error("AN ERROR OCCURED WHILE SYNCING");
+      console.error("AN ERROR OCCURED WHILE SYNCING", e);
     } finally {
       setLoading(false);
     }
@@ -81,6 +85,9 @@ export default function PayrollPage() {
     try {
       const results = await window.electron.payrollRun.returnToDraft(_id);
       console.log("WITHDRAW RESULTS", results);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       loadPayrollRun();
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE WITHDRAWING PAYROLL", e);
@@ -92,6 +99,9 @@ export default function PayrollPage() {
     try {
       const results = await window.electron.payrollRun.cancelPayroll(_id, user);
       console.log("CANCELLATION RESULTS", results);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       loadPayrollRun();
     } catch (e) {
       console.error("AN ERROR OCCURED DURING CANCELLATION", e);
@@ -102,6 +112,9 @@ export default function PayrollPage() {
     try {
       const results = await window.electron.payrollRun.deletePayrollRun(_id);
       console.log("DELETE RESULTS", results);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       loadPayrollRun();
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE DELETING PAYROLL", e);
@@ -167,7 +180,7 @@ export default function PayrollPage() {
 
         <Box mt="1rem" mr="2rem">
           <Link to="/employees_admin/payroll/settings">
-            <IoSettings fontSize="1.7rem" />
+            <IoSettings fontSize="1.9rem" />
           </Link>
         </Box>
       </Flex>

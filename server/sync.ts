@@ -1,16 +1,17 @@
-import Employee from "./models/employeeModel.js";
-import Attendance from "./models/attendanceModel.js";
-import Leave from "./models/leaveModel.js";
-import Task from "./models/taskModel.js";
-import EmployeesDocuments from "./models/employeesDocumentsModel.js";
-import PayrollComponent from "./models/payrollComponentModel.js";
-import AdminUser from "./models/adminUserModel.js";
-import EmployeePayrollProfile from "./models/payrollEmployeeProfileModel.js";
+import Employee from "./models/employee.model.js";
+import Attendance from "./models/attendance.model.js";
+import Leave from "./models/leave.model.js";
+import Task from "./models/task.model.js";
+import EmployeesDocuments from "./models/employeesDocuments.model.js";
+import PayrollComponent from "./models/payrollComponent.model.js";
+import AdminUser from "./models/adminUser.model.js";
+import EmployeePayrollProfile from "./models/payrollEmployeeProfile.model.js";
 import supabase from "./services/supabase.service.js";
-import PayrollRun from "./models/payrollRunModel.js";
-import PayrollResult from "./models/payrollResultModel.js";
-import PayrollItem from "./models/payrollItemModel.js";
-import PayrollSettings from "./models/payrollSettingsModel.js";
+import PayrollRun from "./models/payrollRun.model.js";
+import PayrollResult from "./models/payrollResult.model.js";
+import PayrollItem from "./models/payrollItem.model.js";
+import PayrollSettings from "./models/payrollSettings.model.js";
+import AttendanceDailyCheck from "./models/attendanceDailyCheck.model.js";
 
 export type SyncOperation = "create" | "update" | "delete";
 
@@ -28,157 +29,125 @@ interface UploadedFile {
 
 // ================= EMPLOYEE =================
 
-export async function syncEmployee(
-  operation: SyncOperation,
-  data: SyncData
-): Promise<void> {
-  switch (operation) {
-    case "create":
-    case "update":
-      await Employee.updateOne({ _id: data._id }, data, {
-        upsert: true,
-      });
+export async function syncEmployee(operation: SyncOperation, data: SyncData) {
+  const { _id, ...fields } = data;
+  await Employee.updateOne(
+    {
+      _id: data._id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: { _id },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-      console.log("SYNCED EMPLOYEE:", await Employee.findById(data._id));
-
-      break;
-
-    case "delete":
-      await Employee.updateOne(
-        {
-          _id: data._id,
-        },
-        {
-          isDeleted: 1,
-          updatedAt: new Date(),
-        }
-      );
-
-      console.log(
-        "SYNCED DELETED EMPLOYEE:",
-        await Employee.findById(data._id)
-      );
-
-      break;
-  }
+  console.log(
+    `SYNCED ${operation.toUpperCase()} EMPLOYEE:`,
+    await Employee.findById(data._id)
+  );
 }
 
 // ================= ATTENDANCE =================
 
 export async function syncAttendance(operation: SyncOperation, data: SyncData) {
-  switch (operation) {
-    case "create":
-    case "update":
-      await Attendance.updateOne(
-        {
-          _id: data._id,
-        },
-        data,
-        {
-          upsert: true,
-        }
-      );
+  const { _id, ...fields } = data;
 
-      console.log("SYNCED ATTENDANCE:", await Attendance.findById(data._id));
+  await Attendance.updateOne(
+    {
+      _id: data._id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: { _id },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-      break;
+  console.log(
+    `SYNCED ${operation.toUpperCase()} ATTENDANCE:`,
+    await Attendance.findById(data._id)
+  );
+}
 
-    case "delete":
-      await Attendance.updateOne(
-        {
-          _id: data._id,
-        },
-        {
-          isDeleted: 1,
-          updatedAt: new Date(),
-        }
-      );
+// ================= ATTENDANCE DAILY CHECK =================
 
-      console.log(
-        "SYNCED DELETED ATTENDANCE:",
-        await Attendance.findById(data._id)
-      );
+export async function syncAttendanceDailyCheck(
+  operation: SyncOperation,
+  data: SyncData
+) {
+  const { _id, ...fields } = data;
+  await AttendanceDailyCheck.updateOne(
+    {
+      _id: data._id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: { _id },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-      break;
-  }
+  console.log(
+    `SYNCED ${operation.toUpperCase()} ATTENDANCE DAILY CHECK:`,
+    await AttendanceDailyCheck.findById(data._id)
+  );
 }
 
 // ================= LEAVE =================
-
 export async function syncLeave(operation: SyncOperation, data: SyncData) {
-  switch (operation) {
-    case "create":
-    case "update":
-      await Leave.updateOne(
-        {
-          _id: data._id,
-        },
-        data,
-        {
-          upsert: true,
-        }
-      );
+  const { _id, ...fields } = data;
 
-      console.log("SYNCED LEAVE:", await Leave.findById(data._id));
+  await Leave.updateOne(
+    {
+      _id: data._id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: { _id },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-      break;
-
-    case "delete":
-      await Leave.updateOne(
-        {
-          _id: data._id,
-        },
-        {
-          isDeleted: 1,
-          updatedAt: new Date(),
-        }
-      );
-
-      console.log("SYNCED DELETED LEAVE:", await Leave.findById(data._id));
-
-      break;
-  }
+  console.log(
+    `SYNCED ${operation.toUpperCase()} LEAVE:`,
+    await Leave.findById(data._id)
+  );
 }
 
 // ================= TASK =================
 
 export async function syncTask(operation: SyncOperation, data: SyncData) {
-  switch (operation) {
-    case "create":
-    case "update":
-      await Task.updateOne(
-        {
-          _id: data._id,
-        },
-        data,
-        {
-          upsert: true,
-        }
-      );
+  const { _id, ...fields } = data;
 
-      console.log("SYNCED TASK:", await Task.findById(data._id));
+  await Task.updateOne(
+    {
+      _id: data._id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: { _id },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-      break;
-
-    case "delete":
-      await Task.updateOne(
-        {
-          _id: data._id,
-        },
-        {
-          isDeleted: 1,
-          updatedAt: new Date(),
-        }
-      );
-
-      console.log("SYNCED DELETED TASK:", await Task.findById(data._id));
-
-      break;
-  }
+  console.log(
+    `SYNCED ${operation.toUpperCase()} TASK:`,
+    await Task.findById(data._id)
+  );
 }
 
 // ================= TASK COMMENTS =================
-
 export async function syncTaskComment(
   operation: SyncOperation,
   data: SyncData
@@ -265,11 +234,18 @@ export async function syncTaskComment(
 // ================= USER NOTES =================
 
 export async function syncUserNotes(data: SyncData) {
+  const { _id, ...fields } = data;
+
   await AdminUser.updateOne(
     {
       _id: data._id,
     },
-    data,
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
     {
       upsert: true,
     }
@@ -381,180 +357,120 @@ export async function syncEmployeeDocument(
   }
 }
 
-// ================= PAYROLL =================
+// ================= PAYROLL SETTINGS =================
 
 export async function syncPayrollSettings(
   operation: SyncOperation,
   data: SyncData
 ) {
-  switch (operation) {
-    case "delete":
-      await PayrollSettings.updateOne(
-        {
-          _id: data._id,
-        },
-        {
-          $set: {
-            isDeleted: 1,
-            updatedAt: new Date(),
-          },
-        }
-      );
+  const { _id, ...fields } = data;
+  await PayrollSettings.updateOne(
+    {
+      _id: data._id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-      return;
-
-    case "create":
-    case "update":
-      await PayrollSettings.updateOne(
-        {
-          _id: data._id,
-        },
-        {
-          $set: data,
-        },
-        {
-          upsert: true,
-        }
-      );
-
-      return;
-
-    default:
-      throw new Error(`UNSUPPORTED PAYROLL SETTINGS OPERATION: ${operation}`);
-  }
+  console.log(
+    `SYNCED ${operation.toUpperCase()} PAYROLL SETTINGS:`,
+    await PayrollSettings.findById(data._id)
+  );
 }
 
+// ================= PAYROLL COMPONENT =================
 export async function syncPayrollComponent(
   operation: SyncOperation,
   data: SyncData
 ) {
-  switch (operation) {
-    case "delete":
-      await PayrollComponent.updateOne(
-        {
-          _id: data._id,
-        },
-        {
-          $set: {
-            isDeleted: 1,
-            updatedAt: new Date(),
-          },
-        }
-      );
+  const { _id, ...fields } = data;
+  await PayrollComponent.updateOne(
+    {
+      _id: data._id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-      return;
-
-    case "create":
-    case "update":
-      await PayrollComponent.updateOne(
-        {
-          _id: data._id,
-        },
-        {
-          $set: data,
-        },
-        {
-          upsert: true,
-        }
-      );
-
-      return;
-
-    default:
-      throw new Error(`Unsupported payroll component operation: ${operation}`);
-  }
+  console.log(
+    `SYNCED ${operation.toUpperCase()} PAYROLL COMPONENT:`,
+    await PayrollComponent.findById(data._id)
+  );
 }
 
+// ================= PAYROLL PROFILE =================
 export async function syncPayrollProfile(
   operation: SyncOperation,
   data: SyncData
 ) {
   const { _id, ...fields } = data;
 
-  switch (operation) {
-    case "create":
-    case "update":
-      await EmployeePayrollProfile.updateOne(
-        {
-          employeeId: data.employeeId,
-          componentId: data.componentId,
-        },
-        {
-          $set: fields,
-          $setOnInsert: {
-            _id,
-          },
-        },
-        {
-          upsert: true,
-        }
-      );
-
-      return;
-
-    case "delete":
-      await EmployeePayrollProfile.updateOne(
-        {
-          employeeId: data.employeeId,
-          componentId: data.componentId,
-        },
-        {
-          $set: {
-            isDeleted: 1,
-            updatedAt: new Date(),
-          },
-        }
-      );
-
-      return;
-
-    default:
-      throw new Error(`Unsupported payroll profile operation: ${operation}`);
+  if (!_id) {
+    throw new Error("PAYROLL PROFILE SYNC FAILED: MISSING _id");
   }
+
+  await EmployeePayrollProfile.updateOne(
+    {
+      _id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
+
+  const profile = await EmployeePayrollProfile.findById(_id);
+
+  if (!profile) {
+    throw new Error(`PAYROLL PROFILE WAS NOT FOUND AFTER UPSERT: ${_id}`);
+  }
+
+  console.log(`SYNCED ${operation.toUpperCase()} PAYROLL PROFILE:`, profile);
+
+  return profile;
 }
 
 // Sync payroll run
 export async function syncPayrollRun(operation: SyncOperation, data: SyncData) {
   const { _id, ...fields } = data;
+  await PayrollRun.updateOne(
+    {
+      _id: data._id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-  switch (operation) {
-    case "create":
-    case "update":
-      await PayrollRun.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: fields,
-          $setOnInsert: {
-            _id,
-          },
-        },
-        {
-          upsert: true,
-        }
-      );
-
-      return;
-
-    case "delete":
-      await PayrollRun.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: {
-            isDeleted: 1,
-            updatedAt: new Date(),
-          },
-        }
-      );
-
-      return;
-
-    default:
-      throw new Error(`Unsupported payroll run operation: ${operation}`);
-  }
+  console.log(
+    `SYNCED ${operation.toUpperCase()} PAYROLL RUN:`,
+    await PayrollRun.findById(data._id)
+  );
 }
 
 // Sync payroll result
@@ -563,45 +479,25 @@ export async function syncPayrollResult(
   data: SyncData
 ) {
   const { _id, ...fields } = data;
+  await PayrollResult.updateOne(
+    {
+      _id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
 
-  switch (operation) {
-    case "create":
-    case "update":
-      await PayrollResult.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: fields,
-          $setOnInsert: {
-            _id,
-          },
-        },
-        {
-          upsert: true,
-        }
-      );
-
-      return;
-
-    case "delete":
-      await PayrollResult.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: {
-            isDeleted: 1,
-            updatedAt: new Date(),
-          },
-        }
-      );
-
-      return;
-
-    default:
-      throw new Error(`Unsupported payroll result operation: ${operation}`);
-  }
+  console.log(
+    `SYNCED ${operation.toUpperCase()} PAYROLL RESULT:`,
+    await PayrollResult.findById(data._id)
+  );
 }
 
 // Sync payroll item
@@ -610,43 +506,22 @@ export async function syncPayrollItem(
   data: SyncData
 ) {
   const { _id, ...fields } = data;
-
-  switch (operation) {
-    case "create":
-    case "update":
-      await PayrollItem.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: fields,
-          $setOnInsert: {
-            _id,
-          },
-        },
-        {
-          upsert: true,
-        }
-      );
-
-      return;
-
-    case "delete":
-      await PayrollItem.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: {
-            isDeleted: 1,
-            updatedAt: new Date(),
-          },
-        }
-      );
-
-      return;
-
-    default:
-      throw new Error(`Unsupported payroll item operation: ${operation}`);
-  }
+  await PayrollItem.updateOne(
+    {
+      _id,
+    },
+    {
+      $set: fields,
+      $setOnInsert: {
+        _id,
+      },
+    },
+    {
+      upsert: true,
+    }
+  );
+  console.log(
+    `SYNCED ${operation.toUpperCase()} PAYROLL ITEM:`,
+    await PayrollItem.findById(data._id)
+  );
 }
