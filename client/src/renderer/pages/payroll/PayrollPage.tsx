@@ -59,6 +59,9 @@ export default function PayrollPage() {
         await window.electron.payrollRun.createPayrollDraft(user);
       loadPayrollRun();
       console.log("PAYROLL RESULTS", payroll_results);
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE GENERATING PAYROLL", e);
     }

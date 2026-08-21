@@ -57,6 +57,9 @@ export default function TaskDetailsPage() {
       await addComment(task?._id, author, comment);
       setComment("");
       await loadTask();
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
     } catch (error) {
       console.error("FAILED TO ADD TASK COMMENT:", error);
     }
@@ -98,7 +101,9 @@ export default function TaskDetailsPage() {
             : existingTask
         ),
       }));
-
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
       await loadTask();
       return true;
     } catch (error) {
@@ -315,7 +320,7 @@ export default function TaskDetailsPage() {
               </Text> */}
 
               <Text
-                fontSize="1.1rem"
+                fontSize="1.2rem"
                 fontWeight="600"
                 color="gray.700"
                 lineHeight="1.1"
@@ -323,16 +328,8 @@ export default function TaskDetailsPage() {
                 {task?.subject}
               </Text>
 
-              {/* =================================================
-                MESSAGE
-            ================================================== */}
-
-              {/* <Text fontSize="1.1rem" fontWeight="600" color="gray.500" mb={2}>
-                Message
-              </Text> */}
-
               <Text
-                fontSize="1.2rem"
+                fontSize="1rem"
                 color="gray.700"
                 lineHeight="1.8"
                 whiteSpace="pre-wrap"

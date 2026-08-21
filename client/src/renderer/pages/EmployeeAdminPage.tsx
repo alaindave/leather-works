@@ -9,24 +9,26 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { IoReloadOutline } from "react-icons/io5";
-
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CiCalendarDate, CiClock2 } from "react-icons/ci";
+import { FaSyncAlt } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
+
 import type Attendance from "../../common/types/Attendance";
 import type Employee from "../../common/types/Employee";
 import type Leave from "../../common/types/Leave";
+import type AdminUser from "../../common/types/AdminUser";
+import type Task from "../../common/types/Task";
+
 import useAdminUser from "../../store/auth.store";
-import EmployeeDashboard from "../components/EmployeeDashboard";
-import TaskSubmissionModal from "../components/tasks/TaskSubmissionModal";
-import AdminUser from "../../common/types/AdminUser";
-import TaskCard from "../components/tasks/TaskCard";
-import QuickActions from "../components/QuickActions";
-import TaskDetailsDrawer from "../components/tasks/TaskDetailsDrawer";
-import Task from "../../common/types/Task";
 import useTaskStore from "../../store/task.store";
 import useSyncStore from "../../store/sync.store";
-import { FaSyncAlt } from "react-icons/fa";
-import { FaBell } from "react-icons/fa";
+
+import EmployeeDashboard from "../components/EmployeeDashboard";
+import TaskSubmissionModal from "../components/tasks/TaskSubmissionModal";
+import TaskCard from "../components/tasks/TaskCard";
+import TaskDetailsDrawer from "../components/tasks/TaskDetailsDrawer";
+import QuickActions from "../components/QuickActions";
 import ReminderModal from "../components/ReminderModal";
 
 const EmployeeAdminPage = () => {
@@ -35,14 +37,20 @@ const EmployeeAdminPage = () => {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [adminUsersList, setAdminUsersList] = useState<AdminUser[]>([]);
   const [time, setTime] = useState<Date>(new Date());
+  const [loading, setLoading] = useState(false);
   const user = useAdminUser((store) => store.adminUser);
+  const [notes, setNotes] = useState(user.notes);
+
   const saveNotes = useAdminUser((store) => store.saveNotes);
   const loadTopTasks = useTaskStore((store) => store.loadTopTasks);
   const deleteTask = useTaskStore((store) => store.deleteTask);
-  const syncVersion = useSyncStore((store) => store.syncVersion);
   const tasks = useTaskStore((store) => store.tasks);
-  const [loading, setLoading] = useState(false);
-  const [notes, setNotes] = useState(user.notes);
+  const syncVersion = useSyncStore((store) => store.syncVersion);
+  const previousSyncVersion = useRef(syncVersion);
+
+  // ---------------------------------------------------------
+  // DISCLOSURES
+  // ---------------------------------------------------------
 
   const {
     isOpen: isCreateOpen,
@@ -64,6 +72,10 @@ const EmployeeAdminPage = () => {
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
+  // ---------------------------------------------------------
+  // ATTENDANCE COUNTS
+  // ---------------------------------------------------------
+
   const lateCount = attendances.filter(
     (attendance) => attendance.status === "RETARD"
   );
@@ -73,82 +85,151 @@ const EmployeeAdminPage = () => {
       attendance.status === "PONCTUEL" || attendance.status === "RETARD"
   );
 
-  //useEffect for initial data fetch
-  useEffect(() => {
-    console.log("EMPLOYEE ADMIN PAGE: SYNC COMPLETED, RELOADING DATA");
-    loadData();
-  }, [syncVersion]);
+  // ---------------------------------------------------------
+  // LOAD DASHBOARD DATA
+  // ---------------------------------------------------------
 
-  //useEffect for live clock
+  const loadData = async () => {
+    try {
+      setLoading(true);
+
+      const employees = await window.electron.employees.getAll();
+
+      setEmployees(employees);
+
+      console.log("FETCHED SYNCED EMPLOYEES:", employees);
+
+      const today = new Date().toISOString().split("T")[0];
+
+      const attendances = await window.electron.attendance.getByDate(today);
+
+      setAttendances(attendances);
+
+      console.log("FETCHED ATTENDANCES:", attendances);
+
+      const leaves = await window.electron.leave.getOngoingLeaves(today);
+
+      setLeaves(leaves);
+
+      console.log("FETCHED ONGOING LEAVES:", leaves);
+
+      const admin_users = await window.electron.adminUsers.getAll();
+
+      setAdminUsersList(admin_users);
+
+      console.log("FETCHED ADMIN USERS:", admin_users);
+    } catch (error) {
+      console.error("ERROR LOADING DASHBOARD DATA:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ---------------------------------------------------------
+  // LOAD TOP TASKS
+  // ---------------------------------------------------------
+
+  const loadTasks = async () => {
+    if (!user?._id) {
+      console.warn("CANNOT LOAD TASKS: NO ADMIN USER");
+      return;
+    }
+
+    try {
+      console.log("LOADING TOP TASKS FOR USER:", user._id);
+
+      await loadTopTasks(user._id);
+
+      console.log("TOP TASKS LOADED SUCCESSFULLY");
+    } catch (error) {
+      console.error("AN ERROR OCCURRED WHILE FETCHING TASKS:", error);
+    }
+  };
+
+  // ---------------------------------------------------------
+  // INITIAL PAGE LOAD
+  // Runs once when the dashboard is mounted.
+  // ---------------------------------------------------------
+
   useEffect(() => {
+    console.log("EMPLOYEE ADMIN PAGE: INITIAL LOAD");
+    loadData();
+
     const interval = setInterval(() => {
       setTime(new Date());
     }, 10000);
-    loadData();
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
-  //useEffect for personal notes saving
   useEffect(() => {
-    if (!notes?.trim()) return;
-    if (notes === user.notes) return;
+    if (previousSyncVersion.current === syncVersion) {
+      return;
+    }
+    previousSyncVersion.current = syncVersion;
+    console.log("SYNC VERSION CHANGED:", syncVersion);
+    console.log("SYNC COMPLETED: RELOADING DASHBOARD DATA AND TASKS");
+    loadData();
+    loadTasks();
+  }, [syncVersion]);
+
+  // ---------------------------------------------------------
+  // PERSONAL NOTES AUTOSAVE
+  // ---------------------------------------------------------
+
+  useEffect(() => {
+    if (!notes?.trim()) {
+      return;
+    }
+
+    if (notes === user.notes) {
+      return;
+    }
 
     const timeout = setTimeout(() => {
       handleNotesSubmission();
     }, 1000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [notes]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const employees = await window.electron.employees.getAll();
-      setEmployees(employees);
-      console.log("FETCHED SYNCED EMPLOYEES:", employees);
-      const attendances = await window.electron.attendance.getByDate(
-        new Date().toISOString().split("T")[0]
-      );
-      setAttendances(attendances);
-      console.log("FETCHED ATTENDANCES:", attendances);
-      const leaves = await window.electron.leave.getOngoingLeaves(
-        new Date().toISOString().split("T")[0]
-      );
-      setLeaves(leaves);
-      console.log("FETCHED ONGOING LEAVES:", leaves);
-      const admin_users = await window.electron.adminUsers.getAll();
-      setAdminUsersList(admin_users);
-      console.log("FETCHED ADMIN USERS", admin_users);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDataSync = async () => {
     try {
       setLoading(true);
+
+      console.log("STARTING DATA SYNC...");
+
       const result = await window.electron.sync();
+
       if (result.success) {
-        console.log("SYNC COMPLETED");
-        loadData();
+        console.log("SYNC COMPLETED SUCCESSFULLY");
       } else {
-        console.error(result.message);
+        console.error("SYNC FAILED:", result.message);
       }
+    } catch (error) {
+      console.error("SYNC ERROR:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadTasks = async () => {
+  const handleTaskRefresh = async () => {
     try {
-      await loadTopTasks(user._id);
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE FETCHING TASKS", e);
+      console.log("MANUALLY REFRESHING TASKS...");
+
+      await loadTasks();
+    } catch (error) {
+      console.error("AN ERROR OCCURRED WHILE REFRESHING TASKS:", error);
     }
   };
 
   const handleTaskCreate = () => {
     console.log("TASK CREATE CLICKED");
+
     onCreateOpen();
   };
 
@@ -158,35 +239,28 @@ const EmployeeAdminPage = () => {
   };
 
   const handleTaskDelete = async (_id: string) => {
-    console.log("ID TO DELETE,", _id);
+    console.log("ID TO DELETE:", _id);
+
     try {
       const deletedTask = await deleteTask(_id);
-      console.log("DELETED TASK: ", deletedTask);
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE DELETING TASK.", e);
-    }
-  };
 
-  //refresh tasks
-  const handleTaskRefresh = async () => {
-    try {
-      await loadTopTasks(user._id);
+      console.log("DELETED TASK:", deletedTask);
     } catch (error) {
-      console.log("AN ERROR OCCURED WHILE REFRESHING TASKS:", error);
+      console.error("AN ERROR OCCURRED WHILE DELETING TASK:", error);
     }
   };
 
-  //Submit personal notes
   const handleNotesSubmission = () => {
     window.electron.offlineUsers
       .saveNotes(user._id, notes)
       .then((res) => {
-        console.log("Notes successfully saved: ", res);
+        console.log("NOTES SUCCESSFULLY SAVED:", res);
+
         setNotes(notes);
         saveNotes(notes);
       })
       .catch((error) =>
-        console.error("An error occured while saving notes: ", error)
+        console.error("AN ERROR OCCURRED WHILE SAVING NOTES:", error)
       );
   };
 
@@ -210,11 +284,20 @@ const EmployeeAdminPage = () => {
       overflow="hidden"
       p={{ base: 3, md: 6 }}
     >
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+      ====================================================== */}
+
       <Flex
         justify="space-between"
-        align={{ base: "flex-start", md: "center" }}
-        flexDir={{ base: "column", md: "row" }}
+        align={{
+          base: "flex-start",
+          md: "center",
+        }}
+        flexDir={{
+          base: "column",
+          md: "row",
+        }}
         gap={3}
       >
         <Box position="relative" bottom="0.7rem">
@@ -226,11 +309,14 @@ const EmployeeAdminPage = () => {
             >
               Tableau de bord
             </Text>
+
             <Button
               bg="transparent"
               isLoading={loading}
               color="gray.800"
-              _hover={{ bg: "transparent" }}
+              _hover={{
+                bg: "transparent",
+              }}
               fontSize="1rem"
               position="relative"
               bottom="0.5rem"
@@ -240,6 +326,7 @@ const EmployeeAdminPage = () => {
               <FaSyncAlt />
             </Button>
           </HStack>
+
           <Text
             fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
             color="gray.500"
@@ -250,6 +337,10 @@ const EmployeeAdminPage = () => {
           </Text>
         </Box>
 
+        {/* ===================================================
+            MANUAL TASK REFRESH
+        ==================================================== */}
+
         <Button
           position="relative"
           bottom="2rem"
@@ -259,12 +350,16 @@ const EmployeeAdminPage = () => {
           <Box>
             <IoReloadOutline />
           </Box>
+
           <Text ml="0.5rem" mt="1rem">
             Taches
           </Text>
         </Button>
 
-        {/* DATE / TIME */}
+        {/* ===================================================
+            DATE / TIME
+        ==================================================== */}
+
         <Flex
           bg="#F8F9FB"
           border="1px solid"
@@ -292,6 +387,7 @@ const EmployeeAdminPage = () => {
 
           <Flex px={3} py={2} align="center" gap={2}>
             <CiClock2 color="#0078D4" size={22} />
+
             <Text
               color="gray.900"
               fontSize="md"
@@ -305,7 +401,10 @@ const EmployeeAdminPage = () => {
         </Flex>
       </Flex>
 
-      {/* DASHBOARD */}
+      {/* =====================================================
+          DASHBOARD
+      ====================================================== */}
+
       <Box>
         <EmployeeDashboard
           employeeCount={employees.length}
@@ -315,16 +414,25 @@ const EmployeeAdminPage = () => {
         />
       </Box>
 
-      {/* MAIN GRID */}
+      {/* =====================================================
+          MAIN GRID
+      ====================================================== */}
+
       <Grid
-        templateColumns={{ base: "1fr", xl: "1.2fr 1fr" }}
+        templateColumns={{
+          base: "1fr",
+          xl: "1.2fr 1fr",
+        }}
         gap={6}
         flex="1"
         minH={0}
         overflow="hidden"
         mt={4}
       >
-        {/* NOTES */}
+        {/* ===================================================
+            NOTES
+        ==================================================== */}
+
         <Box
           border="1px solid"
           borderColor="gray.500"
@@ -352,6 +460,7 @@ const EmployeeAdminPage = () => {
               Notes
             </Text>
           </Flex>
+
           <Textarea
             placeholder={
               "Bienvenue sur LeatherWorks.\nÉcrivez vos notes ici..."
@@ -360,7 +469,9 @@ const EmployeeAdminPage = () => {
             onChange={(e) => setNotes(e.target.value)}
             bg="#091735"
             border="1px solid rgba(255,255,255,0.1)"
-            _hover={{ borderColor: "yellow.300" }}
+            _hover={{
+              borderColor: "yellow.300",
+            }}
             _focus={{
               borderColor: "yellow.400",
               boxShadow: "0 0 0 1px #F4C20D",
@@ -375,6 +486,7 @@ const EmployeeAdminPage = () => {
               color: "#6B7280",
             }}
           />
+
           <Button
             position="absolute"
             right="1.3rem"
@@ -390,6 +502,11 @@ const EmployeeAdminPage = () => {
             Rappel
           </Button>
         </Box>
+
+        {/* ===================================================
+            TASKS
+        ==================================================== */}
+
         <Box display="flex" flexDir="column" overflowY="auto" minH={0}>
           <TaskSubmissionModal
             isOpen={isCreateOpen}
@@ -398,6 +515,7 @@ const EmployeeAdminPage = () => {
             adminUsersList={adminUsersList}
             author={user!}
           />
+
           <TaskDetailsDrawer
             task={selectedTask}
             isOpen={isDetailsOpen}
@@ -406,7 +524,14 @@ const EmployeeAdminPage = () => {
           />
 
           {tasks.map((task) => (
-            <Box key={task._id} mt={6} ml={{ base: 0, xl: 8 }}>
+            <Box
+              key={task._id}
+              mt={6}
+              ml={{
+                base: 0,
+                xl: 8,
+              }}
+            >
               <TaskCard
                 task={task}
                 onTaskClick={handleTaskClick}
@@ -416,9 +541,19 @@ const EmployeeAdminPage = () => {
           ))}
         </Box>
       </Grid>
+
+      {/* =====================================================
+          QUICK ACTIONS
+      ====================================================== */}
+
       <Box mb={8}>
         <QuickActions onTaskCreate={handleTaskCreate} />
       </Box>
+
+      {/* =====================================================
+          REMINDER
+      ====================================================== */}
+
       <ReminderModal
         isReminderOpen={isReminderOpen}
         onReminderClose={onReminderClose}

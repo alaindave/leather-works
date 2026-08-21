@@ -76,7 +76,7 @@ export interface PayrollResult {
   netSalary: number;
   createdAt?: string;
   updatedAt?: string;
-  isDeleted?: string;
+  isDeleted?: number;
 }
 
 export type PayrollComponentType = "EARNING" | "DEDUCTION";

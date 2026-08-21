@@ -158,6 +158,166 @@ export async function getPayrollRunsByStatus(status: PayrollStatus) {
 
 // Upsert payroll run
 export async function upsertPayrollRun(payrollRun: PayrollRun) {
+  console.log("PAYROLL RUN TO UPSERT", payrollRun);
+
+  // ---------------------------------------------------------
+  // 1. First check by canonical _id
+  // ---------------------------------------------------------
+  const existingById = await get<PayrollRun>(
+    `
+      SELECT *
+      FROM payroll_runs
+      WHERE _id = ?
+      LIMIT 1
+    `,
+    [payrollRun._id]
+  );
+
+  if (existingById) {
+    await run(
+      `
+        UPDATE payroll_runs
+        SET
+          generatedBy = ?,
+          month = ?,
+          year = ?,
+          employeeCount = ?,
+          totalBasicSalary = ?,
+          totalEarnings = ?,
+          totalDeductions = ?,
+          totalNetSalary = ?,
+          status = ?,
+          cancelledBy = ?,
+          cancelledAt = ?,
+          submittedForVerificationBy = ?,
+          submittedForVerificationAt = ?,
+          approvedBy = ?,
+          approvedAt = ?,
+          paidBy = ?,
+          paidAt = ?,
+          synced = 1,
+          createdAt = ?,
+          updatedAt = ?,
+          isDeleted = ?
+        WHERE _id = ?
+      `,
+      [
+        payrollRun.generatedBy,
+        payrollRun.month,
+        payrollRun.year,
+        payrollRun.employeeCount,
+        payrollRun.totalBasicSalary,
+        payrollRun.totalEarnings,
+        payrollRun.totalDeductions,
+        payrollRun.totalNetSalary,
+        payrollRun.status,
+        payrollRun.cancelledBy ?? null,
+        payrollRun.cancelledAt ?? null,
+        payrollRun.submittedForVerificationBy ?? null,
+        payrollRun.submittedForVerificationAt ?? null,
+        payrollRun.approvedBy ?? null,
+        payrollRun.approvedAt ?? null,
+        payrollRun.paidBy ?? null,
+        payrollRun.paidAt ?? null,
+        payrollRun.createdAt,
+        payrollRun.updatedAt,
+        payrollRun.isDeleted ?? 0,
+        payrollRun._id,
+      ]
+    );
+
+    return true;
+  }
+
+  // ---------------------------------------------------------
+  // 2. No _id match.
+  //    Check for an existing active payroll run
+  //    for the same month/year.
+  // ---------------------------------------------------------
+  const existingByPeriod = await get<PayrollRun>(
+    `
+      SELECT *
+      FROM payroll_runs
+      WHERE month = ?
+        AND year = ?
+        AND isDeleted = 0
+        AND status <> 'ANNULÉ'
+      LIMIT 1
+    `,
+    [payrollRun.month, payrollRun.year]
+  );
+
+  if (existingByPeriod) {
+    console.warn("PAYROLL RUN PERIOD CONFLICT", {
+      incoming: payrollRun,
+      existing: existingByPeriod,
+    });
+
+    // -------------------------------------------------------
+    // The server has the same payroll period but a different
+    // _id. Replace the local record with the server record.
+    // -------------------------------------------------------
+    await run(
+      `
+        UPDATE payroll_runs
+        SET
+          _id = ?,
+          generatedBy = ?,
+          month = ?,
+          year = ?,
+          employeeCount = ?,
+          totalBasicSalary = ?,
+          totalEarnings = ?,
+          totalDeductions = ?,
+          totalNetSalary = ?,
+          status = ?,
+          cancelledBy = ?,
+          cancelledAt = ?,
+          submittedForVerificationBy = ?,
+          submittedForVerificationAt = ?,
+          approvedBy = ?,
+          approvedAt = ?,
+          paidBy = ?,
+          paidAt = ?,
+          synced = 1,
+          createdAt = ?,
+          updatedAt = ?,
+          isDeleted = ?
+        WHERE _id = ?
+      `,
+      [
+        payrollRun._id,
+        payrollRun.generatedBy,
+        payrollRun.month,
+        payrollRun.year,
+        payrollRun.employeeCount,
+        payrollRun.totalBasicSalary,
+        payrollRun.totalEarnings,
+        payrollRun.totalDeductions,
+        payrollRun.totalNetSalary,
+        payrollRun.status,
+        payrollRun.cancelledBy ?? null,
+        payrollRun.cancelledAt ?? null,
+        payrollRun.submittedForVerificationBy ?? null,
+        payrollRun.submittedForVerificationAt ?? null,
+        payrollRun.approvedBy ?? null,
+        payrollRun.approvedAt ?? null,
+        payrollRun.paidBy ?? null,
+        payrollRun.paidAt ?? null,
+        payrollRun.createdAt,
+        payrollRun.updatedAt,
+        payrollRun.isDeleted ?? 0,
+        existingByPeriod._id,
+      ]
+    );
+
+    return true;
+  }
+
+  // ---------------------------------------------------------
+  // 3. No existing record.
+  //    Insert the server payroll run.
+  // ---------------------------------------------------------
   await run(
     `
       INSERT INTO payroll_runs (
@@ -189,28 +349,6 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
         ?, ?, ?, ?, ?, ?, ?, ?,
         1, ?, ?, ?
       )
-      ON CONFLICT(_id) DO UPDATE SET
-        generatedBy = excluded.generatedBy,
-        month = excluded.month,
-        year = excluded.year,
-        employeeCount = excluded.employeeCount,
-        totalBasicSalary = excluded.totalBasicSalary,
-        totalEarnings = excluded.totalEarnings,
-        totalDeductions = excluded.totalDeductions,
-        totalNetSalary = excluded.totalNetSalary,
-        status = excluded.status,
-        cancelledBy = excluded.cancelledBy,
-        cancelledAt = excluded.cancelledAt,
-        submittedForVerificationBy = excluded.submittedForVerificationBy,
-        submittedForVerificationAt = excluded.submittedForVerificationAt,
-        approvedBy = excluded.approvedBy,
-        approvedAt = excluded.approvedAt,
-        paidBy = excluded.paidBy,
-        paidAt = excluded.paidAt,
-        createdAt = excluded.createdAt,
-        updatedAt = excluded.updatedAt,
-        isDeleted = excluded.isDeleted,
-        synced = 1
     `,
     [
       payrollRun._id,
@@ -240,9 +378,152 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
   return true;
 }
 
-// Upsert payroll results
 export async function upsertPayrollResult(payrollResult: PayrollResult) {
   console.log("PAYROLL RESULT TO UPSERT", payrollResult);
+
+  // First try to find an existing result using the canonical Mongo ID.
+  const existingById = await get<PayrollResult>(
+    `
+      SELECT *
+      FROM payroll_results
+      WHERE _id = ?
+      LIMIT 1
+    `,
+    [payrollResult._id]
+  );
+
+  if (existingById) {
+    await run(
+      `
+        UPDATE payroll_results
+        SET
+          payrollRunId = ?,
+          employeeId = ?,
+          month = ?,
+          year = ?,
+          baseSalary = ?,
+          grossSalary = ?,
+          totalEarnings = ?,
+          totalDeductions = ?,
+          netSalary = ?,
+          status = ?,
+          cancelledAt = ?,
+          verifiedAt = ?,
+          approvedAt = ?,
+          paidAt = ?,
+          createdAt = ?,
+          updatedAt = ?,
+          synced = 1,
+          isDeleted = ?
+        WHERE _id = ?
+      `,
+      [
+        payrollResult.payrollRunId,
+        payrollResult.employeeId,
+        payrollResult.month,
+        payrollResult.year,
+        payrollResult.baseSalary,
+        payrollResult.grossSalary,
+        payrollResult.totalEarnings,
+        payrollResult.totalDeductions,
+        payrollResult.netSalary,
+        payrollResult.status,
+        payrollResult.cancelledAt ?? null,
+        payrollResult.verifiedAt ?? null,
+        payrollResult.approvedAt ?? null,
+        payrollResult.paidAt ?? null,
+        payrollResult.createdAt,
+        payrollResult.updatedAt,
+        payrollResult.isDeleted ?? 0,
+        payrollResult._id,
+      ]
+    );
+
+    return true;
+  }
+
+  // No record with this _id.
+  // Check whether there is already an active result
+  // for this employee/month/year.
+  const existingByPeriod = await get<PayrollResult>(
+    `
+      SELECT *
+      FROM payroll_results
+      WHERE employeeId = ?
+        AND month = ?
+        AND year = ?
+        AND isDeleted = 0
+        AND status <> 'ANNULÉ'
+      LIMIT 1
+    `,
+    [payrollResult.employeeId, payrollResult.month, payrollResult.year]
+  );
+
+  if (existingByPeriod) {
+    console.warn("PAYROLL RESULT PERIOD CONFLICT", {
+      incoming: payrollResult,
+      existing: existingByPeriod,
+    });
+
+    /*
+     * The local record represents the same employee/month/year.
+     *
+     * Replace the local record's identity and data with the
+     * server record because the server is the canonical source
+     * during pull sync.
+     */
+    await run(
+      `
+        UPDATE payroll_results
+        SET
+          _id = ?,
+          payrollRunId = ?,
+          employeeId = ?,
+          month = ?,
+          year = ?,
+          baseSalary = ?,
+          grossSalary = ?,
+          totalEarnings = ?,
+          totalDeductions = ?,
+          netSalary = ?,
+          status = ?,
+          cancelledAt = ?,
+          verifiedAt = ?,
+          approvedAt = ?,
+          paidAt = ?,
+          createdAt = ?,
+          updatedAt = ?,
+          synced = 1,
+          isDeleted = ?
+        WHERE _id = ?
+      `,
+      [
+        payrollResult._id,
+        payrollResult.payrollRunId,
+        payrollResult.employeeId,
+        payrollResult.month,
+        payrollResult.year,
+        payrollResult.baseSalary,
+        payrollResult.grossSalary,
+        payrollResult.totalEarnings,
+        payrollResult.totalDeductions,
+        payrollResult.netSalary,
+        payrollResult.status,
+        payrollResult.cancelledAt ?? null,
+        payrollResult.verifiedAt ?? null,
+        payrollResult.approvedAt ?? null,
+        payrollResult.paidAt ?? null,
+        payrollResult.createdAt,
+        payrollResult.updatedAt,
+        payrollResult.isDeleted ?? 0,
+        existingByPeriod._id,
+      ]
+    );
+
+    return true;
+  }
+
+  // Nothing exists locally, so insert the server result.
   await run(
     `
       INSERT INTO payroll_results (
@@ -270,25 +551,6 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
         ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?, ?, ?, 1, ?
       )
-      ON CONFLICT(_id) DO UPDATE SET
-        payrollRunId = excluded.payrollRunId,
-        employeeId = excluded.employeeId,
-        month = excluded.month,
-        year = excluded.year,
-        baseSalary = excluded.baseSalary,
-        grossSalary = excluded.grossSalary,
-        totalEarnings = excluded.totalEarnings,
-        totalDeductions = excluded.totalDeductions,
-        netSalary = excluded.netSalary,
-        status = excluded.status,
-        cancelledAt = excluded.cancelledAt,
-        verifiedAt = excluded.verifiedAt,
-        approvedAt = excluded.approvedAt,
-        paidAt = excluded.paidAt,
-        createdAt = excluded.createdAt,
-        updatedAt = excluded.updatedAt,
-        synced = 1,
-        isDeleted = excluded.isDeleted
     `,
     [
       payrollResult._id,
@@ -497,9 +759,9 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
     operation: "update",
     payload: JSON.stringify({
       _id: payrollRunId,
+      status: "ANNULÉ",
       cancelledBy: admin._id,
       cancelledAt: now,
-      status: "ANNULÉ",
       updatedAt: now,
     }),
   });
@@ -513,6 +775,7 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
       payload: JSON.stringify({
         _id: payrollRunId,
         status: "ANNULÉ",
+        cancelledAt: now,
         updatedAt: now,
       }),
     });

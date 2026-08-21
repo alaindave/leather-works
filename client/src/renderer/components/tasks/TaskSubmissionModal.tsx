@@ -113,10 +113,14 @@ const TaskSubmissionModal = ({
       });
       console.log("TASK SUCCESSFULLY CREATED:", result);
       setRecipient({} as AdminUser);
+      setTaskRecipients([]);
       setErrorMessage("");
       onRefresh();
       reset();
       onClose();
+      window.electron.sync().catch((error) => {
+        console.error("IMMEDIATE SYNC FAILED:", error);
+      });
     } catch (error: any) {
       setErrorMessage("Une erreur est survenue. Veuillez contacter ADB Tech!");
       console.error("UNABLE TO SAVE TASK:", error.message);

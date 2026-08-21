@@ -140,7 +140,7 @@ const TaskPage = () => {
           width="200px"
           position="relative"
           top="2rem"
-          left="0.5rem"
+          left="1rem"
           wrap="wrap"
         >
           <SearchBar
@@ -167,7 +167,7 @@ const TaskPage = () => {
           <TaskStatusFilter onFilterClicked={setStatusFilter} />
         </Flex>
       </Grid>
-      <Box mt="3rem" ml="0.5rem">
+      <Box mt="3rem" ml="1rem">
         <TaskTable
           tasks={tasks}
           searchText={searchText}
