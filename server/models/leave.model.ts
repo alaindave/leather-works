@@ -15,69 +15,74 @@ export interface LeaveDocument {
   updatedAt: Date;
 }
 
-const leaveSchema = new Schema<LeaveDocument>({
-  _id: {
-    type: String,
-    required: true,
-  },
+const leaveSchema = new Schema<LeaveDocument>(
+  {
+    _id: {
+      type: String,
+      required: true,
+    },
 
-  employeeId: {
-    type: String,
-    required: true,
-  },
+    employeeId: {
+      type: String,
+      required: true,
+    },
 
-  submittedAt: {
-    type: Date,
-    required: true,
-  },
+    submittedAt: {
+      type: Date,
+      required: true,
+    },
 
-  submittedMonth: {
-    type: String,
-    required: true,
-  },
+    submittedMonth: {
+      type: String,
+      required: true,
+    },
 
-  startDate: {
-    type: String,
-    required: true,
-  },
+    startDate: {
+      type: String,
+      required: true,
+    },
 
-  endDate: {
-    type: String,
-    required: true,
-  },
+    endDate: {
+      type: String,
+      required: true,
+    },
 
-  subject: {
-    type: String,
-    required: true,
-  },
+    subject: {
+      type: String,
+      required: true,
+    },
 
-  notes: {
-    type: String,
-    required: true,
-  },
+    notes: {
+      type: String,
+      required: true,
+    },
 
-  status: {
-    type: String,
-    enum: ["ATTENTE_APPROBATION", "APPROUVÉ", "REFUSÉ", "ANNULÉ"],
-    default: "ATTENTE_APPROBATION",
-  },
+    status: {
+      type: String,
+      enum: ["ATTENTE_APPROBATION", "APPROUVÉ", "REFUSÉ", "ANNULÉ"],
+      default: "ATTENTE_APPROBATION",
+    },
 
-  isDeleted: {
-    type: Number,
-    default: 0,
-    required: true,
-  },
+    isDeleted: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
 
-  createdAt: {
-    type: Date,
-    required: true,
-  },
+    createdAt: {
+      type: Date,
+      required: true,
+    },
 
-  updatedAt: {
-    type: Date,
-    required: true,
+    updatedAt: {
+      type: Date,
+      required: true,
+    },
   },
-});
+  {
+    versionKey: false,
+  }
+);
 
 const Leave = model<LeaveDocument>("Leaves", leaveSchema);
 

@@ -75,108 +75,114 @@ const taskCommentSchema = new Schema<TaskComment>(
   },
   {
     _id: false,
+    versionKey: false,
   }
 );
 
-const taskSchema = new Schema<Task>({
-  _id: {
-    type: String,
-    required: true,
-  },
+const taskSchema = new Schema<Task>(
+  {
+    _id: {
+      type: String,
+      required: true,
+    },
 
-  taskNumber: {
-    type: String,
-    required: true,
-  },
+    taskNumber: {
+      type: String,
+      required: true,
+    },
 
-  author: {
-    type: String,
-    ref: "AdminUsers",
-    required: true,
-  },
+    author: {
+      type: String,
+      ref: "AdminUsers",
+      required: true,
+    },
 
-  recipients: {
-    type: [
-      {
-        type: String,
-        ref: "AdminUsers",
+    recipients: {
+      type: [
+        {
+          type: String,
+          ref: "AdminUsers",
+        },
+      ],
+      required: true,
+
+      validate: {
+        validator: (recipients: string[]) => recipients.length > 0,
+        message: "At least one recipient is required.",
       },
-    ],
-    required: true,
+    },
 
-    validate: {
-      validator: (recipients: string[]) => recipients.length > 0,
-      message: "At least one recipient is required.",
+    subject: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    message: {
+      type: String,
+      required: true,
+    },
+
+    priority: {
+      type: String,
+      required: true,
+      enum: ["HAUTE", "MOYENNE", "BASSE"],
+    },
+
+    deadline: {
+      type: Date,
+      required: true,
+    },
+
+    isResolved: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+
+    resolutionNotes: {
+      type: String,
+      trim: true,
+    },
+
+    resolvedAt: {
+      type: Date,
+    },
+
+    resolvedBy: {
+      type: String,
+    },
+
+    comments: {
+      type: [taskCommentSchema],
+      default: [],
+    },
+
+    submittedAt: {
+      type: Date,
+      required: true,
+    },
+
+    createdAt: {
+      type: Date,
+      required: true,
+    },
+
+    updatedAt: {
+      type: Date,
+      required: true,
+    },
+
+    isDeleted: {
+      type: Number,
+      default: 0,
+      required: true,
     },
   },
-
-  subject: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-
-  message: {
-    type: String,
-    required: true,
-  },
-
-  priority: {
-    type: String,
-    required: true,
-    enum: ["HAUTE", "MOYENNE", "BASSE"],
-  },
-
-  deadline: {
-    type: Date,
-    required: true,
-  },
-
-  isResolved: {
-    type: Number,
-    default: 0,
-    required: true,
-  },
-
-  resolutionNotes: {
-    type: String,
-    trim: true,
-  },
-
-  resolvedAt: {
-    type: Date,
-  },
-
-  resolvedBy: {
-    type: String,
-  },
-
-  comments: {
-    type: [taskCommentSchema],
-    default: [],
-  },
-
-  submittedAt: {
-    type: Date,
-    required: true,
-  },
-
-  createdAt: {
-    type: Date,
-    required: true,
-  },
-
-  updatedAt: {
-    type: Date,
-    required: true,
-  },
-
-  isDeleted: {
-    type: Number,
-    default: 0,
-    required: true,
-  },
-});
+  {
+    versionKey: false,
+  }
+);
 
 const Task = model<Task>("Tasks", taskSchema);
 

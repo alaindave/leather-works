@@ -73,12 +73,12 @@ const payrollItemSchema = new Schema<PayrollItemDocument>(
       required: true,
     },
 
-    isDeleted: {
+    taxable: {
       type: Number,
       default: 0,
     },
 
-    taxable: {
+    isDeleted: {
       type: Number,
       default: 0,
     },

@@ -139,16 +139,6 @@ const payrollRunSchema = new Schema<PayrollRunDocument>(
       default: 0,
     },
 
-    isDeleted: {
-      type: Number,
-      default: 0,
-    },
-
-    deletedBy: {
-      type: String,
-      ref: "AdminUser",
-    },
-
     createdAt: {
       type: Date,
       required: true,
@@ -157,6 +147,15 @@ const payrollRunSchema = new Schema<PayrollRunDocument>(
     updatedAt: {
       type: Date,
       required: true,
+    },
+    isDeleted: {
+      type: Number,
+      default: 0,
+    },
+
+    deletedBy: {
+      type: String,
+      ref: "AdminUser",
     },
   },
   {

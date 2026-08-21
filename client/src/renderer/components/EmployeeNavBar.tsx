@@ -285,16 +285,20 @@ const EmployeeNavBar = () => {
         <Text ml="1rem" mt="0.4rem" fontSize="1rem" color="gray.800">
           Afritan-Gestion de personnel
         </Text>
+        <HStack>
+          <Text color="gray.700" fontWeight="600" mt="0.4rem">
+            Dernière synchronisation:{" "}
+          </Text>
 
-        <Text mt="0.4rem">
-          Dernière synchronisation:{" "}
-          {lastSyncAt
-            ? new Date(lastSyncAt).toLocaleTimeString("fr-FR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "-"}
-        </Text>
+          <Text position="relative" right="0.3rem" mt="0.4rem">
+            {lastSyncAt
+              ? new Date(lastSyncAt).toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "-"}
+          </Text>
+        </HStack>
 
         <HStack mt="0.3rem" mr="2rem" fontSize="1rem" color="gray.600">
           <Text color="gray.800">Version 1.0.0</Text>

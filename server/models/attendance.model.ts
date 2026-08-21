@@ -15,67 +15,72 @@ export interface AttendanceDocument {
   updatedAt: Date;
 }
 
-const attendanceSchema = new Schema<AttendanceDocument>({
-  _id: {
-    type: String,
-    required: true,
-  },
+const attendanceSchema = new Schema<AttendanceDocument>(
+  {
+    _id: {
+      type: String,
+      required: true,
+    },
 
-  employeeId: {
-    type: String,
-    required: true,
-  },
+    employeeId: {
+      type: String,
+      required: true,
+    },
 
-  date: {
-    type: String,
-    required: true,
-  },
+    date: {
+      type: String,
+      required: true,
+    },
 
-  source: {
-    type: String,
-    default: "MANUAL",
-    enum: ["MANUAL", "AUTO_CLIENT", "AUTO_SERVER"],
-    required: true,
-  },
+    source: {
+      type: String,
+      default: "MANUAL",
+      enum: ["MANUAL", "AUTO_CLIENT", "AUTO_SERVER"],
+      required: true,
+    },
 
-  clockIn: {
-    type: Date,
-  },
+    clockIn: {
+      type: Date,
+    },
 
-  clockOut: {
-    type: Date,
-  },
+    clockOut: {
+      type: Date,
+    },
 
-  status: {
-    type: String,
-    enum: ["PONCTUEL", "RETARD", "ABSENT", "CONGÉ"],
-    required: true,
-  },
+    status: {
+      type: String,
+      enum: ["PONCTUEL", "RETARD", "ABSENT", "CONGÉ"],
+      required: true,
+    },
 
-  lateMinutes: {
-    type: Number,
-  },
+    lateMinutes: {
+      type: Number,
+    },
 
-  notes: {
-    type: String,
-  },
+    notes: {
+      type: String,
+    },
 
-  isDeleted: {
-    type: Number,
-    default: 0,
-    required: true,
-  },
+    isDeleted: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
 
-  createdAt: {
-    type: Date,
-    required: true,
-  },
+    createdAt: {
+      type: Date,
+      required: true,
+    },
 
-  updatedAt: {
-    type: Date,
-    required: true,
+    updatedAt: {
+      type: Date,
+      required: true,
+    },
   },
-});
+  {
+    versionKey: false,
+  }
+);
 
 attendanceSchema.index(
   { employeeId: 1, date: 1 },
