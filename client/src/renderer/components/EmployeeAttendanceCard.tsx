@@ -389,6 +389,7 @@ const EmployeeAttendanceCard = ({
       <Box>
         <ClockIn
           isUnlocked={isUnlocked}
+          date={selectedDate}
           attendance={localAttendance}
           onRefresh={refreshAttendance}
           awayStatus={

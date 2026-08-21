@@ -20,6 +20,7 @@ import AttendanceWithEmployee from "../../common/types/AttendanceWithEmployee";
 
 interface Props {
   attendance?: AttendanceWithEmployee | null;
+  date: string;
   onRefresh?: () => void;
   isUnlocked: boolean;
   awayStatus?: "ABSENT" | "CONGÉ" | null;
@@ -123,7 +124,13 @@ const formatTime = (input?: string | Date | null) => {
   )}`;
 };
 
-const ClockIn = ({ attendance, onRefresh, isUnlocked, awayStatus }: Props) => {
+const ClockIn = ({
+  attendance,
+  date,
+  onRefresh,
+  isUnlocked,
+  awayStatus,
+}: Props) => {
   if (!attendance) return;
   const [clockInValue, setClockInValue] = useState(
     formatTime(attendance?.clockIn)
@@ -158,15 +165,16 @@ const ClockIn = ({ attendance, onRefresh, isUnlocked, awayStatus }: Props) => {
     try {
       const updatedAttendance = await window.electron.attendance.update(
         attendance._id,
+        date,
         {
           clockIn: clockInDate.toISOString(),
         }
       );
-      console.log("Clock in updated successfully:", updatedAttendance);
+      console.log("CLOCK IN UPDATED SUCCESSFULLY:", updatedAttendance);
       onRefresh?.();
       return;
     } catch (error) {
-      console.error("Error editing clock in:", error);
+      console.error("ERROR EDITING CLOCK IN`:", error);
       return;
     }
   };

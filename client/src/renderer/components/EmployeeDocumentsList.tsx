@@ -81,7 +81,7 @@ export default function EmployeeDocumentsList({
             <Badge colorScheme={document.needsUpload ? "orange" : "green"}>
               {document.needsUpload
                 ? "En attente de synchronization"
-                : "Synchronise"}
+                : "Synchronisé"}
             </Badge>
 
             <HStack ml={6}>

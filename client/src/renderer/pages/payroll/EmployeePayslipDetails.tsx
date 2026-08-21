@@ -231,7 +231,7 @@ const EmployeePayslipDetails = () => {
           mt="1rem"
           ml="0.5rem"
           height="13rem"
-          width="45.5vw"
+          width="45.7vw"
         >
           {/* Periode de paie */}
           <HStack mt="0.4rem" ml="1rem">

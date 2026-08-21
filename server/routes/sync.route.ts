@@ -261,7 +261,10 @@ router.get(
         }).lean(),
       ]);
 
-      console.log("RETRIEVED PAYROLL ITEMS TO SEND TO CLIENT", payrollRuns);
+      console.log(
+        "RETRIEVED ATTENDANCE DAILY CHECK TO SEND TO CLIENT",
+        attendanceDailyCheck
+      );
 
       return res.send({
         success: true,

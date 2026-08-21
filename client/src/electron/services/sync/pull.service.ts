@@ -94,7 +94,7 @@ export async function pullLatestChanges() {
       employees,
       employeesDocuments,
       attendances,
-      attendanceDailyChecks,
+      attendanceDailyCheck,
       leaves,
       tasks,
       payrollSettings,
@@ -111,7 +111,7 @@ export async function pullLatestChanges() {
     console.log("FETCHED EMPLOYEES:", employees);
     console.log("FETCHED EMPLOYEES DOCUMENTS:", employeesDocuments);
     console.log("FETCHED ATTENDANCES:", attendances);
-    console.log("FETCHED ATTENDANCE DAILY CHECK:", attendanceDailyChecks);
+    console.log("FETCHED ATTENDANCE DAILY CHECK:", attendanceDailyCheck);
     console.log("FETCHED LEAVES:", leaves);
     console.log("FETCHED TASKS:", tasks);
     console.log("FETCHED PAYROLL SETTINGS:", payrollSettings);
@@ -126,7 +126,7 @@ export async function pullLatestChanges() {
     await syncEmployeePhotos(employees);
     await syncEmployeeDocuments(employeesDocuments);
     await syncAttendances(attendances);
-    await syncAttendanceDailyChecks(attendanceDailyChecks);
+    await syncAttendanceDailyChecks(attendanceDailyCheck);
     await syncLeaves(leaves);
     await syncTasks(tasks);
     await syncPayrollSettings(payrollSettings);
