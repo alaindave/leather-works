@@ -18,11 +18,11 @@ export interface PayrollResultDocument {
   totalDeductions: number;
   status: "BROUILLON" | "VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
   notes?: string;
-  cancelledAt?: string;
-  verifiedAt?: string;
-  approvedAt?: string;
-  paidAt?: string;
   netSalary: number;
+  cancelledAt?: Date;
+  verifiedAt?: Date;
+  approvedAt?: Date;
+  paidAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: number;
