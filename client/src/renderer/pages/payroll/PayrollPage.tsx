@@ -59,9 +59,6 @@ export default function PayrollPage() {
         await window.electron.payrollRun.createPayrollDraft(user);
       loadPayrollRun();
       console.log("PAYROLL RESULTS", payroll_results);
-      window.electron.sync().catch((error) => {
-        console.error("IMMEDIATE SYNC FAILED:", error);
-      });
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE GENERATING PAYROLL", e);
     }
@@ -88,9 +85,6 @@ export default function PayrollPage() {
     try {
       const results = await window.electron.payrollRun.returnToDraft(_id);
       console.log("WITHDRAW RESULTS", results);
-      window.electron.sync().catch((error) => {
-        console.error("IMMEDIATE SYNC FAILED:", error);
-      });
       loadPayrollRun();
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE WITHDRAWING PAYROLL", e);
@@ -102,9 +96,6 @@ export default function PayrollPage() {
     try {
       const results = await window.electron.payrollRun.cancelPayroll(_id, user);
       console.log("CANCELLATION RESULTS", results);
-      window.electron.sync().catch((error) => {
-        console.error("IMMEDIATE SYNC FAILED:", error);
-      });
       loadPayrollRun();
     } catch (e) {
       console.error("AN ERROR OCCURED DURING CANCELLATION", e);
@@ -115,9 +106,6 @@ export default function PayrollPage() {
     try {
       const results = await window.electron.payrollRun.deletePayrollRun(_id);
       console.log("DELETE RESULTS", results);
-      window.electron.sync().catch((error) => {
-        console.error("IMMEDIATE SYNC FAILED:", error);
-      });
       loadPayrollRun();
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE DELETING PAYROLL", e);

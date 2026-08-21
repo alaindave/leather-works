@@ -40,11 +40,9 @@ export default function TaskDetailsDrawer({
   onRefresh,
 }: Props) {
   const author = useAdminUser((store) => store.adminUser);
-
   const addComment = useTaskStore((store: any) => store.addComment);
-
-  const storeTask = useTaskStore((state) =>
-    task ? state.tasks.find((t) => t._id === task._id) : undefined
+  const storeTask = useTaskStore((store) =>
+    task ? store.tasks.find((t) => t._id === task._id) : undefined
   );
 
   const currentTask = storeTask ?? task;
@@ -54,7 +52,6 @@ export default function TaskDetailsDrawer({
   if (!currentTask) {
     return null;
   }
-
   console.log("CURRENT TASK FROM STORE:", currentTask);
 
   const handleTaskComment = async () => {

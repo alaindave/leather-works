@@ -72,6 +72,7 @@ import {
   markAttendanceDailyCheckSynced,
   upsertAttendanceDailyCheck,
 } from "../../database/repositories/attendanceDailyCheck.repository.js";
+import { get } from "../../database/db.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -135,7 +136,7 @@ export async function pullLatestChanges() {
     await syncPayrollRuns(payrollRuns);
     await syncPayrollResults(payrollResults);
     await syncPayrollItems(payrollItems);
-
+    await syncPayrollItems(payrollItems);
     await setSetting("lastSync", serverTime);
 
     return response;
@@ -378,30 +379,92 @@ async function syncPayrollEmployeeProfiles(
   }
 }
 
-async function syncPayrollRuns(payrollRun: PayrollRun[]) {
-  for (const run of payrollRun) {
-    if (!run._id) continue;
-    try {
-      await upsertPayrollRun(run);
-      await markPayrollRunSynced(run._id);
-    } catch (error) {
-      console.error("FAILED TO SYNC PULLED PAYROLL RUN:", run._id, error);
-    }
-  }
-}
+async function syncPayrollRuns(
+  payrollRuns: PayrollRun[]
+): Promise<Set<string>> {
+  const syncedRunIds = new Set<string>();
 
-async function syncPayrollResults(PayrollResults: PayrollResult[]) {
-  for (const result of PayrollResults) {
-    if (!result._id) continue;
+  for (const payrollRun of payrollRuns) {
+    if (!payrollRun._id) continue;
+
     try {
-      await upsertPayrollResult(result);
-      await markPayrollResultSynced(result._id);
+      await upsertPayrollRun(payrollRun);
+      await markPayrollRunSynced(payrollRun._id);
+      syncedRunIds.add(payrollRun._id);
+      console.log("PAYROLL RUN SYNCED:", payrollRun._id);
     } catch (error) {
       console.error(
-        "FAILED TO SYNC PULLED PAYROLL RESULTS:",
-        result._id,
+        "FAILED TO SYNC PULLED PAYROLL RUN:",
+        payrollRun._id,
         error
       );
+    }
+  }
+
+  return syncedRunIds;
+}
+
+async function syncPayrollResults(payrollResults: PayrollResult[]) {
+  for (const result of payrollResults) {
+    if (!result._id) continue;
+
+    try {
+      const payrollRun = await get(
+        `
+          SELECT _id
+          FROM payroll_runs
+          WHERE _id = ?
+          LIMIT 1
+        `,
+        [result.payrollRunId]
+      );
+
+      if (!payrollRun) {
+        console.error(
+          "SKIPPING PAYROLL RESULT: PAYROLL RUN DOES NOT EXIST LOCALLY",
+          {
+            resultId: result._id,
+            payrollRunId: result.payrollRunId,
+          }
+        );
+
+        continue;
+      }
+
+      const employee = await get(
+        `
+          SELECT _id
+          FROM employees
+          WHERE _id = ?
+          LIMIT 1
+        `,
+        [result.employeeId]
+      );
+
+      if (!employee) {
+        console.error(
+          "SKIPPING PAYROLL RESULT: EMPLOYEE DOES NOT EXIST LOCALLY",
+          {
+            resultId: result._id,
+            employeeId: result.employeeId,
+          }
+        );
+
+        continue;
+      }
+
+      await upsertPayrollResult(result);
+
+      await markPayrollResultSynced(result._id);
+
+      console.log("PAYROLL RESULT SYNCED:", result._id);
+    } catch (error) {
+      console.error("FAILED TO SYNC PULLED PAYROLL RESULT:", {
+        resultId: result._id,
+        payrollRunId: result.payrollRunId,
+        employeeId: result.employeeId,
+        error,
+      });
     }
   }
 }
