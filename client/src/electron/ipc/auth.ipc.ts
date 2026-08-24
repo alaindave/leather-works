@@ -14,7 +14,7 @@ export function registerAuthIPC() {
   ipcMain.handle("auth:login", async (_, credentials) => {
     console.log("LOGIN IPC RECEIVED");
     if (!credentials) {
-      throw new Error("Missing credentials");
+      throw new Error("MISSING CREDENTIALS");
     }
     const online = await NetworkService.canReachBackend();
 

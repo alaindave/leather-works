@@ -12,6 +12,7 @@ import PayrollResult from "./models/payrollResult.model.js";
 import PayrollItem from "./models/payrollItem.model.js";
 import PayrollSettings from "./models/payrollSettings.model.js";
 import AttendanceDailyCheck from "./models/attendanceDailyCheck.model.js";
+import { getNextSyncVersion } from "./utils/syncVersion.js";
 
 export type SyncOperation = "create" | "update" | "delete";
 
@@ -30,26 +31,43 @@ interface UploadedFile {
 // ================= EMPLOYEE =================
 
 export async function syncEmployee(operation: SyncOperation, data: SyncData) {
-  const { _id, ...fields } = data;
+  const { _id, serverVersion, ...fields } = data;
+
+  // Server is the only authority that generates the version.
+  const version = await getNextSyncVersion("employee");
+
   await Employee.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
-      $setOnInsert: { _id },
+      $set: {
+        ...fields,
+        serverVersion: version,
+      },
+      $setOnInsert: {
+        _id,
+      },
     },
     {
       upsert: true,
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} EMPLOYEE:`,
-    await Employee.findById(data._id)
-  );
-}
+  const employee = await Employee.findById(_id).lean();
 
+  console.log(`SYNCED ${operation.toUpperCase()} EMPLOYEE:`, {
+    _id,
+    serverVersion: version,
+    employee,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion: version,
+  };
+}
 // ================= ATTENDANCE =================
 
 export async function syncAttendance(operation: SyncOperation, data: SyncData) {

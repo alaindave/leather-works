@@ -24,6 +24,7 @@ export default interface Employee {
   emergencyContact: string;
   relationship: string;
   contactPhone: string;
+  serverVersion: number;
   createdAt: string;
   updatedAt: string;
   lastSyncedAt: string | null;

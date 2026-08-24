@@ -232,7 +232,6 @@ export async function cancelLeave(_id: string) {
   }
 
   const differenceInMs = endDate.getTime() - startDate.getTime();
-
   const leaveDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
 
   if (leaveDays <= 0) {
@@ -374,7 +373,7 @@ export async function updateLeave(
 
   const savedUpdates = { _id, ...updates, updatedAt };
 
-  console.log("Leave to save to sync queue", savedUpdates);
+  console.log("LEAVE TO SAVE TO SYNC QUEUE", savedUpdates);
 
   await addToSyncQueue({
     entity: "leave",
@@ -387,6 +386,8 @@ export async function updateLeave(
 }
 
 export async function deleteLeave(_id: string) {
+  const now = new Date().toISOString();
+
   await run(
     `
     UPDATE leaves
@@ -399,11 +400,9 @@ export async function deleteLeave(_id: string) {
     [_id]
   );
 
-  const deletedAt = new Date().toISOString();
+  const deletedLeave = { _id, updatedAt: now, deletedAt: now };
 
-  const deletedLeave = { _id, deletedAt };
-
-  console.log("Leave to delete from sync queue", deletedLeave);
+  console.log("LEAVE TO DELETE FROM SYNC QUEUE", deletedLeave);
 
   await addToSyncQueue({
     entity: "leave",

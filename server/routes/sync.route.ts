@@ -50,9 +50,15 @@ interface SyncItem {
 
 interface PullQuery {
   since?: string;
+  entity?: string;
+  afterVersion?: string;
+  limit?: string;
 }
 
-// Push sync
+// ============================================================
+// PUSH SYNC
+// ============================================================
+
 router.post(
   "/push",
   upload.fields([
@@ -72,18 +78,25 @@ router.post(
         | undefined;
 
       const photoFiles = files?.employees_photos || [];
-
       const documentFiles = files?.employees_documents || [];
 
       const synced: string[] = [];
 
       for (const item of items) {
         const { queueId, entity, operation, data } = item;
+
         try {
           switch (entity) {
-            case "employee":
-              await syncEmployee(operation, data);
+            case "employee": {
+              const result = await syncEmployee(operation, data);
+
+              console.log(
+                `EMPLOYEE ${data._id} SERVER VERSION:`,
+                result.serverVersion
+              );
+
               break;
+            }
 
             case "attendance":
               await syncAttendance(operation, data);
@@ -154,9 +167,13 @@ router.post(
               break;
 
             default:
+              console.warn(`UNKNOWN SYNC ENTITY: ${entity}`);
+
               continue;
           }
 
+          // Only mark the queue item as synced AFTER
+          // the entity sync succeeds.
           synced.push(queueId);
         } catch (error) {
           console.error(`PUSH FAILED FOR ${entity}`, error);
@@ -178,22 +195,103 @@ router.post(
   }
 );
 
-// Pull sync
+// ============================================================
+// PULL SYNC
+// ============================================================
+
 router.get(
   "/pull",
   async (req: Request<{}, {}, {}, PullQuery>, res: Response) => {
     try {
-      const { since } = req.query;
+      const { entity, afterVersion = "0", limit = "500", since } = req.query;
+
+      // ======================================================
+      // NEW VERSION-BASED EMPLOYEE SYNC
+      // ======================================================
+
+      if (entity === "employee") {
+        const version = Number(afterVersion);
+        const max = Number(limit);
+
+        if (!Number.isInteger(version) || version < 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid afterVersion parameter",
+          });
+        }
+
+        if (!Number.isInteger(max) || max <= 0 || max > 1000) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid limit. Must be between 1 and 1000.",
+          });
+        }
+
+        const employees = await Employee.find({
+          serverVersion: {
+            $gt: version,
+          },
+        })
+          .sort({
+            serverVersion: 1,
+          })
+          .limit(max)
+          .lean();
+
+        const nextVersion =
+          employees.length > 0
+            ? employees[employees.length - 1].serverVersion
+            : version;
+
+        // Check whether there are more employee
+        // changes waiting after this batch.
+        const moreChanges = await Employee.exists({
+          serverVersion: {
+            $gt: nextVersion,
+          },
+        });
+
+        console.log("EMPLOYEE VERSION PULL:", {
+          afterVersion: version,
+          nextVersion,
+          count: employees.length,
+          hasMore: Boolean(moreChanges),
+        });
+
+        return res.json({
+          success: true,
+          entity: "employee",
+          items: employees,
+          nextVersion,
+          hasMore: Boolean(moreChanges),
+          serverTime: new Date().toISOString(),
+        });
+      }
+
+      // ======================================================
+      // LEGACY DATE-BASED SYNC
+      //
+      // Keep this temporarily while we migrate each entity.
+      // ======================================================
 
       if (!since) {
-        return res.status(400).send("Missing since parameter");
+        return res.status(400).json({
+          success: false,
+          message: "Missing since parameter",
+        });
       }
 
       const date = new Date(since);
 
+      if (Number.isNaN(date.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid since parameter",
+        });
+      }
+
       const [
         adminUsers,
-        employees,
         employeesDocuments,
         attendances,
         attendanceDailyCheck,
@@ -211,10 +309,6 @@ router.get(
         })
           .select("-password -notes")
           .lean(),
-
-        Employee.find({
-          updatedAt: { $gt: date },
-        }).lean(),
 
         EmployeeDocuments.find({
           updatedAt: { $gt: date },
@@ -266,10 +360,13 @@ router.get(
         attendanceDailyCheck
       );
 
-      return res.send({
+      return res.json({
         success: true,
+
+        // Employee is intentionally NOT included here.
+        // Employee now uses version-based syncing.
+
         adminUsers,
-        employees,
         employeesDocuments,
         attendances,
         attendanceDailyCheck,
@@ -281,12 +378,13 @@ router.get(
         payrollRuns,
         payrollResults,
         payrollItems,
+
         serverTime: new Date().toISOString(),
       });
     } catch (error) {
       console.error(error);
 
-      return res.status(500).send({
+      return res.status(500).json({
         success: false,
         message: "Pull sync failed",
       });

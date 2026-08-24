@@ -10,9 +10,14 @@ export interface AttendanceDocument {
   status: "PONCTUEL" | "RETARD" | "ABSENT" | "CONGÉ";
   lateMinutes?: number;
   notes?: string;
-  isDeleted: number;
+  version: {
+    type: Number;
+    required: true;
+    default: 0;
+  };
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: number;
 }
 
 const attendanceSchema = new Schema<AttendanceDocument>(
@@ -61,12 +66,11 @@ const attendanceSchema = new Schema<AttendanceDocument>(
       type: String,
     },
 
-    isDeleted: {
+    version: {
       type: Number,
-      default: 0,
       required: true,
+      default: 0,
     },
-
     createdAt: {
       type: Date,
       required: true,
@@ -74,6 +78,11 @@ const attendanceSchema = new Schema<AttendanceDocument>(
 
     updatedAt: {
       type: Date,
+      required: true,
+    },
+    isDeleted: {
+      type: Number,
+      default: 0,
       required: true,
     },
   },

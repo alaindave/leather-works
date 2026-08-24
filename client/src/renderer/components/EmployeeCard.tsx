@@ -180,6 +180,7 @@ const EmployeeCard = ({ employee }: Props) => {
       }
       const updatedAttendance = await window.electron.attendance.update(
         attendance._id,
+        new Date().toISOString(),
         { notes }
       );
       setAttendance(updatedAttendance);

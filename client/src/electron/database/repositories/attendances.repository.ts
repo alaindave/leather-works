@@ -9,6 +9,7 @@ import {
   PayrollAttendanceSummary,
 } from "../../../common/types/Attendance.js";
 import { isAttendanceDateLocked } from "./attendanceDailyCheck.repository.js";
+import AttendanceWithEmployee from "../../../common/types/AttendanceWithEmployee.js";
 
 export async function createAttendance(input: CreateAttendanceDto) {
   let { employeeId, date, clockIn, clockOut, status } = input;
@@ -396,7 +397,7 @@ export async function getAttendanceRecord(
 export async function updateAttendance(
   _id: string,
   date: string,
-  updates: Partial<Attendance>
+  updates: Partial<AttendanceWithEmployee>
 ) {
   const locked = await isAttendanceDateLocked(date);
   if (locked) {

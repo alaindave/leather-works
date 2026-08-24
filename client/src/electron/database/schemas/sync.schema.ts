@@ -13,5 +13,14 @@ export async function createSyncTable() {
 )
   `);
 
+  await run(`
+CREATE TABLE IF NOT EXISTS sync_state (
+    entity TEXT PRIMARY KEY,
+    lastPulledVersion INTEGER NOT NULL DEFAULT 0,
+    lastPushedVersion INTEGER NOT NULL DEFAULT 0,
+    updatedAt TEXT NOT NULL
+);
+  `);
+
   console.log("SYNC TABLE INITIALIZED");
 }

@@ -28,6 +28,11 @@ export interface PayrollRunDocument {
   deletedBy?: string;
   status: PayrollStatus;
   notes?: string;
+  version: {
+    type: Number;
+    required: true;
+    default: 0;
+  };
   synced: number;
   createdAt: Date;
   updatedAt: Date;
@@ -132,6 +137,12 @@ const payrollRunSchema = new Schema<PayrollRunDocument>(
 
     notes: {
       type: String,
+    },
+
+    version: {
+      type: Number,
+      required: true,
+      default: 0,
     },
 
     synced: {

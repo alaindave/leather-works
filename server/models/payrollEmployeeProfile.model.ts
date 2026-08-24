@@ -30,11 +30,15 @@ export interface PayrollEmployeeProfileDocument {
   requiresHRApproval: number;
   enabled: number;
   isOverridden: number;
-  synced: number;
-  isDeleted: number;
-  lastSyncedAt: Date;
+  version: {
+    type: Number;
+    required: true;
+    default: 0;
+  };
   createdAt: Date;
   updatedAt: Date;
+  synced: number;
+  isDeleted: number;
 }
 
 const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
@@ -131,19 +135,10 @@ const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
       default: 0,
     },
 
-    synced: {
+    version: {
       type: Number,
-      default: 1,
-    },
-
-    isDeleted: {
-      type: Number,
+      required: true,
       default: 0,
-    },
-
-    lastSyncedAt: {
-      type: Date,
-      default: Date.now,
     },
 
     createdAt: {
@@ -154,6 +149,16 @@ const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
     updatedAt: {
       type: Date,
       required: true,
+    },
+
+    synced: {
+      type: Number,
+      default: 1,
+    },
+
+    isDeleted: {
+      type: Number,
+      default: 0,
     },
   },
   {

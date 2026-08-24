@@ -129,6 +129,7 @@ const AbsenceNotesPopover = ({
       // Change attendance from ABSENT → CONGÉ
       const attendanceChange = await window.electron.attendance.update(
         attendanceId,
+        new Date().toISOString(),
         {
           notes: absenceNote,
           status: "CONGÉ",

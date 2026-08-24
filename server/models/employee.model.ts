@@ -18,16 +18,16 @@ export interface EmployeeDocument {
   emergencyContact: string;
   relationship: string;
   contactPhone: string;
-  createdAt: Date;
-  updatedAt: Date;
-  isDeleted: number;
-
   photo_filename: string | null;
   photo_path: string | null;
   photo_version: number;
   photo_hash: string | null;
   photo_mime_type: "image/jpeg" | "image/png" | "image/webp" | null;
   photo_last_modified: Date | null;
+  serverVersion: number;
+  createdAt: Date;
+  updatedAt: Date;
+  isDeleted: number;
 }
 
 const employeeSchema = new Schema<EmployeeDocument>(
@@ -122,22 +122,6 @@ const employeeSchema = new Schema<EmployeeDocument>(
       required: true,
     },
 
-    createdAt: {
-      type: Date,
-      required: true,
-    },
-
-    updatedAt: {
-      type: Date,
-      required: true,
-    },
-
-    isDeleted: {
-      type: Number,
-      default: 0,
-      required: true,
-    },
-
     photo_filename: {
       type: String,
       default: null,
@@ -168,6 +152,24 @@ const employeeSchema = new Schema<EmployeeDocument>(
     photo_last_modified: {
       type: Date,
       default: null,
+    },
+    serverVersion: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    createdAt: {
+      type: Date,
+      required: true,
+    },
+    updatedAt: {
+      type: Date,
+      required: true,
+    },
+    isDeleted: {
+      type: Number,
+      default: 0,
+      required: true,
     },
   },
   {
