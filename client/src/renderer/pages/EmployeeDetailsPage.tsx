@@ -483,10 +483,7 @@ const EmployeeDetailsPage = () => {
                           <Text
                             mt="1rem"
                             fontWeight="bold"
-                            color={
-                              attendance?.status &&
-                              statusColor[attendance?.status]
-                            }
+                            color={statusColor[attendance?.status!]}
                           >
                             {attendance?.status}
                           </Text>
@@ -531,7 +528,7 @@ const EmployeeDetailsPage = () => {
               border="1px solid"
               borderColor="gray.500`"
               overflowY="auto"
-              height="70.6vh"
+              maxH="70.3vh"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
                 <EmployeeDetailsTab employee={employee} />

@@ -160,7 +160,8 @@ declare global {
         create: (input: CreateAttendanceDto) => Promise<Attendance>;
         createAbsenceLeave: (
           employeeID: string,
-          status: "CONGÉ" | "ABSENT"
+          status: "CONGÉ" | "ABSENT",
+          date: string
         ) => Promise<Attendance>;
         getAll: () => Promise<AttendanceWithEmployee[]>;
         getById: (_id: string) => Promise<AttendanceWithEmployee | null>;

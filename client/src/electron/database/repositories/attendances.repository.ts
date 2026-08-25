@@ -177,7 +177,7 @@ export async function createAbsenceLeaveAttendance(
       employeeId,
       date,
       status,
-      "AUTOMATIC",
+      "MANUAL",
       serverVersion,
       now,
       now,
@@ -192,7 +192,7 @@ export async function createAbsenceLeaveAttendance(
     employeeId,
     date,
     status,
-    source: "AUTO_CLIENT",
+    source: "MANUAL",
     serverVersion,
     createdAt: now,
     updatedAt: now,
@@ -227,7 +227,8 @@ export async function getEmployeesWithoutAttendance(
     SELECT
       e._id,
       e.firstName,
-      e.lastName
+      e.lastName,
+      e.remainingLeave
     FROM employees e
     LEFT JOIN attendances a
       ON a.employeeId = e._id
@@ -344,7 +345,7 @@ export async function getEmployeesWhoDidNotClockIn(
 }
 
 /**
- * Create an absent attendance from an Attendance object.
+ * Create an absent attendance from an Attendance record.
  */
 export async function createAbsentAttendance(
   attendance: Attendance
@@ -548,9 +549,6 @@ export async function getAttendanceRecord(
     `,
     [employeeId, date]
   );
-
-  console.log("ATTENDANCE RECORD RESULT:", attendance ?? null);
-
   return attendance ?? null;
 }
 
@@ -798,22 +796,15 @@ export async function deleteAttendance(_id: string) {
   return getAttendanceById(_id);
 }
 
-/**
- * Upsert an attendance received from the server.
- *
- * serverVersion is authoritative for pulled records.
- */
 export async function upsertAttendance(attendance: Attendance) {
   /*
-   * 1. Try the server ID first.
+   * 1. First try to find the exact remote record by _id.
    */
   let local = await getAttendanceById(attendance._id);
 
   /*
-   * 2. If not found, search using employee + date.
+   * 2.  _id does not exist locally, searching by employee + date.
    *
-   * This protects against duplicate attendance records when
-   * an older local record has a different ID.
    */
   if (!local) {
     local = await getAttendanceByEmployeeAndDate(
@@ -823,21 +814,19 @@ export async function upsertAttendance(attendance: Attendance) {
   }
 
   /*
-   * 3. Version-based conflict protection.
+   *
+   * Don't overwrite a newer local record with an older remote one.
    */
   if (local) {
     const localVersion = Number(local.serverVersion ?? 0);
-
     const remoteVersion = Number(attendance.serverVersion ?? 0);
 
-    /*
-     * Never replace a newer local server version with an
-     * older remote version.
-     */
     if (remoteVersion < localVersion) {
       console.log(
         `SKIPPING REMOTE ATTENDANCE. LOCAL VERSION IS NEWER: ${attendance._id}`,
         {
+          localId: local._id,
+          remoteId: attendance._id,
           localVersion,
           remoteVersion,
         }
@@ -845,17 +834,15 @@ export async function upsertAttendance(attendance: Attendance) {
 
       return local;
     }
-  }
 
-  /*
-   * 4. Update existing local record.
-   */
-  if (local) {
+    /*
+     * 4. Update the existing local record.
+     *
+     */
     await run(
       `
       UPDATE attendances
       SET
-        _id = ?,
         employeeId = ?,
         date = ?,
         clockIn = ?,
@@ -873,7 +860,6 @@ export async function upsertAttendance(attendance: Attendance) {
       WHERE _id = ?
       `,
       [
-        attendance._id,
         attendance.employeeId,
         attendance.date,
         attendance.clockIn ?? null,
@@ -890,11 +876,12 @@ export async function upsertAttendance(attendance: Attendance) {
       ]
     );
 
-    return getAttendanceById(attendance._id);
+    return getAttendanceById(local._id);
   }
 
   /*
-   * 5. Insert new remote record.
+   * 5. No matching _id and no matching employee/date.
+   *
    */
   await run(
     `
@@ -941,8 +928,6 @@ export async function upsertAttendance(attendance: Attendance) {
 /**
  * Mark attendance as synced.
  *
- * This does not change serverVersion.
- * serverVersion is controlled by the server.
  */
 export async function markAttendanceSynced(_id: string) {
   await run(

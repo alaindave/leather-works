@@ -1,5 +1,4 @@
 import {
-  Badge,
   Box,
   Button,
   Divider,
@@ -43,20 +42,17 @@ const AddAttendanceModal = ({
   onCreated,
 }: AddAttendanceModalProps) => {
   const toast = useToast();
+
   const [employeeId, setEmployeeId] = useState("");
   const [attendanceType, setAttendanceType] =
     useState<AttendanceType>("PRESENT");
+
   const [clockIn, setClockIn] = useState<string | null>("08:00");
-  const [clockOut, setClockOut] = useState<string | null>("17:00");
+  const [clockOut, setClockOut] = useState<string | null>("16:30");
+
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  /*
-   * -------------------------------------------------------
-   * Load employees who DON'T have attendance for the date
-   * -------------------------------------------------------
-   */
 
   useEffect(() => {
     if (!isOpen) return;
@@ -67,9 +63,12 @@ const AddAttendanceModal = ({
   const loadEmployeesWithoutAttendance = async () => {
     try {
       setLoadingEmployees(true);
+
       const result =
         await window.electron.attendance.getEmployeesWithoutAttendance(date);
-      console.log(`EMPLOYEES WITHOUT ATTENDANDE RECORD FOR ${date}`, result);
+
+      console.log(`EMPLOYEES WITHOUT ATTENDANCE RECORD FOR ${date}`, result);
+
       setEmployees(result);
     } catch (error) {
       console.error("FAILED TO LOAD EMPLOYEES WITHOUT ATTENDANCE", error);
@@ -78,20 +77,14 @@ const AddAttendanceModal = ({
         title: "Erreur",
         description: "Impossible de charger les employés sans présence.",
         status: "error",
-        duration: 4000,
+        duration: 5000,
         isClosable: true,
-        position: "top-right",
+        position: "top-left",
       });
     } finally {
       setLoadingEmployees(false);
     }
   };
-
-  /*
-   * -------------------------------------------------------
-   * Reset form
-   * -------------------------------------------------------
-   */
 
   const resetForm = () => {
     setEmployeeId("");
@@ -101,15 +94,14 @@ const AddAttendanceModal = ({
   };
 
   const handleClose = () => {
+    if (saving) return;
     resetForm();
     onClose();
   };
 
-  /*
-   * -------------------------------------------------------
-   * Save
-   * -------------------------------------------------------
-   */
+  const handleAttendanceTypeChange = (value: string) => {
+    setAttendanceType(value as AttendanceType);
+  };
 
   const handleSubmit = async () => {
     if (!employeeId) {
@@ -117,23 +109,136 @@ const AddAttendanceModal = ({
         title: "Employé requis",
         description: "Veuillez sélectionner un employé.",
         status: "warning",
-        duration: 4000,
+        duration: 5000,
         isClosable: true,
-        position: "top-right",
+        position: "top-left",
       });
 
       return;
     }
 
-    if (attendanceType === "PRESENT") {
+    const employee = employees.find((item) => item._id === employeeId);
+
+    console.log("FETCHED EMPLOYEE IN THE MODAL:", employee);
+
+    if (!employee) {
+      toast({
+        title: "Employé introuvable",
+        description: "Impossible de trouver l'employé sélectionné.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-left",
+      });
+
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      /*
+       * =====================================================
+       * ABSENT
+       * =====================================================
+       */
+      if (attendanceType === "ABSENT") {
+        await window.electron.attendance.createAbsenceLeave(
+          employee._id,
+          "ABSENT",
+          date
+        );
+
+        toast({
+          title: "Absence enregistrée",
+          description: `${employee.firstName} ${employee.lastName} a été marqué(e) absent(e).`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+          position: "top-left",
+        });
+
+        onCreated?.();
+        handleClose();
+        return;
+      }
+
+      /*
+       * =====================================================
+       * CONGÉ
+       * =====================================================
+       */
+      if (attendanceType === "CONGÉ") {
+        const remainingLeave = employee.remainingLeave ?? 0;
+
+        if (remainingLeave < 1) {
+          toast({
+            title: "Solde de congé insuffisant",
+            description: "L'employé ne dispose d'aucun jour de congé restant.",
+            status: "warning",
+            duration: 5000,
+            isClosable: true,
+            position: "top-left",
+          });
+
+          return;
+        }
+
+        /*
+         * Create the leave.
+         */
+        await window.electron.leave.create({
+          employeeId: employee._id,
+          startDate: date,
+          endDate: date,
+          subject: "Congé",
+          notes: "Absence convertie en congé.",
+          status: "APPROUVÉ",
+        });
+
+        /*
+         * Deduct one day from the employee's balance.
+         */
+        await window.electron.employees.update(employee._id, {
+          remainingLeave: remainingLeave - 1,
+        });
+
+        /*
+         * Create the corresponding attendance record.
+         */
+        await window.electron.attendance.createAbsenceLeave(
+          employee._id,
+          "CONGÉ",
+          date
+        );
+
+        toast({
+          title: "Congé enregistré",
+          description: `Le congé de ${employee.firstName} ${employee.lastName} a été enregistré avec succès.`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+          position: "top-left",
+        });
+        onCreated?.();
+        handleClose();
+        return;
+      }
+
+      /*
+       * =====================================================
+       * PRESENT
+       * =====================================================
+       */
+
       if (!clockIn) {
         toast({
           title: "Heure d'arrivée requise",
           description: "Veuillez sélectionner une heure d'arrivée.",
           status: "warning",
-          duration: 4000,
+          duration: 5000,
           isClosable: true,
-          position: "top-right",
+          position: "top-left",
         });
 
         return;
@@ -144,52 +249,51 @@ const AddAttendanceModal = ({
           title: "Heure de départ requise",
           description: "Veuillez sélectionner une heure de départ.",
           status: "warning",
-          duration: 4000,
+          duration: 5000,
           isClosable: true,
-          position: "top-right",
+          position: "top-left",
         });
 
         return;
       }
-    }
-
-    try {
-      setSaving(true);
 
       await window.electron.attendance.create({
         employeeId,
         date,
-        clockIn: clockIn ?? null,
-        clockOut: clockOut ?? null,
-        status: attendanceType ?? null,
+        clockIn,
+        clockOut,
+        status: "PRESENT",
       });
 
       toast({
         title: "Présence ajoutée",
         description: "La présence a été ajoutée avec succès.",
         status: "success",
-        duration: 4000,
+        duration: 5000,
         isClosable: true,
-        position: "top-right",
+        position: "top-left",
       });
 
       onCreated?.();
       handleClose();
     } catch (error) {
-      console.error("FAILED TO CREATE ATTENDANCE", error);
+      console.error(`FAILED TO CREATE ${attendanceType} ATTENDANCE`, error);
 
       const message =
-        error instanceof Error
-          ? error.message
-          : "Impossible d'ajouter la présence.";
+        error instanceof Error ? error.message : "Une erreur est survenue.";
 
       toast({
-        title: "Échec de l'ajout",
+        title:
+          attendanceType === "CONGÉ"
+            ? "Échec de l'enregistrement du congé"
+            : attendanceType === "ABSENT"
+            ? "Échec de l'enregistrement de l'absence"
+            : "Échec de l'ajout de la présence",
         description: message,
         status: "error",
-        duration: 6000,
+        duration: 5000,
         isClosable: true,
-        position: "top-right",
+        position: "top-left",
       });
     } finally {
       setSaving(false);
@@ -230,6 +334,7 @@ const AddAttendanceModal = ({
                 </Text>
               </Box>
             </FormControl>
+
             {/* EMPLOYEE */}
             <FormControl>
               <FormLabel fontWeight="600">Employé</FormLabel>
@@ -243,8 +348,18 @@ const AddAttendanceModal = ({
                     : "Sélectionner un employé"
                 }
                 value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-                isDisabled={loadingEmployees || employees.length === 0}
+                onChange={(e) => {
+                  setEmployeeId(e.target.value);
+
+                  /*
+                   * Reset the attendance type when switching
+                   * employees.
+                   */
+                  setAttendanceType("PRESENT");
+                }}
+                isDisabled={
+                  loadingEmployees || employees.length === 0 || saving
+                }
               >
                 {employees.map((employee) => (
                   <option key={employee._id} value={employee._id}>
@@ -259,27 +374,49 @@ const AddAttendanceModal = ({
                 </Text>
               )}
             </FormControl>
+
             <Divider />
+
             {/* ATTENDANCE TYPE */}
             <FormControl>
               <FormLabel fontWeight="600">Type de présence</FormLabel>
 
               <RadioGroup
                 value={attendanceType}
-                onChange={(value) => setAttendanceType(value as AttendanceType)}
+                onChange={handleAttendanceTypeChange}
               >
                 <Stack direction="row" spacing={6}>
-                  <Radio value="PRESENT">PRÉSENT</Radio>
+                  <Radio value="PRESENT" isDisabled={saving}>
+                    PRÉSENT
+                  </Radio>
 
-                  <Radio value="ABSENT">ABSENT</Radio>
+                  <Radio value="ABSENT" isDisabled={saving || !employeeId}>
+                    ABSENT
+                  </Radio>
 
-                  <Radio value="CONGÉ">CONGÉ</Radio>
+                  <Radio value="CONGÉ" isDisabled={saving || !employeeId}>
+                    CONGÉ
+                  </Radio>
                 </Stack>
               </RadioGroup>
+
+              {!employeeId && (
+                <Text fontSize="xs" color="gray.500" mt="2">
+                  Sélectionnez d'abord un employé.
+                </Text>
+              )}
+
+              {saving && attendanceType !== "PRESENT" && (
+                <Text fontSize="xs" color="blue.500" mt="2">
+                  Enregistrement en cours...
+                </Text>
+              )}
             </FormControl>
+
             {/* TIMES */}
             {attendanceType === "PRESENT" && (
               <HStack spacing={4} align="start">
+                {/* CLOCK IN */}
                 <FormControl>
                   <FormLabel fontWeight="600">Heure d'arrivée</FormLabel>
 
@@ -296,10 +433,12 @@ const AddAttendanceModal = ({
                       format="HH:mm"
                       disableClock
                       clearIcon={null}
+                      disabled={saving}
                     />
                   </Box>
                 </FormControl>
 
+                {/* CLOCK OUT */}
                 <FormControl>
                   <FormLabel fontWeight="600">Heure de départ</FormLabel>
 
@@ -316,6 +455,7 @@ const AddAttendanceModal = ({
                       format="HH:mm"
                       disableClock
                       clearIcon={null}
+                      disabled={saving}
                     />
                   </Box>
                 </FormControl>
@@ -325,7 +465,12 @@ const AddAttendanceModal = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={handleClose}>
+          <Button
+            variant="ghost"
+            mr={3}
+            onClick={handleClose}
+            isDisabled={saving}
+          >
             Annuler
           </Button>
 

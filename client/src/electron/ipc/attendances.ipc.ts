@@ -25,8 +25,8 @@ export function registerAttendanceIPC() {
 
   ipcMain.handle(
     "attendance:createAbsenceLeave",
-    async (_, employeeId: string, status: "CONGÉ" | "ABSENT") => {
-      return createAbsenceLeaveAttendance(employeeId, status);
+    async (_, employeeId: string, status: "CONGÉ" | "ABSENT", date: string) => {
+      return createAbsenceLeaveAttendance(employeeId, status, date);
     }
   );
 

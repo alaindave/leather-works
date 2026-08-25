@@ -44,35 +44,29 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
               <Td>{new Date(record.date).toLocaleDateString("fr-FR")}</Td>
 
               <Td>
-                {record.clockIn ? (
-                  new Date(record.clockIn).toLocaleTimeString("fr-FR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                ) : (
-                  <Text>- - - -</Text>
-                )}
+                {record.clockIn
+                  ? new Date(record.clockIn).toLocaleTimeString("fr-FR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : null}
               </Td>
 
               <Td>
-                {record.clockOut ? (
-                  new Date(record.clockOut).toLocaleTimeString("fr-FR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                ) : (
-                  <Text>- - - -</Text>
-                )}
+                {record.clockOut
+                  ? new Date(record.clockOut).toLocaleTimeString("fr-FR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : null}
               </Td>
               <Td>
                 <AttendanceNotesPopover attendance={record} />
               </Td>
               <Td>
-                {record.lateMinutes ? (
-                  formatLateMinutes(record.lateMinutes)
-                ) : (
-                  <Text>- - - -</Text>
-                )}
+                {record.lateMinutes
+                  ? formatLateMinutes(record.lateMinutes)
+                  : null}
               </Td>
             </Tr>
           ))}

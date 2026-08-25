@@ -30,6 +30,7 @@ import AddClockInNotesPopover from "./AddClockInNotesPopover";
 import defaultAvatar from "../assets/default-avatar.jpeg";
 import AbsenceNotesPopover from "./AbsenceNotesPopover";
 import Leave from "../../common/types/Leave";
+import { useErrorToast } from "../hooks/useErrorToast";
 
 interface Props {
   employee: Employee;
@@ -100,6 +101,7 @@ const EmployeeCard = ({ employee }: Props) => {
   const [loadingAttendance, setLoadingAttendance] = useState(true);
   const [photo_url, setPhotoUrl] = useState("");
   const toast = useToast();
+  const showErrorMessage = useErrorToast();
 
   //Fetch attendance
   useEffect(() => {
@@ -214,7 +216,7 @@ const EmployeeCard = ({ employee }: Props) => {
             status: "error",
             duration: 5000,
             isClosable: true,
-            position: "top-right",
+            position: "top-left",
           });
 
           return;
@@ -225,11 +227,11 @@ const EmployeeCard = ({ employee }: Props) => {
         if (remainingLeave < leaveDays) {
           toast({
             title: "Solde de congé insuffisant",
-            description: "L'employé ne dispose d'aucun jour de congé restant.",
+            description: "L'employé ne dispose plus de jours de congé.",
             status: "info",
             duration: 5000,
             isClosable: true,
-            position: "top-right",
+            position: "top-left",
           });
 
           return;
@@ -243,7 +245,7 @@ const EmployeeCard = ({ employee }: Props) => {
           startDate: date,
           endDate: date,
           subject: "Absence approuvée",
-          notes: "Employé absent.Congé approuvé",
+          notes: "Absence convertie en congé.",
           status: "APPROUVÉ",
         };
 
@@ -257,7 +259,7 @@ const EmployeeCard = ({ employee }: Props) => {
           status: "success",
           duration: 4000,
           isClosable: true,
-          position: "top",
+          position: "top-left",
         });
 
         // Deduct one leave day
@@ -273,12 +275,17 @@ const EmployeeCard = ({ employee }: Props) => {
         // Create leave absence
         const results = await window.electron.attendance.createAbsenceLeave(
           employee._id,
-          "CONGÉ"
+          "CONGÉ",
+          formattedDate
         );
         console.log("ATTENDANCE RESULTS", results);
         loadData();
-      } catch (e) {
-        console.error("AN ERROR OCCURED WHILE SUBMITTING LEAVE ATTENDANCE", e);
+      } catch (error) {
+        showErrorMessage(
+          "Échec d'enregistrement de congé",
+          error,
+          "Impossible d'enregistrer le congé."
+        );
       }
       return;
     }
@@ -287,7 +294,8 @@ const EmployeeCard = ({ employee }: Props) => {
       try {
         const results = await window.electron.attendance.createAbsenceLeave(
           employee._id,
-          "ABSENT"
+          "ABSENT",
+          formattedDate
         );
         console.log("ATTENDANCE RESULTS", results);
         loadData();

@@ -11,18 +11,18 @@ function getLast7Days() {
   const days = [];
   let i = 0;
 
-  while (days.length < 7) {
+  while (days.length < 30) {
     const date = new Date();
     date.setDate(date.getDate() - i);
+    const dayOfWeek = date.getDay();
 
-    // const dayOfWeek = date.getDay();
     // Skip weekend
-    // if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-    days.push({
-      label: formatDate(date),
-      value: formatter.format(date),
-    });
-    // }
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      days.push({
+        label: formatDate(date),
+        value: formatter.format(date),
+      });
+    }
 
     i++;
   }

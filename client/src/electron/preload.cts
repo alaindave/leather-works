@@ -124,8 +124,8 @@ contextBridge.exposeInMainWorld("electron", {
     create: (input: CreateAttendanceDto) =>
       ipcRenderer.invoke("attendance:create", input),
 
-    createAbsenceLeave: (employeeId: string, status: "CONGÉ" | "ABSENT") =>
-      ipcRenderer.invoke("attendance:createAbsenceLeave", employeeId, status),
+    createAbsenceLeave: (employeeId: string, status: "CONGÉ" | "ABSENT",date:string) =>
+      ipcRenderer.invoke("attendance:createAbsenceLeave", employeeId, status,date),
 
     getAll: () => ipcRenderer.invoke("attendance:getAll"),
 
