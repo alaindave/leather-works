@@ -12,9 +12,10 @@ export interface AdminUser {
   password: string;
   role: AdminRole;
   notes?: string;
-  isDeleted: number;
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: number;
 }
 
 export interface AdminUserMethods {
@@ -62,10 +63,11 @@ const AdminUserSchema = new Schema<AdminUser, AdminUserModel, AdminUserMethods>(
     notes: {
       type: String,
     },
-    isDeleted: {
+    serverVersion: {
       type: Number,
       required: true,
-      default: 0,
+      unique: true,
+      index: true,
     },
     createdAt: {
       type: Date,
@@ -74,6 +76,11 @@ const AdminUserSchema = new Schema<AdminUser, AdminUserModel, AdminUserMethods>(
     updatedAt: {
       type: Date,
       required: true,
+    },
+    isDeleted: {
+      type: Number,
+      required: true,
+      default: 0,
     },
   }
 );

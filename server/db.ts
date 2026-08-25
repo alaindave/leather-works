@@ -5,6 +5,7 @@ import Attendance from "./models/attendance.model.js";
 import Leave from "./models/leave.model.js";
 import AdminUser from "./models/adminUser.model.js";
 import Task from "./models/task.model.js";
+import { getNextSyncVersion } from "./utils/syncVersion.js";
 
 interface EmployeeInput {
   firstName: string;
@@ -43,6 +44,55 @@ interface AttendanceUpdate {
   lateMinutes?: number;
   [key: string]: unknown;
 }
+
+// ================= ADMIN =================
+
+export const createAdminUser = async ({
+  firstName,
+  lastName,
+  email,
+  password,
+}: AdminUserInput) => {
+  const serverVersion = await getNextSyncVersion("admin_user");
+
+  const adminUser = new AdminUser({
+    _id: randomUUID(),
+    firstName,
+    lastName,
+    email,
+    password,
+    serverVersion,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
+  return await adminUser.save();
+};
+
+export const getAllAdmins = async () => {
+  return AdminUser.find();
+};
+
+export const getAdminUserByID = async (id: string) => {
+  return AdminUser.findOne({
+    _id: id,
+  });
+};
+
+export const getAdminUserByEmail = async (email: string) => {
+  return AdminUser.findOne({
+    email,
+  });
+};
+
+export const updateAdminUser = async (
+  id: string,
+  data: Record<string, unknown>
+) => {
+  return AdminUser.findByIdAndUpdate(id, data, {
+    new: true,
+  });
+};
 
 // ================= EMPLOYEE =================
 
@@ -244,52 +294,6 @@ export const editLeave = async (id: string, data: Record<string, unknown>) => {
 
 export const deleteLeave = async (id: string) => {
   return Leave.findByIdAndDelete(id);
-};
-
-// ================= ADMIN =================
-
-export const createAdminUser = async ({
-  firstName,
-  lastName,
-  email,
-  password,
-}: AdminUserInput) => {
-  const adminUser = new AdminUser({
-    _id: randomUUID(),
-    firstName,
-    lastName,
-    email,
-    password,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-
-  return await adminUser.save();
-};
-
-export const getAllAdmins = async () => {
-  return AdminUser.find();
-};
-
-export const getAdminUserByID = async (id: string) => {
-  return AdminUser.findOne({
-    _id: id,
-  });
-};
-
-export const getAdminUserByEmail = async (email: string) => {
-  return AdminUser.findOne({
-    email,
-  });
-};
-
-export const updateAdminUser = async (
-  id: string,
-  data: Record<string, unknown>
-) => {
-  return AdminUser.findByIdAndUpdate(id, data, {
-    new: true,
-  });
 };
 
 // ================= TASK =================

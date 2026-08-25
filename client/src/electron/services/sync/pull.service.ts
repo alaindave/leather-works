@@ -300,6 +300,22 @@ async function pullEntityByVersion<T>(
   return { items: allItems, serverTime: latestServerTime };
 }
 
+async function syncAdminUsers(adminUsers: AdminUser[]): Promise<boolean> {
+  if (!adminUsers || adminUsers.length === 0) {
+    return true;
+  }
+  let succeeded = true;
+  for (const adminUser of adminUsers) {
+    try {
+      await upsertAdminUser(adminUser);
+    } catch (error) {
+      succeeded = false;
+      console.error("FAILED TO SYNC PULLED ADMIN USER:", adminUser._id, error);
+    }
+  }
+  return succeeded;
+}
+
 async function syncEmployees(employees: Employee[]): Promise<boolean> {
   if (!employees || employees.length === 0) {
     console.log("NO EMPLOYEES TO SYNC.");
@@ -331,6 +347,109 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
   }
   return allSucceeded;
 }
+
+async function syncEmployeePhotos(employees: Employee[]) {
+  for (const employee of employees) {
+    try {
+      if (!employee.photo_filename || employee.photo_version == null) {
+        continue;
+      }
+      const localEmployee = await getEmployeeById(employee._id);
+      const localPhotoVersion = localEmployee?.photo_version ?? 0;
+      if (localPhotoVersion >= employee.photo_version) {
+        console.log(
+          `PHOTO ALREADY UP TO DATE FOR ` +
+            `${employee.firstName} ` +
+            `${employee.lastName}`
+        );
+        continue;
+      }
+      await downloadEmployeePhoto(employee._id, employee.photo_filename);
+      const employeeFolderName =
+        `${employee.firstName}_${employee.lastName}_${employee._id}`
+          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+          .replace(/\s+/g, "_");
+      await updateEmployeePhotoMetadata(employee._id, {
+        photo_path: path.join(
+          "employees_photos",
+          employeeFolderName,
+          employee.photo_filename
+        ),
+        photo_filename: employee.photo_filename,
+        photo_version: employee.photo_version,
+        photo_hash: employee.photo_hash,
+        photo_mime_type: employee.photo_mime_type,
+        photo_last_modified: employee.photo_last_modified,
+      });
+      console.log(
+        `DOWNLOADED NEW PHOTO FOR ` +
+          `${employee.firstName} ` +
+          `${employee.lastName}. ` +
+          `Version ${employee.photo_version}`
+      );
+    } catch (error) {
+      console.error(`FAILED TO SYNC PHOTO FOR EMPLOYEE ${employee._id}`, error);
+    }
+  }
+}
+
+async function syncEmployeeDocuments(
+  employeeDocuments: EmployeeDocument[]
+): Promise<boolean> {
+  if (!employeeDocuments || employeeDocuments.length === 0) {
+    return true;
+  }
+  let succeeded = true;
+  for (const document of employeeDocuments) {
+    try {
+      const localDocument = await getEmployeeDocument(
+        document.employeeId,
+        document.documentType
+      );
+      const localVersion = localDocument?.serverVersion ?? 0;
+      if (localVersion >= document.serverVersion) {
+        console.log(
+          `DOCUMENT ALREADY UP TO DATE: ` +
+            `${document.employeeId} ` +
+            `(${document.documentType})`
+        );
+        continue;
+      }
+      const employee = await getEmployeeById(document.employeeId);
+      if (!employee) {
+        throw new Error(
+          `Employee ${document.employeeId} not found while syncing document`
+        );
+      }
+      await downloadEmployeeDocument(employee, document);
+      const employeeFolderName =
+        `${employee.firstName}_${employee.lastName}_${employee._id}`
+          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+          .replace(/\s+/g, "_");
+      await upsertEmployeeDocument({
+        ...document,
+        localPath: path.join(
+          "employees_documents",
+          employeeFolderName,
+          document.documentType,
+          document.fileName
+        ),
+      });
+      await markEmployeeDocumentSynced(document._id);
+      console.log(
+        `DOWNLOADED ${document.documentType} ` +
+          `FOR ${employee.firstName} ` +
+          `${employee.lastName} ` +
+          `(v${document.serverVersion})`
+      );
+    } catch (error) {
+      succeeded = false;
+      console.error(`FAILED TO SYNC DOCUMENT ${document._id}`, error);
+    }
+  }
+  return succeeded;
+}
+
 async function syncAttendances(attendances: Attendance[]): Promise<boolean> {
   if (!attendances || attendances.length === 0) {
     return true;
@@ -347,6 +466,7 @@ async function syncAttendances(attendances: Attendance[]): Promise<boolean> {
   }
   return succeeded;
 }
+
 async function syncAttendanceDailyChecks(
   attendanceDailyChecks: AttendanceDailyCheck[]
 ): Promise<boolean> {
@@ -402,121 +522,6 @@ async function syncTasks(tasks: Task[]): Promise<boolean> {
     } catch (error) {
       succeeded = false;
       console.error("FAILED TO SYNC PULLED TASK:", task._id, error);
-    }
-  }
-  return succeeded;
-}
-async function syncAdminUsers(adminUsers: AdminUser[]): Promise<boolean> {
-  if (!adminUsers || adminUsers.length === 0) {
-    return true;
-  }
-  let succeeded = true;
-  for (const adminUser of adminUsers) {
-    try {
-      await upsertAdminUser(adminUser);
-    } catch (error) {
-      succeeded = false;
-      console.error("FAILED TO SYNC PULLED ADMIN USER:", adminUser._id, error);
-    }
-  }
-  return succeeded;
-}
-async function syncEmployeePhotos(employees: Employee[]) {
-  for (const employee of employees) {
-    try {
-      if (!employee.photo_filename || employee.photo_version == null) {
-        continue;
-      }
-      const localEmployee = await getEmployeeById(employee._id);
-      const localPhotoVersion = localEmployee?.photo_version ?? 0;
-      if (localPhotoVersion >= employee.photo_version) {
-        console.log(
-          `PHOTO ALREADY UP TO DATE FOR ` +
-            `${employee.firstName} ` +
-            `${employee.lastName}`
-        );
-        continue;
-      }
-      await downloadEmployeePhoto(employee._id, employee.photo_filename);
-      const employeeFolderName =
-        `${employee.firstName}_${employee.lastName}_${employee._id}`
-          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
-          .replace(/\s+/g, "_");
-      await updateEmployeePhotoMetadata(employee._id, {
-        photo_path: path.join(
-          "employees_photos",
-          employeeFolderName,
-          employee.photo_filename
-        ),
-        photo_filename: employee.photo_filename,
-        photo_version: employee.photo_version,
-        photo_hash: employee.photo_hash,
-        photo_mime_type: employee.photo_mime_type,
-        photo_last_modified: employee.photo_last_modified,
-      });
-      console.log(
-        `DOWNLOADED NEW PHOTO FOR ` +
-          `${employee.firstName} ` +
-          `${employee.lastName}. ` +
-          `Version ${employee.photo_version}`
-      );
-    } catch (error) {
-      console.error(`FAILED TO SYNC PHOTO FOR EMPLOYEE ${employee._id}`, error);
-    }
-  }
-}
-async function syncEmployeeDocuments(
-  employeeDocuments: EmployeeDocument[]
-): Promise<boolean> {
-  if (!employeeDocuments || employeeDocuments.length === 0) {
-    return true;
-  }
-  let succeeded = true;
-  for (const document of employeeDocuments) {
-    try {
-      const localDocument = await getEmployeeDocument(
-        document.employeeId,
-        document.documentType
-      );
-      const localVersion = localDocument?.serverVersion ?? 0;
-      if (localVersion >= document.serverVersion) {
-        console.log(
-          `DOCUMENT ALREADY UP TO DATE: ` +
-            `${document.employeeId} ` +
-            `(${document.documentType})`
-        );
-        continue;
-      }
-      const employee = await getEmployeeById(document.employeeId);
-      if (!employee) {
-        throw new Error(
-          `Employee ${document.employeeId} not found while syncing document`
-        );
-      }
-      await downloadEmployeeDocument(employee, document);
-      const employeeFolderName =
-        `${employee.firstName}_${employee.lastName}_${employee._id}`
-          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
-          .replace(/\s+/g, "_");
-      await upsertEmployeeDocument({
-        ...document,
-        localPath: path.join(
-          "employees_documents",
-          employeeFolderName,
-          document.documentType,
-          document.fileName
-        ),
-      });
-      await markEmployeeDocumentSynced(document._id);
-      console.log(
-        `DOWNLOADED ${document.documentType} ` +
-          `FOR ${employee.firstName} ` +
-          `${employee.lastName} ` +
-          `(v${document.serverVersion})`
-      );
-    } catch (error) {
-      succeeded = false;
-      console.error(`FAILED TO SYNC DOCUMENT ${document._id}`, error);
     }
   }
   return succeeded;

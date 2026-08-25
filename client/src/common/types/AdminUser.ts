@@ -4,6 +4,7 @@ export default interface AdminUser {
   lastName: string;
   email: string;
   role: "MANAGER" | "ADMIN";
+  serverVersion?: number;
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;

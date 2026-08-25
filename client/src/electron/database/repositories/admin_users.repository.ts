@@ -13,18 +13,20 @@ export async function upsertAdminUser(adminUser: Partial<AdminUser>) {
         lastName,
         email,
         role,
+        serverVersion,
         updatedAt,
         lastSyncedAt,
         isDeleted
 
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?,?)
+      VALUES (?,?,?,?,?,?,?,?,?)
       ON CONFLICT(_id)
       DO UPDATE SET
         firstName = excluded.firstName,
         lastName = excluded.lastName,
         email= excluded.email,
         role = excluded.role,
+        serverVersion = excluded.serverVersion,
         updatedAt = excluded.updatedAt,
         isDeleted=excluded.isDeleted
 
@@ -35,6 +37,7 @@ export async function upsertAdminUser(adminUser: Partial<AdminUser>) {
         adminUser.lastName,
         adminUser.email,
         adminUser.role,
+        adminUser.serverVersion,
         adminUser.updatedAt ?? new Date().toISOString(),
         new Date().toISOString(),
         adminUser.isDeleted,

@@ -53,7 +53,7 @@ router.post("/", async (req: Request<{}, {}, LoginRequest>, res: Response) => {
         updatedAt: adminUser.updatedAt,
       });
   } catch (error) {
-    console.error("Authentication error:", error);
+    console.error("AUTHENTICATION ERROR:", error);
 
     return res.status(500).send("Server error");
   }
