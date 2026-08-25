@@ -157,6 +157,7 @@ const employeeSchema = new Schema<EmployeeDocument>(
       type: Number,
       required: true,
       default: 0,
+      index: true,
     },
     createdAt: {
       type: Date,

@@ -38,7 +38,8 @@ export function registerPayrollGenerationIPC() {
       const payrollSettings = await getPayrollSettings();
       if (!payrollSettings) {
         throw new Error(
-          "PAYROLL SETTINGS NOT FOUND. PLEASE CONFIGURE PAYROLL SETTINGS FIRST."
+          `Veuillez d'abord configurer les paramètres de bulletins de paie. 
+          `
         );
       }
       console.log("PAYROLL SETTINGS:", payrollSettings);

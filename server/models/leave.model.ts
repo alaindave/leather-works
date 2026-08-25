@@ -10,11 +10,7 @@ export interface LeaveDocument {
   subject: string;
   notes: string;
   status: "ATTENTE_APPROBATION" | "APPROUVÉ" | "REFUSÉ" | "ANNULÉ";
-  version: {
-    type: Number;
-    required: true;
-    default: 0;
-  };
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: number;
@@ -68,10 +64,11 @@ const leaveSchema = new Schema<LeaveDocument>(
       default: "ATTENTE_APPROBATION",
     },
 
-    version: {
+    serverVersion: {
       type: Number,
       required: true,
       default: 0,
+      index: true,
     },
 
     createdAt: {

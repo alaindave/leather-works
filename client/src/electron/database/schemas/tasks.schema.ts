@@ -16,6 +16,7 @@ export async function createTasksTables() {
       submittedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       resolvedAt DATETIME,
       resolvedBy TEXT,
+      serverVersion INTEGER NOT NULL DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       lastSyncedAt DATETIME,
@@ -41,11 +42,13 @@ export async function createTasksTables() {
     taskId TEXT NOT NULL,
     author TEXT NOT NULL,
     comment TEXT NOT NULL,
+    serverVersion INTEGER NOT NULL DEFAULT 0,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL,
     lastSyncedAt DATETIME,
     synced INTEGER DEFAULT 0,
     isDeleted INTEGER NOT NULL DEFAULT 0,
+
     FOREIGN KEY (taskId)
       REFERENCES tasks(_id)
       ON DELETE CASCADE,

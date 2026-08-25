@@ -1,5 +1,6 @@
 import PayrollComponent from "../models/payrollComponent.model.js";
 import { randomUUID } from "crypto";
+import { getNextSyncVersion } from "../utils/syncVersion.js";
 
 const defaultPayrollComponents = [
   // ==========================
@@ -27,7 +28,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 0,
     taxable: 0,
   },
-
   {
     name: "TRANSPORT_ALLOWANCE",
     displayName: "Indemnité de transport",
@@ -38,7 +38,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 0,
     taxable: 0,
   },
-
   {
     name: "BONUS",
     displayName: "Prime",
@@ -49,7 +48,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 1,
     taxable: 1,
   },
-
   {
     name: "OVERTIME",
     displayName: "Heures supplémentaires",
@@ -60,7 +58,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 1,
     taxable: 1,
   },
-
   {
     name: "MEAL_ALLOWANCE",
     displayName: "Indemnité de repas",
@@ -71,7 +68,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 0,
     taxable: 0,
   },
-
   {
     name: "COMMISSION",
     displayName: "Commission",
@@ -99,7 +95,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 0,
     taxable: 0,
   },
-
   {
     name: "TAX",
     displayName: "IPR",
@@ -111,7 +106,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 0,
     taxable: 0,
   },
-
   {
     name: "LOAN",
     displayName: "Remboursement de prêt",
@@ -122,7 +116,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 1,
     taxable: 0,
   },
-
   {
     name: "ABSENCE",
     displayName: "Retenue pour absence",
@@ -134,7 +127,6 @@ const defaultPayrollComponents = [
     requiresHRApproval: 1,
     taxable: 0,
   },
-
   {
     name: "LATE_PENALTY",
     displayName: "Retenue pour retard",
@@ -147,23 +139,45 @@ const defaultPayrollComponents = [
     taxable: 0,
   },
 ];
+
 async function seedPayrollComponents() {
   for (const component of defaultPayrollComponents) {
-    const _id = randomUUID();
     const exists = await PayrollComponent.findOne({
       name: component.name,
     });
 
-    if (!exists) {
-      await PayrollComponent.create({
-        ...component,
-        _id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+    if (exists) {
+      console.log(
+        `PAYROLL COMPONENT ALREADY EXISTS: ${component.name} ` +
+          `(serverVersion: ${exists.serverVersion ?? "missing"})`
+      );
 
-      console.log(`CREATED PAYROLL COMPONENT: ${component.name}`);
+      continue;
     }
+
+    const _id = randomUUID();
+    const now = new Date();
+
+    /*
+     * Allocate the serverVersion through the same global
+     * sync-version mechanism used by normal synchronization.
+     */
+    const serverVersion = await getNextSyncVersion("payroll_component");
+
+    await PayrollComponent.create({
+      ...component,
+      _id,
+      createdAt: now,
+      updatedAt: now,
+      serverVersion,
+      lastSyncedAt: now,
+      isDeleted: 0,
+    });
+
+    console.log(
+      `CREATED PAYROLL COMPONENT: ${component.name} ` +
+        `(serverVersion: ${serverVersion})`
+    );
   }
 }
 

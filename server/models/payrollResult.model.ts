@@ -23,11 +23,7 @@ export interface PayrollResultDocument {
   verifiedAt?: Date;
   approvedAt?: Date;
   paidAt?: Date;
-  version: {
-    type: Number;
-    required: true;
-    default: 0;
-  };
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: number;
@@ -116,11 +112,13 @@ const PayrollResultSchema = new Schema<PayrollResultDocument>(
       type: Date,
     },
 
-    version: {
+    serverVersion: {
       type: Number,
       required: true,
       default: 0,
+      index: true,
     },
+
     createdAt: {
       type: Date,
       required: true,

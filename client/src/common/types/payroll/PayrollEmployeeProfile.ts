@@ -24,6 +24,7 @@ export default interface PayrollEmployeeProfile {
   isOverridden?: number;
   requiresHRApproval?: number;
   enabled?: number;
+  serverVersion: number;
   synced?: number;
   createdAt?: string;
   updatedAt?: string;

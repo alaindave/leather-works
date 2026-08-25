@@ -11,22 +11,34 @@ import {
 import { isAttendanceDateLocked } from "./attendanceDailyCheck.repository.js";
 import AttendanceWithEmployee from "../../../common/types/AttendanceWithEmployee.js";
 
+/**
+ * Create a normal/manual attendance record.
+ */
 export async function createAttendance(input: CreateAttendanceDto) {
   let { employeeId, date, clockIn, clockOut, status } = input;
+
   let lateMinutes = 0;
+
   const _id = randomUUID();
   const now = new Date().toISOString();
+  const serverVersion = 0;
+
   const locked = await isAttendanceDateLocked(date);
+
   if (locked) {
     throw new Error(
-      `La présence du ${date} est vérouillé et ne peut pas être modifié`
+      `La présence du ${date} est vérouillée et ne peut pas être modifiée`
     );
   }
+
   const employee = await getEmployeeById(employeeId);
+
   if (!employee) {
     throw new Error("Il n'y a pas d'employé avec cet identifiant");
   }
+
   const existingAttendance = await getAttendanceRecord(employeeId, date);
+
   console.log("EXISTING ATTENDANCE:", existingAttendance);
 
   if (existingAttendance) {
@@ -35,12 +47,17 @@ export async function createAttendance(input: CreateAttendanceDto) {
 
   if (clockIn) {
     const clockInDate = new Date(clockIn);
+
     const scheduledHour = 8;
     const scheduledMinute = 0;
+
     const expectedMinutes = scheduledHour * 60 + scheduledMinute;
+
     const actualMinutes =
       clockInDate.getHours() * 60 + clockInDate.getMinutes();
+
     lateMinutes = Math.max(0, actualMinutes - expectedMinutes);
+
     status = lateMinutes > 0 ? "RETARD" : "PONCTUEL";
   }
 
@@ -53,25 +70,43 @@ export async function createAttendance(input: CreateAttendanceDto) {
       clockIn,
       clockOut,
       status,
+      source,
       lateMinutes,
+      serverVersion,
       synced,
       isDeleted,
       createdAt,
       updatedAt
     )
-    VALUES (?, ?, ?, ?, ?,?, ?, 0, 0, datetime('now'), datetime('now'))
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
     `,
-    [_id, input.employeeId, date, clockIn, clockOut, status, lateMinutes]
+    [
+      _id,
+      employeeId,
+      date,
+      clockIn ?? null,
+      clockOut ?? null,
+      status ?? null,
+      "MANUAL",
+      lateMinutes,
+      serverVersion,
+      0,
+      0,
+      now,
+      now,
+    ]
   );
 
-  const savedAttendance = {
+  const savedAttendance: Attendance = {
     _id,
     employeeId,
     date,
-    clockIn,
+    clockIn: clockIn ?? null,
     clockOut: clockOut ?? null,
-    status,
+    status: status ?? null,
+    source: "MANUAL",
     lateMinutes,
+    serverVersion,
     createdAt: now,
     updatedAt: now,
   };
@@ -88,39 +123,77 @@ export async function createAttendance(input: CreateAttendanceDto) {
   return getAttendanceById(_id);
 }
 
+/**
+ * Create an ABSENT or CONGÉ attendance record.
+ */
 export async function createAbsenceLeaveAttendance(
   employeeId: string,
   status: "CONGÉ" | "ABSENT",
   date: string = new Date().toISOString().split("T")[0]
 ) {
   const locked = await isAttendanceDateLocked(date);
+
   if (locked) {
     throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
   }
+
+  const existingAttendance = await getAttendanceRecord(employeeId, date);
+
+  if (existingAttendance) {
+    console.log("ATTENDANCE ALREADY EXISTS:", existingAttendance);
+
+    return existingAttendance;
+  }
+
+  const employee = await getEmployeeById(employeeId);
+
+  if (!employee) {
+    throw new Error("EMPLOYEE NOT FOUND");
+  }
+
   const _id = randomUUID();
   const now = new Date().toISOString();
+  const serverVersion = 0;
 
   await run(
     `
-      INSERT INTO attendances (
-        _id,
-        employeeId,
-        date,
-        status,
-        createdAt,
-        updatedAt,
-        synced,
-        lastSyncedAt
-      )
-      VALUES (?,?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO attendances (
+      _id,
+      employeeId,
+      date,
+      status,
+      source,
+      serverVersion,
+      createdAt,
+      updatedAt,
+      synced,
+      lastSyncedAt,
+      isDeleted
+    )
+    VALUES (?,?,?,?,?,?,?,?,?,?,?)
     `,
-    [_id, employeeId, date, status, now, now, 0, now]
+    [
+      _id,
+      employeeId,
+      date,
+      status,
+      "AUTOMATIC",
+      serverVersion,
+      now,
+      now,
+      0,
+      null,
+      0,
+    ]
   );
-  const savedAttendance = {
+
+  const savedAttendance: Attendance = {
     _id,
     employeeId,
     date,
     status,
+    source: "AUTO_CLIENT",
+    serverVersion,
     createdAt: now,
     updatedAt: now,
   };
@@ -134,9 +207,18 @@ export async function createAbsenceLeaveAttendance(
     payload: JSON.stringify(savedAttendance),
   });
 
-  return getAttendanceById(_id);
+  const createdAttendance = await getAttendanceById(_id);
+
+  if (!createdAttendance) {
+    throw new Error("FAILED TO CREATE ATTENDANCE RECORD");
+  }
+
+  return createdAttendance;
 }
 
+/**
+ * Get employees who don't have any attendance record for a date.
+ */
 export async function getEmployeesWithoutAttendance(
   date: string
 ): Promise<Employee[]> {
@@ -150,8 +232,8 @@ export async function getEmployeesWithoutAttendance(
     LEFT JOIN attendances a
       ON a.employeeId = e._id
       AND a.date = ?
-      AND a.isDeleted = 0
-    WHERE e.isDeleted = 0
+      AND COALESCE(a.isDeleted, 0) = 0
+    WHERE COALESCE(e.isDeleted, 0) = 0
       AND e.status = 'ACTIF'
       AND a._id IS NULL
     ORDER BY e.lastName ASC, e.firstName ASC
@@ -160,6 +242,9 @@ export async function getEmployeesWithoutAttendance(
   );
 }
 
+/**
+ * Get payroll attendance summary.
+ */
 export async function getPayrollAttendanceSummary(
   employeeId: string,
   month: number,
@@ -200,7 +285,7 @@ export async function getPayrollAttendanceSummary(
     WHERE employeeId = ?
       AND date >= ?
       AND date < ?
-      AND isDeleted = 0
+      AND COALESCE(isDeleted, 0) = 0
     `,
     [
       employeeId,
@@ -223,21 +308,25 @@ function getNextMonthDate(year: number, month: number): string {
   return nextMonth.toISOString().split("T")[0];
 }
 
+/**
+ * Get active employees who did not clock in.
+ */
 export async function getEmployeesWhoDidNotClockIn(
   date: string
 ): Promise<Employee[]> {
   return all(
     `
-      SELECT e.*
-      FROM employees e
-      WHERE e.status = 'ACTIF'
+    SELECT e.*
+    FROM employees e
+    WHERE e.status = 'ACTIF'
+      AND COALESCE(e.isDeleted, 0) = 0
 
       AND NOT EXISTS (
         SELECT 1
         FROM attendances a
         WHERE a.employeeId = e._id
           AND a.date = ?
-          AND a.isDeleted = 0
+          AND COALESCE(a.isDeleted, 0) = 0
           AND a.status IN ('PONCTUEL', 'RETARD')
       )
 
@@ -245,7 +334,7 @@ export async function getEmployeesWhoDidNotClockIn(
         SELECT 1
         FROM leaves l
         WHERE l.employeeId = e._id
-          AND l.isDeleted = 0
+          AND COALESCE(l.isDeleted, 0) = 0
           AND l.status = 'APPROUVÉ'
           AND date(?) BETWEEN l.startDate AND l.endDate
       )
@@ -254,40 +343,66 @@ export async function getEmployeesWhoDidNotClockIn(
   );
 }
 
+/**
+ * Create an absent attendance from an Attendance object.
+ */
 export async function createAbsentAttendance(
   attendance: Attendance
 ): Promise<Attendance> {
   const locked = await isAttendanceDateLocked(attendance.date);
+
   if (locked) {
     throw new Error(
       `ATTENDANCE FOR ${attendance.date} IS LOCKED AND CANNOT BE MODIFIED`
     );
   }
+
+  const existingAttendance = await getAttendanceRecord(
+    attendance.employeeId,
+    attendance.date
+  );
+
+  if (existingAttendance) {
+    console.log("ABSENT ATTENDANCE ALREADY EXISTS:", existingAttendance);
+
+    return existingAttendance;
+  }
+
+  const serverVersion = attendance.serverVersion ?? 0;
+
   await run(
     `
-      INSERT OR IGNORE INTO attendances (
-        _id,
-        employeeId,
-        date,
-        status,
-        source,
-        createdAt,
-        updatedAt
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT OR IGNORE INTO attendances (
+      _id,
+      employeeId,
+      date,
+      status,
+      source,
+      serverVersion,
+      createdAt,
+      updatedAt,
+      synced,
+      isDeleted,
+      lastSyncedAt
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       attendance._id,
       attendance.employeeId,
       attendance.date,
       attendance.status,
-      attendance.source,
+      attendance.source ?? "AUTOMATIC",
+      serverVersion,
       attendance.createdAt,
       attendance.updatedAt,
+      0,
+      attendance.isDeleted ?? 0,
+      null,
     ]
   );
 
-  const absentAttendance: Attendance | null = await getAttendanceRecord(
+  const absentAttendance = await getAttendanceRecord(
     attendance.employeeId,
     attendance.date
   );
@@ -300,48 +415,74 @@ export async function createAbsentAttendance(
     entity: "attendance",
     entityId: attendance._id,
     operation: "create",
-    payload: JSON.stringify(attendance),
+    payload: JSON.stringify({
+      ...attendance,
+      serverVersion,
+    }),
   });
 
   return absentAttendance;
 }
 
+/**
+ * Get attendance by ID.
+ */
 export async function getAttendanceById(
   _id: string
 ): Promise<Attendance | undefined | null> {
-  return get(
+  return get<Attendance>(
     `
     SELECT *
     FROM attendances
     WHERE _id = ?
+      AND COALESCE(isDeleted, 0) = 0
     `,
     [_id]
   );
 }
 
-export async function getAllAttendance() {
-  return all(`
+/**
+ * Get all attendance records.
+ */
+export async function getAllAttendance(): Promise<Attendance[]> {
+  return all<Attendance>(`
     SELECT *
     FROM attendances
-    WHERE isDeleted = 0
+    WHERE COALESCE(isDeleted, 0) = 0
     ORDER BY date DESC
   `);
 }
 
-export async function getAttendanceByEmployee(employeeId: string) {
-  return all(
+/**
+ * Get attendance records for an employee.
+ */
+export async function getAttendanceByEmployee(
+  employeeId: string
+): Promise<Attendance[]> {
+  return all<Attendance>(
     `
     SELECT *
     FROM attendances
     WHERE employeeId = ?
-      AND isDeleted = 0
+      AND COALESCE(isDeleted, 0) = 0
     ORDER BY date DESC
     `,
     [employeeId]
   );
 }
 
-export async function getAttendanceByDate(date: string): Promise<Attendance[]> {
+/**
+ * Get all attendance records for a date, including employee information.
+ */
+export async function getAttendanceByDate(date: string): Promise<
+  (Attendance & {
+    matricule?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    department?: string;
+  })[]
+> {
   return all(
     `
     SELECT
@@ -351,9 +492,13 @@ export async function getAttendanceByDate(date: string): Promise<Attendance[]> {
       a.clockIn,
       a.clockOut,
       a.status,
+      a.source,
       a.lateMinutes,
       a.notes,
+      a.serverVersion,
       a.isDeleted,
+      a.createdAt,
+      a.updatedAt,
       e.matricule,
       e.firstName,
       e.lastName,
@@ -363,8 +508,8 @@ export async function getAttendanceByDate(date: string): Promise<Attendance[]> {
     JOIN employees e
       ON a.employeeId = e._id
     WHERE a.date = ?
-      AND a.isDeleted = 0
-      AND e.isDeleted = 0
+      AND COALESCE(a.isDeleted, 0) = 0
+      AND COALESCE(e.isDeleted, 0) = 0
     ORDER BY
       a.clockIn IS NULL ASC,
       CASE
@@ -376,34 +521,80 @@ export async function getAttendanceByDate(date: string): Promise<Attendance[]> {
   );
 }
 
+/**
+ * Get one attendance record for an employee on a specific date.
+ *
+ * COALESCE(isDeleted, 0) is intentional because older records
+ * may have NULL in isDeleted from before the column migration.
+ */
 export async function getAttendanceRecord(
   employeeId: string,
   date: string
 ): Promise<Attendance | null> {
-  return get(
+  console.log("GET ATTENDANCE RECORD:", {
+    employeeId,
+    date,
+  });
+
+  const attendance = await get<Attendance>(
     `
     SELECT *
     FROM attendances
     WHERE employeeId = ?
       AND date = ?
-      AND isDeleted = 0
+      AND COALESCE(isDeleted, 0) = 0
     ORDER BY createdAt ASC
-
+    LIMIT 1
     `,
     [employeeId, date]
   );
+
+  console.log("ATTENDANCE RECORD RESULT:", attendance ?? null);
+
+  return attendance ?? null;
 }
 
+/**
+ * Same natural-key lookup used by sync.
+ *
+ * Unlike getAttendanceById, this searches by employee + date.
+ */
+export async function getAttendanceByEmployeeAndDate(
+  employeeId: string,
+  date: string
+): Promise<Attendance | null> {
+  return (
+    (await get<Attendance>(
+      `
+      SELECT *
+      FROM attendances
+      WHERE employeeId = ?
+        AND date = ?
+        AND COALESCE(isDeleted, 0) = 0
+      ORDER BY createdAt ASC
+      LIMIT 1
+      `,
+      [employeeId, date]
+    )) ?? null
+  );
+}
+
+/**
+ * Update an attendance record.
+ */
 export async function updateAttendance(
   _id: string,
   date: string,
   updates: Partial<AttendanceWithEmployee>
 ) {
   const locked = await isAttendanceDateLocked(date);
+
   if (locked) {
     throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
   }
+
   const existing = await getAttendanceById(_id);
+
   console.log("EXISTING ATTENDANCE TO UPDATE", existing);
   console.log("UPDATES", updates);
 
@@ -412,21 +603,25 @@ export async function updateAttendance(
   }
 
   const fields: string[] = [];
-  const values: any[] = [];
-  let savedUpdates = {};
+  const values: unknown[] = [];
+
+  let savedUpdates: Partial<Attendance> = {};
+
   const updatedAt = new Date().toISOString();
 
-  if (updates.clockIn !== undefined) {
+  if (updates.clockIn) {
     const clockInDate = new Date(updates.clockIn);
 
     const scheduledHour = 8;
     const scheduledMinute = 0;
 
     const expectedMinutes = scheduledHour * 60 + scheduledMinute;
+
     const actualMinutes =
       clockInDate.getHours() * 60 + clockInDate.getMinutes();
 
     const lateMinutes = Math.max(0, actualMinutes - expectedMinutes);
+
     const status = lateMinutes > 0 ? "RETARD" : "PONCTUEL";
 
     fields.push("clockIn = ?");
@@ -441,60 +636,78 @@ export async function updateAttendance(
     savedUpdates = {
       ...savedUpdates,
       _id,
-      employeedId: existing.employeeId,
+      employeeId: existing.employeeId,
+      date,
       clockIn: updates.clockIn,
       lateMinutes,
       status,
       createdAt: existing.createdAt,
       updatedAt,
+      serverVersion: existing.serverVersion ?? 0,
     };
   }
 
   if (updates.clockOut !== undefined) {
     fields.push("clockOut = ?");
     values.push(updates.clockOut);
+
     savedUpdates = {
       ...savedUpdates,
       _id,
-      employeedId: existing.employeeId,
+      date,
+      employeeId: existing.employeeId,
       clockOut: updates.clockOut,
       createdAt: existing.createdAt,
       updatedAt,
+      serverVersion: existing.serverVersion ?? 0,
     };
   }
 
   if (updates.notes !== undefined) {
     fields.push("notes = ?");
     values.push(updates.notes);
+
     savedUpdates = {
       ...savedUpdates,
       _id,
-      employeedId: existing.employeeId,
+      date,
+      employeeId: existing.employeeId,
       notes: updates.notes,
       createdAt: existing.createdAt,
       updatedAt,
+      serverVersion: existing.serverVersion ?? 0,
     };
   }
 
   if (updates.status === "CONGÉ") {
     fields.push("status = ?");
     values.push(updates.status);
+
     savedUpdates = {
       ...savedUpdates,
+      _id,
+      date,
+      employeeId: existing.employeeId,
       status: updates.status,
+      createdAt: existing.createdAt,
+      updatedAt,
+      serverVersion: existing.serverVersion ?? 0,
     };
   }
 
   if (updates.isDeleted !== undefined) {
     fields.push("isDeleted = ?");
     values.push(updates.isDeleted);
+
     savedUpdates = {
       ...savedUpdates,
       _id,
+      date,
+      employeeId: existing.employeeId,
       createdAt: existing.createdAt,
       updatedAt,
-      employeedId: existing.employeeId,
       isDeleted: updates.isDeleted,
+      serverVersion: existing.serverVersion ?? 0,
     };
   }
 
@@ -502,8 +715,11 @@ export async function updateAttendance(
     return existing;
   }
 
-  fields.push("synced = 0");
-  fields.push("updatedAt = datetime('now')");
+  fields.push("synced = ?");
+  values.push(0);
+
+  fields.push("updatedAt = ?");
+  values.push(updatedAt);
 
   values.push(_id);
 
@@ -528,45 +744,77 @@ export async function updateAttendance(
   return getAttendanceById(_id);
 }
 
+/**
+ * Soft delete an attendance record.
+ */
 export async function deleteAttendance(_id: string) {
-  const now = new Date().toISOString();
-  const date = now.split("T")[0];
+  const existing = await getAttendanceById(_id);
+
+  if (!existing) {
+    throw new Error("ATTENDANCE RECORD NOT FOUND");
+  }
+
+  const date = existing.date;
+
   const locked = await isAttendanceDateLocked(date);
+
   if (locked) {
     throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
   }
+
+  const now = new Date().toISOString();
+
   await run(
     `
     UPDATE attendances
     SET
       isDeleted = 1,
       synced = 0,
-      updatedAt = datetime('now')
+      updatedAt = ?
     WHERE _id = ?
     `,
-    [_id]
+    [now, _id]
   );
 
-  const updatedAt = new Date().toISOString();
+  const deletePayload: Partial<Attendance> = {
+    _id,
+    employeeId: existing.employeeId,
+    date: existing.date,
+    isDeleted: 1,
+    serverVersion: existing.serverVersion ?? 0,
+    createdAt: existing.createdAt,
+    updatedAt: now,
+  };
 
-  console.log("Attendance to delete from sync queue", { _id, updatedAt });
+  console.log("ATTENDANCE TO DELETE FROM SYNC QUEUE", deletePayload);
 
   await addToSyncQueue({
     entity: "attendance",
     entityId: _id,
     operation: "delete",
-    payload: JSON.stringify({ _id, updatedAt }),
+    payload: JSON.stringify(deletePayload),
   });
 
   return getAttendanceById(_id);
 }
 
+/**
+ * Upsert an attendance received from the server.
+ *
+ * serverVersion is authoritative for pulled records.
+ */
 export async function upsertAttendance(attendance: Attendance) {
-  // 1. Try to find the record by remote/local ID
+  /*
+   * 1. Try the server ID first.
+   */
   let local = await getAttendanceById(attendance._id);
 
-  // 2. If it doesn't exist, try the natural unique key
-  //    employeeId + date
+  /*
+   * 2. If not found, search using employee + date.
+   *
+   * This protects against duplicate attendance records when
+   * an older local record has a different ID.
+   */
   if (!local) {
     local = await getAttendanceByEmployeeAndDate(
       attendance.employeeId,
@@ -574,23 +822,34 @@ export async function upsertAttendance(attendance: Attendance) {
     );
   }
 
-  // 3. Conflict resolution
-  if (local && local.updatedAt && attendance.updatedAt) {
-    const localTime = new Date(local.updatedAt).getTime();
-    const remoteTime = new Date(attendance.updatedAt).getTime();
+  /*
+   * 3. Version-based conflict protection.
+   */
+  if (local) {
+    const localVersion = Number(local.serverVersion ?? 0);
 
-    // Local version is newer
-    if (remoteTime < localTime) {
+    const remoteVersion = Number(attendance.serverVersion ?? 0);
+
+    /*
+     * Never replace a newer local server version with an
+     * older remote version.
+     */
+    if (remoteVersion < localVersion) {
       console.log(
-        `SKIPPING REMOTE ATTENDANCE. LOCAL IS NEWER: ${attendance._id}`
+        `SKIPPING REMOTE ATTENDANCE. LOCAL VERSION IS NEWER: ${attendance._id}`,
+        {
+          localVersion,
+          remoteVersion,
+        }
       );
 
       return local;
     }
   }
 
-  // 4. If a local record exists with a different _id,
-  //    update that existing record instead of inserting.
+  /*
+   * 4. Update existing local record.
+   */
   if (local) {
     await run(
       `
@@ -605,21 +864,25 @@ export async function upsertAttendance(attendance: Attendance) {
         source = ?,
         lateMinutes = ?,
         notes = ?,
+        serverVersion = ?,
         isDeleted = ?,
         createdAt = ?,
-        updatedAt = ?
+        updatedAt = ?,
+        synced = 1,
+        lastSyncedAt = CURRENT_TIMESTAMP
       WHERE _id = ?
       `,
       [
         attendance._id,
         attendance.employeeId,
         attendance.date,
-        attendance.clockIn,
-        attendance.clockOut,
-        attendance.status,
-        attendance.source,
-        attendance.lateMinutes,
-        attendance.notes,
+        attendance.clockIn ?? null,
+        attendance.clockOut ?? null,
+        attendance.status ?? null,
+        attendance.source ?? null,
+        attendance.lateMinutes ?? 0,
+        attendance.notes ?? null,
+        attendance.serverVersion ?? 0,
         attendance.isDeleted ?? 0,
         attendance.createdAt,
         attendance.updatedAt,
@@ -630,7 +893,9 @@ export async function upsertAttendance(attendance: Attendance) {
     return getAttendanceById(attendance._id);
   }
 
-  // 5. No local record exists at all, so insert it.
+  /*
+   * 5. Insert new remote record.
+   */
   await run(
     `
     INSERT INTO attendances (
@@ -643,47 +908,42 @@ export async function upsertAttendance(attendance: Attendance) {
       source,
       lateMinutes,
       notes,
+      serverVersion,
       isDeleted,
       createdAt,
-      updatedAt
+      updatedAt,
+      synced,
+      lastSyncedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `,
     [
       attendance._id,
       attendance.employeeId,
       attendance.date,
-      attendance.clockIn,
-      attendance.clockOut,
-      attendance.status,
-      attendance.source,
-      attendance.lateMinutes,
-      attendance.notes,
+      attendance.clockIn ?? null,
+      attendance.clockOut ?? null,
+      attendance.status ?? null,
+      attendance.source ?? null,
+      attendance.lateMinutes ?? 0,
+      attendance.notes ?? null,
+      attendance.serverVersion ?? 0,
       attendance.isDeleted ?? 0,
       attendance.createdAt,
       attendance.updatedAt,
+      1,
     ]
   );
 
   return getAttendanceById(attendance._id);
 }
 
-export async function getAttendanceByEmployeeAndDate(
-  employeeId: string,
-  date: string
-): Promise<Attendance | null> {
-  return get(
-    `
-    SELECT *
-    FROM attendances
-    WHERE employeeId = ?
-      AND date = ?
-    LIMIT 1
-    `,
-    [employeeId, date]
-  );
-}
-
+/**
+ * Mark attendance as synced.
+ *
+ * This does not change serverVersion.
+ * serverVersion is controlled by the server.
+ */
 export async function markAttendanceSynced(_id: string) {
   await run(
     `

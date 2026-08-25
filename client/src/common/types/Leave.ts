@@ -8,6 +8,7 @@ export default interface Leave {
   subject: string;
   notes: string;
   status: "ATTENTE_APPROBATION" | "APPROUVÉ" | "REFUSÉ" | "ANNULÉ";
+  serverVersion: number;
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;

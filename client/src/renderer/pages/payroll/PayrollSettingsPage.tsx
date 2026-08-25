@@ -42,7 +42,7 @@ const PayrollSettingsPage = () => {
               <MdOutlineChevronRight fontSize="1.3rem" />
             </Box>
             <Text fontSize="1.1rem" fontWeight="500">
-              Parametres
+              Paramètres
             </Text>
           </HStack>
         </Box>
@@ -52,7 +52,7 @@ const PayrollSettingsPage = () => {
         <TabList>
           <Tab>Remuneration</Tab>
           <Tab>Deductions</Tab>
-          <Tab>Parametres</Tab>
+          <Tab>Paramètres</Tab>
         </TabList>
 
         <TabPanels>

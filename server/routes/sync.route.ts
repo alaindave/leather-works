@@ -37,6 +37,12 @@ import AttendanceDailyCheck from "../models/attendanceDailyCheck.model.js";
 
 const router = express.Router();
 
+/*
+ * ============================================================
+ * TYPES
+ * ============================================================
+ */
+
 interface PushSyncRequest {
   items: string;
 }
@@ -49,21 +55,88 @@ interface SyncItem {
 }
 
 interface PullQuery {
-  since?: string;
   entity?: string;
   afterVersion?: string;
   limit?: string;
 }
 
-// ============================================================
-// PUSH SYNC
-// ============================================================
+/*
+ * ============================================================
+ * VERSIONED PULL HELPER
+ * ============================================================
+ *
+ * Every entity uses the exact same synchronization strategy:
+ *
+ *   serverVersion > afterVersion
+ *
+ * Results are ordered by serverVersion so the client can
+ * safely advance its cursor.
+ *
+ * IMPORTANT:
+ *
+ * We intentionally DO NOT filter isDeleted here.
+ *
+ * A deleted document must still reach the client so the local
+ * database can perform the corresponding soft delete.
+ * ============================================================
+ */
+
+async function pullVersionedCollection<T extends { serverVersion?: number }>(
+  model: any,
+  afterVersion: number,
+  limit: number,
+  select?: string
+) {
+  let query = model
+    .find({
+      serverVersion: {
+        $gt: afterVersion,
+      },
+    })
+    .sort({
+      serverVersion: 1,
+    })
+    .limit(limit);
+
+  if (select) {
+    query = query.select(select);
+  }
+
+  const items = await query.lean();
+
+  const nextVersion =
+    items.length > 0
+      ? Number(items[items.length - 1].serverVersion ?? afterVersion)
+      : afterVersion;
+
+  const moreChanges = await model.exists({
+    serverVersion: {
+      $gt: nextVersion,
+    },
+  });
+
+  return {
+    items: items as T[],
+    nextVersion,
+    hasMore: Boolean(moreChanges),
+  };
+}
+
+/*
+ * ============================================================
+ * PUSH SYNC
+ * ============================================================
+ */
 
 router.post(
   "/push",
   upload.fields([
-    { name: "employees_photos" },
-    { name: "employees_documents" },
+    {
+      name: "employees_photos",
+    },
+    {
+      name: "employees_documents",
+    },
   ]),
   async (req: Request<{}, {}, PushSyncRequest>, res: Response) => {
     try {
@@ -98,28 +171,67 @@ router.post(
               break;
             }
 
-            case "attendance":
-              await syncAttendance(operation, data);
-              break;
+            case "attendance": {
+              const result = await syncAttendance(operation, data);
 
-            case "attendance_daily_check":
-              await syncAttendanceDailyCheck(operation, data);
-              break;
+              console.log(
+                `ATTENDANCE ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
 
-            case "leave":
-              await syncLeave(operation, data);
               break;
+            }
 
-            case "task":
-              await syncTask(operation, data);
-              break;
+            case "attendance_daily_check": {
+              const result = await syncAttendanceDailyCheck(operation, data);
 
-            case "task_comment":
-              await syncTaskComment(operation, data);
+              console.log(
+                `ATTENDANCE DAILY CHECK ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
+
               break;
+            }
+
+            case "leave": {
+              const result = await syncLeave(operation, data);
+
+              console.log(
+                `LEAVE ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
+
+              break;
+            }
+
+            case "task": {
+              const result = await syncTask(operation, data);
+
+              console.log(
+                `TASK ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
+
+              break;
+            }
+
+            case "task_comment": {
+              const result = await syncTaskComment(operation, data);
+
+              console.log(
+                `TASK COMMENT ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
+
+              break;
+            }
 
             case "user_notes":
-              await syncUserNotes(data);
+              const result = await syncUserNotes(data);
+              console.log(
+                `User notes ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
               break;
 
             case "employee_photo": {
@@ -127,8 +239,11 @@ router.post(
                 (f) => f.originalname === data.photo_filename
               );
 
-              await syncEmployeePhoto(data, file);
-
+              const result = await syncEmployeePhoto(data, file);
+              console.log(
+                `EMPLOYEE PHOTOS ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
               break;
             }
 
@@ -137,46 +252,98 @@ router.post(
                 (f) => f.originalname === data.fileName
               );
 
-              await syncEmployeeDocument(operation, data, file);
+              const result = await syncEmployeeDocument(operation, data, file);
+
+              console.log(
+                `EMPLOYEE DOCUMENT ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
 
               break;
             }
 
-            case "payroll_settings":
-              await syncPayrollSettings(operation, data);
-              break;
+            case "payroll_settings": {
+              const result = await syncPayrollSettings(operation, data);
 
-            case "payroll_component":
-              await syncPayrollComponent(operation, data);
-              break;
+              console.log(
+                `PAYROLL SETTINGS ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
 
-            case "payroll_profile":
-              await syncPayrollProfile(operation, data);
               break;
+            }
 
-            case "payroll_run":
-              await syncPayrollRun(operation, data);
-              break;
+            case "payroll_component": {
+              const result = await syncPayrollComponent(operation, data);
 
-            case "payroll_result":
-              await syncPayrollResult(operation, data);
-              break;
+              console.log(
+                `PAYROLL COMPONENT ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
 
-            case "payroll_item":
-              await syncPayrollItem(operation, data);
               break;
+            }
+
+            case "payroll_profile": {
+              const result = await syncPayrollProfile(operation, data);
+
+              console.log(
+                `PAYROLL PROFILE ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
+
+              break;
+            }
+
+            case "payroll_run": {
+              const result = await syncPayrollRun(operation, data);
+
+              console.log(
+                `PAYROLL RUN ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
+
+              break;
+            }
+
+            case "payroll_result": {
+              const result = await syncPayrollResult(operation, data);
+
+              console.log(
+                `PAYROLL RESULT ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
+
+              break;
+            }
+
+            case "payroll_item": {
+              const result = await syncPayrollItem(operation, data);
+
+              console.log(
+                `PAYROLL ITEM ${data._id} SERVER VERSION:`,
+                result?.serverVersion
+              );
+
+              break;
+            }
 
             default:
               console.warn(`UNKNOWN SYNC ENTITY: ${entity}`);
-
               continue;
           }
 
-          // Only mark the queue item as synced AFTER
-          // the entity sync succeeds.
+          /*
+           * Queue item is only considered synced after the
+           * server operation completed successfully.
+           */
           synced.push(queueId);
         } catch (error) {
-          console.error(`PUSH FAILED FOR ${entity}`, error);
+          console.error(`PUSH FAILED FOR ${entity}`, {
+            queueId,
+            entityId: data?._id,
+            error,
+          });
         }
       }
 
@@ -185,7 +352,7 @@ router.post(
         synced,
       });
     } catch (error) {
-      console.error(error);
+      console.error("PUSH SYNC FAILED:", error);
 
       return res.status(500).json({
         success: false,
@@ -195,194 +362,360 @@ router.post(
   }
 );
 
-// ============================================================
-// PULL SYNC
-// ============================================================
+/*
+ * ============================================================
+ * PULL SYNC
+ * ============================================================
+ *
+ * ALL ENTITIES NOW USE:
+ *
+ *   afterVersion
+ *
+ * There is no updatedAt/since synchronization anymore.
+ * ============================================================
+ */
 
 router.get(
   "/pull",
   async (req: Request<{}, {}, {}, PullQuery>, res: Response) => {
     try {
-      const { entity, afterVersion = "0", limit = "500", since } = req.query;
+      const { entity, afterVersion = "0", limit = "500" } = req.query;
 
-      // ======================================================
-      // NEW VERSION-BASED EMPLOYEE SYNC
-      // ======================================================
+      /*
+       * --------------------------------------------------------
+       * VALIDATE VERSION
+       * --------------------------------------------------------
+       */
+
+      const version = Number(afterVersion);
+      const max = Number(limit);
+
+      if (!Number.isInteger(version) || version < 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid afterVersion parameter",
+        });
+      }
+
+      if (!Number.isInteger(max) || max <= 0 || max > 1000) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid limit. Must be between 1 and 1000.",
+        });
+      }
+
+      /*
+       * --------------------------------------------------------
+       * ENTITY IS REQUIRED
+       * --------------------------------------------------------
+       */
+
+      if (!entity) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing entity parameter",
+        });
+      }
+
+      /*
+       * --------------------------------------------------------
+       * EMPLOYEES
+       * --------------------------------------------------------
+       */
 
       if (entity === "employee") {
-        const version = Number(afterVersion);
-        const max = Number(limit);
-
-        if (!Number.isInteger(version) || version < 0) {
-          return res.status(400).json({
-            success: false,
-            message: "Invalid afterVersion parameter",
-          });
-        }
-
-        if (!Number.isInteger(max) || max <= 0 || max > 1000) {
-          return res.status(400).json({
-            success: false,
-            message: "Invalid limit. Must be between 1 and 1000.",
-          });
-        }
-
-        const employees = await Employee.find({
-          serverVersion: {
-            $gt: version,
-          },
-        })
-          .sort({
-            serverVersion: 1,
-          })
-          .limit(max)
-          .lean();
-
-        const nextVersion =
-          employees.length > 0
-            ? employees[employees.length - 1].serverVersion
-            : version;
-
-        // Check whether there are more employee
-        // changes waiting after this batch.
-        const moreChanges = await Employee.exists({
-          serverVersion: {
-            $gt: nextVersion,
-          },
-        });
+        const result = await pullVersionedCollection(Employee, version, max);
 
         console.log("EMPLOYEE VERSION PULL:", {
           afterVersion: version,
-          nextVersion,
-          count: employees.length,
-          hasMore: Boolean(moreChanges),
+          nextVersion: result.nextVersion,
+          count: result.items.length,
+          hasMore: result.hasMore,
         });
 
         return res.json({
           success: true,
           entity: "employee",
-          items: employees,
-          nextVersion,
-          hasMore: Boolean(moreChanges),
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
           serverTime: new Date().toISOString(),
         });
       }
 
-      // ======================================================
-      // LEGACY DATE-BASED SYNC
-      //
-      // Keep this temporarily while we migrate each entity.
-      // ======================================================
+      /*
+       * --------------------------------------------------------
+       * ADMIN USERS
+       * --------------------------------------------------------
+       */
 
-      if (!since) {
-        return res.status(400).json({
-          success: false,
-          message: "Missing since parameter",
+      if (entity === "admin_user") {
+        const result = await pullVersionedCollection(
+          AdminUser,
+          version,
+          max,
+          "-password -notes"
+        );
+
+        return res.json({
+          success: true,
+          entity: "admin_user",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
         });
       }
 
-      const date = new Date(since);
+      /*
+       * --------------------------------------------------------
+       * EMPLOYEE DOCUMENTS
+       * --------------------------------------------------------
+       */
 
-      if (Number.isNaN(date.getTime())) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid since parameter",
+      if (entity === "employee_document") {
+        const result = await pullVersionedCollection(
+          EmployeeDocuments,
+          version,
+          max
+        );
+
+        return res.json({
+          success: true,
+          entity: "employee_document",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
         });
       }
 
-      const [
-        adminUsers,
-        employeesDocuments,
-        attendances,
-        attendanceDailyCheck,
-        leaves,
-        tasks,
-        payrollSettings,
-        payrollComponents,
-        payrollEmployeeProfiles,
-        payrollRuns,
-        payrollResults,
-        payrollItems,
-      ] = await Promise.all([
-        AdminUser.find({
-          updatedAt: { $gt: date },
-        })
-          .select("-password -notes")
-          .lean(),
+      /*
+       * --------------------------------------------------------
+       * ATTENDANCE
+       * --------------------------------------------------------
+       */
 
-        EmployeeDocuments.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      if (entity === "attendance") {
+        const result = await pullVersionedCollection(Attendance, version, max);
 
-        Attendance.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+        return res.json({
+          success: true,
+          entity: "attendance",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
 
-        AttendanceDailyCheck.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      /*
+       * --------------------------------------------------------
+       * ATTENDANCE DAILY CHECK
+       * --------------------------------------------------------
+       */
 
-        Leave.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      if (entity === "attendance_daily_check") {
+        const result = await pullVersionedCollection(
+          AttendanceDailyCheck,
+          version,
+          max
+        );
 
-        Task.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+        return res.json({
+          success: true,
+          entity: "attendance_daily_check",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
 
-        PayrollSettings.findOne({
-          updatedAt: { $gt: date },
-        }).lean(),
+      /*
+       * --------------------------------------------------------
+       * LEAVE
+       * --------------------------------------------------------
+       */
 
-        PayrollComponent.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      if (entity === "leave") {
+        const result = await pullVersionedCollection(Leave, version, max);
 
-        PayrollEmployeeProfile.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+        return res.json({
+          success: true,
+          entity: "leave",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
 
-        PayrollRun.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      /*
+       * --------------------------------------------------------
+       * TASK
+       * --------------------------------------------------------
+       */
 
-        PayrollResult.find({
-          updatedAt: { $gt: date },
-        }).lean(),
+      if (entity === "task") {
+        const result = await pullVersionedCollection(Task, version, max);
 
-        PayrollItem.find({
-          updatedAt: { $gt: date },
-        }).lean(),
-      ]);
+        return res.json({
+          success: true,
+          entity: "task",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
 
-      console.log(
-        "RETRIEVED ATTENDANCE DAILY CHECK TO SEND TO CLIENT",
-        attendanceDailyCheck
-      );
+      /*
+       * --------------------------------------------------------
+       * PAYROLL SETTINGS
+       * --------------------------------------------------------
+       *
+       * Although this is currently effectively a singleton,
+       * we still use the same version cursor.
+       * --------------------------------------------------------
+       */
 
-      return res.json({
-        success: true,
+      if (entity === "payroll_settings") {
+        const result = await pullVersionedCollection(
+          PayrollSettings,
+          version,
+          max
+        );
 
-        // Employee is intentionally NOT included here.
-        // Employee now uses version-based syncing.
+        return res.json({
+          success: true,
+          entity: "payroll_settings",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
 
-        adminUsers,
-        employeesDocuments,
-        attendances,
-        attendanceDailyCheck,
-        leaves,
-        tasks,
-        payrollSettings,
-        payrollComponents,
-        payrollEmployeeProfiles,
-        payrollRuns,
-        payrollResults,
-        payrollItems,
+      /*
+       * --------------------------------------------------------
+       * PAYROLL COMPONENT
+       * --------------------------------------------------------
+       */
 
-        serverTime: new Date().toISOString(),
+      if (entity === "payroll_component") {
+        const result = await pullVersionedCollection(
+          PayrollComponent,
+          version,
+          max
+        );
+
+        return res.json({
+          success: true,
+          entity: "payroll_component",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
+
+      /*
+       * --------------------------------------------------------
+       * PAYROLL PROFILE
+       * --------------------------------------------------------
+       */
+
+      if (entity === "payroll_profile") {
+        const result = await pullVersionedCollection(
+          PayrollEmployeeProfile,
+          version,
+          max
+        );
+
+        return res.json({
+          success: true,
+          entity: "payroll_profile",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
+
+      /*
+       * --------------------------------------------------------
+       * PAYROLL RUN
+       * --------------------------------------------------------
+       */
+
+      if (entity === "payroll_run") {
+        const result = await pullVersionedCollection(PayrollRun, version, max);
+
+        return res.json({
+          success: true,
+          entity: "payroll_run",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
+
+      /*
+       * --------------------------------------------------------
+       * PAYROLL RESULT
+       * --------------------------------------------------------
+       */
+
+      if (entity === "payroll_result") {
+        const result = await pullVersionedCollection(
+          PayrollResult,
+          version,
+          max
+        );
+
+        return res.json({
+          success: true,
+          entity: "payroll_result",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
+
+      /*
+       * --------------------------------------------------------
+       * PAYROLL ITEM
+       * --------------------------------------------------------
+       */
+
+      if (entity === "payroll_item") {
+        const result = await pullVersionedCollection(PayrollItem, version, max);
+
+        return res.json({
+          success: true,
+          entity: "payroll_item",
+          items: result.items,
+          nextVersion: result.nextVersion,
+          hasMore: result.hasMore,
+          serverTime: new Date().toISOString(),
+        });
+      }
+
+      /*
+       * --------------------------------------------------------
+       * UNKNOWN ENTITY
+       * --------------------------------------------------------
+       */
+
+      return res.status(400).json({
+        success: false,
+        message: `Unknown sync entity: ${entity}`,
       });
     } catch (error) {
-      console.error(error);
+      console.error("PULL SYNC FAILED:", error);
 
       return res.status(500).json({
         success: false,

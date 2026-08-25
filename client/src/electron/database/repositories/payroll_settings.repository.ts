@@ -14,13 +14,14 @@ export async function getPayrollSettings(): Promise<PayrollSettings | null> {
       workingDays,
       workingHours,
       paymentDay,
+      serverVersion,
       synced,
       createdAt,
       updatedAt,
       lastSyncedAt,
       isDeleted
     FROM payroll_settings
-    WHERE isDeleted = 0
+    WHERE COALESCE(isDeleted, 0) = 0
     ORDER BY createdAt ASC
     LIMIT 1
     `
@@ -40,6 +41,7 @@ export async function getPayrollSettingsById(
       workingDays,
       workingHours,
       paymentDay,
+      serverVersion,
       synced,
       createdAt,
       updatedAt,
@@ -57,7 +59,13 @@ export async function getPayrollSettingsById(
 export async function createPayrollSettings(
   data: Omit<
     PayrollSettings,
-    "_id" | "synced" | "createdAt" | "updatedAt" | "lastSyncedAt" | "isDeleted"
+    | "_id"
+    | "synced"
+    | "serverVersion"
+    | "createdAt"
+    | "updatedAt"
+    | "lastSyncedAt"
+    | "isDeleted"
   >
 ): Promise<PayrollSettings> {
   // Payroll settings should be a singleton.
@@ -69,6 +77,7 @@ export async function createPayrollSettings(
 
   const _id = randomUUID();
   const now = new Date().toISOString();
+  const serverVersion = 0;
 
   const settings: PayrollSettings = {
     _id,
@@ -76,6 +85,7 @@ export async function createPayrollSettings(
     workingDays: data.workingDays,
     workingHours: data.workingHours,
     paymentDay: data.paymentDay,
+    serverVersion,
     synced: 0,
     createdAt: now,
     updatedAt: now,
@@ -90,12 +100,13 @@ export async function createPayrollSettings(
       workingDays,
       workingHours,
       paymentDay,
+      serverVersion,
       synced,
       createdAt,
       updatedAt,
       isDeleted
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       settings._id,
@@ -103,6 +114,7 @@ export async function createPayrollSettings(
       settings.workingDays,
       settings.workingHours,
       settings.paymentDay,
+      settings.serverVersion,
       settings.synced,
       settings.createdAt,
       settings.updatedAt,
@@ -124,7 +136,32 @@ export async function upsertPayrollSettings(
   settings: PayrollSettings
 ): Promise<PayrollSettings | null> {
   if (!settings) return null;
+
   console.log("SETTINGS TO UPSERT", settings);
+
+  const existing = await getPayrollSettingsById(settings._id);
+
+  /*
+   * Never overwrite a newer local server version with
+   * an older version received from the server.
+   */
+  if (existing) {
+    const localVersion = Number(existing.serverVersion ?? 0);
+    const remoteVersion = Number(settings.serverVersion ?? 0);
+
+    if (remoteVersion < localVersion) {
+      console.log(
+        `SKIPPING PAYROLL SETTINGS. LOCAL VERSION IS NEWER: ${settings._id}`,
+        {
+          localVersion,
+          remoteVersion,
+        }
+      );
+
+      return existing;
+    }
+  }
+
   await run(
     `
     INSERT INTO payroll_settings (
@@ -133,19 +170,21 @@ export async function upsertPayrollSettings(
       workingDays,
       workingHours,
       paymentDay,
+      serverVersion,
       synced,
       createdAt,
       updatedAt,
       lastSyncedAt,
       isDeleted
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
     ON CONFLICT(_id) DO UPDATE SET
       currency = excluded.currency,
       workingDays = excluded.workingDays,
       workingHours = excluded.workingHours,
       paymentDay = excluded.paymentDay,
+      serverVersion = excluded.serverVersion,
       synced = excluded.synced,
       createdAt = excluded.createdAt,
       updatedAt = excluded.updatedAt,
@@ -158,6 +197,7 @@ export async function upsertPayrollSettings(
       settings.workingDays,
       settings.workingHours,
       settings.paymentDay,
+      settings.serverVersion ?? 0,
       settings.synced ?? 1,
       settings.createdAt,
       settings.updatedAt,
@@ -182,6 +222,13 @@ export async function updatePayrollSettings(
 
   const updatedSettings: PayrollSettings = {
     ...settings,
+
+    /*
+     * Keep the server version that the client knows about.
+     * The server will assign the new version after syncing.
+     */
+    serverVersion: existing.serverVersion ?? 0,
+
     updatedAt,
     synced: 0,
     isDeleted: 0,
@@ -195,6 +242,7 @@ export async function updatePayrollSettings(
       workingDays = ?,
       workingHours = ?,
       paymentDay = ?,
+      serverVersion = ?,
       synced = ?,
       updatedAt = ?,
       isDeleted = ?
@@ -205,6 +253,7 @@ export async function updatePayrollSettings(
       updatedSettings.workingDays,
       updatedSettings.workingHours,
       updatedSettings.paymentDay,
+      updatedSettings.serverVersion,
       updatedSettings.synced,
       updatedSettings.updatedAt,
       updatedSettings.isDeleted,
@@ -240,6 +289,12 @@ export async function updatePayrollSettingsFields(
   const updatedSettings: PayrollSettings = {
     ...existing,
     ...fields,
+
+    /*
+     * Keep the current server version.
+     */
+    serverVersion: existing.serverVersion ?? 0,
+
     updatedAt: new Date().toISOString(),
     synced: 0,
     isDeleted: 0,
@@ -253,6 +308,7 @@ export async function updatePayrollSettingsFields(
       workingDays = ?,
       workingHours = ?,
       paymentDay = ?,
+      serverVersion = ?,
       synced = ?,
       updatedAt = ?,
       isDeleted = ?
@@ -263,6 +319,7 @@ export async function updatePayrollSettingsFields(
       updatedSettings.workingDays,
       updatedSettings.workingHours,
       updatedSettings.paymentDay,
+      updatedSettings.serverVersion,
       updatedSettings.synced,
       updatedSettings.updatedAt,
       updatedSettings.isDeleted,
@@ -293,6 +350,7 @@ export async function deletePayrollSettings(_id: string): Promise<void> {
     ...existing,
     isDeleted: 1,
     synced: 0,
+    serverVersion: existing.serverVersion ?? 0,
     updatedAt,
   };
 
@@ -331,6 +389,7 @@ export async function restorePayrollSettings(
     ...existing,
     isDeleted: 0,
     synced: 0,
+    serverVersion: existing.serverVersion ?? 0,
     updatedAt,
   };
 
@@ -364,8 +423,7 @@ export async function markPayrollSettingsSynced(_id: string): Promise<void> {
     UPDATE payroll_settings
     SET
       synced = 1,
-      lastSyncedAt = ?,
-      updatedAt = updatedAt
+      lastSyncedAt = ?
     WHERE _id = ?
     `,
     [now, _id]
@@ -381,6 +439,7 @@ export async function getUnsyncedPayrollSettings(): Promise<PayrollSettings[]> {
       workingDays,
       workingHours,
       paymentDay,
+      serverVersion,
       synced,
       createdAt,
       updatedAt,

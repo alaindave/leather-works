@@ -11,6 +11,7 @@ export async function createPayrollTables() {
       workingHours REAL NOT NULL DEFAULT 8,
       paymentDay INTEGER NOT NULL DEFAULT 30,
       synced INTEGER NOT NULL DEFAULT 0,
+      serverVersion INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -36,6 +37,7 @@ export async function createPayrollTables() {
       requiresHRApproval INTEGER NOT NULL DEFAULT 0,
       taxable INTEGER NOT NULL DEFAULT 1,
       enabled INTEGER NOT NULL DEFAULT 1,
+      serverVersion INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       synced INTEGER DEFAULT 0,
@@ -63,6 +65,7 @@ export async function createPayrollTables() {
       calculationBase TEXT
         CHECK(calculationBase IN ('BASE_SALARY', 'GROSS_SALARY', 'TOTAL_EARNINGS', 'TAXABLE_SALARY')),
       enabled INTEGER DEFAULT 1,
+      serverVersion INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT,
       updatedAt TEXT,
       lastSyncedAt Text,
@@ -104,6 +107,7 @@ export async function createPayrollTables() {
       synced INTEGER NOT NULL DEFAULT 0,
       isDeleted INTEGER NOT NULL DEFAULT 0,
       deletedBy TEXT,
+      serverVersion INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -144,10 +148,12 @@ export async function createPayrollTables() {
       approvedAt TEXT,
       paidAt TEXT,
       synced INTEGER NOT NULL DEFAULT 0,
-      isDeleted INTEGER NOT NULL DEFAULT 0,
+      serverVersion INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      isDeleted INTEGER NOT NULL DEFAULT 0,
+
 
       FOREIGN KEY(payrollRunId)
         REFERENCES payroll_runs(_id)
@@ -168,12 +174,13 @@ export async function createPayrollTables() {
       displayName TEXT NOT NULL,
       type TEXT NOT NULL
         CHECK(type IN ('EARNING','DEDUCTION')),
-      amount REAL NOT NULL,
+      amount REAL NOT NULL,   
       synced INTEGER NOT NULL DEFAULT 0,
-      isDeleted INTEGER NOT NULL DEFAULT 0,
+      serverVersion INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      isDeleted INTEGER NOT NULL DEFAULT 0,
 
       FOREIGN KEY (employeeId)
          REFERENCES employees(_id),

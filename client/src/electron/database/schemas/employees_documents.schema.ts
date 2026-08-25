@@ -5,27 +5,18 @@ export async function createEmployeesDocumentsTable() {
     CREATE TABLE IF NOT EXISTS employees_documents (
 
     _id TEXT PRIMARY KEY,
-
     employeeId TEXT NOT NULL,
     uploadedBy TEXT NOT NULL,
-
     documentType TEXT NOT NULL,
     originalName TEXT NOT NULL,
     fileName TEXT NOT NULL,
-
     localPath TEXT NOT NULL,
-
     mimeType TEXT NOT NULL,
     fileSize INTEGER NOT NULL,
-
     hash TEXT NOT NULL,
-
-    version INTEGER NOT NULL DEFAULT 1,
-
+    serverVersion INTEGER NOT NULL DEFAULT 1,
     needsUpload INTEGER NOT NULL DEFAULT 1,
-
     isDeleted INTEGER NOT NULL DEFAULT 0,
-
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL,
     lastSyncedAt DATETIME DEFAULT CURRENT_TIMESTAMP,

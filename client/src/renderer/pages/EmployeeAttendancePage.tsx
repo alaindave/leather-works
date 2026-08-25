@@ -53,14 +53,22 @@ const Shimmer = ({ width = "100%", height = "18px" }) => (
   />
 );
 
+const date = new Date();
+
+const formatter = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+const formattedDate = formatter.format(date);
+
 const EmployeeAttendancePage = () => {
   const [attendances, setAttendances] = useState<AttendanceWithEmployee[]>([]);
   const [attendance, setAttendance] = useState<AttendanceWithEmployee | null>(
     null
   );
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState(formattedDate);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState("");
   const [time, setTime] = useState(new Date());
@@ -81,7 +89,7 @@ const EmployeeAttendancePage = () => {
   const syncVersion = useSyncStore((store) => store.syncVersion);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const toast = useToast();
-  const getErrorMessage = (error: Error | string): string => {
+  const formatErrorMessage = (error: Error | string): string => {
     const message =
       error instanceof Error
         ? error.message
@@ -102,7 +110,7 @@ const EmployeeAttendancePage = () => {
 
     const message =
       error instanceof Error || typeof error === "string"
-        ? getErrorMessage(error)
+        ? formatErrorMessage(error)
         : fallbackMessage;
 
     toast({
@@ -114,6 +122,7 @@ const EmployeeAttendancePage = () => {
       position: "top-left",
     });
   };
+
   const gridTemplate = `
   1.6fr 1.5fr 1.3fr 1.3fr 1fr 1fr 0.8fr
   
@@ -211,15 +220,19 @@ const EmployeeAttendancePage = () => {
       });
       await loadDailyCheck();
       toast({
-        title: "Présence vérifiée",
-        description: "La liste de présence a été vérifiée avec succès.",
+        title: "Absences enregistrés",
+        description: "Les absences ont été enregistrés avec succès.",
         status: "success",
         duration: 4000,
         isClosable: true,
         position: "top-left",
       });
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE MARKING ABSENCES", e);
+    } catch (error) {
+      showActionError(
+        "Échec d'enregistrement d'absences",
+        error,
+        "Impossible d'enregistrer les absents."
+      );
     } finally {
       setCheckLoading(false);
     }

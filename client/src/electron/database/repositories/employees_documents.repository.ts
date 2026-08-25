@@ -38,12 +38,10 @@ export async function uploadEmployeeDocument(
   const extension = path.extname(file.name);
 
   let _id: string = randomUUID();
-  let version = 1;
   let createdAt = new Date().toISOString();
 
   if (existing) {
     _id = existing._id;
-    version = existing.version + 1;
     createdAt = existing.createdAt;
 
     try {
@@ -72,7 +70,7 @@ export async function uploadEmployeeDocument(
     mimeType: file.mimeType,
     fileSize: file.buffer.length,
     hash,
-    version,
+    serverVersion: file.serverVersion ?? 0,
     needsUpload: 1,
     isDeleted: 0,
     createdAt,
@@ -99,7 +97,7 @@ export async function upsertEmployeeDocument(document: EmployeeDocument) {
         mimeType,
         fileSize,
         hash,
-        version,
+        serverVersion,
         needsUpload,
         isDeleted,
         createdAt,
@@ -118,7 +116,7 @@ export async function upsertEmployeeDocument(document: EmployeeDocument) {
         mimeType = excluded.mimeType,
         fileSize = excluded.fileSize,
         hash = excluded.hash,
-        version = excluded.version,
+        serverVersion = excluded.serverVersion,
         needsUpload = excluded.needsUpload,
         isDeleted = excluded.isDeleted,
         updatedAt = excluded.updatedAt
@@ -134,7 +132,7 @@ export async function upsertEmployeeDocument(document: EmployeeDocument) {
       document.mimeType,
       document.fileSize,
       document.hash,
-      document.version,
+      document.serverVersion,
       document.needsUpload ? 1 : 0,
       document.isDeleted ? 1 : 0,
       document.createdAt,
@@ -237,7 +235,7 @@ export async function updateEmployeeDocument(document: EmployeeDocument) {
         mimeType = ?,
         fileSize = ?,
         hash = ?,
-        version = ?,
+        serverVersion = ?,
         needsUpload = ?,
         updatedAt = ?
       WHERE _id = ?
@@ -251,7 +249,7 @@ export async function updateEmployeeDocument(document: EmployeeDocument) {
       document.mimeType,
       document.fileSize,
       document.hash,
-      document.version,
+      document.serverVersion,
       document.needsUpload ? 1 : 0,
       now,
       document._id,
@@ -348,36 +346,4 @@ export async function markEmployeeDocumentSynced(_id: string) {
     `,
     [_id]
   );
-}
-
-// Increment document version
-export async function incrementDocumentVersion(id: string) {
-  const now = new Date().toISOString();
-
-  await run(
-    `
-      UPDATE employees_documents
-      SET
-        version = version + 1,
-        needsUpload = 1,
-        updatedAt = ?
-      WHERE _id = ?
-    `,
-    [now, id]
-  );
-
-  const document = await getEmployeeDocumentById(id);
-
-  if (!document) {
-    throw new Error(
-      `Employee document not found after incrementing version: ${id}`
-    );
-  }
-
-  await addToSyncQueue({
-    entity: "employee_document",
-    entityId: id,
-    operation: "update",
-    payload: JSON.stringify(document),
-  });
 }

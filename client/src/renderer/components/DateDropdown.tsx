@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import Select from "react-select";
 
+const formatter = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 function getLast7Days() {
   const days = [];
   let i = 0;
@@ -14,7 +20,7 @@ function getLast7Days() {
     // if (dayOfWeek !== 0 && dayOfWeek !== 6) {
     days.push({
       label: formatDate(date),
-      value: date.toISOString().split("T")[0],
+      value: formatter.format(date),
     });
     // }
 

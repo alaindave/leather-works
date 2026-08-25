@@ -6,6 +6,7 @@ export interface PayrollSettings extends Document {
   workingDays: number;
   workingHours: number;
   paymentDay: number;
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: number;
@@ -43,6 +44,13 @@ const PayrollSettingsSchema = new Schema<PayrollSettings>({
     min: 1,
     max: 31,
     default: 30,
+  },
+
+  serverVersion: {
+    type: Number,
+    required: true,
+    default: 0,
+    index: true,
   },
 
   createdAt: {

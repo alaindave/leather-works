@@ -6,17 +6,30 @@ import { addToSyncQueue } from "./sync.repository.js";
 
 export async function createLeave(leave: Partial<Leave>) {
   const employee = await getEmployeeById(leave.employeeId!);
+
   if (!employee) {
     throw new Error("No employee found with the given ID");
   }
+
   console.log("LEAVE TO CREATE:", leave);
+
   const today = new Date();
   const submittedAt = today.toISOString();
   const time = today.toISOString();
+
   const month = String(today.getMonth() + 1).padStart(2, "0");
   const year = today.getFullYear();
   const submittedMonth = `${year}-${month}`;
+
   const _id = randomUUID();
+
+  /*
+   * Local changes start at serverVersion 0.
+   *
+   * The server assigns the real serverVersion when the
+   * entity is pushed successfully.
+   */
+  const serverVersion = 0;
 
   await run(
     `
@@ -30,12 +43,13 @@ export async function createLeave(leave: Partial<Leave>) {
       status,
       subject,
       notes,
+      serverVersion,
       synced,
       isDeleted,
       createdAt,
       updatedAt
     )
-    VALUES (?, ?, ?, ?,?,?, ?,?,?, 0, 0, datetime('now'), datetime('now'))
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
     `,
     [
       _id,
@@ -47,19 +61,26 @@ export async function createLeave(leave: Partial<Leave>) {
       leave.status ?? "ATTENTE_APPROBATION",
       leave.subject,
       leave.notes,
+      serverVersion,
+      time,
+      time,
     ]
   );
 
   const savedLeave = {
     _id,
     ...leave,
+    employeeId: leave.employeeId,
+    status: leave.status ?? "ATTENTE_APPROBATION",
     submittedAt,
     submittedMonth,
+    serverVersion,
     createdAt: time,
     updatedAt: time,
+    isDeleted: 0,
   };
 
-  console.log("Leave to save to sync queue", savedLeave);
+  console.log("LEAVE TO SAVE TO SYNC QUEUE", savedLeave);
 
   await addToSyncQueue({
     entity: "leave",
@@ -86,6 +107,10 @@ export async function getLeaveById(
       l.subject,
       l.notes,
       l.status,
+      l.serverVersion,
+      l.createdAt,
+      l.updatedAt,
+      l.isDeleted,
       e.firstName,
       e.lastName,
       e.department,
@@ -108,7 +133,7 @@ export async function getAllLeave() {
     SELECT *
     FROM leaves
     WHERE isDeleted = 0
-    ORDER BY date DESC
+    ORDER BY submittedAt DESC
   `);
 }
 
@@ -152,6 +177,9 @@ export async function getLeaveByMonth(month: string) {
       l.subject,
       l.notes,
       l.status,
+      l.serverVersion,
+      l.createdAt,
+      l.updatedAt,
       e.firstName,
       e.lastName,
       e.department,
@@ -192,7 +220,9 @@ export async function cancelLeave(_id: string) {
     return leave;
   }
 
-  // Only restore leave days if they were previously deducted.
+  /*
+   * Cancel a leave that was not yet approved.
+   */
   if (leave.status !== "APPROUVÉ") {
     const updatedAt = new Date().toISOString();
 
@@ -209,21 +239,28 @@ export async function cancelLeave(_id: string) {
       [updatedAt, _id]
     );
 
+    const updatedLeave = await getLeaveById(_id);
+
     await addToSyncQueue({
       entity: "leave",
       entityId: _id,
       operation: "update",
       payload: JSON.stringify({
         _id,
+        employeeId: leave.employeeId,
         status: "ANNULÉ",
+        serverVersion: leave.serverVersion ?? 0,
         updatedAt,
       }),
     });
 
-    return getLeaveById(_id);
+    return updatedLeave;
   }
 
-  // Calculate the number of leave days.
+  /*
+   * Calculate the number of approved leave days
+   * that need to be returned to the employee.
+   */
   const startDate = new Date(leave.startDate);
   const endDate = new Date(leave.endDate);
 
@@ -232,6 +269,7 @@ export async function cancelLeave(_id: string) {
   }
 
   const differenceInMs = endDate.getTime() - startDate.getTime();
+
   const leaveDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24)) + 1;
 
   if (leaveDays <= 0) {
@@ -246,7 +284,9 @@ export async function cancelLeave(_id: string) {
 
   const updatedAt = new Date().toISOString();
 
-  // Restore the deducted leave days.
+  /*
+   * Restore deducted leave days.
+   */
   await run(
     `
     UPDATE employees
@@ -260,7 +300,9 @@ export async function cancelLeave(_id: string) {
     [leaveDays, updatedAt, leave.employeeId]
   );
 
-  // Cancel the leave.
+  /*
+   * Cancel the leave.
+   */
   await run(
     `
     UPDATE leaves
@@ -274,7 +316,12 @@ export async function cancelLeave(_id: string) {
     [updatedAt, _id]
   );
 
-  // Queue leave update.
+  /*
+   * Queue leave update.
+   *
+   * Keep the serverVersion currently known locally.
+   * The server will assign the next version when pushed.
+   */
   await addToSyncQueue({
     entity: "leave",
     entityId: _id,
@@ -283,11 +330,14 @@ export async function cancelLeave(_id: string) {
       _id,
       employeeId: leave.employeeId,
       status: "ANNULÉ",
+      serverVersion: leave.serverVersion ?? 0,
       updatedAt,
     }),
   });
 
-  // Queue employee balance update.
+  /*
+   * Queue employee balance update separately.
+   */
   const updatedEmployee = await getEmployeeById(leave.employeeId);
 
   if (updatedEmployee) {
@@ -299,6 +349,7 @@ export async function cancelLeave(_id: string) {
         _id: leave.employeeId,
         remainingLeave: updatedEmployee.remainingLeave,
         updatedAt,
+        serverVersion: updatedEmployee.serverVersion ?? 0,
       }),
     });
   }
@@ -354,6 +405,13 @@ export async function updateLeave(
     return existing;
   }
 
+  /*
+   * Local modification.
+   *
+   * Do NOT modify serverVersion here.
+   * serverVersion represents the version assigned by
+   * the server, not the number of local edits.
+   */
   fields.push("synced = 0");
   fields.push("updatedAt = datetime('now')");
 
@@ -371,7 +429,13 @@ export async function updateLeave(
 
   const updatedAt = new Date().toISOString();
 
-  const savedUpdates = { _id, ...updates, updatedAt };
+  const savedUpdates = {
+    _id,
+    employeeId: existing.employeeId,
+    ...updates,
+    serverVersion: existing.serverVersion ?? 0,
+    updatedAt,
+  };
 
   console.log("LEAVE TO SAVE TO SYNC QUEUE", savedUpdates);
 
@@ -386,6 +450,12 @@ export async function updateLeave(
 }
 
 export async function deleteLeave(_id: string) {
+  const existing = await getLeaveById(_id);
+
+  if (!existing) {
+    throw new Error("LEAVE NOT FOUND");
+  }
+
   const now = new Date().toISOString();
 
   await run(
@@ -394,13 +464,20 @@ export async function deleteLeave(_id: string) {
     SET
       isDeleted = 1,
       synced = 0,
-      updatedAt = datetime('now')
+      updatedAt = ?
     WHERE _id = ?
     `,
-    [_id]
+    [now, _id]
   );
 
-  const deletedLeave = { _id, updatedAt: now, deletedAt: now };
+  const deletedLeave = {
+    _id,
+    employeeId: existing.employeeId,
+    serverVersion: existing.serverVersion ?? 0,
+    updatedAt: now,
+    deletedAt: now,
+    isDeleted: 1,
+  };
 
   console.log("LEAVE TO DELETE FROM SYNC QUEUE", deletedLeave);
 
@@ -415,21 +492,42 @@ export async function deleteLeave(_id: string) {
 }
 
 export async function upsertLeave(leave: Leave) {
+  /*
+   * Find the local record by ID.
+   */
   const local = await getLeaveById(leave._id);
-  console.log("pulled leave to sync", leave);
 
-  // If local exists, apply conflict rule
-  if (local && local.updatedAt && leave.updatedAt) {
-    const localTime = new Date(local.updatedAt).getTime();
-    const remoteTime = new Date(leave.updatedAt).getTime();
+  console.log("PULLED LEAVE TO SYNC:", leave);
 
-    // Keep newest local change
-    if (remoteTime < localTime) {
-      console.log(`Skipping leave update (local is newer): ${leave._id}`);
+  /*
+   * SERVER VERSION IS NOW THE SOURCE OF TRUTH.
+   *
+   * Never compare updatedAt for synchronization.
+   *
+   * A remote record is newer when:
+   *
+   * remote.serverVersion > local.serverVersion
+   *
+   * If the versions are equal, the local record is already
+   * at the same server state.
+   */
+  if (local) {
+    const localVersion = Number(local.serverVersion ?? 0);
+    const remoteVersion = Number(leave.serverVersion ?? 0);
+
+    if (remoteVersion <= localVersion) {
+      console.log(
+        `SKIPPING LEAVE ${leave._id}: ` +
+          `LOCAL SERVER VERSION ${localVersion} >= REMOTE ${remoteVersion}`
+      );
+
       return local;
     }
   }
 
+  /*
+   * Insert or update the complete server representation.
+   */
   await run(
     `
     INSERT INTO leaves (
@@ -442,11 +540,13 @@ export async function upsertLeave(leave: Leave) {
       subject,
       notes,
       status,
+      serverVersion,
       isDeleted,
       createdAt,
-      updatedAt
+      updatedAt,
+      synced
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
     ON CONFLICT(_id)
     DO UPDATE SET
       employeeId = excluded.employeeId,
@@ -457,9 +557,11 @@ export async function upsertLeave(leave: Leave) {
       subject = excluded.subject,
       notes = excluded.notes,
       status = excluded.status,
+      serverVersion = excluded.serverVersion,
       isDeleted = excluded.isDeleted,
       createdAt = excluded.createdAt,
-      updatedAt = excluded.updatedAt
+      updatedAt = excluded.updatedAt,
+      synced = 1
     `,
     [
       leave._id,
@@ -471,6 +573,7 @@ export async function upsertLeave(leave: Leave) {
       leave.subject,
       leave.notes,
       leave.status,
+      leave.serverVersion ?? 0,
       leave.isDeleted ?? 0,
       leave.createdAt,
       leave.updatedAt,
@@ -485,8 +588,7 @@ export async function markLeaveSynced(_id: string) {
     `
     UPDATE leaves
     SET
-      synced = 1,
-      lastSyncedAt = CURRENT_TIMESTAMP
+      synced = 1
     WHERE _id = ?
     `,
     [_id]

@@ -1,6 +1,8 @@
 import { randomUUID } from "crypto";
+
 import Employee from "../models/employee.model.js";
 import Attendance from "../models/attendance.model.js";
+import { getNextSyncVersion } from "../utils/syncVersion.js";
 
 export async function markAbsentEmployees(
   date: string = new Date().toISOString().split("T")[0]
@@ -10,9 +12,9 @@ export async function markAbsentEmployees(
   const employees = await Employee.find({
     status: "ACTIF",
     isDeleted: 0,
-  });
+  }).lean();
 
-  console.log("FETCHED ACTIVE EMPLOYEES", employees);
+  console.log("FETCHED ACTIVE EMPLOYEES", employees.length);
 
   if (employees.length === 0) {
     return {
@@ -23,30 +25,88 @@ export async function markAbsentEmployees(
     };
   }
 
-  const operations = employees.map((employee) => ({
-    updateOne: {
-      filter: {
-        employeeId: employee._id,
-        date,
-      },
-      update: {
-        $setOnInsert: {
-          _id: randomUUID(),
+  const employeeIds = employees.map((employee) => employee._id);
+
+  const existingAttendances = await Attendance.find({
+    employeeId: { $in: employeeIds },
+    date,
+  })
+    .select("employeeId")
+    .lean();
+
+  const existingEmployeeIds = new Set(
+    existingAttendances.map((attendance) => attendance.employeeId.toString())
+  );
+
+  const employeesToMarkAbsent = employees.filter(
+    (employee) => !existingEmployeeIds.has(employee._id.toString())
+  );
+
+  /*
+   * Nothing to create.
+   */
+  if (employeesToMarkAbsent.length === 0) {
+    return {
+      date,
+      totalEmployees: employees.length,
+      created: 0,
+      alreadyExists: employees.length,
+    };
+  }
+
+  /*
+   * Allocate a serverVersion for EVERY new attendance.
+   *
+   * Do not use the same version for every attendance.
+   *
+   * The attendance sync counter must advance through the same
+   * sequence used by client-pushed attendance records.
+   */
+  const operations = [];
+
+  for (const employee of employeesToMarkAbsent) {
+    const serverVersion = await getNextSyncVersion("attendance");
+
+    operations.push({
+      updateOne: {
+        filter: {
           employeeId: employee._id,
           date,
-          status: "ABSENT" as const,
-          source: "AUTO_SERVER" as const,
-          createdAt: CURRENT_TIMESTAMP,
-          updatedAt: CURRENT_TIMESTAMP,
         },
+
+        update: {
+          $setOnInsert: {
+            _id: randomUUID(),
+
+            employeeId: employee._id,
+            date,
+
+            status: "ABSENT" as const,
+            source: "AUTO_SERVER" as const,
+
+            createdAt: CURRENT_TIMESTAMP,
+            updatedAt: CURRENT_TIMESTAMP,
+
+            serverVersion,
+          },
+        },
+
+        upsert: true,
       },
-      upsert: true,
-    },
-  }));
+    });
+  }
 
   const result = await Attendance.bulkWrite(operations);
+
   const created = result.upsertedCount;
   const alreadyExists = employees.length - created;
+
+  console.log("MARKED ABSENT EMPLOYEES:", {
+    date,
+    totalEmployees: employees.length,
+    created,
+    alreadyExists,
+  });
 
   return {
     date,

@@ -34,7 +34,7 @@ export default async function sync() {
     // PULL
     try {
       const result = await pullLatestChanges();
-      console.log("PULL RESULTS: ", result.status);
+      console.log("PULL RESULTS: ", result);
       notifyRendererSyncCompleted();
     } catch (error) {
       console.error("PULL FAILED:", error);

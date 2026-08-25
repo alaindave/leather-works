@@ -11,7 +11,7 @@ export interface EmployeeDocumentRecord {
   mimeType: string;
   fileSize: number;
   hash: string;
-  version: number;
+  serverVersion: number;
   isDeleted: number;
   createdAt: Date;
   updatedAt: Date;
@@ -74,9 +74,10 @@ const employeeDocumentSchema = new Schema<EmployeeDocumentRecord>({
     required: true,
   },
 
-  version: {
+  serverVersion: {
     type: Number,
-    default: 1,
+    default: 0,
+    required: true,
   },
 
   isDeleted: {
@@ -99,6 +100,7 @@ const employeeDocumentSchema = new Schema<EmployeeDocumentRecord>({
 employeeDocumentSchema.index({ employeeId: 1 });
 employeeDocumentSchema.index({ documentType: 1 });
 employeeDocumentSchema.index({ needsUpload: 1 });
+employeeDocumentSchema.index({ serverVersion: 1 });
 
 const EmployeesDocuments = model<EmployeeDocumentRecord>(
   "EmployeesDocuments",

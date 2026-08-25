@@ -15,6 +15,9 @@ export async function createEmployeePayrollProfile(
   const _id = randomUUID();
   const now = new Date().toISOString();
 
+  // Local records have not received a server version yet.
+  const serverVersion = 0;
+
   await run(
     `
     INSERT INTO payroll_employee_profiles (
@@ -32,10 +35,11 @@ export async function createEmployeePayrollProfile(
       enabled,
       synced,
       isDeleted,
+      serverVersion,
       createdAt,
       updatedAt
     )
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `,
     [
       _id,
@@ -52,6 +56,7 @@ export async function createEmployeePayrollProfile(
       1,
       0,
       0,
+      serverVersion,
       now,
       now,
     ]
@@ -61,6 +66,7 @@ export async function createEmployeePayrollProfile(
     ...profile,
     employeeId,
     _id,
+    serverVersion,
     createdAt: now,
     updatedAt: now,
   };
@@ -90,34 +96,44 @@ export async function updateEmployeePayrollProfile(
   profile: PayrollEmployeeProfile
 ) {
   if (!profile._id) return;
+
   let isOverridden;
+
   const component = await getPayrollComponentById(profile.componentId);
+
+  /*
+   * CUSTOM PROFILE / COMPONENT NO LONGER EXISTS
+   */
   if (!component) {
     console.log(`PAYROLL COMPONENT NOT FOUND FOR PROFILE ${profile._id}`);
-    const component = await getEmployeePayrollProfile(profile._id);
-    if (component) {
+
+    const existingProfile = await getEmployeePayrollProfile(profile._id);
+
+    if (existingProfile) {
       console.log("PAYROLL PROFILE TO UPDATE", profile);
+
       const now = new Date().toISOString();
+
       await run(
         `
-    UPDATE payroll_employee_profiles
-    SET
-      displayName = ?,
-      displayOrder=?,
-      type = ?,
-      calculationType = ?,
-      calculationBase=?,
-      value = ?,
-      taxable=?,
-      requiresHRApproval=?,
-      enabled = ?,
-      synced = ?,
-      isOverridden = ?,
-      isDeleted = ?,
-      updatedAt = ?,
-      lastSyncedAt = ?
-    WHERE _id = ?
-    `,
+        UPDATE payroll_employee_profiles
+        SET
+          displayName = ?,
+          displayOrder = ?,
+          type = ?,
+          calculationType = ?,
+          calculationBase = ?,
+          value = ?,
+          taxable = ?,
+          requiresHRApproval = ?,
+          enabled = ?,
+          synced = ?,
+          isOverridden = ?,
+          isDeleted = ?,
+          updatedAt = ?,
+          lastSyncedAt = ?
+        WHERE _id = ?
+        `,
         [
           profile.displayName,
           profile.displayOrder,
@@ -157,7 +173,9 @@ export async function updateEmployeePayrollProfile(
     throw new Error("NO DEFAULT OR CUSTOM COMPONENTS FOUND WITH THAT ID");
   }
 
-  // Determine whether this profile has been customized
+  /*
+   * Determine whether this profile has been customized.
+   */
   isOverridden =
     profile.displayName !== component.displayName ||
     profile.displayOrder !== component.displayOrder ||
@@ -168,11 +186,7 @@ export async function updateEmployeePayrollProfile(
     profile.enabled !== component.enabled ||
     profile.requiresHRApproval !== component.requiresHRApproval;
 
-  if (isOverridden) {
-    profile.isOverridden = 1;
-  } else {
-    profile.isOverridden = 0;
-  }
+  profile.isOverridden = isOverridden ? 1 : 0;
 
   console.log("PAYROLL PROFILE TO UPDATE", profile);
 
@@ -183,13 +197,13 @@ export async function updateEmployeePayrollProfile(
     UPDATE payroll_employee_profiles
     SET
       displayName = ?,
-      displayOrder=?,
+      displayOrder = ?,
       type = ?,
       calculationType = ?,
       calculationBase = ?,
       value = ?,
-      taxable=?,
-      requiresHRApproval=?,
+      taxable = ?,
+      requiresHRApproval = ?,
       enabled = ?,
       synced = ?,
       isOverridden = ?,
@@ -230,6 +244,7 @@ export async function updateEmployeePayrollProfile(
 
   return updatedProfile;
 }
+
 export async function updateManyEmployeePayrollProfiles(
   profiles: PayrollEmployeeProfile[]
 ) {
@@ -258,11 +273,12 @@ export async function upsertEmployeePayrollProfile(
       enabled,
       synced,
       isDeleted,
+      serverVersion,
       createdAt,
       updatedAt,
       lastSyncedAt
     )
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 
     ON CONFLICT(_id)
     DO UPDATE SET
@@ -279,6 +295,7 @@ export async function upsertEmployeePayrollProfile(
       enabled = excluded.enabled,
       synced = excluded.synced,
       isDeleted = excluded.isDeleted,
+      serverVersion = excluded.serverVersion,
       updatedAt = excluded.updatedAt,
       lastSyncedAt = excluded.lastSyncedAt
     `,
@@ -297,6 +314,7 @@ export async function upsertEmployeePayrollProfile(
       profile.enabled,
       profile.synced,
       profile.isDeleted,
+      profile.serverVersion,
       profile.createdAt,
       profile.updatedAt,
       profile.lastSyncedAt ?? null,
@@ -312,7 +330,7 @@ export async function upsertManyEmployeePayrollProfiles(
   }
 }
 
-//Get all employee payroll profiles
+// Get all employee payroll inputs
 export async function getAllEmployeePayrollInputs(): Promise<
   PayrollEmployeeInput[]
 > {
@@ -346,7 +364,7 @@ export async function getAllEmployeePayrollInputs(): Promise<
       employees.set(row.employeeId, employee);
     }
 
-    // Base salary is the value of the BASIC_SALARY component
+    // Base salary is the value of the BASE_SALARY component
     if (row.name === "BASE_SALARY") {
       employee.baseSalary = row.value ?? 0;
       continue;
@@ -469,22 +487,27 @@ export async function markManyPayrollEmployeeProfileSynced(ids: string[]) {
 
 export async function deleteEmployeePayrollProfile(_id: string) {
   const now = new Date().toISOString();
+
   await run(
     `
     UPDATE payroll_employee_profiles
     SET
       isDeleted = 1,
       synced = 0,
-      updatedAt = CURRENT_TIMESTAMP
+      updatedAt = ?
+    WHERE _id = ?
+    `,
+    [now, _id]
+  );
+
+  const payroll_profile = await get<PayrollEmployeeProfile>(
+    `
+    SELECT *
+    FROM payroll_employee_profiles
     WHERE _id = ?
     `,
     [_id]
   );
-
-  const payroll_profile = {
-    _id,
-    updatedAt: now,
-  };
 
   console.log("DELETED PAYROLL PROFILE TO SAVE TO SYNC QUEUE", payroll_profile);
 
@@ -492,7 +515,11 @@ export async function deleteEmployeePayrollProfile(_id: string) {
     entity: "payroll_profile",
     entityId: _id,
     operation: "delete",
-    payload: JSON.stringify(payroll_profile),
+    payload: JSON.stringify({
+      _id,
+      updatedAt: now,
+      serverVersion: payroll_profile?.serverVersion ?? 0,
+    }),
   });
 }
 

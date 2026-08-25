@@ -5,11 +5,7 @@ export interface TaskComment {
   taskId: string;
   author: string;
   comment: string;
-  version: {
-    type: Number;
-    required: true;
-    default: 0;
-  };
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: number;
@@ -29,15 +25,11 @@ export interface Task {
   resolvedAt?: Date;
   resolvedBy?: string;
   comments: TaskComment[];
+  serverVersion: number;
   submittedAt: Date;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: number;
-  version: {
-    type: Number;
-    required: true;
-    default: 0;
-  };
 }
 
 export type TaskDocument = HydratedDocument<Task>;
@@ -66,10 +58,11 @@ const taskCommentSchema = new Schema<TaskComment>(
       required: true,
       trim: true,
     },
-    version: {
+    serverVersion: {
       type: Number,
       required: true,
       default: 0,
+      index: true,
     },
     createdAt: {
       type: Date,
@@ -177,10 +170,11 @@ const taskSchema = new Schema<Task>(
       required: true,
     },
 
-    version: {
+    serverVersion: {
       type: Number,
       required: true,
       default: 0,
+      index: true,
     },
 
     createdAt: {

@@ -2,10 +2,7 @@ import axios from "axios";
 import { app } from "electron";
 import path from "path";
 import { getEmployeeById } from "../../database/repositories/employees.repository.js";
-import {
-  getSetting,
-  setSetting,
-} from "../../database/repositories/settings.repository.js";
+import { setSetting } from "../../database/repositories/settings.repository.js";
 import { upsertAdminUser } from "../../database/repositories/admin_users.repository.js";
 import {
   markEmployeeSynced,
@@ -37,7 +34,6 @@ import {
   upsertEmployeeDocument,
   markEmployeeDocumentSynced,
 } from "../../database/repositories/employees_documents.repository.js";
-
 import { downloadEmployeeDocument } from "../../util/downloadEmployeeDocument.util.js";
 import { EmployeeDocument } from "../../../common/types/EmployeeDocuments.js";
 import {
@@ -77,28 +73,142 @@ import {
   getSyncState,
   updateLastPulledVersion,
 } from "../../database/repositories/syncState.repository.js";
-
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
 
+interface VersionPullResponse<T> {
+  items: T[];
+  nextVersion: number;
+  hasMore: boolean;
+  serverTime?: string;
+}
+interface VersionPullResult<T> {
+  items: T[];
+  serverTime?: string;
+}
 export async function pullLatestChanges() {
   console.log("PULL SERVICE API URL:", API_URL);
-
   try {
-    const employees = await pullEmployeesByVersion();
-
-    const lastSync =
-      (await getSetting("lastSync")) ?? "1970-01-01T00:00:00.000Z";
-
-    const response = await axios.get(`${API_URL}/sync/pull`, {
-      params: {
-        since: lastSync,
-      },
-      timeout: 90000,
+    let latestServerTime: string | undefined;
+    /* * ======================================================== * EMPLOYEES * ======================================================== */
+    const employeesResult = await pullEntityByVersion<Employee>(
+      "employee",
+      syncEmployees
+    );
+    latestServerTime = employeesResult.serverTime ?? latestServerTime;
+    const employees = employeesResult.items;
+    /* * ======================================================== * ADMIN USERS * ======================================================== */
+    const adminUsersResult = await pullEntityByVersion<AdminUser>(
+      "admin_user",
+      syncAdminUsers
+    );
+    latestServerTime = adminUsersResult.serverTime ?? latestServerTime;
+    const adminUsers = adminUsersResult.items;
+    /* * ======================================================== * EMPLOYEE DOCUMENTS * ======================================================== */
+    const employeeDocumentsResult = await pullEntityByVersion<EmployeeDocument>(
+      "employee_document",
+      syncEmployeeDocuments
+    );
+    latestServerTime = employeeDocumentsResult.serverTime ?? latestServerTime;
+    const employeesDocuments = employeeDocumentsResult.items;
+    /* * ======================================================== * ATTENDANCES * ======================================================== */
+    const attendancesResult = await pullEntityByVersion<Attendance>(
+      "attendance",
+      syncAttendances
+    );
+    latestServerTime = attendancesResult.serverTime ?? latestServerTime;
+    const attendances = attendancesResult.items;
+    /* * ======================================================== * ATTENDANCE DAILY CHECKS * ======================================================== */
+    const attendanceDailyChecksResult =
+      await pullEntityByVersion<AttendanceDailyCheck>(
+        "attendance_daily_check",
+        syncAttendanceDailyChecks
+      );
+    latestServerTime =
+      attendanceDailyChecksResult.serverTime ?? latestServerTime;
+    const attendanceDailyCheck = attendanceDailyChecksResult.items;
+    /* * ======================================================== * LEAVES * ======================================================== */
+    const leavesResult = await pullEntityByVersion<Leave>("leave", syncLeaves);
+    latestServerTime = leavesResult.serverTime ?? latestServerTime;
+    const leaves = leavesResult.items;
+    /* * ======================================================== * TASKS * ======================================================== */
+    const tasksResult = await pullEntityByVersion<Task>("task", syncTasks);
+    latestServerTime = tasksResult.serverTime ?? latestServerTime;
+    const tasks = tasksResult.items;
+    /* * ======================================================== * PAYROLL SETTINGS * ======================================================== */
+    const payrollSettingsResult = await pullEntityByVersion<PayrollSettings>(
+      "payroll_settings",
+      syncPayrollSettings
+    );
+    latestServerTime = payrollSettingsResult.serverTime ?? latestServerTime;
+    const payrollSettings = payrollSettingsResult.items;
+    /* * ======================================================== * PAYROLL COMPONENTS * ======================================================== */
+    const payrollComponentsResult = await pullEntityByVersion<PayrollComponent>(
+      "payroll_component",
+      syncPayrollComponents
+    );
+    latestServerTime = payrollComponentsResult.serverTime ?? latestServerTime;
+    const payrollComponents = payrollComponentsResult.items;
+    /* * ======================================================== * PAYROLL EMPLOYEE PROFILES * ======================================================== */
+    const payrollEmployeeProfilesResult =
+      await pullEntityByVersion<PayrollEmployeeProfile>(
+        "payroll_profile",
+        syncPayrollEmployeeProfiles
+      );
+    latestServerTime =
+      payrollEmployeeProfilesResult.serverTime ?? latestServerTime;
+    const payrollEmployeeProfiles = payrollEmployeeProfilesResult.items;
+    /* * ======================================================== * PAYROLL RUNS * ======================================================== * * Must be pulled before payroll results. */
+    const payrollRunsResult = await pullEntityByVersion<PayrollRun>(
+      "payroll_run",
+      syncPayrollRuns
+    );
+    latestServerTime = payrollRunsResult.serverTime ?? latestServerTime;
+    const payrollRuns = payrollRunsResult.items;
+    /* * ======================================================== * PAYROLL RESULTS * ======================================================== * * Must be pulled after payroll runs. */
+    const payrollResultsResult = await pullEntityByVersion<PayrollResult>(
+      "payroll_result",
+      syncPayrollResults
+    );
+    latestServerTime = payrollResultsResult.serverTime ?? latestServerTime;
+    const payrollResults = payrollResultsResult.items;
+    /* * ======================================================== * PAYROLL ITEMS * ======================================================== * * Must be pulled after payroll results. */
+    const payrollItemsResult = await pullEntityByVersion<PayrollItem>(
+      "payroll_item",
+      syncPayrollItems
+    );
+    latestServerTime = payrollItemsResult.serverTime ?? latestServerTime;
+    const payrollItems = payrollItemsResult.items;
+    /* * ======================================================== * EMPLOYEE PHOTOS * ======================================================== * * Employee records have already been synced. * Therefore photo metadata is available. */
+    await syncEmployeePhotos(employees);
+    /* * ======================================================== * SYNC METADATA * ======================================================== * * These do NOT control synchronization. * * They are simply useful metadata. */
+    const completedAt = new Date().toISOString();
+    await setSetting("lastSync", completedAt);
+    if (latestServerTime) {
+      await setSetting("serverTime", latestServerTime);
+    }
+    /* * ======================================================== * LOGGING * ======================================================== */
+    console.log("PULL SYNC COMPLETED SUCCESSFULLY.");
+    console.log("SYNC SUMMARY:", {
+      employees: employees.length,
+      adminUsers: adminUsers.length,
+      employeesDocuments: employeesDocuments.length,
+      attendances: attendances.length,
+      attendanceDailyCheck: attendanceDailyCheck.length,
+      leaves: leaves.length,
+      tasks: tasks.length,
+      payrollSettings: payrollSettings.length,
+      payrollComponents: payrollComponents.length,
+      payrollEmployeeProfiles: payrollEmployeeProfiles.length,
+      payrollRuns: payrollRuns.length,
+      payrollResults: payrollResults.length,
+      payrollItems: payrollItems.length,
+      lastSync: completedAt,
+      serverTime: latestServerTime,
     });
-
-    const {
+    return {
+      employees,
       adminUsers,
       employeesDocuments,
       attendances,
@@ -111,104 +221,83 @@ export async function pullLatestChanges() {
       payrollRuns,
       payrollResults,
       payrollItems,
-      serverTime,
-    } = response.data;
-
-    console.log("PULLED LEGACY SYNC ITEMS");
-
-    console.log("EMPLOYEES SYNCED USING VERSION:", employees.length);
-
-    console.log("FETCHED ADMIN USERS:", adminUsers?.length ?? 0);
-
-    console.log(
-      "FETCHED EMPLOYEES DOCUMENTS:",
-      employeesDocuments?.length ?? 0
-    );
-
-    console.log("FETCHED ATTENDANCES:", attendances?.length ?? 0);
-
-    console.log(
-      "FETCHED ATTENDANCE DAILY CHECK:",
-      attendanceDailyCheck?.length ?? 0
-    );
-
-    console.log("FETCHED LEAVES:", leaves?.length ?? 0);
-
-    console.log("FETCHED TASKS:", tasks?.length ?? 0);
-
-    console.log("FETCHED PAYROLL SETTINGS:", payrollSettings ? 1 : 0);
-
-    console.log("FETCHED PAYROLL COMPONENTS:", payrollComponents?.length ?? 0);
-
-    console.log(
-      "FETCHED PAYROLL EMPLOYEE PROFILES:",
-      payrollEmployeeProfiles?.length ?? 0
-    );
-
-    console.log("FETCHED PAYROLL RUNS:", payrollRuns?.length ?? 0);
-
-    console.log("FETCHED PAYROLL RESULTS:", payrollResults?.length ?? 0);
-
-    console.log("FETCHED PAYROLL ITEMS:", payrollItems?.length ?? 0);
-
-    /*
-     * =========================================================
-     * SYNC LEGACY ENTITIES
-     * =========================================================
-     */
-
-    await syncAdminUsers(adminUsers);
-
-    /*
-     * Employees are already synced above.
-     *
-     * We intentionally pass them here only because employee
-     * photos depend on the employee data.
-     */
-    await syncEmployeePhotos(employees);
-
-    await syncEmployeeDocuments(employeesDocuments);
-
-    await syncAttendances(attendances);
-
-    await syncAttendanceDailyChecks(attendanceDailyCheck);
-
-    await syncLeaves(leaves);
-
-    await syncTasks(tasks);
-
-    await syncPayrollSettings(payrollSettings);
-
-    await syncPayrollComponents(payrollComponents);
-
-    await syncPayrollEmployeeProfiles(payrollEmployeeProfiles);
-
-    /*
-     * Payroll dependencies must be synced in this order.
-     */
-
-    await syncPayrollRuns(payrollRuns);
-
-    await syncPayrollResults(payrollResults);
-
-    await syncPayrollItems(payrollItems);
-
-    /*
-     * =========================================================
-     * UPDATE LEGACY SYNC CURSOR
-     * =========================================================
-     */
-
-    await setSetting("lastSync", serverTime);
-
-    console.log("PULL SYNC COMPLETED SUCCESSFULLY.");
-
-    return response;
+      lastSync: completedAt,
+      serverTime: latestServerTime,
+    };
   } catch (error) {
+    /* * IMPORTANT: * * lastSync is NOT updated here. * * If synchronization fails, the previous lastSync * remains intact. * * Individual entity cursors are also only advanced * after successful batches. */
     console.error("PULL SYNC FAILED:", error);
-
     throw error;
   }
+}
+async function pullEntityByVersion<T>(
+  entity: string,
+  syncBatch: (items: T[]) => Promise<boolean>,
+  limit = 500
+): Promise<VersionPullResult<T>> {
+  const syncState = await getSyncState(entity);
+  let afterVersion = syncState.lastPulledVersion ?? 0;
+  const allItems: T[] = [];
+  let hasMore = true;
+  let latestServerTime: string | undefined;
+  while (hasMore) {
+    console.log(
+      `PULLING ${entity.toUpperCase()} ` + `AFTER VERSION ${afterVersion}`
+    );
+    const response = await axios.get<VersionPullResponse<T>>(
+      `${API_URL}/sync/pull`,
+      { params: { entity, afterVersion, limit }, timeout: 90000 }
+    );
+    const {
+      items,
+      nextVersion,
+      hasMore: serverHasMore,
+      serverTime,
+    } = response.data;
+    latestServerTime = serverTime ?? latestServerTime;
+    const batch = items ?? [];
+    console.log(`${entity.toUpperCase()} VERSION PULL RESULT:`, {
+      afterVersion,
+      received: batch.length,
+      nextVersion,
+      hasMore: serverHasMore,
+      serverTime,
+    });
+    if (batch.length === 0) {
+      break;
+    }
+    const succeeded = await syncBatch(batch);
+    if (!succeeded) {
+      throw new Error(
+        `${entity.toUpperCase()} SYNC FAILED AFTER VERSION ` +
+          `${afterVersion}. SYNC CURSOR WAS NOT ADVANCED.`
+      );
+    }
+    const newVersion = Number(nextVersion ?? afterVersion);
+    if (!Number.isFinite(newVersion)) {
+      throw new Error(
+        `${entity.toUpperCase()} RETURNED INVALID NEXT VERSION: ` +
+          `${nextVersion}`
+      );
+    }
+    if (newVersion <= afterVersion) {
+      throw new Error(
+        `${entity.toUpperCase()} SYNC VERSION DID NOT ADVANCE. ` +
+          `Current: ${afterVersion}, ` +
+          `Next: ${newVersion}`
+      );
+    }
+    await updateLastPulledVersion(entity, newVersion);
+    afterVersion = newVersion;
+    allItems.push(...batch);
+    hasMore = Boolean(serverHasMore);
+  }
+  console.log(`${entity.toUpperCase()} VERSION SYNC COMPLETE:`, {
+    totalItems: allItems.length,
+    lastVersion: afterVersion,
+    serverTime: latestServerTime,
+  });
+  return { items: allItems, serverTime: latestServerTime };
 }
 
 async function syncEmployees(employees: Employee[]): Promise<boolean> {
@@ -216,30 +305,23 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
     console.log("NO EMPLOYEES TO SYNC.");
     return true;
   }
-
   const sortedEmployees = [...employees].sort(
     (a, b) => (a.serverVersion ?? 0) - (b.serverVersion ?? 0)
   );
-
   let allSucceeded = true;
-
   for (const employee of sortedEmployees) {
     try {
       console.log(
         `SYNCING EMPLOYEE ${employee._id} ` +
           `(serverVersion=${employee.serverVersion})`
       );
-
       await upsertEmployee(employee);
-
       await markEmployeeSynced(employee._id);
-
       console.log(
         `EMPLOYEE SYNCED ${employee._id} ` + `(v${employee.serverVersion})`
       );
     } catch (error) {
       allSucceeded = false;
-
       console.error("FAILED TO SYNC PULLED EMPLOYEE:", {
         employeeId: employee._id,
         serverVersion: employee.serverVersion,
@@ -247,31 +329,37 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
       });
     }
   }
-
   return allSucceeded;
 }
-
-async function syncAttendances(attendances: Attendance[]) {
+async function syncAttendances(attendances: Attendance[]): Promise<boolean> {
+  if (!attendances || attendances.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const attendance of attendances) {
     try {
       await upsertAttendance(attendance);
       await markAttendanceSynced(attendance._id);
     } catch (error) {
+      succeeded = false;
       console.error("FAILED TO SYNC PULLED ATTENDANCE:", attendance._id, error);
     }
   }
+  return succeeded;
 }
-
 async function syncAttendanceDailyChecks(
   attendanceDailyChecks: AttendanceDailyCheck[]
-) {
-  if (!attendanceDailyChecks || attendanceDailyChecks.length === 0) return;
-  console.log("PULLED ATTENDANCE DAILY CHECKS:", attendanceDailyChecks);
+): Promise<boolean> {
+  if (!attendanceDailyChecks || attendanceDailyChecks.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const attendanceDailyCheck of attendanceDailyChecks) {
     try {
       await upsertAttendanceDailyCheck(attendanceDailyCheck);
       await markAttendanceDailyCheckSynced(attendanceDailyCheck._id);
     } catch (error) {
+      succeeded = false;
       console.error(
         "FAILED TO SYNC PULLED ATTENDANCE DAILY CHECK:",
         attendanceDailyCheck._id,
@@ -279,76 +367,81 @@ async function syncAttendanceDailyChecks(
       );
     }
   }
+  return succeeded;
 }
-
-async function syncLeaves(leaves: Leave[]) {
+async function syncLeaves(leaves: Leave[]): Promise<boolean> {
+  if (!leaves || leaves.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const leave of leaves) {
     try {
       await upsertLeave(leave);
       await markLeaveSynced(leave._id);
     } catch (error) {
+      succeeded = false;
       console.error("FAILED TO SYNC PULLED LEAVE:", leave._id, error);
     }
   }
+  return succeeded;
 }
-
-async function syncTasks(tasks: Task[]) {
+async function syncTasks(tasks: Task[]): Promise<boolean> {
+  if (!tasks || tasks.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const task of tasks) {
     try {
       await upsertTask(task);
-
       if (task.comments?.length) {
         await Promise.all(
           task.comments.map((comment) => upsertTaskComment(comment))
         );
       }
-
       await markTaskSynced(task._id);
     } catch (error) {
+      succeeded = false;
       console.error("FAILED TO SYNC PULLED TASK:", task._id, error);
     }
   }
+  return succeeded;
 }
-
-async function syncAdminUsers(adminUsers: AdminUser[]) {
+async function syncAdminUsers(adminUsers: AdminUser[]): Promise<boolean> {
+  if (!adminUsers || adminUsers.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const adminUser of adminUsers) {
     try {
       await upsertAdminUser(adminUser);
     } catch (error) {
-      console.error("FAILED TO SYNC PULLED ADMIN USERS:", adminUser._id, error);
+      succeeded = false;
+      console.error("FAILED TO SYNC PULLED ADMIN USER:", adminUser._id, error);
     }
   }
+  return succeeded;
 }
-
 async function syncEmployeePhotos(employees: Employee[]) {
   for (const employee of employees) {
     try {
       if (!employee.photo_filename || employee.photo_version == null) {
         continue;
       }
-
       const localEmployee = await getEmployeeById(employee._id);
-
       const localPhotoVersion = localEmployee?.photo_version ?? 0;
-
-      // Skip if local photo is already newer or equal
       if (localPhotoVersion >= employee.photo_version) {
         console.log(
-          `PHOTO ALREADY UP TO DATE FOR ${employee.firstName} ${employee.lastName}`
+          `PHOTO ALREADY UP TO DATE FOR ` +
+            `${employee.firstName} ` +
+            `${employee.lastName}`
         );
         continue;
       }
-
-      // Download photo from server
       await downloadEmployeePhoto(employee._id, employee.photo_filename);
-
-      // Folder name
       const employeeFolderName =
         `${employee.firstName}_${employee.lastName}_${employee._id}`
           .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
           .replace(/\s+/g, "_");
-
-      // Save local photo metadata
       await updateEmployeePhotoMetadata(employee._id, {
         photo_path: path.join(
           "employees_photos",
@@ -361,51 +454,50 @@ async function syncEmployeePhotos(employees: Employee[]) {
         photo_mime_type: employee.photo_mime_type,
         photo_last_modified: employee.photo_last_modified,
       });
-
       console.log(
-        `DOWNLOADED NEW PHOTO FOR ${employee.firstName} ${employee.lastName}. Version ${employee.photo_version}`
+        `DOWNLOADED NEW PHOTO FOR ` +
+          `${employee.firstName} ` +
+          `${employee.lastName}. ` +
+          `Version ${employee.photo_version}`
       );
     } catch (error) {
       console.error(`FAILED TO SYNC PHOTO FOR EMPLOYEE ${employee._id}`, error);
     }
   }
 }
-async function syncEmployeeDocuments(employeeDocuments: EmployeeDocument[]) {
+async function syncEmployeeDocuments(
+  employeeDocuments: EmployeeDocument[]
+): Promise<boolean> {
+  if (!employeeDocuments || employeeDocuments.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const document of employeeDocuments) {
     try {
       const localDocument = await getEmployeeDocument(
         document.employeeId,
         document.documentType
       );
-
-      const localVersion = localDocument?.version ?? 0;
-
-      // Already up to date
-      if (localVersion >= document.version) {
+      const localVersion = localDocument?.serverVersion ?? 0;
+      if (localVersion >= document.serverVersion) {
         console.log(
-          `DOCUMENT ALREADY UP TO DATE: ${document.employeeId} (${document.documentType})`
+          `DOCUMENT ALREADY UP TO DATE: ` +
+            `${document.employeeId} ` +
+            `(${document.documentType})`
         );
         continue;
       }
-
       const employee = await getEmployeeById(document.employeeId);
-
       if (!employee) {
         throw new Error(
           `Employee ${document.employeeId} not found while syncing document`
         );
       }
-
-      // Download latest document
       await downloadEmployeeDocument(employee, document);
-
-      // Folder name
       const employeeFolderName =
         `${employee.firstName}_${employee.lastName}_${employee._id}`
           .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
           .replace(/\s+/g, "_");
-
-      // Update local metadata
       await upsertEmployeeDocument({
         ...document,
         localPath: path.join(
@@ -415,38 +507,56 @@ async function syncEmployeeDocuments(employeeDocuments: EmployeeDocument[]) {
           document.fileName
         ),
       });
-
       await markEmployeeDocumentSynced(document._id);
-
       console.log(
-        `DOWNLOADED ${document.documentType} FOR ${employee.firstName} ${employee.lastName} (v${document.version})`
+        `DOWNLOADED ${document.documentType} ` +
+          `FOR ${employee.firstName} ` +
+          `${employee.lastName} ` +
+          `(v${document.serverVersion})`
       );
     } catch (error) {
+      succeeded = false;
       console.error(`FAILED TO SYNC DOCUMENT ${document._id}`, error);
     }
   }
+  return succeeded;
 }
 
-async function syncPayrollSettings(payrollSettings: PayrollSettings) {
-  if (!payrollSettings) return;
-  try {
-    await upsertPayrollSettings(payrollSettings);
-    await markPayrollSettingsSynced(payrollSettings._id);
-  } catch (error) {
-    console.error(
-      "FAILED TO SYNC PULLED PAYROLL SETTINGS:",
-      payrollSettings._id,
-      error
-    );
+async function syncPayrollSettings(
+  payrollSettings: PayrollSettings[]
+): Promise<boolean> {
+  if (!payrollSettings || payrollSettings.length === 0) {
+    return true;
   }
+  let succeeded = true;
+  for (const settings of payrollSettings) {
+    try {
+      await upsertPayrollSettings(settings);
+      await markPayrollSettingsSynced(settings._id);
+    } catch (error) {
+      succeeded = false;
+      console.error(
+        "FAILED TO SYNC PULLED PAYROLL SETTINGS:",
+        settings._id,
+        error
+      );
+    }
+  }
+  return succeeded;
 }
-
-async function syncPayrollComponents(payrollComponents: PayrollComponent[]) {
+async function syncPayrollComponents(
+  payrollComponents: PayrollComponent[]
+): Promise<boolean> {
+  if (!payrollComponents || payrollComponents.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const component of payrollComponents) {
     try {
       await upsertPayrollComponent(component);
       await markPayrollComponentSynced(component._id);
     } catch (error) {
+      succeeded = false;
       console.error(
         "FAILED TO SYNC PULLED PAYROLL COMPONENT:",
         component._id,
@@ -454,40 +564,50 @@ async function syncPayrollComponents(payrollComponents: PayrollComponent[]) {
       );
     }
   }
+  return succeeded;
 }
 
 async function syncPayrollEmployeeProfiles(
   payrollEmployeeProfiles: PayrollEmployeeProfile[]
-) {
-  for (const component of payrollEmployeeProfiles) {
-    if (!component._id) continue;
+): Promise<boolean> {
+  if (!payrollEmployeeProfiles || payrollEmployeeProfiles.length === 0) {
+    return true;
+  }
+  let succeeded = true;
+  for (const profile of payrollEmployeeProfiles) {
+    if (!profile._id) {
+      continue;
+    }
     try {
-      await upsertEmployeePayrollProfile(component);
-      await markPayrollEmployeeProfileSynced(component._id);
+      await upsertEmployeePayrollProfile(profile);
+      await markPayrollEmployeeProfileSynced(profile._id);
     } catch (error) {
+      succeeded = false;
       console.error(
         "FAILED TO SYNC PULLED PAYROLL EMPLOYEE PROFILE:",
-        component._id,
+        profile._id,
         error
       );
     }
   }
+  return succeeded;
 }
 
-async function syncPayrollRuns(
-  payrollRuns: PayrollRun[]
-): Promise<Set<string>> {
-  const syncedRunIds = new Set<string>();
-
+async function syncPayrollRuns(payrollRuns: PayrollRun[]): Promise<boolean> {
+  if (!payrollRuns || payrollRuns.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const payrollRun of payrollRuns) {
-    if (!payrollRun._id) continue;
-
+    if (!payrollRun._id) {
+      continue;
+    }
     try {
       await upsertPayrollRun(payrollRun);
       await markPayrollRunSynced(payrollRun._id);
-      syncedRunIds.add(payrollRun._id);
       console.log("PAYROLL RUN SYNCED:", payrollRun._id);
     } catch (error) {
+      succeeded = false;
       console.error(
         "FAILED TO SYNC PULLED PAYROLL RUN:",
         payrollRun._id,
@@ -495,65 +615,50 @@ async function syncPayrollRuns(
       );
     }
   }
-
-  return syncedRunIds;
+  return succeeded;
 }
 
-async function syncPayrollResults(payrollResults: PayrollResult[]) {
+async function syncPayrollResults(
+  payrollResults: PayrollResult[]
+): Promise<boolean> {
+  if (!payrollResults || payrollResults.length === 0) {
+    return true;
+  }
+  let succeeded = true;
   for (const result of payrollResults) {
-    if (!result._id) continue;
-
+    if (!result._id) {
+      continue;
+    }
     try {
       const payrollRun = await get(
-        `
-          SELECT _id
-          FROM payroll_runs
-          WHERE _id = ?
-          LIMIT 1
-        `,
+        ` SELECT _id FROM payroll_runs WHERE _id = ? LIMIT 1 `,
         [result.payrollRunId]
       );
-
       if (!payrollRun) {
         console.error(
           "SKIPPING PAYROLL RESULT: PAYROLL RUN DOES NOT EXIST LOCALLY",
-          {
-            resultId: result._id,
-            payrollRunId: result.payrollRunId,
-          }
+          { resultId: result._id, payrollRunId: result.payrollRunId }
         );
-
+        succeeded = false;
         continue;
       }
-
       const employee = await get(
-        `
-          SELECT _id
-          FROM employees
-          WHERE _id = ?
-          LIMIT 1
-        `,
+        ` SELECT _id FROM employees WHERE _id = ? LIMIT 1 `,
         [result.employeeId]
       );
-
       if (!employee) {
         console.error(
           "SKIPPING PAYROLL RESULT: EMPLOYEE DOES NOT EXIST LOCALLY",
-          {
-            resultId: result._id,
-            employeeId: result.employeeId,
-          }
+          { resultId: result._id, employeeId: result.employeeId }
         );
-
+        succeeded = false;
         continue;
       }
-
       await upsertPayrollResult(result);
-
       await markPayrollResultSynced(result._id);
-
       console.log("PAYROLL RESULT SYNCED:", result._id);
     } catch (error) {
+      succeeded = false;
       console.error("FAILED TO SYNC PULLED PAYROLL RESULT:", {
         resultId: result._id,
         payrollRunId: result.payrollRunId,
@@ -562,103 +667,25 @@ async function syncPayrollResults(payrollResults: PayrollResult[]) {
       });
     }
   }
+  return succeeded;
 }
 
-async function syncPayrollItems(PayrollItems: PayrollItem[]) {
-  for (const item of PayrollItems) {
-    if (!item._id) continue;
+async function syncPayrollItems(payrollItems: PayrollItem[]): Promise<boolean> {
+  if (!payrollItems || payrollItems.length === 0) {
+    return true;
+  }
+  let succeeded = true;
+  for (const item of payrollItems) {
+    if (!item._id) {
+      continue;
+    }
     try {
       await upsertPayrollItem(item);
       await markPayrollItemSynced(item._id);
     } catch (error) {
-      console.error("FAILED TO SYNC PULLED PAYROLL RESULTS:", item._id, error);
+      succeeded = false;
+      console.error("FAILED TO SYNC PULLED PAYROLL ITEM:", item._id, error);
     }
   }
-}
-
-async function pullEmployeesByVersion(): Promise<Employee[]> {
-  const syncState = await getSyncState("employee");
-
-  let afterVersion = syncState.lastPulledVersion ?? 0;
-
-  const allEmployees: Employee[] = [];
-
-  let hasMore = true;
-
-  while (hasMore) {
-    console.log(`PULLING EMPLOYEES AFTER VERSION ${afterVersion}`);
-
-    const response = await axios.get(`${API_URL}/sync/pull`, {
-      params: {
-        entity: "employee",
-        afterVersion,
-        limit: 500,
-      },
-      timeout: 90000,
-    });
-
-    const { items, nextVersion, hasMore: serverHasMore } = response.data;
-
-    const employees: Employee[] = items ?? [];
-
-    console.log("EMPLOYEE VERSION PULL RESULT:", {
-      afterVersion,
-      received: employees.length,
-      nextVersion,
-      hasMore: serverHasMore,
-    });
-
-    /*
-     * No changes.
-     */
-    if (employees.length === 0) {
-      break;
-    }
-
-    /*
-     * Sync this batch.
-     *
-     * IMPORTANT:
-     * Do not advance the cursor if any employee fails.
-     */
-    const employeesSyncedSuccessfully = await syncEmployees(employees);
-
-    if (!employeesSyncedSuccessfully) {
-      throw new Error(
-        `EMPLOYEE SYNC FAILED AFTER VERSION ${afterVersion}. ` +
-          `SYNC CURSOR WAS NOT ADVANCED.`
-      );
-    }
-
-    const newVersion = Number(nextVersion ?? afterVersion);
-
-    /*
-     * Safety check against an infinite loop.
-     */
-    if (newVersion <= afterVersion) {
-      throw new Error(
-        `EMPLOYEE SYNC VERSION DID NOT ADVANCE. ` +
-          `Current: ${afterVersion}, Next: ${newVersion}`
-      );
-    }
-
-    /*
-     * Only advance the cursor AFTER the entire batch
-     * successfully reached SQLite.
-     */
-    await updateLastPulledVersion("employee", newVersion);
-
-    afterVersion = newVersion;
-
-    allEmployees.push(...employees);
-
-    hasMore = Boolean(serverHasMore);
-  }
-
-  console.log("EMPLOYEE VERSION SYNC COMPLETE:", {
-    totalEmployees: allEmployees.length,
-    lastVersion: afterVersion,
-  });
-
-  return allEmployees;
+  return succeeded;
 }

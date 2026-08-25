@@ -30,11 +30,7 @@ export interface PayrollEmployeeProfileDocument {
   requiresHRApproval: number;
   enabled: number;
   isOverridden: number;
-  version: {
-    type: Number;
-    required: true;
-    default: 0;
-  };
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
   synced: number;
@@ -135,10 +131,11 @@ const PayrollEmployeeProfileSchema = new Schema<PayrollEmployeeProfileDocument>(
       default: 0,
     },
 
-    version: {
+    serverVersion: {
       type: Number,
       required: true,
       default: 0,
+      index: true,
     },
 
     createdAt: {

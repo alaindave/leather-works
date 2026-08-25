@@ -5,6 +5,7 @@ export interface PayrollSettings {
   workingHours: number;
   paymentDay: number;
   synced: number;
+  serverVersion?: number;
   createdAt: string;
   updatedAt: string;
   lastSyncedAt?: string;
@@ -29,6 +30,7 @@ export interface PayrollRun {
   totalNetSalary: number;
   generatedBy: string;
   generatedByName?: string;
+  serverVersion?: number;
   submittedForVerificationAt?: string;
   submittedForVerificationBy?: string;
   submittedForVerificationByName?: string;
@@ -69,6 +71,7 @@ export interface PayrollResult {
   totalEarnings: number;
   totalDeductions: number;
   status: "BROUILLON" | "VERIFICATION" | "APPROUVÉ" | "PAYÉ" | "ANNULÉ";
+  serverVersion?: number;
   cancelledAt?: string;
   verifiedAt?: string;
   approvedAt?: string;
@@ -76,6 +79,28 @@ export interface PayrollResult {
   netSalary: number;
   createdAt?: string;
   updatedAt?: string;
+  isDeleted?: number;
+}
+
+export interface PayrollItem {
+  _id?: string;
+  employeeId?: string;
+  payrollResultId?: string;
+  componentId?: string;
+  name: string;
+  displayName?: string;
+  type: PayrollComponentType;
+  amount: number;
+  calculationMethod?: string;
+  rate?: number;
+  taxable?: number;
+  quantity?: number;
+  notes?: string;
+  synced?: number;
+  serverVersion?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
   isDeleted?: number;
 }
 
@@ -111,28 +136,8 @@ export interface PayrollComponentInput {
   rate?: number | null;
   formula?: string | null;
   taxable?: number;
+  serverVersion?: number;
   enabled: number;
-}
-
-export interface PayrollItem {
-  _id?: string;
-  employeeId?: string;
-  payrollResultId?: string;
-  componentId?: string;
-  name: string;
-  displayName?: string;
-  type: PayrollComponentType;
-  amount: number;
-  calculationMethod?: string;
-  rate?: number;
-  taxable?: number;
-  quantity?: number;
-  notes?: string;
-  synced?: number;
-  isDeleted?: number;
-  createdAt?: string;
-  updatedAt?: string;
-  lastSyncedAt?: string;
 }
 
 //Payroll Summary interface
@@ -172,27 +177,6 @@ export interface PayrollCalculationContext {
   totalEarnings: number;
   totalDeductions: number;
   netSalary: number;
-}
-
-export interface PayrollItem {
-  _id?: string;
-  payrollResultId?: string;
-  componentId?: string;
-  name: string;
-  displayName?: string;
-  type: PayrollComponentType;
-  amount: number;
-  // Fields for audit
-  calculationMethod?: string; // "Fixed", "Percentage", "Formula"
-  rate?: number; // e.g. 3 for 3%
-  taxable?: number;
-  quantity?: number; // e.g. overtime hours
-  notes?: string; // "15 overtime hours × 5,000 BIF"
-  synced?: number;
-  isDeleted?: number;
-  createdAt?: string;
-  updatedAt?: string;
-  lastSyncedAt?: string;
 }
 
 //Payroll Summary interface

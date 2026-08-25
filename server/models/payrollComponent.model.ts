@@ -27,11 +27,7 @@ export interface PayrollComponentDocument {
     | "NET_SALARY";
   requiresHRApproval: number | null;
   enabled: number;
-  version: {
-    type: Number;
-    required: true;
-    default: 0;
-  };
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
   lastSyncedAt: Date;
@@ -114,10 +110,11 @@ const PayrollComponentSchema = new Schema<PayrollComponentDocument>({
     default: 1,
   },
 
-  version: {
+  serverVersion: {
     type: Number,
     required: true,
     default: 0,
+    index: true,
   },
 
   createdAt: {

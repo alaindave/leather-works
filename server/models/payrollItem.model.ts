@@ -10,11 +10,7 @@ export interface PayrollItemDocument {
   type: "EARNING" | "DEDUCTION";
   amount: number;
   taxable?: number;
-  version: {
-    type: Number;
-    required: true;
-    default: 0;
-  };
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: number;
@@ -73,10 +69,11 @@ const payrollItemSchema = new Schema<PayrollItemDocument>(
       default: 0,
     },
 
-    version: {
+    serverVersion: {
       type: Number,
       required: true,
       default: 0,
+      index: true,
     },
 
     createdAt: {

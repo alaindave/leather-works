@@ -3,6 +3,7 @@ import { all, get, run } from "../db.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import { randomUUID } from "crypto";
 import { getTaskCommentsWithAuthor } from "./tasks_comments.repository.js";
+
 type Priority = "Haute" | "Moyenne" | "Basse" | "";
 
 type TaskRow = {
@@ -29,17 +30,30 @@ type TaskRow = {
   recipientLastName: string | null;
   recipientEmail: string | null;
   recipientRole: "MANAGER" | "ADMIN";
+
   isDeleted: number;
   submittedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  serverVersion: number;
 };
 
+/**
+ * Create task locally.
+ *
+ * serverVersion starts at 0 because the task has not yet been
+ * assigned a server revision.
+ */
 export async function createTask(task: Task) {
   console.log("TASK TO CREATE:", task);
+
   const _id = randomUUID();
   const taskNumber = generateTaskNumber(task.priority);
   const now = new Date().toISOString();
 
-  //Create task
+  const serverVersion = 0;
+
+  // Create task
   await run(
     `
     INSERT INTO tasks (
@@ -51,11 +65,13 @@ export async function createTask(task: Task) {
       deadline,
       priority,
       synced,
+      serverVersion,
       submittedAt,
       createdAt,
-      updatedAt
+      updatedAt,
+      isDeleted
     )
-    VALUES (?,?,?,?,?,?,?,0,?,?,?)
+    VALUES (?,?,?,?,?,?,?,0,?,?,?,?,0)
     `,
     [
       _id,
@@ -65,6 +81,7 @@ export async function createTask(task: Task) {
       task.message,
       task.deadline,
       task.priority,
+      serverVersion,
       now,
       now,
       now,
@@ -75,7 +92,10 @@ export async function createTask(task: Task) {
   for (const recipient of task.recipients) {
     await run(
       `
-      INSERT INTO task_recipients (taskId, recipient)
+      INSERT INTO task_recipients (
+        taskId,
+        recipient
+      )
       VALUES (?, ?)
       `,
       [_id, recipient._id]
@@ -90,6 +110,8 @@ export async function createTask(task: Task) {
     submittedAt: now,
     createdAt: now,
     updatedAt: now,
+    serverVersion,
+    isDeleted: 0,
   };
 
   console.log("TASK TO SAVE TO SYNC QUEUE", savedTask);
@@ -104,7 +126,14 @@ export async function createTask(task: Task) {
   return getTaskById(_id);
 }
 
-//Update task
+/**
+ * Update task locally.
+ *
+ * Important:
+ * serverVersion is intentionally NOT changed here.
+ * The server assigns the next serverVersion when the change
+ * is accepted by the backend.
+ */
 export async function updateTask(task: Task) {
   const updatedAt = new Date().toISOString();
 
@@ -126,6 +155,7 @@ export async function updateTask(task: Task) {
         updatedAt = ?,
         synced = 0
       WHERE _id = ?
+        AND isDeleted = 0
       `,
       [
         task.subject,
@@ -142,7 +172,13 @@ export async function updateTask(task: Task) {
     );
 
     // Replace recipients
-    await run(`DELETE FROM task_recipients WHERE taskId = ?`, [task._id]);
+    await run(
+      `
+      DELETE FROM task_recipients
+      WHERE taskId = ?
+      `,
+      [task._id]
+    );
 
     for (const recipient of task.recipients) {
       await run(
@@ -157,10 +193,20 @@ export async function updateTask(task: Task) {
       );
     }
 
+    const existing = await get<{ serverVersion: number }>(
+      `
+      SELECT serverVersion
+      FROM tasks
+      WHERE _id = ?
+      `,
+      [task._id]
+    );
+
     const updatedTask = {
       ...task,
       recipients: task.recipients.map((r) => r._id),
       updatedAt,
+      serverVersion: existing?.serverVersion ?? task.serverVersion ?? 0,
     };
 
     console.log("TASK TO SAVE TO SYNC QUEUE", updatedTask);
@@ -181,9 +227,15 @@ export async function updateTask(task: Task) {
   return getTaskById(task._id);
 }
 
-//Get task by ID
+/**
+ * Get task by ID.
+ */
 export async function getTaskById(_id: string) {
-  const row = await get<TaskRow>(
+  const row = await get<
+    TaskRow & {
+      serverVersion: number;
+    }
+  >(
     `
     SELECT 
       t._id AS taskId,
@@ -198,6 +250,10 @@ export async function getTaskById(_id: string) {
       t.resolvedAt,
       t.resolvedBy,
       t.submittedAt,
+      t.createdAt,
+      t.updatedAt,
+      t.isDeleted,
+      t.serverVersion,
 
       -- author
       a._id AS author,
@@ -257,6 +313,10 @@ export async function getTaskById(_id: string) {
     resolvedAt: row.resolvedAt ?? null,
     resolvedBy: row.resolvedBy ?? null,
     submittedAt: row.submittedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    isDeleted: row.isDeleted,
+    serverVersion: row.serverVersion,
 
     author: {
       _id: row.author,
@@ -272,7 +332,9 @@ export async function getTaskById(_id: string) {
   };
 }
 
-//Get top tasks for dashboard display
+/**
+ * Get top tasks for dashboard display.
+ */
 export async function getTopTasks(userId: string) {
   const rows = await all<TaskRow>(
     `
@@ -282,6 +344,8 @@ export async function getTopTasks(userId: string) {
       t.subject,
       t.message,
       t.submittedAt,
+      t.createdAt,
+      t.updatedAt,
       t.isDeleted,
       t.author,
       t.priority,
@@ -290,6 +354,7 @@ export async function getTopTasks(userId: string) {
       t.resolutionNotes,
       t.resolvedAt,
       t.resolvedBy,
+      t.serverVersion,
 
       -- author
       a._id AS author,
@@ -329,16 +394,13 @@ export async function getTopTasks(userId: string) {
       )
 
     ORDER BY
-      -- Tasks with deadlines come before tasks without deadlines
       CASE
         WHEN t.deadline IS NULL THEN 1
         ELSE 0
       END ASC,
 
-      -- Closest deadline first
       datetime(t.deadline) ASC,
 
-      -- Highest priority first when deadlines are equal
       CASE t.priority
         WHEN 'Haute' THEN 3
         WHEN 'Moyenne' THEN 2
@@ -346,9 +408,7 @@ export async function getTopTasks(userId: string) {
         ELSE 0
       END DESC,
 
-      -- Final tie-breaker
       datetime(t.createdAt) ASC
-
     `,
     [userId, userId]
   );
@@ -370,6 +430,9 @@ export async function getTopTasks(userId: string) {
         resolvedBy: row.resolvedBy ?? null,
         submittedAt: row.submittedAt,
         isDeleted: row.isDeleted,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        serverVersion: row.serverVersion,
 
         author: {
           _id: row.author,
@@ -407,10 +470,13 @@ export async function getTopTasks(userId: string) {
       task.comments = await getTaskCommentsWithAuthor(task._id);
     })
   );
+
   return tasks;
 }
 
-//Get all tasks(either author or recipients)
+/**
+ * Get all tasks for a user.
+ */
 export async function getAllTasksForUser(userId: string) {
   const rows = await all<TaskRow>(
     `
@@ -421,6 +487,7 @@ export async function getAllTasksForUser(userId: string) {
       t.message,
       t.submittedAt,
       t.createdAt,
+      t.updatedAt,
       t.isDeleted,
       t.author,
       t.priority,
@@ -429,6 +496,7 @@ export async function getAllTasksForUser(userId: string) {
       t.resolutionNotes,
       t.resolvedAt,
       t.resolvedBy,
+      t.serverVersion,
 
       -- author
       a._id AS author,
@@ -456,10 +524,8 @@ export async function getAllTasksForUser(userId: string) {
       ON r._id = tr.recipient
 
     WHERE t.isDeleted = 0
-
       AND (
         t.author = ?
-
         OR EXISTS (
           SELECT 1
           FROM task_recipients tr2
@@ -500,7 +566,10 @@ export async function getAllTasksForUser(userId: string) {
         resolvedBy: row.resolvedBy ?? null,
 
         submittedAt: row.submittedAt,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
         isDeleted: row.isDeleted,
+        serverVersion: row.serverVersion,
 
         author: {
           _id: row.author,
@@ -536,6 +605,7 @@ export async function getAllTasksForUser(userId: string) {
   }
 
   const tasks = Array.from(map.values());
+
   await Promise.all(
     tasks.map(async (task) => {
       task.comments = await getTaskCommentsWithAuthor(task._id);
@@ -545,7 +615,9 @@ export async function getAllTasksForUser(userId: string) {
   return tasks;
 }
 
-//Get all tasks
+/**
+ * Get all tasks.
+ */
 export async function getAllTasks() {
   const rows = await all<TaskRow>(
     `
@@ -555,6 +627,8 @@ export async function getAllTasks() {
       t.subject,
       t.message,
       t.submittedAt,
+      t.createdAt,
+      t.updatedAt,
       t.isDeleted,
       t.author,
       t.priority,
@@ -563,6 +637,7 @@ export async function getAllTasks() {
       t.resolutionNotes,
       t.resolvedAt,
       t.resolvedBy,
+      t.serverVersion,
 
       -- author
       a._id AS author,
@@ -590,11 +665,12 @@ export async function getAllTasks() {
       ON r._id = tr.recipient
 
     WHERE t.isDeleted = 0
+
     ORDER BY t.submittedAt DESC
     `
   );
 
-  const map = new Map<string, any>();
+  const map = new Map<string, Task>();
 
   for (const row of rows) {
     if (!map.has(row.taskId)) {
@@ -610,7 +686,10 @@ export async function getAllTasks() {
         resolvedAt: row.resolvedAt ?? null,
         resolvedBy: row.resolvedBy ?? null,
         submittedAt: row.submittedAt,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
         isDeleted: row.isDeleted,
+        serverVersion: row.serverVersion,
 
         author: {
           _id: row.author,
@@ -621,22 +700,20 @@ export async function getAllTasks() {
         },
 
         recipients: [],
-      });
+      } as Task);
     }
 
-    const task = map.get(row.taskId);
+    const task = map.get(row.taskId)!;
 
     if (row.recipientId) {
-      const exists = task.recipients.find(
-        (r: any) => r._id === row.recipientId
-      );
+      const exists = task.recipients.find((r) => r._id === row.recipientId);
 
       if (!exists) {
         task.recipients.push({
           _id: row.recipientId,
-          firstName: row.recipientFirstName,
-          lastName: row.recipientLastName,
-          email: row.recipientEmail,
+          firstName: row.recipientFirstName ?? "",
+          lastName: row.recipientLastName ?? "",
+          email: row.recipientEmail ?? "",
           role: row.recipientRole,
         });
       }
@@ -654,33 +731,51 @@ export async function getAllTasks() {
   return tasks;
 }
 
+/**
+ * Soft delete task.
+ *
+ * serverVersion is intentionally left unchanged.
+ * The server will assign the next version when this deletion
+ * is synchronized.
+ */
 export async function deleteTask(_id: string) {
+  const updatedAt = new Date().toISOString();
+
   await run(
     `
     UPDATE tasks
     SET
       isDeleted = 1,
       synced = 0,
-      updatedAt = datetime('now')
+      updatedAt = ?
     WHERE _id = ?
+      AND isDeleted = 0
     `,
-    [_id]
+    [updatedAt, _id]
   );
 
-  const updatedAt = new Date().toISOString();
-
-  console.log("Task to delete from sync queue", { _id, updatedAt });
+  console.log("TASK TO DELETE FROM SYNC QUEUE", {
+    _id,
+    updatedAt,
+  });
 
   await addToSyncQueue({
     entity: "task",
     entityId: _id,
     operation: "delete",
-    payload: JSON.stringify({ _id, updatedAt }),
+    payload: JSON.stringify({
+      _id,
+      isDeleted: 1,
+      updatedAt,
+    }),
   });
 
   return getTaskById(_id);
 }
 
+/**
+ * Mark task as synchronized.
+ */
 export async function markTaskSynced(_id: string) {
   await run(
     `
@@ -699,27 +794,44 @@ export async function markTaskSynced(_id: string) {
 export async function upsertTask(task: Task) {
   console.log("TASK TO UPSERT:", task);
 
-  // Check if task already exists locally
-  const existing = await all<{ updatedAt: string | null }>(
+  const incomingServerVersion = task.serverVersion ?? 0;
+
+  // Check existing local task.
+  const existing = await get<{
+    serverVersion: number;
+    synced: number;
+    updatedAt: string | null;
+  }>(
     `
-    SELECT updatedAt
+    SELECT
+      serverVersion,
+      synced,
+      updatedAt
     FROM tasks
     WHERE _id = ?
     `,
     [task._id]
   );
 
-  // Local version is newer -> don't overwrite it
-  if (
-    existing.length &&
-    existing[0].updatedAt &&
-    task.updatedAt &&
-    new Date(existing[0].updatedAt).getTime() >
-      new Date(task.updatedAt).getTime()
-  ) {
+  /**
+   * If the local record has a newer serverVersion,
+   * the incoming server record is stale.
+   *
+   * Do not overwrite it.
+   */
+  if (existing && existing.serverVersion > incomingServerVersion) {
+    console.log(
+      `SKIPPING TASK ${task._id}: LOCAL serverVersion ${existing.serverVersion} IS NEWER THAN INCOMING${incomingServerVersion}`
+    );
+
     return getTaskById(task._id);
   }
 
+  /**
+   * Server version is equal or newer.
+   *
+   * Accept the server record.
+   */
   await run(
     `
     INSERT INTO tasks (
@@ -739,10 +851,11 @@ export async function upsertTask(task: Task) {
       updatedAt,
       lastSyncedAt,
       synced,
+      serverVersion,
       isDeleted
     )
     VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
     )
     ON CONFLICT(_id) DO UPDATE SET
       taskNumber = excluded.taskNumber,
@@ -760,6 +873,7 @@ export async function upsertTask(task: Task) {
       updatedAt = excluded.updatedAt,
       lastSyncedAt = excluded.lastSyncedAt,
       synced = 1,
+      serverVersion = excluded.serverVersion,
       isDeleted = excluded.isDeleted
     `,
     [
@@ -777,16 +891,28 @@ export async function upsertTask(task: Task) {
       task.submittedAt ?? null,
       task.createdAt ?? null,
       task.updatedAt ?? null,
-      task.lastSyncedAt ?? new Date().toISOString(),
+      new Date().toISOString(),
       1,
+      incomingServerVersion,
       task.isDeleted ?? 0,
     ]
   );
 
-  // Replace recipients
-  await run(`DELETE FROM task_recipients WHERE taskId = ?`, [task._id]);
+  // Replace recipients with server recipients.
+  await run(
+    `
+    DELETE FROM task_recipients
+    WHERE taskId = ?
+    `,
+    [task._id]
+  );
 
   for (const recipient of task.recipients) {
+    const recipientId =
+      typeof recipient === "string" ? recipient : recipient._id;
+
+    if (!recipientId) continue;
+
     await run(
       `
       INSERT INTO task_recipients (
@@ -795,21 +921,25 @@ export async function upsertTask(task: Task) {
       )
       VALUES (?, ?)
       `,
-      [task._id, recipient]
+      [task._id, recipientId]
     );
   }
 
   return getTaskById(task._id);
 }
 
-//Map task priorities to single letters
+/**
+ * Map task priorities to single letters.
+ */
 function taskMapping(task_priority: string): string {
   if (task_priority === "HAUTE") return "H";
   if (task_priority === "MOYENNE") return "M";
   return "B";
 }
 
-//Generate task numbers
+/**
+ * Generate task numbers.
+ */
 function generateTaskNumber(task_priority: string) {
   const now = new Date();
 

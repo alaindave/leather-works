@@ -18,7 +18,10 @@ export type SyncOperation = "create" | "update" | "delete";
 
 interface SyncData {
   _id: string;
+  serverVersion?: number;
   updatedAt?: Date | string;
+  lastSyncedAt?: Date | string;
+  synced?: number | boolean;
   [key: string]: any;
 }
 
@@ -28,13 +31,56 @@ interface UploadedFile {
   mimetype: string;
 }
 
-// ================= EMPLOYEE =================
+function cleanSyncFields(data: SyncData) {
+  const {
+    _id,
+    serverVersion: _clientServerVersion,
+    lastSyncedAt: _clientLastSyncedAt,
+    synced: _clientSynced,
+    ...fields
+  } = data;
+
+  delete fields._id;
+  delete fields.serverVersion;
+  delete fields.lastSyncedAt;
+  delete fields.synced;
+
+  return {
+    _id,
+    fields,
+  };
+}
+
+function requireUpdatedAt(data: SyncData): Date {
+  if (!data.updatedAt) {
+    throw new Error(
+      `SYNC FAILED: updatedAt is required for entity ${data._id}`
+    );
+  }
+
+  const updatedAt = new Date(data.updatedAt);
+
+  if (Number.isNaN(updatedAt.getTime())) {
+    throw new Error(`SYNC FAILED: invalid updatedAt for entity ${data._id}`);
+  }
+
+  return updatedAt;
+}
+
+async function getServerVersion(entity: string): Promise<number> {
+  return getNextSyncVersion(entity);
+}
+
+// ============================================================
+// EMPLOYEE
+// ============================================================
 
 export async function syncEmployee(operation: SyncOperation, data: SyncData) {
-  const { _id, serverVersion, ...fields } = data;
+  requireUpdatedAt(data);
 
-  // Server is the only authority that generates the version.
-  const version = await getNextSyncVersion("employee");
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("employee");
 
   await Employee.updateOne(
     {
@@ -43,7 +89,7 @@ export async function syncEmployee(operation: SyncOperation, data: SyncData) {
     {
       $set: {
         ...fields,
-        serverVersion: version,
+        serverVersion,
       },
       $setOnInsert: {
         _id,
@@ -58,118 +104,266 @@ export async function syncEmployee(operation: SyncOperation, data: SyncData) {
 
   console.log(`SYNCED ${operation.toUpperCase()} EMPLOYEE:`, {
     _id,
-    serverVersion: version,
-    employee,
+    updatedAt: data.updatedAt,
+    serverVersion,
   });
 
   return {
     success: true,
     _id,
-    serverVersion: version,
+    serverVersion,
+    employee,
   };
 }
-// ================= ATTENDANCE =================
 
+// ============================================================
+// ATTENDANCE
+// ============================================================
 export async function syncAttendance(operation: SyncOperation, data: SyncData) {
-  const { _id, ...fields } = data;
+  const { _id, fields } = cleanSyncFields(data);
+
+  if (!_id) {
+    throw new Error("ATTENDANCE SYNC FAILED: MISSING _id");
+  }
+
+  if (!fields.employeeId) {
+    throw new Error("ATTENDANCE SYNC FAILED: MISSING employeeId");
+  }
+
+  if (!fields.date) {
+    throw new Error("ATTENDANCE SYNC FAILED: MISSING date");
+  }
+
+  const serverVersion = await getServerVersion("attendance");
+
+  const existingAttendance = await Attendance.findOne({
+    employeeId: fields.employeeId,
+    date: fields.date,
+  });
+  // Check if attendance record exist but with different _id
+  if (existingAttendance && existingAttendance._id.toString() !== _id) {
+    await Attendance.updateOne(
+      {
+        _id: existingAttendance._id,
+      },
+      {
+        $set: {
+          ...fields,
+          serverVersion,
+        },
+      }
+    );
+
+    const attendance = await Attendance.findById(existingAttendance._id).lean();
+
+    console.log("ATTENDANCE MERGED BY EMPLOYEE + DATE:", {
+      clientId: _id,
+      serverId: existingAttendance._id,
+      employeeId: fields.employeeId,
+      date: fields.date,
+      serverVersion,
+    });
+
+    return {
+      success: true,
+      _id: existingAttendance._id,
+      clientId: _id,
+      serverVersion,
+      attendance,
+      merged: true,
+    };
+  }
 
   await Attendance.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
-      $setOnInsert: { _id },
+      $set: {
+        ...fields,
+        serverVersion,
+      },
+      $setOnInsert: {
+        _id,
+      },
     },
     {
       upsert: true,
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} ATTENDANCE:`,
-    await Attendance.findById(data._id)
-  );
+  const attendance = await Attendance.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} ATTENDANCE:`, {
+    _id,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    attendance,
+    merged: false,
+  };
 }
 
-// ================= ATTENDANCE DAILY CHECK =================
+// ============================================================
+// ATTENDANCE DAILY CHECK
+// ============================================================
 
 export async function syncAttendanceDailyCheck(
   operation: SyncOperation,
   data: SyncData
 ) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("attendance_daily_check");
+
   await AttendanceDailyCheck.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
-      $setOnInsert: { _id },
+      $set: {
+        ...fields,
+        serverVersion,
+      },
+      $setOnInsert: {
+        _id,
+      },
     },
     {
       upsert: true,
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} ATTENDANCE DAILY CHECK:`,
-    await AttendanceDailyCheck.findById(data._id)
-  );
+  const attendanceDailyCheck = await AttendanceDailyCheck.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} ATTENDANCE DAILY CHECK:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    attendanceDailyCheck,
+  };
 }
 
-// ================= LEAVE =================
+// ============================================================
+// LEAVE
+// ============================================================
+
 export async function syncLeave(operation: SyncOperation, data: SyncData) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("leave");
 
   await Leave.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
-      $setOnInsert: { _id },
+      $set: {
+        ...fields,
+        serverVersion,
+      },
+      $setOnInsert: {
+        _id,
+      },
     },
     {
       upsert: true,
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} LEAVE:`,
-    await Leave.findById(data._id)
-  );
+  const leave = await Leave.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} LEAVE:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    leave,
+  };
 }
 
-// ================= TASK =================
+// ============================================================
+// TASK
+// ============================================================
 
 export async function syncTask(operation: SyncOperation, data: SyncData) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("task");
 
   await Task.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
-      $setOnInsert: { _id },
+      $set: {
+        ...fields,
+        serverVersion,
+      },
+      $setOnInsert: {
+        _id,
+      },
     },
     {
       upsert: true,
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} TASK:`,
-    await Task.findById(data._id)
-  );
+  const task = await Task.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} TASK:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    task,
+  };
 }
 
-// ================= TASK COMMENTS =================
+// ============================================================
+// TASK COMMENTS
+// ============================================================
+
 export async function syncTaskComment(
   operation: SyncOperation,
   data: SyncData
 ) {
+  if (!data._id) {
+    throw new Error("TASK COMMENT SYNC FAILED: MISSING _id");
+  }
+
+  if (!data.taskId) {
+    throw new Error(`TASK COMMENT ${data._id} SYNC FAILED: MISSING taskId`);
+  }
+
+  requireUpdatedAt(data);
+
   const task = await Task.findById(data.taskId);
 
   if (!task) {
@@ -178,7 +372,16 @@ export async function syncTaskComment(
 
   console.log("TASK COMMENT DATA:", data);
 
+  /*
+   * The comment gets its own server version.
+   */
+  const commentServerVersion = await getServerVersion("task_comment");
+
   switch (operation) {
+    // --------------------------------------------------------
+    // CREATE
+    // --------------------------------------------------------
+
     case "create": {
       const existingComment = task.comments.find(
         (comment) => comment._id === data._id
@@ -190,18 +393,51 @@ export async function syncTaskComment(
           taskId: data.taskId,
           author: data.author,
           comment: data.comment,
+
           createdAt: data.createdAt
             ? new Date(data.createdAt as string)
-            : new Date(),
-          updatedAt: data.updatedAt
-            ? new Date(data.updatedAt as string)
-            : new Date(),
+            : new Date(data.updatedAt as string),
+
+          /*
+           * IMPORTANT:
+           * Preserve the client's actual edit/create timestamp.
+           */
+          updatedAt: new Date(data.updatedAt as string),
+
+          serverVersion: commentServerVersion,
+
           isDeleted: data.isDeleted ?? 0,
         } as any);
+      } else {
+        /*
+         * The comment already exists.
+         *
+         * Do not blindly overwrite it if the existing local
+         * version is newer.
+         */
+        const existingUpdatedAt = existingComment.updatedAt
+          ? new Date(existingComment.updatedAt).getTime()
+          : 0;
+
+        const incomingUpdatedAt = new Date(data.updatedAt as string).getTime();
+
+        if (incomingUpdatedAt >= existingUpdatedAt) {
+          Object.assign(existingComment, {
+            author: data.author,
+            comment: data.comment,
+            isDeleted: data.isDeleted ?? existingComment.isDeleted ?? 0,
+            updatedAt: new Date(data.updatedAt as string),
+            serverVersion: commentServerVersion,
+          });
+        }
       }
 
       break;
     }
+
+    // --------------------------------------------------------
+    // UPDATE
+    // --------------------------------------------------------
 
     case "update": {
       const comment = task.comments.find((c) => c._id === data._id);
@@ -210,15 +446,36 @@ export async function syncTaskComment(
         throw new Error(`COMMENT ${data._id} NOT FOUND`);
       }
 
-      Object.assign(comment, {
-        ...data,
-        updatedAt: data.updatedAt
-          ? new Date(data.updatedAt as string)
-          : new Date(),
-      });
+      const existingUpdatedAt = comment.updatedAt
+        ? new Date(comment.updatedAt).getTime()
+        : 0;
+
+      const incomingUpdatedAt = new Date(data.updatedAt as string).getTime();
+
+      /*
+       * Only apply the incoming version if it is newer.
+       */
+      if (incomingUpdatedAt >= existingUpdatedAt) {
+        Object.assign(comment, {
+          comment: data.comment,
+          author: data.author,
+          isDeleted: data.isDeleted ?? comment.isDeleted ?? 0,
+
+          /*
+           * Preserve client timestamp.
+           */
+          updatedAt: new Date(data.updatedAt as string),
+
+          serverVersion: commentServerVersion,
+        });
+      }
 
       break;
     }
+
+    // --------------------------------------------------------
+    // DELETE
+    // --------------------------------------------------------
 
     case "delete": {
       const deletedComment = task.comments.find((c) => c._id === data._id);
@@ -227,16 +484,53 @@ export async function syncTaskComment(
         throw new Error(`COMMENT ${data._id} NOT FOUND`);
       }
 
-      deletedComment.isDeleted = 1;
-      deletedComment.updatedAt = new Date();
+      const existingUpdatedAt = deletedComment.updatedAt
+        ? new Date(deletedComment.updatedAt).getTime()
+        : 0;
+
+      const incomingUpdatedAt = new Date(data.updatedAt as string).getTime();
+
+      /*
+       * Only apply the delete if this delete represents a newer
+       * version of the comment.
+       */
+      if (incomingUpdatedAt >= existingUpdatedAt) {
+        deletedComment.isDeleted = 1;
+
+        /*
+         * Preserve the client's delete timestamp.
+         */
+        deletedComment.updatedAt = new Date(data.updatedAt as string);
+
+        (deletedComment as any).serverVersion = commentServerVersion;
+      }
 
       break;
     }
   }
 
-  task.updatedAt = data.updatedAt
-    ? new Date(data.updatedAt as string)
-    : new Date();
+  /*
+   * A task changed because one of its comments changed.
+   *
+   * Therefore the parent task receives a new serverVersion.
+   *
+   * IMPORTANT:
+   *
+   * We DO NOT do:
+   *
+   * task.updatedAt = new Date()
+   *
+   * because updatedAt represents the actual client-side
+   * modification timestamp.
+   *
+   * The comment itself has its own updatedAt.
+   *
+   * The parent task receives a new serverVersion because the
+   * server representation of the task has changed.
+   */
+  const taskServerVersion = await getServerVersion("task");
+
+  task.serverVersion = taskServerVersion;
 
   await task.save();
 
@@ -246,20 +540,44 @@ export async function syncTaskComment(
     (comment) => comment._id === data._id
   );
 
-  console.log("SYNCED TASK COMMENT:", savedComment);
+  console.log("SYNCED TASK COMMENT:", {
+    taskId: data.taskId,
+    commentId: data._id,
+    commentUpdatedAt: data.updatedAt,
+    commentServerVersion,
+    taskServerVersion,
+  });
+
+  return {
+    success: true,
+    taskId: data.taskId,
+    commentId: data._id,
+    commentServerVersion,
+    serverVersion: taskServerVersion,
+    comment: savedComment,
+  };
 }
 
-// ================= USER NOTES =================
+// ============================================================
+// USER NOTES / ADMIN USER
+// ============================================================
 
 export async function syncUserNotes(data: SyncData) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("admin_user");
 
   await AdminUser.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
+      $set: {
+        ...fields,
+        serverVersion,
+      },
       $setOnInsert: {
         _id,
       },
@@ -268,11 +586,27 @@ export async function syncUserNotes(data: SyncData) {
       upsert: true,
     }
   );
+
+  console.log("SYNCED USER NOTES:", {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+  };
 }
 
-// ================= EMPLOYEE PHOTO =================
+// ============================================================
+// EMPLOYEE PHOTO
+// ============================================================
 
 export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
+  requireUpdatedAt(data);
+
   const employee = await Employee.findById(data.employeeId);
 
   if (!employee) {
@@ -301,35 +635,71 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
     throw new Error(error.message);
   }
 
+  /*
+   * A photo change is an employee change.
+   *
+   * The employee's updatedAt comes from the client.
+   * The employee's serverVersion comes from the server.
+   */
+  const serverVersion = await getServerVersion("employee");
+
   Object.assign(employee, {
     photo_filename: data.photo_filename,
     photo_path: objectPath,
     photo_hash: data.photo_hash,
     photo_mime_type: data.photo_mime_type,
-    photo_last_modified: new Date(data.photo_last_modified),
+
+    photo_last_modified: data.photo_last_modified
+      ? new Date(data.photo_last_modified)
+      : new Date(data.updatedAt as string),
+
     photo_version: data.photo_version,
-    updatedAt: data.updatedAt,
+
+    /*
+     * IMPORTANT:
+     * Preserve client-side updatedAt.
+     */
+    updatedAt: new Date(data.updatedAt as string),
+
+    serverVersion,
   });
 
-  return employee.save();
+  await employee.save();
+
+  return {
+    success: true,
+    employeeId: employee._id,
+    serverVersion,
+    updatedAt: employee.updatedAt,
+  };
 }
 
-// ================= DOCUMENTS =================
+// ============================================================
+// EMPLOYEE DOCUMENTS
+// ============================================================
 
 export async function syncEmployeeDocument(
   operation: SyncOperation,
   data: SyncData,
   file?: UploadedFile
 ) {
+  requireUpdatedAt(data);
+
   const employee = await Employee.findById(data.employeeId);
 
   if (!employee) {
     throw new Error("EMPLOYEE NOT FOUND");
   }
 
+  const serverVersion = await getServerVersion("employee_document");
+
   switch (operation) {
+    // --------------------------------------------------------
+    // CREATE / UPDATE
+    // --------------------------------------------------------
+
     case "create":
-    case "update":
+    case "update": {
       if (!file) {
         throw new Error("DOCUMENT FILE MISSING");
       }
@@ -347,47 +717,102 @@ export async function syncEmployeeDocument(
         throw error;
       }
 
-      return EmployeesDocuments.updateOne(
+      const { _id, fields } = cleanSyncFields(data);
+
+      await EmployeesDocuments.updateOne(
         {
-          _id: data._id,
+          _id,
         },
         {
-          ...data,
-          storagePath: objectPath,
+          $set: {
+            ...fields,
+
+            storagePath: objectPath,
+
+            /*
+             * Preserve client-side entity timestamp.
+             */
+            updatedAt: new Date(data.updatedAt as string),
+
+            /*
+             * Server-owned version.
+             */
+            serverVersion,
+          },
+
+          $setOnInsert: {
+            _id,
+          },
         },
         {
           upsert: true,
         }
       );
 
-    case "delete":
+      return {
+        success: true,
+        _id,
+        serverVersion,
+        updatedAt: data.updatedAt,
+      };
+    }
+
+    // --------------------------------------------------------
+    // DELETE
+    // --------------------------------------------------------
+
+    case "delete": {
       await EmployeesDocuments.updateOne(
         {
           _id: data._id,
         },
         {
-          isDeleted: 1,
-          updatedAt: new Date(),
+          $set: {
+            isDeleted: 1,
+
+            /*
+             * Preserve client-side delete timestamp.
+             */
+            updatedAt: new Date(data.updatedAt as string),
+
+            serverVersion,
+          },
         }
       );
 
-      break;
+      return {
+        success: true,
+        _id: data._id,
+        serverVersion,
+        updatedAt: data.updatedAt,
+      };
+    }
   }
 }
 
-// ================= PAYROLL SETTINGS =================
+// ============================================================
+// PAYROLL SETTINGS
+// ============================================================
 
 export async function syncPayrollSettings(
   operation: SyncOperation,
   data: SyncData
 ) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("payroll_settings");
+
   await PayrollSettings.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
+      $set: {
+        ...fields,
+        serverVersion,
+      },
       $setOnInsert: {
         _id,
       },
@@ -397,24 +822,45 @@ export async function syncPayrollSettings(
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} PAYROLL SETTINGS:`,
-    await PayrollSettings.findById(data._id)
-  );
+  const settings = await PayrollSettings.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} PAYROLL SETTINGS:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    settings,
+  };
 }
 
-// ================= PAYROLL COMPONENT =================
+// ============================================================
+// PAYROLL COMPONENT
+// ============================================================
+
 export async function syncPayrollComponent(
   operation: SyncOperation,
   data: SyncData
 ) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("payroll_component");
+
   await PayrollComponent.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
+      $set: {
+        ...fields,
+        serverVersion,
+      },
       $setOnInsert: {
         _id,
       },
@@ -424,29 +870,49 @@ export async function syncPayrollComponent(
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} PAYROLL COMPONENT:`,
-    await PayrollComponent.findById(data._id)
-  );
+  const component = await PayrollComponent.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} PAYROLL COMPONENT:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    component,
+  };
 }
 
-// ================= PAYROLL PROFILE =================
+// ============================================================
+// PAYROLL PROFILE
+// ============================================================
+
 export async function syncPayrollProfile(
   operation: SyncOperation,
   data: SyncData
 ) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
 
   if (!_id) {
     throw new Error("PAYROLL PROFILE SYNC FAILED: MISSING _id");
   }
+
+  const serverVersion = await getServerVersion("payroll_profile");
 
   await EmployeePayrollProfile.updateOne(
     {
       _id,
     },
     {
-      $set: fields,
+      $set: {
+        ...fields,
+        serverVersion,
+      },
       $setOnInsert: {
         _id,
       },
@@ -462,20 +928,40 @@ export async function syncPayrollProfile(
     throw new Error(`PAYROLL PROFILE WAS NOT FOUND AFTER UPSERT: ${_id}`);
   }
 
-  console.log(`SYNCED ${operation.toUpperCase()} PAYROLL PROFILE:`, profile);
+  console.log(`SYNCED ${operation.toUpperCase()} PAYROLL PROFILE:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
 
-  return profile;
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    profile,
+  };
 }
 
-// Sync payroll run
+// ============================================================
+// PAYROLL RUN
+// ============================================================
+
 export async function syncPayrollRun(operation: SyncOperation, data: SyncData) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("payroll_run");
+
   await PayrollRun.updateOne(
     {
-      _id: data._id,
+      _id,
     },
     {
-      $set: fields,
+      $set: {
+        ...fields,
+        serverVersion,
+      },
       $setOnInsert: {
         _id,
       },
@@ -485,24 +971,45 @@ export async function syncPayrollRun(operation: SyncOperation, data: SyncData) {
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} PAYROLL RUN:`,
-    await PayrollRun.findById(data._id)
-  );
+  const payrollRun = await PayrollRun.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} PAYROLL RUN:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    payrollRun,
+  };
 }
 
-// Sync payroll result
+// ============================================================
+// PAYROLL RESULT
+// ============================================================
+
 export async function syncPayrollResult(
   operation: SyncOperation,
   data: SyncData
 ) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("payroll_result");
+
   await PayrollResult.updateOne(
     {
       _id,
     },
     {
-      $set: fields,
+      $set: {
+        ...fields,
+        serverVersion,
+      },
       $setOnInsert: {
         _id,
       },
@@ -512,24 +1019,45 @@ export async function syncPayrollResult(
     }
   );
 
-  console.log(
-    `SYNCED ${operation.toUpperCase()} PAYROLL RESULT:`,
-    await PayrollResult.findById(data._id)
-  );
+  const result = await PayrollResult.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} PAYROLL RESULT:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    result,
+  };
 }
 
-// Sync payroll item
+// ============================================================
+// PAYROLL ITEM
+// ============================================================
+
 export async function syncPayrollItem(
   operation: SyncOperation,
   data: SyncData
 ) {
-  const { _id, ...fields } = data;
+  requireUpdatedAt(data);
+
+  const { _id, fields } = cleanSyncFields(data);
+
+  const serverVersion = await getServerVersion("payroll_item");
+
   await PayrollItem.updateOne(
     {
       _id,
     },
     {
-      $set: fields,
+      $set: {
+        ...fields,
+        serverVersion,
+      },
       $setOnInsert: {
         _id,
       },
@@ -538,8 +1066,19 @@ export async function syncPayrollItem(
       upsert: true,
     }
   );
-  console.log(
-    `SYNCED ${operation.toUpperCase()} PAYROLL ITEM:`,
-    await PayrollItem.findById(data._id)
-  );
+
+  const item = await PayrollItem.findById(_id).lean();
+
+  console.log(`SYNCED ${operation.toUpperCase()} PAYROLL ITEM:`, {
+    _id,
+    updatedAt: data.updatedAt,
+    serverVersion,
+  });
+
+  return {
+    success: true,
+    _id,
+    serverVersion,
+    item,
+  };
 }

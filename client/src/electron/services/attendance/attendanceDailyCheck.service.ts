@@ -31,8 +31,9 @@ export async function verifyDailyAttendance(
 
   if (!check) {
     throw new Error(
-      `CANNOT VERIFY ATTENDANCE FOR ${input.date}. ` +
-        `ATTENDANCE DAILY CHECK DOES NOT EXIST.`
+      `Impossible de verifier la presence du  ${new Date(
+        input.date
+      ).toLocaleDateString("fr-FR")} `
     );
   }
 
@@ -44,15 +45,21 @@ export async function verifyDailyAttendance(
    */
   if (!check.markLeaveCompleted) {
     throw new Error(
-      `CANNOT VERIFY ATTENDANCE FOR ${input.date}. ` +
-        `EMPLOYEES ON LEAVE HAVE NOT BEEN PROCESSED.`
+      `Impossible de verifier la presence du  ${new Date(
+        input.date
+      ).toLocaleDateString(
+        "fr-FR"
+      )}.Les employes en conge n'ont pas ete enregistres.`
     );
   }
 
   if (!check.markAbsentCompleted) {
     throw new Error(
-      `CANNOT VERIFY ATTENDANCE FOR ${input.date}. ` +
-        `EMPLOYEES HAVE NOT YET BEEN MARKED ABSENT.`
+      `Impossible de verifier la presence du  ${new Date(
+        input.date
+      ).toLocaleDateString(
+        "fr-FR"
+      )}. Les employes absent n'ont pas encore ete enregistres. `
     );
   }
 

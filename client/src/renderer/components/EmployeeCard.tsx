@@ -81,11 +81,20 @@ function formatClockInTime(input: string): string | null {
   )}`;
 }
 
+const date = new Date();
+
+const formatter = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+const formattedDate = formatter.format(date);
+
 const EmployeeCard = ({ employee }: Props) => {
   const [attendance, setAttendance] = useState<Attendance | null>(null);
   const [_clockIn, setClockIn] = useState("");
   const [isClockingIn, setIsClockingIn] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(false);
   const [displayClock, setDisplayClock] = useState(true);
   const [showEditable, setShowEditable] = useState(false);
   const [loadingAttendance, setLoadingAttendance] = useState(true);
@@ -112,10 +121,14 @@ const EmployeeCard = ({ employee }: Props) => {
 
   const loadData = () => {
     window.electron.attendance
-      .getAttendanceRecord(employee._id, new Date().toISOString().split("T")[0])
+      .getAttendanceRecord(employee._id, formattedDate)
       .then((attendance) => {
         setAttendance(attendance);
-        console.log("ATTENDANCE FETCHED: ", attendance);
+        console.log(
+          `ATTENDANCE FETCHED FOR:${formattedDate}
+          `
+        );
+        console.log(attendance);
       })
       .catch((error) => {
         console.error("AN ERROR OCCURED WHILE FETCHING ATTENDANCE: ", error);
@@ -124,7 +137,6 @@ const EmployeeCard = ({ employee }: Props) => {
   };
 
   const handleToggleClockInEdit = () => {
-    setErrorMessage(false);
     if (isClockingIn) {
       setClockIn("");
       setShowEditable(false);
@@ -143,7 +155,6 @@ const EmployeeCard = ({ employee }: Props) => {
   const handleClockInSubmit = async () => {
     const formatted = formatClockInTime(_clockIn);
     if (!formatted) {
-      setErrorMessage(true);
       return;
     }
     const [hours, minutes] = formatted.split(":").map(Number);
@@ -398,7 +409,6 @@ const EmployeeCard = ({ employee }: Props) => {
                 pointerEvents={showEditable ? "auto" : "none"}
                 defaultValue={_clockIn}
                 onChange={(clockIn) => setClockIn(clockIn)}
-                onFocus={() => setErrorMessage(false)}
                 submitOnBlur={false}
                 onSubmit={handleClockInSubmit}
               >

@@ -14,6 +14,7 @@ export default interface Task {
   comments?: PopulatedTaskComment[];
   priority: Priority;
   deadline: string;
+  serverVersion: number;
   isResolved?: number;
   resolutionNotes?: string;
   resolvedAt?: string;

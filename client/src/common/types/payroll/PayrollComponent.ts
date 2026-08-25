@@ -30,6 +30,7 @@ export default interface PayrollComponent {
   requiresHRApproval?: number;
   enabled: number;
   isSystem: number;
+  serverVersion: number;
   synced: number;
   createdAt: string;
   updatedAt: string;

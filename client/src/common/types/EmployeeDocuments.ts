@@ -11,7 +11,7 @@ export interface EmployeeDocument {
   fileSize: number;
   localPath: string;
   hash: string;
-  version: number;
+  serverVersion: number;
   needsUpload: number;
   isDeleted: number;
   createdAt: string;
@@ -25,4 +25,5 @@ export interface UploadedEmployeeDocument {
   name: string;
   mimeType: string;
   buffer: Uint8Array;
+  serverVersion: number;
 }

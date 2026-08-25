@@ -18,7 +18,6 @@ import employee_documents from "./routes/employees_documents.route.js";
 import jobsRouter from "./routes/jobs.route.js";
 
 import seedPayrollComponents from "./seeds/payroll-component.seed.js";
-import migrateEmployeeSyncVersions from "./scripts/migrateEmployeeSyncVersion.js";
 
 const app = express();
 
@@ -168,25 +167,7 @@ async function startServer() {
 
     /*
      * ----------------------------------------------------------
-     * 3. MIGRATE EMPLOYEE SERVER VERSIONS
-     * ----------------------------------------------------------
-     *
-     */
-
-    console.log("");
-    console.log("========================================");
-    console.log("ABOUT TO MIGRATE EMPLOYEE SYNC VERSIONS");
-    console.log("========================================");
-
-    await migrateEmployeeSyncVersions();
-
-    console.log("");
-    console.log("EMPLOYEE SYNC VERSIONS INITIALIZED");
-    console.log("");
-
-    /*
-     * ----------------------------------------------------------
-     * 4. SEED PAYROLL COMPONENTS
+     * 3. SEED PAYROLL COMPONENTS
      * ----------------------------------------------------------
      *
      */
@@ -202,7 +183,7 @@ async function startServer() {
 
     /*
      * ----------------------------------------------------------
-     * 5. START CRON JOBS
+     * 4. START CRON JOBS
      * ----------------------------------------------------------
      
      */
@@ -216,7 +197,7 @@ async function startServer() {
 
     /*
      * ----------------------------------------------------------
-     * 6. START HTTP SERVER
+     * 5. START HTTP SERVER
      * ----------------------------------------------------------
      */
 

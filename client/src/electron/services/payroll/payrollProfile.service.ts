@@ -132,6 +132,7 @@ export async function addPayrollComponentToAllEmployees(
       isOverridden: 0,
       requiresHRApproval: component.requiresHRApproval,
       enabled: component.enabled,
+      serverVersion: component.serverVersion,
       synced: 0,
       isDeleted: 0,
       createdAt: new Date().toISOString(),

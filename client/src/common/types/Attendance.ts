@@ -2,12 +2,13 @@ export default interface Attendance {
   _id: string;
   employeeId: string;
   date: string;
-  clockIn?: string;
-  clockOut?: string;
-  status: "PONCTUEL" | "RETARD" | "ABSENT" | "CONGÉ";
+  clockIn?: string | null;
+  clockOut?: string | null;
+  status: "PONCTUEL" | "RETARD" | "ABSENT" | "CONGÉ" | null;
   source: "MANUAL" | "AUTO_CLIENT" | "AUTO_SERVER";
   lateMinutes?: number;
   notes?: string;
+  serverVersion?: number;
   createdAt?: string;
   updatedAt?: string;
   lastSyncedAt?: string;
@@ -26,6 +27,6 @@ export interface CreateAttendanceDto {
   employeeId: string;
   date: string;
   clockIn?: string;
-  clockOut?: string;
-  status?: string;
+  clockOut?: string | null;
+  status?: "PONCTUEL" | "RETARD" | "ABSENT" | "CONGÉ" | null;
 }

@@ -24,6 +24,7 @@ export interface AttendanceDailyCheck extends Document {
   managerNotifiedTo?: string | null;
   lockedAt?: Date | null;
   lockedBy?: string | null;
+  serverVersion: number;
   createdAt: Date;
   updatedAt: Date;
   synced: number;
@@ -117,6 +118,13 @@ const attendanceDailyCheckSchema = new Schema<AttendanceDailyCheck>({
   lockedBy: {
     type: String,
     default: null,
+  },
+
+  serverVersion: {
+    type: Number,
+    required: true,
+    default: 0,
+    index: true,
   },
 
   synced: {
