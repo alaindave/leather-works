@@ -372,9 +372,6 @@ export async function syncTaskComment(
 
   console.log("TASK COMMENT DATA:", data);
 
-  /*
-   * The comment gets its own server version.
-   */
   const commentServerVersion = await getServerVersion("task_comment");
 
   switch (operation) {
@@ -393,28 +390,12 @@ export async function syncTaskComment(
           taskId: data.taskId,
           author: data.author,
           comment: data.comment,
-
-          createdAt: data.createdAt
-            ? new Date(data.createdAt as string)
-            : new Date(data.updatedAt as string),
-
-          /*
-           * IMPORTANT:
-           * Preserve the client's actual edit/create timestamp.
-           */
-          updatedAt: new Date(data.updatedAt as string),
-
+          createdAt: new Date(data.createdAt).toISOString(),
+          updatedAt: data.updatedAt && new Date(data.updatedAt).toISOString(),
           serverVersion: commentServerVersion,
-
           isDeleted: data.isDeleted ?? 0,
         } as any);
       } else {
-        /*
-         * The comment already exists.
-         *
-         * Do not blindly overwrite it if the existing local
-         * version is newer.
-         */
         const existingUpdatedAt = existingComment.updatedAt
           ? new Date(existingComment.updatedAt).getTime()
           : 0;
@@ -426,7 +407,7 @@ export async function syncTaskComment(
             author: data.author,
             comment: data.comment,
             isDeleted: data.isDeleted ?? existingComment.isDeleted ?? 0,
-            updatedAt: new Date(data.updatedAt as string),
+            updatedAt: data.updatedAt && new Date(data.updatedAt).toISOString(),
             serverVersion: commentServerVersion,
           });
         }
@@ -460,12 +441,7 @@ export async function syncTaskComment(
           comment: data.comment,
           author: data.author,
           isDeleted: data.isDeleted ?? comment.isDeleted ?? 0,
-
-          /*
-           * Preserve client timestamp.
-           */
           updatedAt: new Date(data.updatedAt as string),
-
           serverVersion: commentServerVersion,
         });
       }

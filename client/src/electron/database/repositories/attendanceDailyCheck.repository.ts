@@ -162,6 +162,7 @@ export async function upsertAttendanceDailyCheck(
         SET
           date = ?,
           status = ?,
+          serverVersion=?,
           markAbsentCompleted = ?,
           markAbsentCompletedAt = ?,
           markLeaveCompleted = ?,
@@ -185,6 +186,7 @@ export async function upsertAttendanceDailyCheck(
       [
         dailyCheck.date,
         dailyCheck.status,
+        dailyCheck.serverVersion,
         dailyCheck.markAbsentCompleted ? 1 : 0,
         dailyCheck.markAbsentCompletedAt ?? null,
         dailyCheck.markLeaveCompleted ? 1 : 0,

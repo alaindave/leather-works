@@ -43,11 +43,14 @@ const TaskPage = () => {
 
   const loadTasks = async () => {
     try {
+      setLoading(true);
       const tasks = await window.electron.tasks.getUserTasks(user._id);
       console.log("FETCHED TASKS", tasks);
       setTasks(tasks);
     } catch (error) {
       console.log("AN ERROR OCCURED WHILE FETCHING LOADING TASKS:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,33 +62,6 @@ const TaskPage = () => {
       console.log("AN ERROR OCCURED WHILE FETCHING ADMIN USERS:", error);
     }
   };
-  //refresh tasks
-  const handleTaskRefresh = async () => {
-    try {
-      await loadTasks();
-    } catch (error) {
-      console.log("AN ERROR OCCURED WHILE FETCHING TASKS:", error);
-    }
-  };
-
-  const handleTaskSync = async () => {
-    try {
-      setLoading(true);
-      const result = await window.electron.sync();
-      if (result.success) {
-        console.log("SYNC COMPLETED");
-        loadTasks();
-      } else {
-        console.error(result.message);
-      }
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE SYNCING");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  console.log("search text", searchText);
 
   return (
     <Flex direction="column" width="100%">
@@ -110,7 +86,7 @@ const TaskPage = () => {
               position="relative"
               bottom="0.2rem"
               right="1rem"
-              onClick={handleTaskSync}
+              onClick={loadTasks}
             >
               <FaSyncAlt />
             </Button>
@@ -178,7 +154,7 @@ const TaskPage = () => {
       <TaskSubmissionModal
         isOpen={isCreateOpen}
         onClose={onCreateClose}
-        onRefresh={handleTaskRefresh}
+        onRefresh={loadTasks}
         adminUsersList={adminUsersList}
         author={user}
       />

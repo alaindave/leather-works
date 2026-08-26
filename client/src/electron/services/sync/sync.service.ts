@@ -1,8 +1,9 @@
-import { app } from "electron";
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow } from "electron";
 import { pushPendingChanges } from "./push.service.js";
 import { pullLatestChanges } from "./pull.service.js";
 import { NetworkService } from "./network.service.js";
+import { getUnsyncedItems } from "../../database/repositories/sync.repository.js";
+import { SyncStatusEvent } from "../../../common/types/sync.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -12,47 +13,179 @@ let syncing = false;
 
 export default async function sync() {
   console.log("SYNC SERVICE API URL:", API_URL);
-  if (syncing) return;
+
+  if (syncing) {
+    console.log("SYNC ALREADY IN PROGRESS. SKIPPING.");
+    return;
+  }
+
   syncing = true;
+
+  /*
+   * ---------------------------------------------------------
+   * SYNC STARTED
+   * ---------------------------------------------------------
+   */
+  notifyRenderer({
+    status: "SYNCING",
+    timestamp: new Date().toISOString(),
+  });
+
   try {
+    /*
+     * ---------------------------------------------------------
+     * CHECK BACKEND
+     * ---------------------------------------------------------
+     */
     const backendAvailable = await NetworkService.canReachBackend();
+
     if (!backendAvailable) {
-      console.log("BACKEND UNAVAILABLE.SYNC SKIPPED.");
+      console.log("BACKEND UNAVAILABLE. SYNC SKIPPED.");
+
+      const pendingChanges = await getPendingChangesCount();
+
+      notifyRenderer({
+        status: "OFFLINE",
+        timestamp: new Date().toISOString(),
+        pendingChanges,
+      });
+
       return;
     }
-    // PUSH
+
+    /*
+     * ---------------------------------------------------------
+     * PUSH PENDING CHANGES
+     * ---------------------------------------------------------
+     */
     try {
-      const result = await pushPendingChanges();
-      if (result) {
-        console.log("PUSH RESULTS: ", result.status);
-      }
-      console.log("NO MORE ITEMS TO PUSH");
+      const pushResult = await pushPendingChanges();
+      console.log("PUSH RESULTS:", pushResult);
     } catch (error) {
       console.error("PUSH FAILED:", error);
+      const pendingChanges = await getPendingChangesCount();
+
+      notifyRenderer({
+        status: "ERROR",
+        timestamp: new Date().toISOString(),
+        pendingChanges,
+        error: getErrorMessage(error),
+      });
+
+      return;
     }
 
-    // PULL
+    /*
+     * ---------------------------------------------------------
+     * GET CURRENT PENDING COUNT
+     * ---------------------------------------------------------
+     */
+    const pendingAfterPush = await getPendingChangesCount();
+
+    console.log("PENDING CHANGES AFTER PUSH:", pendingAfterPush);
+
+    /*
+     * ---------------------------------------------------------
+     * PULL
+     * ---------------------------------------------------------
+     */
     try {
       const result = await pullLatestChanges();
-      console.log("PULL RESULTS: ", result);
-      notifyRendererSyncCompleted();
+
+      console.log("PULL RESULTS:", result);
     } catch (error) {
       console.error("PULL FAILED:", error);
+
+      /*
+       * Even if pull fails, report the current SQLite queue
+       * count so the renderer has accurate pending information.
+       */
+      const pendingChanges = await getPendingChangesCount();
+
+      notifyRenderer({
+        status: "ERROR",
+        timestamp: new Date().toISOString(),
+        pendingChanges,
+        error: getErrorMessage(error),
+      });
+
+      return;
     }
+
+    /*
+     * ---------------------------------------------------------
+     * GET FINAL PENDING COUNT
+     * ---------------------------------------------------------
+   
+     */
+    const pendingChanges = await getPendingChangesCount();
+
+    console.log("FINAL PENDING CHANGES:", pendingChanges);
+
+    /*
+     * ---------------------------------------------------------
+     * SYNC COMPLETE
+     * ---------------------------------------------------------
+     */
+    notifyRenderer({
+      status: "IDLE",
+      timestamp: new Date().toISOString(),
+      pendingChanges,
+    });
   } catch (error) {
-    console.error("PUSH/PULL SYNC FAILED:", error);
+    console.error("SYNC FAILED:", error);
+
+    const pendingChanges = await getPendingChangesCount();
+
+    notifyRenderer({
+      status: "ERROR",
+      timestamp: new Date().toISOString(),
+      pendingChanges,
+      error: getErrorMessage(error),
+    });
   } finally {
     syncing = false;
   }
 }
 
-function notifyRendererSyncCompleted() {
-  console.log("NOTIFY RENDERER CALLED");
+/*
+ * ---------------------------------------------------------
+ * GET CURRENT PENDING CHANGES
+ * ---------------------------------------------------------
+ */
+async function getPendingChangesCount(): Promise<number> {
+  try {
+    const pending = await getUnsyncedItems();
+    return pending.length;
+  } catch (error) {
+    console.error("FAILED TO GET PENDING CHANGES:", error);
+    return 0;
+  }
+}
+
+/*
+ * ---------------------------------------------------------
+ * SEND SYNC EVENT TO RENDERER
+ * ---------------------------------------------------------
+ */
+function notifyRenderer(event: SyncStatusEvent) {
+  console.log("SYNC EVENT:", event);
+
   BrowserWindow.getAllWindows().forEach((window) => {
     if (!window.isDestroyed()) {
-      window.webContents.send("sync:completed", {
-        timestamp: new Date().toISOString(),
-      });
+      window.webContents.send("sync:status", event);
     }
   });
+}
+
+/*
+ * ---------------------------------------------------------
+ * ERROR MESSAGE
+ * ---------------------------------------------------------
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
 }

@@ -338,11 +338,13 @@ declare global {
 
       sync: () => Promise<{
         success: boolean;
-        message?: string;
+        message: string;
       }>;
 
-      onSyncCompleted: (
-        callback: (data: { timestamp: string }) => void
+      onSyncStatus: (callback: (event: SyncStatusEvent) => void) => () => void;
+
+      onPendingChanges: (
+        callback: (data: { pendingChanges: number; timestamp: string }) => void
       ) => () => void;
 
       notifications: {

@@ -7,7 +7,7 @@ type Leave = import("../common/types/Leave", { with: { "resolution-mode": "requi
 type Task = import("../common/types/Task", { with: { "resolution-mode": "require" } }).default;
 type EmployeeDocument=typeof import("../common/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
 type UploadedEmployeeDocument=typeof import("../common/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
-type CreatePayrollComponentDto = import("../common/types/payroll/CreatePayrollComponentDto", { with: { "resolution-mode": "require" } }).default;
+type CreatePayrollComponentDto = import("../common/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
 type CreatePayrollProfileDto = import("../common/types/payroll/CreatePayrollProfileDto", { with: { "resolution-mode": "require" } }).default;
 type PayrollComponent = import("../common/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
 type EmployeePayrollProfile = import("../common/types/payroll/PayrollEmployeeProfile", { with: { "resolution-mode": "require" } }).default;
@@ -16,6 +16,7 @@ type LockAttendanceDailyCheckInput = typeof import("../common/types/AttendanceDa
 type MarkManagerNotifiedInput =typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
 type VerifyAttendanceDailyCheckInput = typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
 type CreateAttendanceDto = typeof import("../common/types/Attendance", { with: { "resolution-mode": "require" } });
+type SyncStatusEvent = typeof import("../common/types/sync", { with: { "resolution-mode": "require" } });
 
 interface LoginCredentials {
   email: string;
@@ -28,7 +29,6 @@ interface SignUpCredentials {
   email: string;
   password: string;
 }
-
 
 console.log("PRELOAD LOADED!!!");
 
@@ -284,23 +284,45 @@ contextBridge.exposeInMainWorld("electron", {
 
   sync: () => ipcRenderer.invoke("sync:run"),
 
-
- onSyncCompleted: (
-  callback: (data: { timestamp: string }) => void
-) => {
-  const listener = (
-    _event: Electron.IpcRendererEvent,
-    data: { timestamp: string }
+   onSyncStatus: (
+    callback: (event: SyncStatusEvent) => void
   ) => {
-    callback(data);
-  };
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      data: SyncStatusEvent
+    ) => {
+      callback(data);
+    };
 
-  ipcRenderer.on("sync:completed", listener);
+    ipcRenderer.on("sync:status", listener);
 
-  return () => {
-    ipcRenderer.removeListener("sync:completed", listener);
-  };
-},
+    return () => {
+      ipcRenderer.removeListener("sync:status", listener);
+    };
+  },
+
+  onPendingChanges: (
+    callback: (data: {
+      pendingChanges: number;
+      timestamp: string;
+    }) => void
+  ) => {
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      data: {
+        pendingChanges: number;
+        timestamp: string;
+      }
+    ) => {
+      callback(data);
+    };
+
+    ipcRenderer.on("sync:pending-changes", listener);
+
+    return () => {
+      ipcRenderer.removeListener("sync:pending-changes", listener);
+    };
+  },
 
  payrollSettings: {
   get: () =>

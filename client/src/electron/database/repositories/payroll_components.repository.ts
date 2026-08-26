@@ -1,6 +1,7 @@
 import { all, get, run } from "../db.js";
-import PayrollComponent from "../../../common/types/payroll/PayrollComponent.js";
-import CreatePayrollComponentDto from "../../../common/types/payroll/CreatePayrollComponentDto.js";
+import PayrollComponent, {
+  CreatePayrollComponentDto,
+} from "../../../common/types/payroll/PayrollComponent.js";
 import { randomUUID } from "crypto";
 import { addToSyncQueue } from "./sync.repository.js";
 import {
@@ -46,10 +47,9 @@ export async function createPayrollComponent(
         createdAt,
         updatedAt,
         lastSyncedAt,
-        serverVersion,
         isDeleted
       )
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       `,
     [
       _id,
@@ -67,7 +67,6 @@ export async function createPayrollComponent(
       0,
       now,
       now,
-      null,
       null,
       0,
     ]

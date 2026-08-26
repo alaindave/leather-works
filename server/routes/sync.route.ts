@@ -366,13 +366,6 @@ router.post(
  * ============================================================
  * PULL SYNC
  * ============================================================
- *
- * ALL ENTITIES NOW USE:
- *
- *   afterVersion
- *
- * There is no updatedAt/since synchronization anymore.
- * ============================================================
  */
 
 router.get(

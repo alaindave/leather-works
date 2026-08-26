@@ -8,6 +8,7 @@ export function registerSyncIPC() {
       await sync();
       return {
         success: true,
+        message: "Sync success",
       };
     } catch (error) {
       console.error("SYNC IPC FAILED:", error);

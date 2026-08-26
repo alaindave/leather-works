@@ -19,7 +19,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import CreatePayrollComponentDto from "../../common/types/payroll/CreatePayrollComponentDto";
+import { CreatePayrollComponentDto } from "../../common/types/payroll/PayrollComponent";
 
 interface Props {
   type: "EARNING" | "DEDUCTION";
@@ -37,6 +37,9 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
     | "POURCENTAGE_BASE"
     | "POURCENTAGE_IMPOSABLE"
     | "MANUEL"
+    | "FORMULE_IPR"
+    | "FORMULE_ABSENCE"
+    | "FORMULE_RETARD"
   >("MANUEL");
 
   const [defaultValue, setDefaultValue] = useState(0);
@@ -147,14 +150,18 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
                         | "POURCENTAGE_BASE"
                         | "POURCENTAGE_IMPOSABLE"
                         | "MANUEL"
+                        | "FORMULE_IPR"
+                        | "FORMULE_ABSENCE"
+                        | "FORMULE_RETARD"
                     )
                   }
                 >
                   <option value="FIXE">Montant fixe</option>
-
                   <option value="POURCENTAGE">Pourcentage</option>
-
                   <option value="MANUEL">Manuel</option>
+                  <option value="FORMULE_IPR">FORMULE_IPR</option>
+                  <option value="FORMULE_ABSENCE">FORMULE_ABSENCE</option>
+                  <option value="FORMULE_RETARD">FORMULE_RETARD</option>
                 </Select>
               </FormControl>
 

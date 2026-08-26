@@ -253,9 +253,166 @@ export async function updateManyEmployeePayrollProfiles(
   }
 }
 
+/*
+ * ============================================================
+ * SYNC LOOKUPS
+ * ============================================================
+ *
+ * These functions intentionally DO NOT filter isDeleted.
+ *
+ * During a pull sync, a remotely deleted profile still needs
+ * to be found locally so that it can be updated as deleted
+ * instead of being inserted as a new record.
+ */
+
+/**
+ * Get a payroll employee profile by its exact _id.
+ *
+ * Used by sync/upsert logic.
+ */
+export async function getEmployeePayrollProfileById(
+  _id: string
+): Promise<PayrollEmployeeProfile | null> {
+  return await get<PayrollEmployeeProfile>(
+    `
+    SELECT *
+    FROM payroll_employee_profiles
+    WHERE _id = ?
+    `,
+    [_id]
+  );
+}
+
+/**
+ * Get a payroll employee profile using its business identity:
+ *
+ * employeeId + componentId
+ *
+ * This is necessary because a local profile and its remote
+ * counterpart may have different _ids.
+ */
+export async function getEmployeePayrollProfileByEmployeeAndComponent(
+  employeeId: string,
+  componentId: string
+): Promise<PayrollEmployeeProfile | null> {
+  return await get<PayrollEmployeeProfile>(
+    `
+    SELECT *
+    FROM payroll_employee_profiles
+    WHERE employeeId = ?
+      AND componentId = ?
+    LIMIT 1
+    `,
+    [employeeId, componentId]
+  );
+}
+
+/*
+ * ============================================================
+ * PULL SYNC UPSERT
+ * ============================================================
+ */
+
 export async function upsertEmployeePayrollProfile(
   profile: PayrollEmployeeProfile
 ) {
+  /*
+   * 1. First find the exact record by _id.
+   */
+  if (!profile._id) return;
+  let local = await getEmployeePayrollProfileById(profile._id);
+
+  /*
+   * 2. If the _id doesn't exist locally, find the existing
+   *    record using employeeId + componentId.
+   *
+   */
+  if (!local) {
+    local = await getEmployeePayrollProfileByEmployeeAndComponent(
+      profile.employeeId,
+      profile.componentId
+    );
+  }
+
+  /*
+   * 3. Existing local record.
+   */
+  if (local && local._id) {
+    const localVersion = Number(local.serverVersion ?? 0);
+    const remoteVersion = Number(profile.serverVersion ?? 0);
+
+    /*
+     * Never overwrite a newer local version with an older
+     * remote version.
+     */
+    if (remoteVersion < localVersion) {
+      console.log(
+        `SKIPPING REMOTE PAYROLL EMPLOYEE PROFILE. LOCAL VERSION IS NEWER: ${profile._id}`,
+        {
+          localId: local._id,
+          remoteId: profile._id,
+          localVersion,
+          remoteVersion,
+        }
+      );
+
+      return local;
+    }
+
+    await run(
+      `
+      UPDATE payroll_employee_profiles
+      SET
+        employeeId = ?,
+        componentId = ?,
+        name = ?,
+        displayName = ?,
+        displayOrder = ?,
+        type = ?,
+        calculationType = ?,
+        calculationBase = ?,
+        value = ?,
+        taxable = ?,
+        requiresHRApproval = ?,
+        enabled = ?,
+        isOverridden = ?,
+        synced = 1,
+        isDeleted = ?,
+        serverVersion = ?,
+        createdAt = ?,
+        updatedAt = ?,
+        lastSyncedAt = CURRENT_TIMESTAMP
+      WHERE _id = ?
+      `,
+      [
+        profile.employeeId,
+        profile.componentId,
+        profile.name,
+        profile.displayName,
+        profile.displayOrder,
+        profile.type,
+        profile.calculationType,
+        profile.calculationBase,
+        profile.value,
+        profile.taxable,
+        profile.requiresHRApproval,
+        profile.enabled,
+        profile.isOverridden ?? 0,
+        profile.isDeleted ?? 0,
+        profile.serverVersion ?? 0,
+        profile.createdAt,
+        profile.updatedAt,
+        local._id,
+      ]
+    );
+
+    return await getEmployeePayrollProfileById(local._id);
+  }
+
+  /*
+   * 4. No matching local record exists.
+   *
+   */
   await run(
     `
     INSERT INTO payroll_employee_profiles (
@@ -267,10 +424,12 @@ export async function upsertEmployeePayrollProfile(
       displayOrder,
       type,
       calculationType,
+      calculationBase,
       value,
       taxable,
       requiresHRApproval,
       enabled,
+      isOverridden,
       synced,
       isDeleted,
       serverVersion,
@@ -278,26 +437,7 @@ export async function upsertEmployeePayrollProfile(
       updatedAt,
       lastSyncedAt
     )
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-
-    ON CONFLICT(_id)
-    DO UPDATE SET
-      employeeId = excluded.employeeId,
-      componentId = excluded.componentId,
-      name = excluded.name,
-      displayName = excluded.displayName,
-      displayOrder = excluded.displayOrder,
-      type = excluded.type,
-      calculationType = excluded.calculationType,
-      value = excluded.value,
-      taxable = excluded.taxable,
-      requiresHRApproval = excluded.requiresHRApproval,
-      enabled = excluded.enabled,
-      synced = excluded.synced,
-      isDeleted = excluded.isDeleted,
-      serverVersion = excluded.serverVersion,
-      updatedAt = excluded.updatedAt,
-      lastSyncedAt = excluded.lastSyncedAt
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `,
     [
       profile._id,
@@ -308,18 +448,21 @@ export async function upsertEmployeePayrollProfile(
       profile.displayOrder,
       profile.type,
       profile.calculationType,
+      profile.calculationBase,
       profile.value,
       profile.taxable,
       profile.requiresHRApproval,
       profile.enabled,
-      profile.synced,
-      profile.isDeleted,
-      profile.serverVersion,
+      profile.isOverridden ?? 0,
+      1,
+      profile.isDeleted ?? 0,
+      profile.serverVersion ?? 0,
       profile.createdAt,
       profile.updatedAt,
-      profile.lastSyncedAt ?? null,
     ]
   );
+
+  return await getEmployeePayrollProfileById(profile._id);
 }
 
 export async function upsertManyEmployeePayrollProfiles(
@@ -502,10 +645,10 @@ export async function deleteEmployeePayrollProfile(_id: string) {
 
   const payroll_profile = await get<PayrollEmployeeProfile>(
     `
-    SELECT *
-    FROM payroll_employee_profiles
-    WHERE _id = ?
-    `,
+      SELECT *
+      FROM payroll_employee_profiles
+      WHERE _id = ?
+      `,
     [_id]
   );
 

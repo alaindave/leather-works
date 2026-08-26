@@ -3,6 +3,7 @@ export default interface TaskComment {
   taskId: string;
   author: string;
   comment: string;
+  serverVersion?: number;
   createdAt?: string;
   updatedAt?: string;
   synced?: number;

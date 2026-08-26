@@ -176,6 +176,18 @@ const EmployeeAttendancePage = () => {
     }
   };
 
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      await loadAttendance();
+      await loadDailyCheck();
+    } catch (error) {
+      console.error("AN ERROR OCCURED WHILE LOADING DATA:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const attendanceSync = async () => {
     try {
       setLoading(true);
@@ -187,6 +199,24 @@ const EmployeeAttendancePage = () => {
       await loadDailyCheck();
     } catch (error) {
       console.error("AN ERROR OCCURED WHILE SYNCING ATTENDANCE:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const attendanceDailyCheckSync = async () => {
+    try {
+      setLoading(true);
+      const result = await window.electron.sync();
+      if (!result.success) {
+        console.error(result.message);
+      }
+      await loadDailyCheck();
+    } catch (error) {
+      console.error(
+        "AN ERROR OCCURED WHILE SYNCING ATTENDANCE DAILY CHECK:",
+        error
+      );
     } finally {
       setLoading(false);
     }
@@ -215,10 +245,7 @@ const EmployeeAttendancePage = () => {
         selectedDate
       );
       console.log("ABSENCES CREATED", absences);
-      window.electron.sync().catch((error) => {
-        console.error("IMMEDIATE SYNC FAILED:", error);
-      });
-      await loadDailyCheck();
+      await attendanceSync();
       toast({
         title: "Absences enregistrés",
         description: "Les absences ont été enregistrés avec succès.",
@@ -249,10 +276,6 @@ const EmployeeAttendancePage = () => {
 
       console.log("VERIFIED ATTENDANCES", result);
 
-      window.electron.sync().catch((error) => {
-        console.error("IMMEDIATE SYNC FAILED:", error);
-      });
-      await loadDailyCheck();
       toast({
         title: "Présence vérifiée",
         description: "La liste de présence a été vérifiée avec succès.",
@@ -261,6 +284,7 @@ const EmployeeAttendancePage = () => {
         isClosable: true,
         position: "top-left",
       });
+      await attendanceDailyCheckSync();
     } catch (error) {
       showActionError(
         "Échec de la vérification",
@@ -281,10 +305,6 @@ const EmployeeAttendancePage = () => {
       });
       console.log("NOTIFIED MANAGER ATTENDANCES", result);
 
-      window.electron.sync().catch((error) => {
-        console.error("IMMEDIATE SYNC FAILED:", error);
-      });
-      await loadDailyCheck();
       toast({
         title: "Manager notifié",
         description:
@@ -294,6 +314,7 @@ const EmployeeAttendancePage = () => {
         isClosable: true,
         position: "top-left",
       });
+      await attendanceDailyCheckSync();
     } catch (error) {
       showActionError(
         "Échec de la notification",
@@ -314,13 +335,8 @@ const EmployeeAttendancePage = () => {
         lockedBy: user._id,
         lockedByRole: user.role,
       });
-
       console.log("LOCKED ATTENDANCE", result);
-
-      window.electron.sync().catch((error) => {
-        console.error("IMMEDIATE SYNC FAILED:", error);
-      });
-      await loadDailyCheck();
+      await attendanceDailyCheckSync();
       toast({
         title: "Présence confirmée",
         description: "La liste de présence a été confirmée et verrouillée.",
@@ -339,17 +355,6 @@ const EmployeeAttendancePage = () => {
       setCheckLoading(false);
     }
   };
-
-  // const handleExport = async () => {
-  //   const csv = attendances
-  //     .map(
-  //       (a) =>
-  //         `${a.firstName} ${a.lastName},${a.matricule},${a.clockIn},${a.date}`
-  //     )
-  //     .join("\n");
-
-  //   await window.electron.file.save(csv);
-  // };
 
   const getAttendanceAction = () => {
     if (!canVerify) {
@@ -483,7 +488,7 @@ const EmployeeAttendancePage = () => {
                 position="relative"
                 bottom="0.2rem"
                 right="1rem"
-                onClick={attendanceSync}
+                onClick={loadData}
                 isLoading={loading}
               >
                 <FaSyncAlt />

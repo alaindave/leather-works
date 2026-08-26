@@ -9,6 +9,7 @@ export interface AttendanceDailyCheck {
   _id: string;
   date: string;
   status: AttendanceDailyCheckStatus;
+  serverVersion: number;
   markAbsentCompleted: number | null;
   markAbsentCompletedAt: string | null;
   markLeaveCompleted: number | null;

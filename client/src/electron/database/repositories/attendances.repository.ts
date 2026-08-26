@@ -532,11 +532,6 @@ export async function getAttendanceRecord(
   employeeId: string,
   date: string
 ): Promise<Attendance | null> {
-  console.log("GET ATTENDANCE RECORD:", {
-    employeeId,
-    date,
-  });
-
   const attendance = await get<Attendance>(
     `
     SELECT *

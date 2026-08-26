@@ -197,26 +197,6 @@ const EmployeeAdminPage = () => {
     };
   }, [notes]);
 
-  const handleDataSync = async () => {
-    try {
-      setLoading(true);
-
-      console.log("STARTING DATA SYNC...");
-
-      const result = await window.electron.sync();
-
-      if (result.success) {
-        console.log("SYNC COMPLETED SUCCESSFULLY");
-      } else {
-        console.error("SYNC FAILED:", result.message);
-      }
-    } catch (error) {
-      console.error("SYNC ERROR:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleTaskRefresh = async () => {
     try {
       console.log("MANUALLY REFRESHING TASKS...");
@@ -309,22 +289,6 @@ const EmployeeAdminPage = () => {
             >
               Tableau de bord
             </Text>
-
-            <Button
-              bg="transparent"
-              isLoading={loading}
-              color="gray.800"
-              _hover={{
-                bg: "transparent",
-              }}
-              fontSize="1rem"
-              position="relative"
-              bottom="0.5rem"
-              right="1rem"
-              onClick={handleDataSync}
-            >
-              <FaSyncAlt />
-            </Button>
           </HStack>
 
           <Text

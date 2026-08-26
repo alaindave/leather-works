@@ -31,12 +31,13 @@ import { checkOnline } from "../services/connectivity_check.service";
 import { useEffect, useState } from "react";
 import useTaskStore from "../../store/task.store";
 import useSyncStore from "../../store/sync.store";
+import SyncStatus from "./SyncStatus";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const setLogOut = useAdminUser((store) => store.logout);
   const clearTasks = useTaskStore((store) => store.clearTasks);
-  const lastSyncAt = useSyncStore((store) => store.lastSyncAt);
+  const status = useSyncStore((state) => state.status);
 
   const navigate = useNavigate();
   const [online, setOnline] = useState<boolean>(false);
@@ -67,6 +68,8 @@ const EmployeeNavBar = () => {
       console.error("An error occured while logging out:", error);
     }
   };
+
+  console.log("SYNC STORE:", useSyncStore.getState());
 
   return (
     <Flex
@@ -286,7 +289,7 @@ const EmployeeNavBar = () => {
           Afritan-Gestion de personnel
         </Text>
         <HStack>
-          <Text color="gray.700" fontWeight="600" mt="0.4rem">
+          {/* <Text color="gray.700" fontWeight="600" mt="0.4rem">
             Dernière synchronisation:{" "}
           </Text>
 
@@ -297,24 +300,13 @@ const EmployeeNavBar = () => {
                   minute: "2-digit",
                 })
               : "-"}
-          </Text>
+          </Text> */}
+          <SyncStatus onSync={async () => await window.electron.sync()} />
         </HStack>
 
-        <HStack mt="0.3rem" mr="2rem" fontSize="1rem" color="gray.600">
-          <Text color="gray.800">Version 1.0.0</Text>
-          <Divider orientation="vertical" h="1.3rem" borderColor="gray.500" />
-          <HStack>
-            <Box
-              color="green.600"
-              position="relative"
-              left="0.4rem"
-              bottom="0.4rem"
-            >
-              <GoDotFill size="1.3rem" />
-            </Box>
-            <Text color="gray.800">{online ? "Connecté" : "Deconnecté"}</Text>
-          </HStack>
-        </HStack>
+        <Text mt="0.4rem" mr="2rem" color="gray.800">
+          Version 1.0.0
+        </Text>
       </Flex>
     </Flex>
   );

@@ -30,12 +30,24 @@ const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
   : process.env.VITE_API_URL;
 
-export async function pushPendingChanges() {
+interface PushPendingChangesResult {
+  pendingChanges: number;
+  syncedCount: number;
+}
+
+export async function pushPendingChanges(): Promise<PushPendingChangesResult> {
   console.log("PUSH SERVICE API URL:", API_URL);
 
   const pending = await getUnsyncedItems();
 
-  if (!pending.length) return;
+  if (!pending.length) {
+    console.log("NO PENDING CHANGES TO PUSH.");
+
+    return {
+      pendingChanges: 0,
+      syncedCount: 0,
+    };
+  }
 
   console.log("ITEMS TO PUSH SYNC:", pending);
 
@@ -48,10 +60,16 @@ export async function pushPendingChanges() {
     data: JSON.parse(item.payload),
   }));
 
-  // Sync metadata
+  // ---------------------------------------------------------
+  // SYNC METADATA
+  // ---------------------------------------------------------
+
   form.append("items", JSON.stringify(items));
 
-  // Attach files (photos + documents)
+  // ---------------------------------------------------------
+  // ATTACH FILES
+  // ---------------------------------------------------------
+
   for (const item of pending) {
     const data = JSON.parse(item.payload);
 
@@ -98,12 +116,24 @@ export async function pushPendingChanges() {
 
   console.log("SYNC PUSH RESULT:", response.status);
 
-  // Mark sync queue items as synced
-  await markManySynced(response.data.synced);
+  const syncedIds: string[] = response.data.synced ?? [];
 
-  // Mark local entities as synced
+  // ---------------------------------------------------------
+  // MARK SYNC QUEUE ITEMS AS SYNCED
+  // ---------------------------------------------------------
+
+  if (syncedIds.length > 0) {
+    await markManySynced(syncedIds);
+  }
+
+  // ---------------------------------------------------------
+  // MARK LOCAL ENTITIES AS SYNCED
+  // ---------------------------------------------------------
+
   for (const item of pending) {
-    if (!response.data.synced.includes(item._id)) continue;
+    if (!syncedIds.includes(item._id)) {
+      continue;
+    }
 
     const data = JSON.parse(item.payload);
 
@@ -166,5 +196,24 @@ export async function pushPendingChanges() {
     }
   }
 
-  return response;
+  // ---------------------------------------------------------
+  // CHECK WHAT IS STILL PENDING
+  // ---------------------------------------------------------
+
+  const remainingPending = await getUnsyncedItems();
+
+  const pendingChanges = remainingPending.length;
+
+  console.log(
+    "PUSH COMPLETE:",
+    syncedIds.length,
+    "SYNCED;",
+    pendingChanges,
+    "STILL PENDING."
+  );
+
+  return {
+    pendingChanges,
+    syncedCount: syncedIds.length,
+  };
 }

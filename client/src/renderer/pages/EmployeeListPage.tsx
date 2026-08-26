@@ -50,21 +50,6 @@ const EmployeeListPage = () => {
     }
   };
 
-  const handleEmployeeSync = async () => {
-    try {
-      setLoading(true);
-      const result = await window.electron.sync();
-      if (result.success) {
-        console.log("SYNC COMPLETED");
-        loadEmployees();
-      } else {
-        console.error(result.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAddEmployee = (employee: Employee) => {
     setEmployees([...employees, employee]);
   };
@@ -101,7 +86,7 @@ const EmployeeListPage = () => {
                 position="relative"
                 bottom="0.2rem"
                 right="1rem"
-                onClick={handleEmployeeSync}
+                onClick={loadEmployees}
               >
                 <FaSyncAlt />
               </Button>

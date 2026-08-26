@@ -101,22 +101,6 @@ const EmployeeLeavePage = () => {
     }
   };
 
-  //Leave sync and refresh
-  const handleLeaveSync = async () => {
-    try {
-      setLoading(true);
-      const result = await window.electron.sync();
-      if (result.success) {
-        console.log("SYNC COMPLETED");
-        loadLeaves();
-      } else {
-        console.error(result.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   //Submit leave delete request
   const handleLeaveDelete = async () => {
     console.log("LEAVE TO DELETE: ", leave);
@@ -251,7 +235,7 @@ const EmployeeLeavePage = () => {
                 position="relative"
                 bottom="0.2rem"
                 right="1rem"
-                onClick={handleLeaveSync}
+                onClick={loadLeaves}
               >
                 <FaSyncAlt />
               </Button>

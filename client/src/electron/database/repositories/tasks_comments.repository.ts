@@ -150,16 +150,18 @@ export async function upsertTaskComment(comment: PopulatedTaskComment) {
       taskId,
       author,
       comment,
+      serverVersion,
       createdAt,
       updatedAt,
       isDeleted
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    VALUES (?,?,?,?,?,?,?,?)
 
     ON CONFLICT(_id)
     DO UPDATE SET
       author = excluded.author,
       comment = excluded.comment,
+      serverVersion = excluded.serverVersion,
       updatedAt = excluded.updatedAt,
       isDeleted = excluded.isDeleted
     `,
@@ -168,6 +170,7 @@ export async function upsertTaskComment(comment: PopulatedTaskComment) {
       comment.taskId,
       comment.author,
       comment.comment,
+      comment.serverVersion,
       comment.createdAt,
       comment.updatedAt,
       comment.isDeleted,

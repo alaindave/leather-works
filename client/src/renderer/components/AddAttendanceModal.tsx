@@ -90,7 +90,7 @@ const AddAttendanceModal = ({
     setEmployeeId("");
     setAttendanceType("PRESENT");
     setClockIn("08:00");
-    setClockOut("17:00");
+    setClockOut("16:30");
   };
 
   const handleClose = () => {
@@ -257,11 +257,28 @@ const AddAttendanceModal = ({
         return;
       }
 
+      const [clockInhours, clockInMinutes] = clockIn.split(":");
+      const clockInDate = new Date(date);
+      clockInDate.setHours(
+        parseInt(clockInhours),
+        parseInt(clockInMinutes),
+        0,
+        0
+      );
+      const [clockOutHours, clockOutMinutes] = clockOut.split(":");
+      const clockOutDate = new Date(date);
+      clockOutDate.setHours(
+        parseInt(clockOutHours),
+        parseInt(clockOutMinutes),
+        0,
+        0
+      );
+
       await window.electron.attendance.create({
         employeeId,
         date,
-        clockIn,
-        clockOut,
+        clockIn: clockInDate.toISOString(),
+        clockOut: clockOutDate.toISOString(),
         status: "PRESENT",
       });
 
