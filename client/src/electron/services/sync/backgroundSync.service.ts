@@ -37,6 +37,10 @@ export function stopBackgroundSync() {
 async function runBackgroundSync() {
   if (syncing) {
     console.log("SYNC ALREADY IN PROGRESS. SKIPPING...");
+    notifyRenderer({
+      status: "SYNCING",
+      timestamp: new Date().toISOString(),
+    });
     return;
   }
 
@@ -78,7 +82,7 @@ async function runBackgroundSync() {
  * Notify all renderer windows about the current sync state.
  */
 function notifyRenderer(event: {
-  status: "OFFLINE" | "ERROR";
+  status: "SYNCING" | "OFFLINE" | "ERROR";
   timestamp: string;
   error?: string;
 }) {

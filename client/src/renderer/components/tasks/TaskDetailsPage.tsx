@@ -315,10 +315,6 @@ export default function TaskDetailsPage() {
             ================================================== */}
 
             <VStack>
-              {/* <Text fontSize="1.1rem" fontWeight="600" color="gray.500" mb={2}>
-                Sujet
-              </Text> */}
-
               <Text
                 fontSize="1.2rem"
                 fontWeight="600"
@@ -345,50 +341,54 @@ export default function TaskDetailsPage() {
             ================================================== */}
 
             {task?.isResolved && (
-              <Box
+              <Flex
+                direction="column"
                 bg="green.50"
                 border="1px solid"
                 borderColor="green.200"
                 borderRadius="lg"
                 p={4}
               >
-                <HStack spacing={3} mb={3}>
-                  <Icon as={FiCheckCircle} color="green.500" boxSize={5} />
-
-                  <Text
-                    position="relative"
-                    top="0.5rem"
-                    fontWeight="600"
-                    color="green.700"
-                  >
-                    Tâche résolue
-                  </Text>
-                </HStack>
-
-                {task.resolvedAt && (
-                  <Text
-                    position="relative"
-                    left="2rem"
-                    bottom="0.8rem"
-                    fontSize="sm"
-                    color="gray.600"
-                  >
-                    Résolue le{" "}
-                    {new Date(task.resolvedAt).toLocaleString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </Text>
-                )}
-
-                {task.resolvedBy && (
-                  <Text fontSize="md" color="gray.600" mt={1}>
-                    Par {task.resolvedBy}
-                  </Text>
-                )}
+                <Flex justify="space-between">
+                  <Box mb={3}>
+                    <HStack>
+                      {" "}
+                      <Icon as={FiCheckCircle} color="green.500" boxSize={5} />
+                      <Text
+                        position="relative"
+                        top="0.5rem"
+                        fontWeight="600"
+                        color="green.700"
+                      >
+                        Tâche résolue
+                      </Text>
+                    </HStack>
+                    {task.resolvedAt && (
+                      <Text
+                        position="relative"
+                        left="2rem"
+                        bottom="0.8rem"
+                        fontSize="sm"
+                        color="gray.600"
+                      >
+                        {new Date(task.resolvedAt).toLocaleDateString("fr-FR")}{" "}
+                        {"à"}{" "}
+                        {new Date(task.resolvedAt).toLocaleString("fr-FR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Text>
+                    )}
+                  </Box>
+                  {task.resolvedBy && (
+                    <Text fontSize="md" color="gray.600" mt={1}>
+                      {task.resolvedBy}
+                    </Text>
+                  )}
+                </Flex>
 
                 {task.resolutionNotes && (
-                  <Box mt={3}>
+                  <Box position="relative" left="20rem" bottom="2rem">
                     <Text
                       fontSize="md"
                       fontWeight="600"
@@ -403,7 +403,7 @@ export default function TaskDetailsPage() {
                     </Text>
                   </Box>
                 )}
-              </Box>
+              </Flex>
             )}
 
             {/* =================================================
@@ -436,7 +436,7 @@ export default function TaskDetailsPage() {
                         />
 
                         <Box flex={1}>
-                          <HStack spacing={2} align="baseline">
+                          <VStack spacing={2} align="baseline">
                             <Text
                               fontSize="md"
                               fontWeight="600"
@@ -448,21 +448,30 @@ export default function TaskDetailsPage() {
                             </Text>
 
                             {comment.createdAt && (
-                              <Text fontSize="sm" color="gray.400">
+                              <Text
+                                position="relative"
+                                bottom="1.5rem"
+                                fontSize="sm"
+                                color="gray.400"
+                              >
+                                {new Date(comment.createdAt).toLocaleDateString(
+                                  "fr-FR"
+                                )}{" "}
+                                {"à"}{" "}
                                 {new Date(comment.createdAt).toLocaleString(
                                   "fr-FR",
                                   {
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                    timeZone: "Africa/Bujumbura",
                                   }
                                 )}
                               </Text>
                             )}
-                          </HStack>
+                          </VStack>
 
                           <Text
-                            mt={1}
+                            position="relative"
+                            bottom="1.5rem"
                             fontSize="md"
                             color="gray.700"
                             whiteSpace="pre-wrap"

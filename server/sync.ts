@@ -18,10 +18,7 @@ export type SyncOperation = "create" | "update" | "delete";
 
 interface SyncData {
   _id: string;
-  serverVersion?: number;
-  updatedAt?: Date | string;
-  lastSyncedAt?: Date | string;
-  synced?: number | boolean;
+  serverVersion: number;
   [key: string]: any;
 }
 
@@ -307,8 +304,10 @@ export async function syncLeave(operation: SyncOperation, data: SyncData) {
 
 export async function syncTask(operation: SyncOperation, data: SyncData) {
   requireUpdatedAt(data);
-
   const { _id, fields } = cleanSyncFields(data);
+  console.log("FIELDS BEFORE", fields);
+  delete fields.comments;
+  console.log("FIELDS AFTER", fields);
 
   const serverVersion = await getServerVersion("task");
 
@@ -321,12 +320,14 @@ export async function syncTask(operation: SyncOperation, data: SyncData) {
         ...fields,
         serverVersion,
       },
+
       $setOnInsert: {
         _id,
       },
     },
     {
       upsert: true,
+      timestamps: false,
     }
   );
 
@@ -334,7 +335,6 @@ export async function syncTask(operation: SyncOperation, data: SyncData) {
 
   console.log(`SYNCED ${operation.toUpperCase()} TASK:`, {
     _id,
-    updatedAt: data.updatedAt,
     serverVersion,
   });
 
@@ -342,6 +342,7 @@ export async function syncTask(operation: SyncOperation, data: SyncData) {
     success: true,
     _id,
     serverVersion,
+    updatedAt: task?.updatedAt,
     task,
   };
 }
@@ -391,7 +392,7 @@ export async function syncTaskComment(
           author: data.author,
           comment: data.comment,
           createdAt: new Date(data.createdAt).toISOString(),
-          updatedAt: data.updatedAt && new Date(data.updatedAt).toISOString(),
+          updatedAt: new Date(data.updatedAt).toISOString(),
           serverVersion: commentServerVersion,
           isDeleted: data.isDeleted ?? 0,
         } as any);
@@ -407,7 +408,7 @@ export async function syncTaskComment(
             author: data.author,
             comment: data.comment,
             isDeleted: data.isDeleted ?? existingComment.isDeleted ?? 0,
-            updatedAt: data.updatedAt && new Date(data.updatedAt).toISOString(),
+            updatedAt: new Date(data.updatedAt).toISOString(),
             serverVersion: commentServerVersion,
           });
         }
@@ -485,25 +486,6 @@ export async function syncTaskComment(
     }
   }
 
-  /*
-   * A task changed because one of its comments changed.
-   *
-   * Therefore the parent task receives a new serverVersion.
-   *
-   * IMPORTANT:
-   *
-   * We DO NOT do:
-   *
-   * task.updatedAt = new Date()
-   *
-   * because updatedAt represents the actual client-side
-   * modification timestamp.
-   *
-   * The comment itself has its own updatedAt.
-   *
-   * The parent task receives a new serverVersion because the
-   * server representation of the task has changed.
-   */
   const taskServerVersion = await getServerVersion("task");
 
   task.serverVersion = taskServerVersion;

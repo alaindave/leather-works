@@ -16,6 +16,10 @@ export default async function sync() {
 
   if (syncing) {
     console.log("SYNC ALREADY IN PROGRESS. SKIPPING.");
+    notifyRenderer({
+      status: "SYNCING",
+      timestamp: new Date().toISOString(),
+    });
     return;
   }
 

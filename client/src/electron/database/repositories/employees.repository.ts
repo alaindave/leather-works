@@ -4,15 +4,12 @@ import Employee from "../../../common/types/Employee.js";
 import { addToSyncQueue } from "./sync.repository.js";
 import { initializeEmployeePayrollProfilesForEmployee } from "../../services/payroll/payrollProfile.service.js";
 
-/**
+/*
+ *
  * ============================================================
  * CREATE EMPLOYEE
  * ============================================================
  *
- * Locally-created employees start with serverVersion = 0.
- *
- * The server will assign the real serverVersion when the
- * employee is pushed to the backend.
  */
 export async function createEmployee(
   employee: Omit<
@@ -58,7 +55,7 @@ export async function createEmployee(
       isDeleted
     )
     VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
       ?,?,?,?,0,0
     )
     `,

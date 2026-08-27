@@ -128,11 +128,6 @@ export async function createTask(task: Task) {
 
 /**
  * Update task locally.
- *
- * Important:
- * serverVersion is intentionally NOT changed here.
- * The server assigns the next serverVersion when the change
- * is accepted by the backend.
  */
 export async function updateTask(task: Task) {
   const updatedAt = new Date().toISOString();

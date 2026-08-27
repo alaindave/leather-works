@@ -137,9 +137,7 @@ const EmployeeAdminPage = () => {
 
     try {
       console.log("LOADING TOP TASKS FOR USER:", user._id);
-
       await loadTopTasks(user._id);
-
       console.log("TOP TASKS LOADED SUCCESSFULLY");
     } catch (error) {
       console.error("AN ERROR OCCURRED WHILE FETCHING TASKS:", error);

@@ -262,17 +262,6 @@ const SyncStatus = ({ onSync }: SyncStatusProps) => {
                 {formatLastSync()}
               </Text>
             </HStack>
-
-            {/* SYNC BUTTON */}
-            {/* <Button
-              width="100%"
-              colorScheme="blue"
-              leftIcon={isSyncing ? <Spinner size="sm" /> : <FiRefreshCw />}
-              onClick={handleSync}
-              isDisabled={isSyncing || !onSync}
-            >
-              {isSyncing ? "Synchronisation..." : "Synchroniser maintenant"}
-            </Button> */}
           </VStack>
         </PopoverBody>
       </PopoverContent>
