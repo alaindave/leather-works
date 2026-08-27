@@ -91,7 +91,7 @@ import {
   upsertAttendanceDailyCheck,
 } from "../../database/repositories/attendanceDailyCheck.repository.js";
 
-import { get } from "../../database/db.js";
+import { all, get } from "../../database/db.js";
 
 import {
   getSyncState,
@@ -334,16 +334,14 @@ export async function pullLatestChanges() {
      *
      * IMPORTANT:
      *
-     * Do NOT only sync photos from `employees`.
+     * Photo synchronization is deliberately NOT based only on
+     * employees returned by this pull.
      *
-     * `employees` contains only employees returned by the
-     * current version pull.
+     * An employee may already have the latest serverVersion and
+     * therefore not appear in the current version pull, while
+     * their photo could still be missing locally.
      *
-     * An employee whose record has not changed may still have
-     * a missing photo locally.
-     *
-     * Therefore photo sync performs its own reconciliation
-     * against the complete local employee list.
+     * Therefore we reconcile photos against EVERY local employee.
      * ========================================================
      */
 
@@ -412,11 +410,8 @@ export async function pullLatestChanges() {
      *
      * lastSync is NOT updated here.
      *
-     * If synchronization fails, the previous lastSync
-     * remains intact.
-     *
-     * Individual entity cursors are also only advanced
-     * after successful batches.
+     * Individual entity cursors are only advanced after the
+     * corresponding batch has successfully completed.
      */
 
     console.error("PULL SYNC FAILED:", error);
@@ -448,7 +443,7 @@ async function pullEntityByVersion<T>(
 
   while (hasMore) {
     console.log(
-      `PULLING ${entity.toUpperCase()} ` + `AFTER VERSION ${afterVersion}`
+      `PULLING ${entity.toUpperCase()} AFTER VERSION ${afterVersion}`
     );
 
     const response = await axios.get<VersionPullResponse<T>>(
@@ -482,6 +477,11 @@ async function pullEntityByVersion<T>(
       serverTime,
     });
 
+    /*
+     * No records means there is nothing else to pull.
+     *
+     * Do not attempt to advance the cursor.
+     */
     if (batch.length === 0) {
       break;
     }
@@ -512,6 +512,9 @@ async function pullEntityByVersion<T>(
       );
     }
 
+    /*
+     * Advance the cursor ONLY after the entire batch succeeded.
+     */
     await updateLastPulledVersion(entity, newVersion);
 
     afterVersion = newVersion;
@@ -542,11 +545,12 @@ async function pullEntityByVersion<T>(
 async function syncEmployees(employees: Employee[]): Promise<boolean> {
   if (!employees || employees.length === 0) {
     console.log("NO EMPLOYEES TO SYNC.");
+
     return true;
   }
 
   const sortedEmployees = [...employees].sort(
-    (a, b) => (a.serverVersion ?? 0) - (b.serverVersion ?? 0)
+    (a, b) => Number(a.serverVersion ?? 0) - Number(b.serverVersion ?? 0)
   );
 
   let allSucceeded = true;
@@ -559,10 +563,9 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
       );
 
       /*
-       * Employee metadata is synced first.
-       *
-       * This is important because photo synchronization
-       * later uses the local employee record.
+       * Employee metadata must be stored before photo
+       * reconciliation because photo synchronization reads
+       * the local employee.
        */
       await upsertEmployee(employee);
 
@@ -572,11 +575,6 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
         `EMPLOYEE SYNCED ${employee._id} ` + `(v${employee.serverVersion})`
       );
 
-      /*
-       * Log photo metadata received from the server.
-       *
-       * This makes missing photo metadata immediately visible.
-       */
       if (employee.photo_filename || employee.photo_version != null) {
         console.log("EMPLOYEE PHOTO METADATA:", {
           employeeId: employee._id,
@@ -608,31 +606,25 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
  * EMPLOYEE PHOTOS
  * ============================================================
  *
- * This is intentionally separate from the employee version
- * synchronization.
+ * Every pull cycle checks EVERY local employee.
  *
- * Every pull cycle reconciles local employee photos.
+ * This handles:
  *
- * That means:
- *
- * 1. First installation downloads all photos.
- * 2. Missing files are repaired.
- * 3. Changed versions are downloaded.
- * 4. Filename changes are handled.
- * 5. A photo does not need the employee itself to have changed.
+ * - first installation
+ * - missing local photo files
+ * - changed photo versions
+ * - changed filenames
+ * - photos that were deleted locally
+ * - employees whose employee record did not change
  * ============================================================
  */
 
 async function syncAllEmployeePhotos(): Promise<void> {
   console.log("STARTING EMPLOYEE PHOTO RECONCILIATION...");
 
-  /*
-   * Fetch all employees from the local database.
-   *
-   * This assumes the employees table is populated by the
-   * employee sync immediately before this function runs.
-   */
   const localEmployees = await getAllEmployeesForPhotoSync();
+
+  console.log(`CHECKING PHOTOS FOR ${localEmployees.length} EMPLOYEES...`);
 
   if (localEmployees.length === 0) {
     console.log("NO EMPLOYEES FOUND FOR PHOTO SYNC.");
@@ -640,19 +632,23 @@ async function syncAllEmployeePhotos(): Promise<void> {
     return;
   }
 
-  console.log(`CHECKING PHOTOS FOR ${localEmployees.length} EMPLOYEES...`);
-
   let downloaded = 0;
   let skipped = 0;
   let failed = 0;
 
+  /*
+   * Sequential processing is intentional.
+   *
+   * It prevents a first-installation sync from hammering the
+   * server with dozens of simultaneous photo requests.
+   */
   for (const employee of localEmployees) {
     try {
       const result = await syncEmployeePhoto(employee);
 
       if (result === "downloaded") {
         downloaded++;
-      } else if (result === "skipped") {
+      } else {
         skipped++;
       }
     } catch (error) {
@@ -671,20 +667,35 @@ async function syncAllEmployeePhotos(): Promise<void> {
     skipped,
     failed,
   });
+
+  /*
+   * Photo failures are logged individually rather than thrown
+   * here because a broken photo should not prevent the rest of
+   * the application's pull synchronization from completing.
+   *
+   * The next pull cycle will retry failed photos because their
+   * local file will still be missing or their metadata will not
+   * match the server.
+   */
 }
 
 /**
  * ============================================================
- * GET ALL LOCAL EMPLOYEES
+ * GET ALL LOCAL EMPLOYEES FOR PHOTO SYNC
  * ============================================================
  *
- * Uses the existing SQLite helper rather than depending on
- * the employees returned from the current server-version batch.
+ * IMPORTANT:
+ *
+ * DO NOT use `get()` here.
+ *
+ * `get()` is for a single row.
+ *
+ * `all()` is required because we need every employee.
  * ============================================================
  */
 
 async function getAllEmployeesForPhotoSync(): Promise<Employee[]> {
-  const rows = await get(
+  const rows = await all(
     `
       SELECT *
       FROM employees
@@ -693,15 +704,7 @@ async function getAllEmployeesForPhotoSync(): Promise<Employee[]> {
     `
   );
 
-  if (Array.isArray(rows)) {
-    return rows as Employee[];
-  }
-
-  if (!rows) {
-    return [];
-  }
-
-  return [rows as Employee];
+  return (rows ?? []) as Employee[];
 }
 
 /**
@@ -715,7 +718,7 @@ async function syncEmployeePhoto(
 ): Promise<"downloaded" | "skipped"> {
   /*
    * ----------------------------------------------------------
-   * Validate server/local photo metadata
+   * No photo
    * ----------------------------------------------------------
    */
 
@@ -728,20 +731,24 @@ async function syncEmployeePhoto(
     return "skipped";
   }
 
+  /*
+   * ----------------------------------------------------------
+   * Photo version validation
+   * ----------------------------------------------------------
+   */
+
   if (employee.photo_version == null) {
     console.warn("PHOTO FILENAME EXISTS BUT PHOTO VERSION IS MISSING:", {
       employeeId: employee._id,
       photo_filename: employee.photo_filename,
     });
 
+    /*
+     * We do NOT download an image whose metadata is incomplete.
+     * This prevents corrupt/inconsistent photo state.
+     */
     return "skipped";
   }
-
-  /*
-   * ----------------------------------------------------------
-   * Get the local employee
-   * ----------------------------------------------------------
-   */
 
   const localEmployee = await getEmployeeById(employee._id);
 
@@ -749,13 +756,19 @@ async function syncEmployeePhoto(
     throw new Error(`LOCAL EMPLOYEE ${employee._id} NOT FOUND`);
   }
 
+  /*
+   * ----------------------------------------------------------
+   * Normalize versions
+   * ----------------------------------------------------------
+   */
+
   const serverPhotoVersion = Number(employee.photo_version);
 
   const localPhotoVersion = Number(localEmployee.photo_version ?? 0);
 
   /*
    * ----------------------------------------------------------
-   * Calculate the expected local path
+   * Determine expected employee photo path
    * ----------------------------------------------------------
    */
 
@@ -775,19 +788,27 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Check whether the actual file exists
+   * Check actual file
    * ----------------------------------------------------------
    *
-   * This is critical.
+   * This is the critical first-install check.
    *
+   * Even if SQLite says:
    *
+   * photo_version = 1
+   *
+   * the file may not exist because the database and filesystem
+   * are separate pieces of state.
+   *
+   * Therefore the photo is NEVER considered synchronized unless
+   * the actual file exists.
    */
 
   const photoExists = await fileExists(absolutePhotoPath);
 
   /*
    * ----------------------------------------------------------
-   * Detect whether download is required
+   * Compare metadata
    * ----------------------------------------------------------
    */
 
@@ -797,11 +818,9 @@ async function syncEmployeePhoto(
     localEmployee.photo_filename === employee.photo_filename;
 
   /*
-   * Only skip when BOTH:
-   *
-   * 1. The database version is current.
-   * 2. The filename is current.
-   * 3. The actual file exists.
+   * ----------------------------------------------------------
+   * Already synchronized
+   * ----------------------------------------------------------
    */
 
   if (photoExists && versionIsCurrent && filenameIsCurrent) {
@@ -809,6 +828,7 @@ async function syncEmployeePhoto(
       `PHOTO ALREADY UP TO DATE FOR ` +
         `${employee.firstName} ${employee.lastName}`,
       {
+        employeeId: employee._id,
         version: localPhotoVersion,
         file: absolutePhotoPath,
       }
@@ -819,7 +839,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Explain why we're downloading
+   * Download required
    * ----------------------------------------------------------
    */
 
@@ -848,13 +868,8 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Download
+   * Download photo
    * ----------------------------------------------------------
-   *
-   * downloadEmployeePhoto() creates the employee directory
-   * and writes the file.
-   *
-   * We only update SQLite metadata AFTER this succeeds.
    */
 
   const downloadedPath = await downloadEmployeePhoto(
@@ -864,7 +879,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Verify that the file actually exists
+   * Verify download
    * ----------------------------------------------------------
    */
 
@@ -872,15 +887,18 @@ async function syncEmployeePhoto(
 
   if (!downloadedFileExists) {
     throw new Error(
-      `PHOTO DOWNLOAD REPORTED SUCCESS BUT FILE DOES NOT EXIST: ` +
-        `${downloadedPath}`
+      `PHOTO DOWNLOAD REPORTED SUCCESS BUT FILE ` +
+        `DOES NOT EXIST: ${downloadedPath}`
     );
   }
 
   /*
    * ----------------------------------------------------------
-   * Update local metadata only after successful download
+   * Update local metadata
    * ----------------------------------------------------------
+   *
+   * Only update SQLite AFTER the physical file has been
+   * successfully downloaded and verified.
    */
 
   await updateEmployeePhotoMetadata(employee._id, {
@@ -899,7 +917,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Remove old photo if filename changed
+   * Remove previous photo if filename changed
    * ----------------------------------------------------------
    */
 
@@ -913,6 +931,7 @@ async function syncEmployeePhoto(
   console.log(
     `DOWNLOADED NEW PHOTO FOR ` + `${employee.firstName} ${employee.lastName}.`,
     {
+      employeeId: employee._id,
       version: serverPhotoVersion,
       path: downloadedPath,
     }
@@ -971,8 +990,8 @@ async function removeOldEmployeePhoto(
     }
   } catch (error) {
     /*
-     * Failure to remove an old file should NOT make the
-     * synchronization itself fail.
+     * Failure to remove an old file should not make the
+     * synchronization fail.
      */
 
     console.warn("FAILED TO REMOVE OLD EMPLOYEE PHOTO:", {
@@ -1031,9 +1050,11 @@ async function syncEmployeeDocuments(
         document.documentType
       );
 
-      const localVersion = localDocument?.serverVersion ?? 0;
+      const localVersion = Number(localDocument?.serverVersion ?? 0);
 
-      if (localVersion >= document.serverVersion) {
+      const remoteVersion = Number(document.serverVersion ?? 0);
+
+      if (localDocument && localVersion >= remoteVersion) {
         console.log(
           `DOCUMENT ALREADY UP TO DATE: ` +
             `${document.employeeId} ` +
@@ -1047,7 +1068,8 @@ async function syncEmployeeDocuments(
 
       if (!employee) {
         throw new Error(
-          `Employee ${document.employeeId} not found while syncing document`
+          `Employee ${document.employeeId} ` +
+            `not found while syncing document`
         );
       }
 
@@ -1375,17 +1397,17 @@ async function syncPayrollResults(
     try {
       const payrollRun = await get(
         `
-            SELECT _id
-            FROM payroll_runs
-            WHERE _id = ?
-            LIMIT 1
-          `,
+          SELECT _id
+          FROM payroll_runs
+          WHERE _id = ?
+          LIMIT 1
+        `,
         [result.payrollRunId]
       );
 
       if (!payrollRun) {
         console.error(
-          "SKIPPING PAYROLL RESULT: PAYROLL RUN DOES NOT EXIST LOCALLY",
+          "SKIPPING PAYROLL RESULT: PAYROLL RUN " + "DOES NOT EXIST LOCALLY",
           {
             resultId: result._id,
             payrollRunId: result.payrollRunId,
@@ -1399,17 +1421,17 @@ async function syncPayrollResults(
 
       const employee = await get(
         `
-            SELECT _id
-            FROM employees
-            WHERE _id = ?
-            LIMIT 1
-          `,
+          SELECT _id
+          FROM employees
+          WHERE _id = ?
+          LIMIT 1
+        `,
         [result.employeeId]
       );
 
       if (!employee) {
         console.error(
-          "SKIPPING PAYROLL RESULT: EMPLOYEE DOES NOT EXIST LOCALLY",
+          "SKIPPING PAYROLL RESULT: EMPLOYEE " + "DOES NOT EXIST LOCALLY",
           {
             resultId: result._id,
             employeeId: result.employeeId,

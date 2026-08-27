@@ -793,14 +793,10 @@ export async function deleteAttendance(_id: string) {
 
 export async function upsertAttendance(attendance: Attendance) {
   /*
-   * 1. First try to find the exact remote record by _id.
+   * First try to find the exact remote record by _id.
    */
   let local = await getAttendanceById(attendance._id);
 
-  /*
-   * 2.  _id does not exist locally, searching by employee + date.
-   *
-   */
   if (!local) {
     local = await getAttendanceByEmployeeAndDate(
       attendance.employeeId,
@@ -809,13 +805,16 @@ export async function upsertAttendance(attendance: Attendance) {
   }
 
   /*
-   *
-   * Don't overwrite a newer local record with an older remote one.
+   * Compare server versions.
    */
   if (local) {
     const localVersion = Number(local.serverVersion ?? 0);
     const remoteVersion = Number(attendance.serverVersion ?? 0);
 
+    /*
+     * Never overwrite a newer local/server state with an older
+     * remote version.
+     */
     if (remoteVersion < localVersion) {
       console.log(
         `SKIPPING REMOTE ATTENDANCE. LOCAL VERSION IS NEWER: ${attendance._id}`,
@@ -831,7 +830,7 @@ export async function upsertAttendance(attendance: Attendance) {
     }
 
     /*
-     * 4. Update the existing local record.
+     * Update the existing local row.
      *
      */
     await run(
@@ -875,12 +874,13 @@ export async function upsertAttendance(attendance: Attendance) {
   }
 
   /*
-   * 5. No matching _id and no matching employee/date.
-   *
+   * No existing record was found.
+   * Use INSERT OR IGNORE so that if another sync operation inserts
+   * the same _id between our SELECT and INSERT, SQLite will not crash.
    */
   await run(
     `
-    INSERT INTO attendances (
+    INSERT OR IGNORE INTO attendances (
       _id,
       employeeId,
       date,
@@ -917,7 +917,24 @@ export async function upsertAttendance(attendance: Attendance) {
     ]
   );
 
-  return getAttendanceById(attendance._id);
+  /*
+   * 6. The INSERT may have been ignored because another operation
+   *    inserted the same _id at the same time.
+   */
+  const result = await getAttendanceById(attendance._id);
+
+  if (result) {
+    return result;
+  }
+
+  /*
+   * 7. It is also possible that the employee/date UNIQUE constraint
+   *    caused the INSERT to be ignored because another local row
+   *    already represents this attendance.
+   *
+   *    Look it up using employee + date.
+   */
+  return getAttendanceByEmployeeAndDate(attendance.employeeId, attendance.date);
 }
 
 /**

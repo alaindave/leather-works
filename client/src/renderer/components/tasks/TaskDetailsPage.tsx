@@ -328,7 +328,7 @@ export default function TaskDetailsPage() {
                 fontSize="1rem"
                 color="gray.700"
                 lineHeight="1.8"
-                whiteSpace="pre-wrap"
+                whiteSpace="normal"
               >
                 {task?.message}
               </Text>
@@ -388,8 +388,11 @@ export default function TaskDetailsPage() {
                 </Flex>
 
                 {task.resolutionNotes && (
-                  <Box position="relative" left="20rem" bottom="2rem">
+                  <Box>
                     <Text
+                      position="relative"
+                      left="20rem"
+                      bottom="2rem"
                       fontSize="md"
                       fontWeight="600"
                       color="gray.600"
@@ -398,7 +401,12 @@ export default function TaskDetailsPage() {
                       Notes
                     </Text>
 
-                    <Text fontSize="md" color="gray.700" whiteSpace="pre-wrap">
+                    <Text
+                      ml="2rem"
+                      fontSize="md"
+                      color="gray.700"
+                      whiteSpace="pre-wrap"
+                    >
                       {task.resolutionNotes}
                     </Text>
                   </Box>
