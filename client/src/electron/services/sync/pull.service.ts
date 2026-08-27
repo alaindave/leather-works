@@ -683,15 +683,6 @@ async function syncAllEmployeePhotos(): Promise<void> {
  * ============================================================
  * GET ALL LOCAL EMPLOYEES FOR PHOTO SYNC
  * ============================================================
- *
- * IMPORTANT:
- *
- * DO NOT use `get()` here.
- *
- * `get()` is for a single row.
- *
- * `all()` is required because we need every employee.
- * ============================================================
  */
 
 async function getAllEmployeesForPhotoSync(): Promise<Employee[]> {
@@ -721,7 +712,7 @@ async function syncEmployeePhoto(
    * No photo
    * ----------------------------------------------------------
    */
-
+  console.log("EMPLOYEE OBJECT.CHECK PHOTO FILE NAME", employee);
   if (!employee.photo_filename) {
     console.log("NO PHOTO FOR EMPLOYEE:", {
       employeeId: employee._id,
