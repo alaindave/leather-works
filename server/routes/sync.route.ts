@@ -426,6 +426,11 @@ router.get(
           hasMore: result.hasMore,
         });
 
+        console.log(
+          "EMPLOYEE PULL FROM MONGO:",
+          JSON.stringify(result.items[0], null, 2)
+        );
+
         return res.json({
           success: true,
           entity: "employee",

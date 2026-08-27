@@ -392,26 +392,11 @@ export function getUnsyncedEmployees() {
   );
 }
 
-/**
+/*
  * ============================================================
  * UPSERT EMPLOYEE FROM SERVER
  * ============================================================
  *
- * This is the most important function for the new
- * serverVersion-based synchronization.
- *
- * Rules:
- *
- * 1. If there is no local employee, insert it.
- *
- * 2. If the local employee has unsynced changes, DO NOT allow
- *    the server pull to overwrite those changes.
- *
- * 3. If the incoming serverVersion is <= the local
- *    serverVersion, ignore the incoming employee.
- *
- * 4. If the incoming serverVersion is newer, replace the local
- *    employee.
  */
 export async function upsertEmployee(employee: Employee) {
   const local = await getEmployeeByIdIncludingDeleted(employee._id);
@@ -420,9 +405,9 @@ export async function upsertEmployee(employee: Employee) {
   const localVersion = Number(local?.serverVersion ?? 0);
 
   /*
-   * ----------------------------------------------------------
+   * ==========================================================
    * CASE 1: Local employee does not exist
-   * ----------------------------------------------------------
+   * ==========================================================
    */
   if (!local) {
     await run(
@@ -445,6 +430,14 @@ export async function upsertEmployee(employee: Employee) {
         emergencyContact,
         relationship,
         contactPhone,
+
+        photo_path,
+        photo_filename,
+        photo_version,
+        photo_hash,
+        photo_mime_type,
+        photo_last_modified,
+
         createdAt,
         updatedAt,
         serverVersion,
@@ -453,7 +446,7 @@ export async function upsertEmployee(employee: Employee) {
         lastSyncedAt
       )
       VALUES (
-        ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,CURRENT_TIMESTAMP
+        ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,CURRENT_TIMESTAMP
       )
       `,
       [
@@ -474,6 +467,15 @@ export async function upsertEmployee(employee: Employee) {
         employee.emergencyContact,
         employee.relationship,
         employee.contactPhone,
+
+        // Photo metadata
+        employee.photo_path ?? null,
+        employee.photo_filename ?? null,
+        employee.photo_version ?? null,
+        employee.photo_hash ?? null,
+        employee.photo_mime_type ?? null,
+        employee.photo_last_modified ?? null,
+
         employee.createdAt,
         employee.updatedAt,
         incomingVersion,
@@ -482,19 +484,23 @@ export async function upsertEmployee(employee: Employee) {
     );
 
     console.log(
-      `INSERTED EMPLOYEE FROM SERVER: ${employee._id} (v${incomingVersion})`
+      `INSERTED EMPLOYEE FROM SERVER: ${employee._id} (v${incomingVersion})`,
+      {
+        photo_filename: employee.photo_filename,
+        photo_version: employee.photo_version,
+        photo_hash: employee.photo_hash,
+        photo_mime_type: employee.photo_mime_type,
+        photo_last_modified: employee.photo_last_modified,
+      }
     );
 
     return;
   }
 
   /*
-   * ----------------------------------------------------------
+   * ==========================================================
    * CASE 2: Local employee has unsynced changes
-   * ----------------------------------------------------------
-   *
-   * Never overwrite local pending changes with pulled data.
-   *
+   * ==========================================================
    * The push operation needs to reach the server first.
    */
   if (local.synced === 0) {
@@ -510,9 +516,9 @@ export async function upsertEmployee(employee: Employee) {
   }
 
   /*
-   * ----------------------------------------------------------
+   * ==========================================================
    * CASE 3: Incoming version is not newer
-   * ----------------------------------------------------------
+   * ==========================================================
    */
   if (incomingVersion <= localVersion) {
     console.log(
@@ -527,9 +533,9 @@ export async function upsertEmployee(employee: Employee) {
   }
 
   /*
-   * ----------------------------------------------------------
+   * ==========================================================
    * CASE 4: Server has a newer version
-   * ----------------------------------------------------------
+   * ==========================================================
    */
   await run(
     `
@@ -551,6 +557,14 @@ export async function upsertEmployee(employee: Employee) {
       emergencyContact = ?,
       relationship = ?,
       contactPhone = ?,
+
+      photo_path = ?,
+      photo_filename = ?,
+      photo_version = ?,
+      photo_hash = ?,
+      photo_mime_type = ?,
+      photo_last_modified = ?,
+
       createdAt = ?,
       updatedAt = ?,
       serverVersion = ?,
@@ -576,6 +590,15 @@ export async function upsertEmployee(employee: Employee) {
       employee.emergencyContact,
       employee.relationship,
       employee.contactPhone,
+
+      // Photo metadata
+      employee.photo_path ?? null,
+      employee.photo_filename ?? null,
+      employee.photo_version ?? null,
+      employee.photo_hash ?? null,
+      employee.photo_mime_type ?? null,
+      employee.photo_last_modified ?? null,
+
       employee.createdAt,
       employee.updatedAt,
       incomingVersion,
@@ -586,7 +609,14 @@ export async function upsertEmployee(employee: Employee) {
 
   console.log(
     `UPDATED EMPLOYEE FROM SERVER: ${employee._id} ` +
-      `(v${localVersion} → v${incomingVersion})`
+      `(v${localVersion} → v${incomingVersion})`,
+    {
+      photo_filename: employee.photo_filename,
+      photo_version: employee.photo_version,
+      photo_hash: employee.photo_hash,
+      photo_mime_type: employee.photo_mime_type,
+      photo_last_modified: employee.photo_last_modified,
+    }
   );
 }
 

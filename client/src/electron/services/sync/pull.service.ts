@@ -545,7 +545,6 @@ async function pullEntityByVersion<T>(
 async function syncEmployees(employees: Employee[]): Promise<boolean> {
   if (!employees || employees.length === 0) {
     console.log("NO EMPLOYEES TO SYNC.");
-
     return true;
   }
 
@@ -557,36 +556,34 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
 
   for (const employee of sortedEmployees) {
     try {
-      console.log(
-        `SYNCING EMPLOYEE ${employee._id} ` +
-          `(serverVersion=${employee.serverVersion})`
-      );
+      console.log("========== SERVER EMPLOYEE ==========");
+      console.log({
+        id: employee._id,
+        name: `${employee.firstName} ${employee.lastName}`,
+        photo_filename: employee.photo_filename,
+        photo_version: employee.photo_version,
+        photo_hash: employee.photo_hash,
+        photo_mime_type: employee.photo_mime_type,
+        photo_last_modified: employee.photo_last_modified,
+      });
 
-      /*
-       * Employee metadata must be stored before photo
-       * reconciliation because photo synchronization reads
-       * the local employee.
-       */
       await upsertEmployee(employee);
 
+      console.log("========== LOCAL EMPLOYEE AFTER UPSERT ==========");
+
+      const localEmployee = await getEmployeeById(employee._id);
+
+      console.log({
+        id: localEmployee?._id,
+        name: `${localEmployee?.firstName} ${localEmployee?.lastName}`,
+        photo_filename: localEmployee?.photo_filename,
+        photo_version: localEmployee?.photo_version,
+        photo_hash: localEmployee?.photo_hash,
+        photo_mime_type: localEmployee?.photo_mime_type,
+        photo_last_modified: localEmployee?.photo_last_modified,
+      });
+
       await markEmployeeSynced(employee._id);
-
-      console.log(
-        `EMPLOYEE SYNCED ${employee._id} ` + `(v${employee.serverVersion})`
-      );
-
-      if (employee.photo_filename || employee.photo_version != null) {
-        console.log("EMPLOYEE PHOTO METADATA:", {
-          employeeId: employee._id,
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          photo_filename: employee.photo_filename,
-          photo_version: employee.photo_version,
-          photo_hash: employee.photo_hash,
-          photo_mime_type: employee.photo_mime_type,
-          photo_last_modified: employee.photo_last_modified,
-        });
-      }
     } catch (error) {
       allSucceeded = false;
 
@@ -700,19 +697,29 @@ async function getAllEmployeesForPhotoSync(): Promise<Employee[]> {
 
 /**
  * ============================================================
- * SYNC ONE EMPLOYEE PHOTO
+ * SYNC EMPLOYEE PHOTOS
  * ============================================================
  */
 
 async function syncEmployeePhoto(
   employee: Employee
 ): Promise<"downloaded" | "skipped"> {
+  console.log("EMPLOYEE OBJECT.CHECK PHOTO METADATA:", {
+    employeeId: employee._id,
+    photo_filename: employee.photo_filename,
+    photo_path: employee.photo_path,
+    photo_version: employee.photo_version,
+    photo_hash: employee.photo_hash,
+    photo_mime_type: employee.photo_mime_type,
+    photo_last_modified: employee.photo_last_modified,
+  });
+
   /*
    * ----------------------------------------------------------
-   * No photo
+   * NO PHOTO
    * ----------------------------------------------------------
    */
-  console.log("EMPLOYEE OBJECT.CHECK PHOTO FILE NAME", employee);
+
   if (!employee.photo_filename) {
     console.log("NO PHOTO FOR EMPLOYEE:", {
       employeeId: employee._id,
@@ -724,7 +731,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Photo version validation
+   * PHOTO VERSION REQUIRED
    * ----------------------------------------------------------
    */
 
@@ -734,12 +741,14 @@ async function syncEmployeePhoto(
       photo_filename: employee.photo_filename,
     });
 
-    /*
-     * We do NOT download an image whose metadata is incomplete.
-     * This prevents corrupt/inconsistent photo state.
-     */
     return "skipped";
   }
+
+  /*
+   * ----------------------------------------------------------
+   * GET CURRENT LOCAL EMPLOYEE
+   * ----------------------------------------------------------
+   */
 
   const localEmployee = await getEmployeeById(employee._id);
 
@@ -749,7 +758,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Normalize versions
+   * NORMALIZE VERSIONS
    * ----------------------------------------------------------
    */
 
@@ -759,69 +768,63 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Determine expected employee photo path
+   * DETERMINE PHOTO PATH
+   * ----------------------------------------------------------
+   *
+   * The server's photo_path should be the canonical path.
+   *
+   * If photo_path is not available, fall back to the same
+   * folder convention used by the downloader.
    * ----------------------------------------------------------
    */
 
-  const employeeFolderName = getEmployeePhotoFolderName(localEmployee);
+  const relativePhotoPath =
+    employee.photo_path ??
+    path.join(
+      "employees_photos",
+      getEmployeePhotoFolderName(localEmployee),
+      employee.photo_filename
+    );
 
-  const relativePhotoPath = path.join(
-    "employees_photos",
-    employeeFolderName,
-    employee.photo_filename
-  );
-
-  const absolutePhotoPath = path.join(
-    EMPLOYEE_PHOTO_DIR,
-    employeeFolderName,
-    employee.photo_filename
-  );
+  const absolutePhotoPath = path.isAbsolute(relativePhotoPath)
+    ? relativePhotoPath
+    : path.join(app.getPath("userData"), relativePhotoPath);
 
   /*
    * ----------------------------------------------------------
-   * Check actual file
+   * CHECK FILE
    * ----------------------------------------------------------
-   *
-   * This is the critical first-install check.
-   *
-   * Even if SQLite says:
-   *
-   * photo_version = 1
-   *
-   * the file may not exist because the database and filesystem
-   * are separate pieces of state.
-   *
-   * Therefore the photo is NEVER considered synchronized unless
-   * the actual file exists.
    */
 
   const photoExists = await fileExists(absolutePhotoPath);
 
   /*
    * ----------------------------------------------------------
-   * Compare metadata
+   * COMPARE METADATA
    * ----------------------------------------------------------
    */
 
-  const versionIsCurrent = localPhotoVersion >= serverPhotoVersion;
+  const versionIsCurrent = localPhotoVersion === serverPhotoVersion;
 
   const filenameIsCurrent =
     localEmployee.photo_filename === employee.photo_filename;
 
+  const pathIsCurrent = localEmployee.photo_path === employee.photo_path;
+
   /*
    * ----------------------------------------------------------
-   * Already synchronized
+   * PHOTO ALREADY SYNCHRONIZED
    * ----------------------------------------------------------
    */
 
-  if (photoExists && versionIsCurrent && filenameIsCurrent) {
+  if (photoExists && versionIsCurrent && filenameIsCurrent && pathIsCurrent) {
     console.log(
       `PHOTO ALREADY UP TO DATE FOR ` +
         `${employee.firstName} ${employee.lastName}`,
       {
         employeeId: employee._id,
-        version: localPhotoVersion,
-        file: absolutePhotoPath,
+        photoVersion: localPhotoVersion,
+        photoPath: absolutePhotoPath,
       }
     );
 
@@ -830,7 +833,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Download required
+   * DOWNLOAD REQUIRED
    * ----------------------------------------------------------
    */
 
@@ -843,15 +846,19 @@ async function syncEmployeePhoto(
       localPhotoVersion,
       serverPhotoVersion,
 
-      versionChanged: localPhotoVersion !== serverPhotoVersion,
-
       localFilename: localEmployee.photo_filename,
-
       serverFilename: employee.photo_filename,
+
+      localPhotoPath: localEmployee.photo_path,
+      serverPhotoPath: employee.photo_path,
+
+      photoExists,
+
+      versionChanged: localPhotoVersion !== serverPhotoVersion,
 
       filenameChanged: !filenameIsCurrent,
 
-      photoExists,
+      pathChanged: !pathIsCurrent,
 
       expectedPath: absolutePhotoPath,
     }
@@ -859,7 +866,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Download photo
+   * DOWNLOAD
    * ----------------------------------------------------------
    */
 
@@ -870,7 +877,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Verify download
+   * VERIFY DOWNLOAD
    * ----------------------------------------------------------
    */
 
@@ -885,11 +892,8 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Update local metadata
+   * UPDATE LOCAL PHOTO METADATA
    * ----------------------------------------------------------
-   *
-   * Only update SQLite AFTER the physical file has been
-   * successfully downloaded and verified.
    */
 
   await updateEmployeePhotoMetadata(employee._id, {
@@ -908,7 +912,7 @@ async function syncEmployeePhoto(
 
   /*
    * ----------------------------------------------------------
-   * Remove previous photo if filename changed
+   * REMOVE OLD PHOTO
    * ----------------------------------------------------------
    */
 
@@ -920,7 +924,7 @@ async function syncEmployeePhoto(
   }
 
   console.log(
-    `DOWNLOADED NEW PHOTO FOR ` + `${employee.firstName} ${employee.lastName}.`,
+    `DOWNLOADED NEW PHOTO FOR ` + `${employee.firstName} ${employee.lastName}`,
     {
       employeeId: employee._id,
       version: serverPhotoVersion,
@@ -930,7 +934,6 @@ async function syncEmployeePhoto(
 
   return "downloaded";
 }
-
 /**
  * ============================================================
  * EMPLOYEE PHOTO FOLDER NAME
