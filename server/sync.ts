@@ -582,21 +582,50 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
       .replace(/\s+/g, "_");
 
   /*
-   * Use the photo version in the object name.
+   * ============================================================
+   * PHOTO VERSION
+   * ============================================================
    */
+
   const photoVersion = Number(data.photo_version ?? 1);
+
+  if (!Number.isFinite(photoVersion) || photoVersion < 1) {
+    throw new Error(`INVALID PHOTO VERSION: ${data.photo_version}`);
+  }
+
+  /*
+   * ============================================================
+   * NEW PHOTO PATH
+   * ============================================================
+   *
+   */
 
   const objectPath = `${employeeFolderName}/photo_v${photoVersion}`;
 
+  /*
+   * ============================================================
+   * PREVIOUS PHOTO PATH
+   * ============================================================
+   */
+
+  const previousObjectPath = employee.photo_path;
+
   console.log("UPLOADING EMPLOYEE PHOTO:", {
     employeeId: employee._id,
+    previousObjectPath,
+    newObjectPath: objectPath,
     photoVersion,
-    objectPath,
     mimeType: data.photo_mime_type,
     hash: data.photo_hash,
   });
 
-  const { error } = await supabase.storage
+  /*
+   * ============================================================
+   * UPLOAD NEW PHOTO
+   * ============================================================
+   */
+
+  const { error: uploadError } = await supabase.storage
     .from("afritan_employees_photos")
     .upload(objectPath, file.buffer, {
       contentType: data.photo_mime_type,
@@ -604,14 +633,56 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
       cacheControl: "0",
     });
 
-  if (error) {
-    throw new Error(`FAILED TO UPLOAD EMPLOYEE PHOTO: ${error.message}`);
+  if (uploadError) {
+    throw new Error(`FAILED TO UPLOAD EMPLOYEE PHOTO: ${uploadError.message}`);
+  }
+
+  console.log("NEW EMPLOYEE PHOTO UPLOADED:", {
+    employeeId: employee._id,
+    objectPath,
+  });
+
+  /*
+   * ============================================================
+   * DELETE PREVIOUS PHOTO
+   * ============================================================
+   */
+
+  if (previousObjectPath && previousObjectPath !== objectPath) {
+    const { error: deleteError } = await supabase.storage
+      .from("afritan_employees_photos")
+      .remove([previousObjectPath]);
+
+    if (deleteError) {
+      /*
+       * The new photo exists, but the old one could not be
+       * deleted.
+       */
+      throw new Error(
+        `NEW PHOTO UPLOADED BUT FAILED TO DELETE OLD PHOTO: ` +
+          deleteError.message
+      );
+    }
+
+    console.log("OLD EMPLOYEE PHOTO DELETED:", {
+      employeeId: employee._id,
+      previousObjectPath,
+    });
   }
 
   /*
-   * Get a new server version AFTER the upload.
+   * ============================================================
+   * SERVER VERSION
+   * ============================================================
    */
+
   const serverVersion = await getServerVersion("employee");
+
+  /*
+   * ============================================================
+   * UPDATE MONGODB
+   * ============================================================
+   */
 
   Object.assign(employee, {
     photo_filename: data.photo_filename,
@@ -628,10 +699,16 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
 
   await employee.save();
 
-  console.log("EMPLOYEE PHOTO SYNCED:", {
+  /*
+   * ============================================================
+   * SUCCESS
+   * ============================================================
+   */
+
+  console.log("EMPLOYEE PHOTO SYNCED SUCCESSFULLY:", {
     employeeId: employee._id,
     photoVersion,
-    objectPath,
+    photoPath: objectPath,
     serverVersion,
   });
 
@@ -644,6 +721,7 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
     photoPath: objectPath,
   };
 }
+
 // ============================================================
 // EMPLOYEE DOCUMENTS
 // ============================================================
