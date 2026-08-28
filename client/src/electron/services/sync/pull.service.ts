@@ -91,35 +91,38 @@ export async function pullLatestChanges() {
   console.log("PULL SERVICE API URL:", API_URL);
   try {
     let latestServerTime: string | undefined;
-    /* * ======================================================== * EMPLOYEES * ======================================================== */
-    const employeesResult = await pullEntityByVersion<Employee>(
-      "employee",
-      syncEmployees
-    );
-    latestServerTime = employeesResult.serverTime ?? latestServerTime;
-    const employees = employeesResult.items;
-    /* * ======================================================== * ADMIN USERS * ======================================================== */
+    /* * ===== * ADMIN USERS * ===== */
     const adminUsersResult = await pullEntityByVersion<AdminUser>(
       "admin_user",
       syncAdminUsers
     );
     latestServerTime = adminUsersResult.serverTime ?? latestServerTime;
     const adminUsers = adminUsersResult.items;
-    /* * ======================================================== * EMPLOYEE DOCUMENTS * ======================================================== */
+    /* * ===== * EMPLOYEES * ===== */
+    const employeesResult = await pullEntityByVersion<Employee>(
+      "employee",
+      syncEmployees
+    );
+    latestServerTime = employeesResult.serverTime ?? latestServerTime;
+    const employees = employeesResult.items;
+
+    /* * ===== * EMPLOYEE PHOTOS * ===== **/
+    await syncEmployeePhotos(employees);
+    /* * ====== * EMPLOYEE DOCUMENTS * ===== */
     const employeeDocumentsResult = await pullEntityByVersion<EmployeeDocument>(
       "employee_document",
       syncEmployeeDocuments
     );
     latestServerTime = employeeDocumentsResult.serverTime ?? latestServerTime;
     const employeesDocuments = employeeDocumentsResult.items;
-    /* * ======================================================== * ATTENDANCES * ======================================================== */
+    /* * ====== * ATTENDANCES * ====== */
     const attendancesResult = await pullEntityByVersion<Attendance>(
       "attendance",
       syncAttendances
     );
     latestServerTime = attendancesResult.serverTime ?? latestServerTime;
     const attendances = attendancesResult.items;
-    /* * ======================================================== * ATTENDANCE DAILY CHECKS * ======================================================== */
+    /* * ====== * ATTENDANCE DAILY CHECKS * ====== */
     const attendanceDailyChecksResult =
       await pullEntityByVersion<AttendanceDailyCheck>(
         "attendance_daily_check",
@@ -128,29 +131,29 @@ export async function pullLatestChanges() {
     latestServerTime =
       attendanceDailyChecksResult.serverTime ?? latestServerTime;
     const attendanceDailyCheck = attendanceDailyChecksResult.items;
-    /* * ======================================================== * LEAVES * ======================================================== */
+    /* * ===== * LEAVES * ===== */
     const leavesResult = await pullEntityByVersion<Leave>("leave", syncLeaves);
     latestServerTime = leavesResult.serverTime ?? latestServerTime;
     const leaves = leavesResult.items;
-    /* * ======================================================== * TASKS * ======================================================== */
+    /* * =====* TASKS * ===== */
     const tasksResult = await pullEntityByVersion<Task>("task", syncTasks);
     latestServerTime = tasksResult.serverTime ?? latestServerTime;
     const tasks = tasksResult.items;
-    /* * ======================================================== * PAYROLL SETTINGS * ======================================================== */
+    /* * ====* PAYROLL SETTINGS * ===== */
     const payrollSettingsResult = await pullEntityByVersion<PayrollSettings>(
       "payroll_settings",
       syncPayrollSettings
     );
     latestServerTime = payrollSettingsResult.serverTime ?? latestServerTime;
     const payrollSettings = payrollSettingsResult.items;
-    /* * ======================================================== * PAYROLL COMPONENTS * ======================================================== */
+    /* * ====== * PAYROLL COMPONENTS * ===== */
     const payrollComponentsResult = await pullEntityByVersion<PayrollComponent>(
       "payroll_component",
       syncPayrollComponents
     );
     latestServerTime = payrollComponentsResult.serverTime ?? latestServerTime;
     const payrollComponents = payrollComponentsResult.items;
-    /* * ======================================================== * PAYROLL EMPLOYEE PROFILES * ======================================================== */
+    /* * ======= * PAYROLL EMPLOYEE PROFILES * ===== */
     const payrollEmployeeProfilesResult =
       await pullEntityByVersion<PayrollEmployeeProfile>(
         "payroll_profile",
@@ -159,36 +162,35 @@ export async function pullLatestChanges() {
     latestServerTime =
       payrollEmployeeProfilesResult.serverTime ?? latestServerTime;
     const payrollEmployeeProfiles = payrollEmployeeProfilesResult.items;
-    /* * ======================================================== * PAYROLL RUNS * ======================================================== * * Must be pulled before payroll results. */
+    /* * ======= * PAYROLL RUNS * ======= * *  */
     const payrollRunsResult = await pullEntityByVersion<PayrollRun>(
       "payroll_run",
       syncPayrollRuns
     );
     latestServerTime = payrollRunsResult.serverTime ?? latestServerTime;
     const payrollRuns = payrollRunsResult.items;
-    /* * ======================================================== * PAYROLL RESULTS * ======================================================== * * Must be pulled after payroll runs. */
+    /* * ===== * PAYROLL RESULTS * ========. */
     const payrollResultsResult = await pullEntityByVersion<PayrollResult>(
       "payroll_result",
       syncPayrollResults
     );
     latestServerTime = payrollResultsResult.serverTime ?? latestServerTime;
     const payrollResults = payrollResultsResult.items;
-    /* * ======================================================== * PAYROLL ITEMS * ======================================================== * * Must be pulled after payroll results. */
+    /* * ========* PAYROLL ITEMS * ========== */
     const payrollItemsResult = await pullEntityByVersion<PayrollItem>(
       "payroll_item",
       syncPayrollItems
     );
     latestServerTime = payrollItemsResult.serverTime ?? latestServerTime;
     const payrollItems = payrollItemsResult.items;
-    /* * ======================================================== * EMPLOYEE PHOTOS * ======================================================== * * Employee records have already been synced. * Therefore photo metadata is available. */
-    await syncEmployeePhotos(employees);
-    /* * ======================================================== * SYNC METADATA * ======================================================== * * These do NOT control synchronization. * * They are simply useful metadata. */
+
+    /* * ======= * SYNC METADATA * ======== */
     const completedAt = new Date().toISOString();
     await setSetting("lastSync", completedAt);
     if (latestServerTime) {
       await setSetting("serverTime", latestServerTime);
     }
-    /* * ======================================================== * LOGGING * ======================================================== */
+    /* * ====== * LOGGING * ======= */
     console.log("PULL SYNC COMPLETED SUCCESSFULLY.");
     console.log("SYNC SUMMARY:", {
       employees: employees.length,
@@ -225,79 +227,25 @@ export async function pullLatestChanges() {
       serverTime: latestServerTime,
     };
   } catch (error) {
-    /* * IMPORTANT: * * lastSync is NOT updated here. * * If synchronization fails, the previous lastSync * remains intact. * * Individual entity cursors are also only advanced * after successful batches. */
     console.error("PULL SYNC FAILED:", error);
     throw error;
   }
 }
-async function pullEntityByVersion<T>(
-  entity: string,
-  syncBatch: (items: T[]) => Promise<boolean>,
-  limit = 500
-): Promise<VersionPullResult<T>> {
-  const syncState = await getSyncState(entity);
-  let afterVersion = syncState.lastPulledVersion ?? 0;
-  const allItems: T[] = [];
-  let hasMore = true;
-  let latestServerTime: string | undefined;
-  while (hasMore) {
-    console.log(
-      `PULLING ${entity.toUpperCase()} ` + `AFTER VERSION ${afterVersion}`
-    );
-    const response = await axios.get<VersionPullResponse<T>>(
-      `${API_URL}/sync/pull`,
-      { params: { entity, afterVersion, limit }, timeout: 90000 }
-    );
-    const {
-      items,
-      nextVersion,
-      hasMore: serverHasMore,
-      serverTime,
-    } = response.data;
-    latestServerTime = serverTime ?? latestServerTime;
-    const batch = items ?? [];
-    console.log(`${entity.toUpperCase()} VERSION PULL RESULT:`, {
-      afterVersion,
-      received: batch.length,
-      nextVersion,
-      hasMore: serverHasMore,
-      serverTime,
-    });
-    if (batch.length === 0) {
-      break;
-    }
-    const succeeded = await syncBatch(batch);
-    if (!succeeded) {
-      throw new Error(
-        `${entity.toUpperCase()} SYNC FAILED AFTER VERSION ` +
-          `${afterVersion}. SYNC CURSOR WAS NOT ADVANCED.`
-      );
-    }
-    const newVersion = Number(nextVersion ?? afterVersion);
-    if (!Number.isFinite(newVersion)) {
-      throw new Error(
-        `${entity.toUpperCase()} RETURNED INVALID NEXT VERSION: ` +
-          `${nextVersion}`
-      );
-    }
-    if (newVersion <= afterVersion) {
-      throw new Error(
-        `${entity.toUpperCase()} SYNC VERSION DID NOT ADVANCE. ` +
-          `Current: ${afterVersion}, ` +
-          `Next: ${newVersion}`
-      );
-    }
-    await updateLastPulledVersion(entity, newVersion);
-    afterVersion = newVersion;
-    allItems.push(...batch);
-    hasMore = Boolean(serverHasMore);
+
+async function syncAdminUsers(adminUsers: AdminUser[]): Promise<boolean> {
+  if (!adminUsers || adminUsers.length === 0) {
+    return true;
   }
-  console.log(`${entity.toUpperCase()} VERSION SYNC COMPLETE:`, {
-    totalItems: allItems.length,
-    lastVersion: afterVersion,
-    serverTime: latestServerTime,
-  });
-  return { items: allItems, serverTime: latestServerTime };
+  let succeeded = true;
+  for (const adminUser of adminUsers) {
+    try {
+      await upsertAdminUser(adminUser);
+    } catch (error) {
+      succeeded = false;
+      console.error("FAILED TO SYNC PULLED ADMIN USER:", adminUser._id, error);
+    }
+  }
+  return succeeded;
 }
 
 async function syncEmployees(employees: Employee[]): Promise<boolean> {
@@ -331,6 +279,113 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
   }
   return allSucceeded;
 }
+
+async function syncEmployeePhotos(employees: Employee[]) {
+  for (const employee of employees) {
+    try {
+      if (!employee.photo_filename || employee.photo_version == null) {
+        continue;
+      }
+      const localEmployee = await getEmployeeById(employee._id);
+      const localPhotoVersion = localEmployee?.photo_version ?? 0;
+      console.log("=====EMPLOYEE PHOTO SYNC=====");
+      console.log("REMOTE PHOTO VERSION:", employee.photo_version);
+      console.log("LOCAL PHOTO VERSION:", localPhotoVersion);
+
+      if (localPhotoVersion >= employee.photo_version) {
+        console.log(
+          `PHOTO ALREADY UP TO DATE FOR ` +
+            `${employee.firstName} ` +
+            `${employee.lastName}`
+        );
+        continue;
+      }
+      await downloadEmployeePhoto(employee._id, employee.photo_filename);
+      const employeeFolderName =
+        `${employee.firstName}_${employee.lastName}_${employee._id}`
+          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+          .replace(/\s+/g, "_");
+      await updateEmployeePhotoMetadata(employee._id, {
+        photo_path: path.join(
+          "employees_photos",
+          employeeFolderName,
+          employee.photo_filename
+        ),
+        photo_filename: employee.photo_filename,
+        photo_version: employee.photo_version,
+        photo_hash: employee.photo_hash,
+        photo_mime_type: employee.photo_mime_type,
+        photo_last_modified: employee.photo_last_modified,
+      });
+      console.log(
+        `DOWNLOADED NEW PHOTO FOR ` +
+          `${employee.firstName} ` +
+          `${employee.lastName}. ` +
+          `Version ${employee.photo_version}`
+      );
+    } catch (error) {
+      console.error(`FAILED TO SYNC PHOTO FOR EMPLOYEE ${employee._id}`, error);
+    }
+  }
+}
+
+async function syncEmployeeDocuments(
+  employeeDocuments: EmployeeDocument[]
+): Promise<boolean> {
+  if (!employeeDocuments || employeeDocuments.length === 0) {
+    return true;
+  }
+  let succeeded = true;
+  for (const document of employeeDocuments) {
+    try {
+      const localDocument = await getEmployeeDocument(
+        document.employeeId,
+        document.documentType
+      );
+      const localVersion = localDocument?.serverVersion ?? 0;
+      if (localVersion >= document.serverVersion) {
+        console.log(
+          `DOCUMENT ALREADY UP TO DATE: ` +
+            `${document.employeeId} ` +
+            `(${document.documentType})`
+        );
+        continue;
+      }
+      const employee = await getEmployeeById(document.employeeId);
+      if (!employee) {
+        throw new Error(
+          `Employee ${document.employeeId} not found while syncing document`
+        );
+      }
+      await downloadEmployeeDocument(employee, document);
+      const employeeFolderName =
+        `${employee.firstName}_${employee.lastName}_${employee._id}`
+          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+          .replace(/\s+/g, "_");
+      await upsertEmployeeDocument({
+        ...document,
+        localPath: path.join(
+          "employees_documents",
+          employeeFolderName,
+          document.documentType,
+          document.fileName
+        ),
+      });
+      await markEmployeeDocumentSynced(document._id);
+      console.log(
+        `DOWNLOADED ${document.documentType} ` +
+          `FOR ${employee.firstName} ` +
+          `${employee.lastName} ` +
+          `(v${document.serverVersion})`
+      );
+    } catch (error) {
+      succeeded = false;
+      console.error(`FAILED TO SYNC DOCUMENT ${document._id}`, error);
+    }
+  }
+  return succeeded;
+}
+
 async function syncAttendances(attendances: Attendance[]): Promise<boolean> {
   if (!attendances || attendances.length === 0) {
     return true;
@@ -402,121 +457,6 @@ async function syncTasks(tasks: Task[]): Promise<boolean> {
     } catch (error) {
       succeeded = false;
       console.error("FAILED TO SYNC PULLED TASK:", task._id, error);
-    }
-  }
-  return succeeded;
-}
-async function syncAdminUsers(adminUsers: AdminUser[]): Promise<boolean> {
-  if (!adminUsers || adminUsers.length === 0) {
-    return true;
-  }
-  let succeeded = true;
-  for (const adminUser of adminUsers) {
-    try {
-      await upsertAdminUser(adminUser);
-    } catch (error) {
-      succeeded = false;
-      console.error("FAILED TO SYNC PULLED ADMIN USER:", adminUser._id, error);
-    }
-  }
-  return succeeded;
-}
-async function syncEmployeePhotos(employees: Employee[]) {
-  for (const employee of employees) {
-    try {
-      if (!employee.photo_filename || employee.photo_version == null) {
-        continue;
-      }
-      const localEmployee = await getEmployeeById(employee._id);
-      const localPhotoVersion = localEmployee?.photo_version ?? 0;
-      if (localPhotoVersion >= employee.photo_version) {
-        console.log(
-          `PHOTO ALREADY UP TO DATE FOR ` +
-            `${employee.firstName} ` +
-            `${employee.lastName}`
-        );
-        continue;
-      }
-      await downloadEmployeePhoto(employee._id, employee.photo_filename);
-      const employeeFolderName =
-        `${employee.firstName}_${employee.lastName}_${employee._id}`
-          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
-          .replace(/\s+/g, "_");
-      await updateEmployeePhotoMetadata(employee._id, {
-        photo_path: path.join(
-          "employees_photos",
-          employeeFolderName,
-          employee.photo_filename
-        ),
-        photo_filename: employee.photo_filename,
-        photo_version: employee.photo_version,
-        photo_hash: employee.photo_hash,
-        photo_mime_type: employee.photo_mime_type,
-        photo_last_modified: employee.photo_last_modified,
-      });
-      console.log(
-        `DOWNLOADED NEW PHOTO FOR ` +
-          `${employee.firstName} ` +
-          `${employee.lastName}. ` +
-          `Version ${employee.photo_version}`
-      );
-    } catch (error) {
-      console.error(`FAILED TO SYNC PHOTO FOR EMPLOYEE ${employee._id}`, error);
-    }
-  }
-}
-async function syncEmployeeDocuments(
-  employeeDocuments: EmployeeDocument[]
-): Promise<boolean> {
-  if (!employeeDocuments || employeeDocuments.length === 0) {
-    return true;
-  }
-  let succeeded = true;
-  for (const document of employeeDocuments) {
-    try {
-      const localDocument = await getEmployeeDocument(
-        document.employeeId,
-        document.documentType
-      );
-      const localVersion = localDocument?.serverVersion ?? 0;
-      if (localVersion >= document.serverVersion) {
-        console.log(
-          `DOCUMENT ALREADY UP TO DATE: ` +
-            `${document.employeeId} ` +
-            `(${document.documentType})`
-        );
-        continue;
-      }
-      const employee = await getEmployeeById(document.employeeId);
-      if (!employee) {
-        throw new Error(
-          `Employee ${document.employeeId} not found while syncing document`
-        );
-      }
-      await downloadEmployeeDocument(employee, document);
-      const employeeFolderName =
-        `${employee.firstName}_${employee.lastName}_${employee._id}`
-          .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
-          .replace(/\s+/g, "_");
-      await upsertEmployeeDocument({
-        ...document,
-        localPath: path.join(
-          "employees_documents",
-          employeeFolderName,
-          document.documentType,
-          document.fileName
-        ),
-      });
-      await markEmployeeDocumentSynced(document._id);
-      console.log(
-        `DOWNLOADED ${document.documentType} ` +
-          `FOR ${employee.firstName} ` +
-          `${employee.lastName} ` +
-          `(v${document.serverVersion})`
-      );
-    } catch (error) {
-      succeeded = false;
-      console.error(`FAILED TO SYNC DOCUMENT ${document._id}`, error);
     }
   }
   return succeeded;
@@ -688,4 +628,75 @@ async function syncPayrollItems(payrollItems: PayrollItem[]): Promise<boolean> {
     }
   }
   return succeeded;
+}
+
+// Pull entity helper function
+async function pullEntityByVersion<T>(
+  entity: string,
+  syncBatch: (items: T[]) => Promise<boolean>,
+  limit = 500
+): Promise<VersionPullResult<T>> {
+  const syncState = await getSyncState(entity);
+  let afterVersion = syncState.lastPulledVersion ?? 0;
+  const allItems: T[] = [];
+  let hasMore = true;
+  let latestServerTime: string | undefined;
+  while (hasMore) {
+    console.log(
+      `PULLING ${entity.toUpperCase()} ` + `AFTER VERSION ${afterVersion}`
+    );
+    const response = await axios.get<VersionPullResponse<T>>(
+      `${API_URL}/sync/pull`,
+      { params: { entity, afterVersion, limit }, timeout: 90000 }
+    );
+    const {
+      items,
+      nextVersion,
+      hasMore: serverHasMore,
+      serverTime,
+    } = response.data;
+    latestServerTime = serverTime ?? latestServerTime;
+    const batch = items ?? [];
+    console.log(`${entity.toUpperCase()} VERSION PULL RESULT:`, {
+      afterVersion,
+      received: batch.length,
+      nextVersion,
+      hasMore: serverHasMore,
+      serverTime,
+    });
+    if (batch.length === 0) {
+      break;
+    }
+    const succeeded = await syncBatch(batch);
+    if (!succeeded) {
+      throw new Error(
+        `${entity.toUpperCase()} SYNC FAILED AFTER VERSION ` +
+          `${afterVersion}. SYNC CURSOR WAS NOT ADVANCED.`
+      );
+    }
+    const newVersion = Number(nextVersion ?? afterVersion);
+    if (!Number.isFinite(newVersion)) {
+      throw new Error(
+        `${entity.toUpperCase()} RETURNED INVALID NEXT VERSION: ` +
+          `${nextVersion}`
+      );
+    }
+    if (newVersion <= afterVersion) {
+      throw new Error(
+        `${entity.toUpperCase()} SYNC VERSION DID NOT ADVANCE. ` +
+          `Current: ${afterVersion}, ` +
+          `Next: ${newVersion}`
+      );
+    }
+    await updateLastPulledVersion(entity, newVersion);
+    afterVersion = newVersion;
+    allItems.push(...batch);
+    hasMore = Boolean(serverHasMore);
+  }
+  console.log(`${entity.toUpperCase()} VERSION SYNC COMPLETE:`, {
+    totalItems: allItems.length,
+    lastVersion: afterVersion,
+    serverTime: latestServerTime,
+  });
+  return { items: allItems, serverTime: latestServerTime };
 }
