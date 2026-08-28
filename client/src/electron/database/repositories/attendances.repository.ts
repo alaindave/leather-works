@@ -924,19 +924,6 @@ export async function upsertAttendance(attendance: Attendance) {
       return localByEmployeeDate;
     }
 
-    /*
-     * IMPORTANT:
-     *
-     * Keep the LOCAL _id.
-     *
-     * Do NOT change _id here.
-     *
-     * This avoids:
-     *
-     * UNIQUE constraint failed: attendances._id
-     *
-     * when another row already owns the remote ID.
-     */
     await run(
       `
       UPDATE attendances
@@ -1046,7 +1033,6 @@ export async function upsertAttendance(attendance: Attendance) {
     });
 
     /*
-     * VERY IMPORTANT DEBUGGING STEP:
      *
      * Find out what is actually occupying the ID.
      */

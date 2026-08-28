@@ -240,6 +240,7 @@ router.post(
                 (f) => f.originalname === data.photo_filename
               );
 
+              console.log("EMPLOYEE PHOTO TO UPDATE:", file);
               const result = await syncEmployeePhoto(data, file);
               console.log(
                 `EMPLOYEE PHOTOS ${data._id} SERVER VERSION:`,

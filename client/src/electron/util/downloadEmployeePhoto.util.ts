@@ -20,7 +20,7 @@ export async function downloadEmployeePhoto(
     throw new Error(`Employee ${employeeId} not found`);
   }
 
-  // Filesystem-safe folder name
+  // Folder name
   const employeeFolderName =
     `${employee.firstName}_${employee.lastName}_${employee._id}`
       .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")

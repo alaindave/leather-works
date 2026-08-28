@@ -581,19 +581,36 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
       .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
       .replace(/\s+/g, "_");
 
-  const objectPath = `${employeeFolderName}/photo`;
+  /*
+   * Use the photo version in the object name.
+   */
+  const photoVersion = Number(data.photo_version ?? 1);
+
+  const objectPath = `${employeeFolderName}/photo_v${photoVersion}`;
+
+  console.log("UPLOADING EMPLOYEE PHOTO:", {
+    employeeId: employee._id,
+    photoVersion,
+    objectPath,
+    mimeType: data.photo_mime_type,
+    hash: data.photo_hash,
+  });
 
   const { error } = await supabase.storage
     .from("afritan_employees_photos")
     .upload(objectPath, file.buffer, {
       contentType: data.photo_mime_type,
       upsert: true,
+      cacheControl: "0",
     });
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(`FAILED TO UPLOAD EMPLOYEE PHOTO: ${error.message}`);
   }
 
+  /*
+   * Get a new server version AFTER the upload.
+   */
   const serverVersion = await getServerVersion("employee");
 
   Object.assign(employee, {
@@ -604,21 +621,29 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
     photo_last_modified: data.photo_last_modified
       ? new Date(data.photo_last_modified)
       : new Date(data.updatedAt as string),
-    photo_version: data.photo_version,
+    photo_version: photoVersion,
     updatedAt: new Date(data.updatedAt as string),
     serverVersion,
   });
 
   await employee.save();
 
+  console.log("EMPLOYEE PHOTO SYNCED:", {
+    employeeId: employee._id,
+    photoVersion,
+    objectPath,
+    serverVersion,
+  });
+
   return {
     success: true,
     employeeId: employee._id,
     serverVersion,
     updatedAt: employee.updatedAt,
+    photoVersion,
+    photoPath: objectPath,
   };
 }
-
 // ============================================================
 // EMPLOYEE DOCUMENTS
 // ============================================================
