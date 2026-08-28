@@ -238,17 +238,21 @@ export default function TaskDetailsDrawer({
                     Date limite
                   </Text>
 
-                  <Text
+                  <Box
                     position="relative"
                     bottom="1.1rem"
                     fontSize="0.95rem"
                     color="gray.600"
                   >
                     {currentTask.deadline &&
-                      new Date(currentTask.deadline).toLocaleDateString(
-                        "fr-FR"
-                      )}
-                  </Text>
+                    new Date(currentTask.deadline).getDay() ===
+                      new Date().getDay() ? (
+                      <Text color="brown">Aujurd'hui</Text>
+                    ) : (
+                      currentTask.deadline &&
+                      new Date(currentTask.deadline).toLocaleDateString("fr-FR")
+                    )}
+                  </Box>
                 </Box>
               </HStack>
             </Flex>

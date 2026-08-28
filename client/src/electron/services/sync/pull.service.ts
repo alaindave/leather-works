@@ -13,6 +13,8 @@ import { setSetting } from "../../database/repositories/settings.repository.js";
 import { upsertAdminUser } from "../../database/repositories/admin_users.repository.js";
 
 import {
+  getAttendanceByEmployeeAndDate,
+  getAttendanceById,
   markAttendanceSynced,
   upsertAttendance,
 } from "../../database/repositories/attendances.repository.js";
@@ -618,7 +620,6 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
 
 async function syncAllEmployeePhotos(): Promise<void> {
   console.log("STARTING EMPLOYEE PHOTO RECONCILIATION...");
-
   const localEmployees = await getAllEmployeesForPhotoSync();
 
   console.log(`CHECKING PHOTOS FOR ${localEmployees.length} EMPLOYEES...`);
@@ -633,12 +634,6 @@ async function syncAllEmployeePhotos(): Promise<void> {
   let skipped = 0;
   let failed = 0;
 
-  /*
-   * Sequential processing is intentional.
-   *
-   * It prevents a first-installation sync from hammering the
-   * server with dozens of simultaneous photo requests.
-   */
   for (const employee of localEmployees) {
     try {
       const result = await syncEmployeePhoto(employee);
@@ -664,16 +659,6 @@ async function syncAllEmployeePhotos(): Promise<void> {
     skipped,
     failed,
   });
-
-  /*
-   * Photo failures are logged individually rather than thrown
-   * here because a broken photo should not prevent the rest of
-   * the application's pull synchronization from completing.
-   *
-   * The next pull cycle will retry failed photos because their
-   * local file will still be missing or their metadata will not
-   * match the server.
-   */
 }
 
 /**
@@ -770,21 +755,13 @@ async function syncEmployeePhoto(
    * ----------------------------------------------------------
    * DETERMINE PHOTO PATH
    * ----------------------------------------------------------
-   *
-   * The server's photo_path should be the canonical path.
-   *
-   * If photo_path is not available, fall back to the same
-   * folder convention used by the downloader.
-   * ----------------------------------------------------------
    */
 
-  const relativePhotoPath =
-    employee.photo_path ??
-    path.join(
-      "employees_photos",
-      getEmployeePhotoFolderName(localEmployee),
-      employee.photo_filename
-    );
+  const relativePhotoPath = path.join(
+    "employees_photos",
+    getEmployeePhotoFolderName(localEmployee),
+    employee.photo_filename
+  );
 
   const absolutePhotoPath = path.isAbsolute(relativePhotoPath)
     ? relativePhotoPath
@@ -842,24 +819,16 @@ async function syncEmployeePhoto(
       `${employee.firstName} ${employee.lastName}:`,
     {
       employeeId: employee._id,
-
       localPhotoVersion,
       serverPhotoVersion,
-
       localFilename: localEmployee.photo_filename,
       serverFilename: employee.photo_filename,
-
       localPhotoPath: localEmployee.photo_path,
       serverPhotoPath: employee.photo_path,
-
       photoExists,
-
       versionChanged: localPhotoVersion !== serverPhotoVersion,
-
       filenameChanged: !filenameIsCurrent,
-
       pathChanged: !pathIsCurrent,
-
       expectedPath: absolutePhotoPath,
     }
   );
@@ -898,15 +867,10 @@ async function syncEmployeePhoto(
 
   await updateEmployeePhotoMetadata(employee._id, {
     photo_path: relativePhotoPath,
-
     photo_filename: employee.photo_filename,
-
     photo_version: serverPhotoVersion,
-
     photo_hash: employee.photo_hash,
-
     photo_mime_type: employee.photo_mime_type,
-
     photo_last_modified: employee.photo_last_modified,
   });
 
@@ -955,7 +919,6 @@ function getEmployeePhotoFolderName(employee: Employee): string {
 async function fileExists(filePath: string): Promise<boolean> {
   try {
     await fs.access(filePath);
-
     return true;
   } catch {
     return false;
@@ -979,7 +942,6 @@ async function removeOldEmployeePhoto(
 
     if (await fileExists(oldPath)) {
       await fs.unlink(oldPath);
-
       console.log("REMOVED OLD EMPLOYEE PHOTO:", oldPath);
     }
   } catch (error) {
@@ -1014,7 +976,6 @@ async function syncAdminUsers(adminUsers: AdminUser[]): Promise<boolean> {
       await upsertAdminUser(adminUser);
     } catch (error) {
       succeeded = false;
-
       console.error("FAILED TO SYNC PULLED ADMIN USER:", adminUser._id, error);
     }
   }
@@ -1045,7 +1006,6 @@ async function syncEmployeeDocuments(
       );
 
       const localVersion = Number(localDocument?.serverVersion ?? 0);
-
       const remoteVersion = Number(document.serverVersion ?? 0);
 
       if (localDocument && localVersion >= remoteVersion) {
@@ -1108,6 +1068,7 @@ async function syncEmployeeDocuments(
 
 async function syncAttendances(attendances: Attendance[]): Promise<boolean> {
   if (!attendances || attendances.length === 0) {
+    console.log("NO ATTENDANCES TO SYNC.");
     return true;
   }
 
@@ -1115,15 +1076,199 @@ async function syncAttendances(attendances: Attendance[]): Promise<boolean> {
 
   for (const attendance of attendances) {
     try {
-      await upsertAttendance(attendance);
+      console.log("\n==================================================");
+      console.log("ATTENDANCE SYNC START");
+      console.log("==================================================");
 
-      await markAttendanceSynced(attendance._id);
+      console.log("REMOTE ATTENDANCE:", {
+        _id: attendance._id,
+        employeeId: attendance.employeeId,
+        date: attendance.date,
+        clockIn: attendance.clockIn,
+        clockOut: attendance.clockOut,
+        status: attendance.status,
+        source: attendance.source,
+        lateMinutes: attendance.lateMinutes,
+        notes: attendance.notes,
+        serverVersion: attendance.serverVersion,
+        isDeleted: attendance.isDeleted,
+      });
+
+      /*
+       * ------------------------------------------------------
+       * CHECK DATABASE BEFORE UPSERT
+       * ------------------------------------------------------
+       */
+
+      const beforeById = await getAttendanceById(attendance._id);
+
+      const beforeByEmployeeDate = await getAttendanceByEmployeeAndDate(
+        attendance.employeeId,
+        attendance.date
+      );
+
+      console.log("DATABASE BEFORE UPSERT:", {
+        byId: beforeById,
+        byEmployeeDate: beforeByEmployeeDate,
+      });
+
+      /*
+       * ------------------------------------------------------
+       * UPSERT
+       * ------------------------------------------------------
+       */
+
+      console.log("CALLING upsertAttendance()...");
+
+      console.log("🚨 REMOTE ATTENDANCE FULL OBJECT:", attendance);
+
+      console.log("🚨 REMOTE ATTENDANCE DELETE STATE:", {
+        remoteId: attendance._id,
+        employeeId: attendance.employeeId,
+        date: attendance.date,
+        isDeleted: attendance.isDeleted,
+        serverVersion: attendance.serverVersion,
+      });
+
+      const upsertedAttendance = await upsertAttendance(attendance);
+
+      console.log("upsertAttendance() COMPLETED:", {
+        result: upsertedAttendance,
+      });
+
+      /*
+       * ------------------------------------------------------
+       * CHECK DATABASE IMMEDIATELY AFTER UPSERT
+       * ------------------------------------------------------
+       */
+
+      const afterUpsertById = await getAttendanceById(attendance._id);
+
+      const afterUpsertByEmployeeDate = await getAttendanceByEmployeeAndDate(
+        attendance.employeeId,
+        attendance.date
+      );
+
+      console.log("DATABASE AFTER UPSERT:", {
+        byId: afterUpsertById,
+        byEmployeeDate: afterUpsertByEmployeeDate,
+      });
+
+      /*
+       * ------------------------------------------------------
+       * IMPORTANT:
+       * Check whether the record actually exists.
+       * ------------------------------------------------------
+       */
+
+      if (!afterUpsertById && !afterUpsertByEmployeeDate) {
+        console.error("🚨 ATTENDANCE DISAPPEARED DURING upsertAttendance()!", {
+          remoteId: attendance._id,
+          employeeId: attendance.employeeId,
+          date: attendance.date,
+        });
+
+        throw new Error(
+          `Attendance ${attendance._id} disappeared immediately after upsert`
+        );
+      }
+
+      /*
+       * ------------------------------------------------------
+       * DETERMINE ACTUAL LOCAL ID
+       * ------------------------------------------------------
+       */
+
+      const actualLocalId =
+        upsertedAttendance?._id ??
+        afterUpsertById?._id ??
+        afterUpsertByEmployeeDate?._id ??
+        attendance._id;
+
+      console.log("ATTENDANCE ID TO MARK SYNCED:", {
+        remoteId: attendance._id,
+        actualLocalId,
+      });
+
+      /*
+       * ------------------------------------------------------
+       * MARK SYNCED
+       * ------------------------------------------------------
+       */
+
+      console.log("CALLING markAttendanceSynced()...");
+
+      await markAttendanceSynced(actualLocalId);
+
+      console.log("markAttendanceSynced() COMPLETED.");
+
+      /*
+       * ------------------------------------------------------
+       * CHECK DATABASE AFTER MARK SYNCED
+       * ------------------------------------------------------
+       */
+
+      const afterMarkSyncedById = await getAttendanceById(actualLocalId);
+
+      const afterMarkSyncedByEmployeeDate =
+        await getAttendanceByEmployeeAndDate(
+          attendance.employeeId,
+          attendance.date
+        );
+
+      console.log("DATABASE AFTER markAttendanceSynced():", {
+        byId: afterMarkSyncedById,
+        byEmployeeDate: afterMarkSyncedByEmployeeDate,
+      });
+
+      /*
+       * ------------------------------------------------------
+       * FINAL EXISTENCE CHECK
+       * ------------------------------------------------------
+       */
+
+      if (!afterMarkSyncedById && !afterMarkSyncedByEmployeeDate) {
+        console.error(
+          "🚨🚨 ATTENDANCE DISAPPEARED AFTER markAttendanceSynced()!",
+          {
+            remoteId: attendance._id,
+            actualLocalId,
+            employeeId: attendance.employeeId,
+            date: attendance.date,
+          }
+        );
+
+        throw new Error(
+          `Attendance ${actualLocalId} disappeared after markAttendanceSynced`
+        );
+      }
+
+      console.log("✅ ATTENDANCE SYNC SUCCESS:", {
+        remoteId: attendance._id,
+        localId: actualLocalId,
+        employeeId: attendance.employeeId,
+        date: attendance.date,
+      });
+
+      console.log("==================================================");
+      console.log("ATTENDANCE SYNC END");
+      console.log("==================================================\n");
     } catch (error) {
       succeeded = false;
 
-      console.error("FAILED TO SYNC PULLED ATTENDANCE:", attendance._id, error);
+      console.error("❌ FAILED TO SYNC PULLED ATTENDANCE:", {
+        attendanceId: attendance._id,
+        employeeId: attendance.employeeId,
+        date: attendance.date,
+        error,
+      });
     }
   }
+
+  console.log("ATTENDANCE SYNC BATCH COMPLETE:", {
+    total: attendances.length,
+    succeeded,
+  });
 
   return succeeded;
 }

@@ -878,27 +878,49 @@ export async function upsertAttendance(attendance: Attendance) {
    * Use INSERT OR IGNORE so that if another sync operation inserts
    * the same _id between our SELECT and INSERT, SQLite will not crash.
    */
+  /*
+   * ----------------------------------------------------------
+   * INSERT NEW ATTENDANCE
+   * ----------------------------------------------------------
+   */
+
+  console.log("ATTEMPTING ATTENDANCE INSERT:", {
+    _id: attendance._id,
+    employeeId: attendance.employeeId,
+    date: attendance.date,
+    clockIn: attendance.clockIn ?? null,
+    clockOut: attendance.clockOut ?? null,
+    status: attendance.status ?? null,
+    source: attendance.source ?? null,
+    lateMinutes: attendance.lateMinutes ?? 0,
+    notes: attendance.notes ?? null,
+    serverVersion: attendance.serverVersion ?? 0,
+    isDeleted: attendance.isDeleted ?? 0,
+    createdAt: attendance.createdAt,
+    updatedAt: attendance.updatedAt,
+  });
+
   await run(
     `
-    INSERT OR IGNORE INTO attendances (
-      _id,
-      employeeId,
-      date,
-      clockIn,
-      clockOut,
-      status,
-      source,
-      lateMinutes,
-      notes,
-      serverVersion,
-      isDeleted,
-      createdAt,
-      updatedAt,
-      synced,
-      lastSyncedAt
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `,
+  INSERT INTO attendances (
+    _id,
+    employeeId,
+    date,
+    clockIn,
+    clockOut,
+    status,
+    source,
+    lateMinutes,
+    notes,
+    serverVersion,
+    isDeleted,
+    createdAt,
+    updatedAt,
+    synced,
+    lastSyncedAt
+  )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+  `,
     [
       attendance._id,
       attendance.employeeId,
@@ -917,15 +939,36 @@ export async function upsertAttendance(attendance: Attendance) {
     ]
   );
 
+  console.log("ATTENDANCE INSERT SUCCESSFUL:", {
+    attendanceId: attendance._id,
+  });
+
+  /*
+   * ----------------------------------------------------------
+   * VERIFY INSERT IMMEDIATELY
+   * ----------------------------------------------------------
+   */
+
+  const inserted = await getAttendanceById(attendance._id);
+
+  console.log("ATTENDANCE IMMEDIATELY AFTER INSERT:", inserted);
+
+  if (!inserted) {
+    throw new Error(
+      `Attendance ${attendance._id} was inserted but could not be found afterward`
+    );
+  }
+
+  return inserted;
   /*
    * 6. The INSERT may have been ignored because another operation
    *    inserted the same _id at the same time.
    */
-  const result = await getAttendanceById(attendance._id);
+  // const result = await getAttendanceById(attendance._id);
 
-  if (result) {
-    return result;
-  }
+  // if (result) {
+  //   return result;
+  // }
 
   /*
    * 7. It is also possible that the employee/date UNIQUE constraint
@@ -934,7 +977,7 @@ export async function upsertAttendance(attendance: Attendance) {
    *
    *    Look it up using employee + date.
    */
-  return getAttendanceByEmployeeAndDate(attendance.employeeId, attendance.date);
+  // return getAttendanceByEmployeeAndDate(attendance.employeeId, attendance.date);
 }
 
 /**

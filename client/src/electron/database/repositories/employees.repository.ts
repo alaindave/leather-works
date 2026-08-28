@@ -431,7 +431,6 @@ export async function upsertEmployee(employee: Employee) {
         relationship,
         contactPhone,
 
-        photo_path,
         photo_filename,
         photo_version,
         photo_hash,
@@ -446,7 +445,7 @@ export async function upsertEmployee(employee: Employee) {
         lastSyncedAt
       )
       VALUES (
-        ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,CURRENT_TIMESTAMP
+        ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,CURRENT_TIMESTAMP
       )
       `,
       [
@@ -469,7 +468,6 @@ export async function upsertEmployee(employee: Employee) {
         employee.contactPhone,
 
         // Photo metadata
-        employee.photo_path ?? null,
         employee.photo_filename ?? null,
         employee.photo_version ?? null,
         employee.photo_hash ?? null,
@@ -517,7 +515,7 @@ export async function upsertEmployee(employee: Employee) {
 
   /*
    * ==========================================================
-   * CASE 3: Incoming version is not newer
+   * CASE 3: Incoming version is older
    * ==========================================================
    */
   if (incomingVersion <= localVersion) {
@@ -558,7 +556,6 @@ export async function upsertEmployee(employee: Employee) {
       relationship = ?,
       contactPhone = ?,
 
-      photo_path = ?,
       photo_filename = ?,
       photo_version = ?,
       photo_hash = ?,
@@ -592,7 +589,6 @@ export async function upsertEmployee(employee: Employee) {
       employee.contactPhone,
 
       // Photo metadata
-      employee.photo_path ?? null,
       employee.photo_filename ?? null,
       employee.photo_version ?? null,
       employee.photo_hash ?? null,

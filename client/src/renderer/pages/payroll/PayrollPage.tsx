@@ -83,11 +83,7 @@ export default function PayrollPage() {
     try {
       const payroll_results =
         await window.electron.payrollRun.createPayrollDraft(user);
-
-      await handlePayrollSync();
-
       console.log("PAYROLL RESULTS", payroll_results);
-
       toast({
         title: "Paie générée",
         description: "Les bulletins de paie ont été généré avec succès.",
@@ -96,6 +92,7 @@ export default function PayrollPage() {
         isClosable: true,
         position: "top-left",
       });
+      await handlePayrollSync();
     } catch (error) {
       showErrorMessage(
         "Échec de création de bulletins de paie",

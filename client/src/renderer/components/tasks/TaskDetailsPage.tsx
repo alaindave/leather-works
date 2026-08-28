@@ -16,6 +16,7 @@ import {
 import { FiCheckCircle } from "react-icons/fi";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { FaHourglassStart } from "react-icons/fa";
+import { FaHourglassEnd } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Task from "../../../common/types/Task";
@@ -162,10 +163,17 @@ export default function TaskDetailsPage() {
         </HStack>
         {/* Deadline */}
         <HStack>
-          <FaHourglassStart size="1.2rem" color="brown" />
+          {task?.deadline && new Date(task?.deadline) <= new Date() ? (
+            <FaHourglassEnd size="1.2rem" color="brown" />
+          ) : (
+            <FaHourglassStart size="1.2rem" color="green" />
+          )}
           <Text mt="1rem" fontSize="1.1rem">
             {task?.deadline &&
-              new Date(task?.deadline).toLocaleDateString("fr-FR")}
+            new Date(task?.deadline).getDay() === new Date().getDay()
+              ? "Aujurd'hui"
+              : task?.deadline &&
+                new Date(task?.deadline).toLocaleDateString("fr-FR")}
           </Text>
         </HStack>
 

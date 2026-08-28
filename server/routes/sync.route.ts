@@ -92,6 +92,7 @@ async function pullVersionedCollection<T extends { serverVersion?: number }>(
       serverVersion: {
         $gt: afterVersion,
       },
+      isDeleted: 0,
     })
     .sort({
       serverVersion: 1,

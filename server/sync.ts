@@ -136,6 +136,7 @@ export async function syncAttendance(operation: SyncOperation, data: SyncData) {
   const existingAttendance = await Attendance.findOne({
     employeeId: fields.employeeId,
     date: fields.date,
+    isDeleted: 0,
   });
   // Check if attendance record exist but with different _id
   if (existingAttendance && existingAttendance._id.toString() !== _id) {
@@ -593,12 +594,6 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
     throw new Error(error.message);
   }
 
-  /*
-   * A photo change is an employee change.
-   *
-   * The employee's updatedAt comes from the client.
-   * The employee's serverVersion comes from the server.
-   */
   const serverVersion = await getServerVersion("employee");
 
   Object.assign(employee, {
@@ -606,19 +601,11 @@ export async function syncEmployeePhoto(data: SyncData, file?: UploadedFile) {
     photo_path: objectPath,
     photo_hash: data.photo_hash,
     photo_mime_type: data.photo_mime_type,
-
     photo_last_modified: data.photo_last_modified
       ? new Date(data.photo_last_modified)
       : new Date(data.updatedAt as string),
-
     photo_version: data.photo_version,
-
-    /*
-     * IMPORTANT:
-     * Preserve client-side updatedAt.
-     */
     updatedAt: new Date(data.updatedAt as string),
-
     serverVersion,
   });
 
