@@ -299,7 +299,11 @@ declare global {
       };
 
       payrollRun: {
-        createPayrollDraft(admin: AdminUser): Promise<PayrollRun>;
+        createPayrollDraft(
+          admin: AdminUser,
+          month: number,
+          year: number
+        ): Promise<PayrollRun>;
 
         getPayrollRuns(): Promise<PayrollRun[]>;
 

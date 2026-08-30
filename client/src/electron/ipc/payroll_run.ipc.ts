@@ -28,11 +28,16 @@ export function registerPayrollGenerationIPC() {
   // Generate payroll draft
   ipcMain.handle(
     "payroll:createDraft",
-    async (_, admin: Omit<User, "password" | "notes">) => {
+    async (
+      _,
+      admin: Omit<User, "password" | "notes">,
+      month: number,
+      year: number
+    ) => {
       // Current payroll period
-      const date = new Date();
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
+      // const date = new Date();
+      // const month = date.getMonth() + 1;
+      // const year = date.getFullYear();
 
       //  Fetch payroll settings
       const payrollSettings = await getPayrollSettings();
@@ -84,7 +89,7 @@ export function registerPayrollGenerationIPC() {
       );
 
       // Create payroll run
-      const payrollRun = await createPayrollRun(batch, admin);
+      const payrollRun = await createPayrollRun(batch, admin, month, year);
 
       // Save payroll results
       await savePayrollResults(payrollRun._id, batch.results);

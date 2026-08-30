@@ -183,7 +183,7 @@ export default function PayrollPage() {
 
     try {
       const payroll_results =
-        await window.electron.payrollRun.createPayrollDraft(user);
+        await window.electron.payrollRun.createPayrollDraft(user, 8, 2026);
       console.log("PAYROLL RESULTS", payroll_results);
       toast({
         title: "Paie générée",

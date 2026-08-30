@@ -576,11 +576,11 @@ payrollEmployeeProfiles: {
 payrollRun: {
 
   createPayrollDraft: (
-    admin: AdminUser
+    admin: AdminUser,month:number,year:number
   ) => {
     return ipcRenderer.invoke(
       "payroll:createDraft",
-      admin
+      admin,month,year
     );
   },
 
