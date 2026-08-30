@@ -24,6 +24,7 @@ import PayrollDashboard from "../../components/PayrollDashboard";
 import PayrollResultsTable from "../../components/PayrollResultsTable";
 import { getPayrollPeriod } from "../../util/getPayrollPeriod";
 import { formatTime } from "../../util/timeFormatter";
+import useSyncStore from "../../../store/sync.store";
 
 const PayrollDetailsPage = () => {
   const { _id } = useParams();
@@ -34,6 +35,7 @@ const PayrollDetailsPage = () => {
     {} as PayrollRun
   );
   const [payrollResults, setPayrollResults] = useState<PayrollResult[]>([]);
+  const syncVersion = useSyncStore((store) => store.syncVersion);
 
   const statusColor = {
     BROUILLON: "#e6b800",
@@ -51,7 +53,7 @@ const PayrollDetailsPage = () => {
   useEffect(() => {
     loadPayrollRun();
     loadPayrollResuts();
-  }, []);
+  }, [syncVersion]);
 
   const loadPayrollRun = async () => {
     if (!_id) return;

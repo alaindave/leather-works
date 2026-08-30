@@ -7,6 +7,7 @@ import {
   AlertDialogOverlay,
   Box,
   Button,
+  Checkbox,
   Flex,
   Grid,
   HStack,
@@ -34,6 +35,7 @@ import DateDropdown from "../components/DateDropdown";
 import EmployeeAttendanceCard from "../components/EmployeeAttendanceCard";
 import EmployeeFilterMenu from "../components/EmployeeFilterMenu";
 import SearchBar from "../components/SearchBar";
+import DateRangePicker, { DateRange } from "../components/DatePicker";
 
 /* ================= SHIMMER ================= */
 const shimmerKeyframes = `
@@ -63,18 +65,27 @@ const formatter = new Intl.DateTimeFormat("en-CA", {
 
 const formattedDate = formatter.format(date);
 
+const today = new Date();
+const thirtyDaysAgo = new Date(today);
+thirtyDaysAgo.setDate(today.getDate() - 30);
+
 const EmployeeAttendancePage = () => {
   const [attendances, setAttendances] = useState<AttendanceWithEmployee[]>([]);
   const [attendance, setAttendance] = useState<AttendanceWithEmployee | null>(
     null
   );
+  const [includeWeekends, setIncludeWeekends] = useState(false);
   const [selectedDate, setSelectedDate] = useState(formattedDate);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState("");
-  const [time, setTime] = useState(new Date());
+  const [time, setTime] = useState(today);
   const [loading, setLoading] = useState(false);
   const [checkLoading, setCheckLoading] = useState(false);
   const [canVerify, setCanVerify] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: new Date(thirtyDaysAgo),
+    endDate: new Date(today),
+  });
   const [dailyCheck, setDailyCheck] = useState<AttendanceDailyCheck | null>(
     null
   );
@@ -188,21 +199,21 @@ const EmployeeAttendancePage = () => {
     }
   };
 
-  const attendanceSync = async () => {
-    try {
-      setLoading(true);
-      const result = await window.electron.sync();
-      if (!result.success) {
-        console.error(result.message);
-      }
-      await loadAttendance();
-      await loadDailyCheck();
-    } catch (error) {
-      console.error("AN ERROR OCCURED WHILE SYNCING ATTENDANCE:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const attendanceSync = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const result = await window.electron.sync();
+  //     if (!result.success) {
+  //       console.error(result.message);
+  //     }
+  //     await loadAttendance();
+  //     await loadDailyCheck();
+  //   } catch (error) {
+  //     console.error("AN ERROR OCCURED WHILE SYNCING ATTENDANCE:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const attendanceDailyCheckSync = async () => {
     try {
@@ -241,15 +252,25 @@ const EmployeeAttendancePage = () => {
       window.electron.sync().catch((error) => {
         console.error("IMMEDIATE SYNC FAILED:", error);
       });
-      const absences = await window.electron.attendance.markAbsent(
-        selectedDate
-      );
-      console.log("ABSENCES CREATED", absences);
-      await attendanceSync();
+      const result = await window.electron.attendance.markAbsent(selectedDate);
+      console.log("MARK ABSENT RESULT", result);
+      if (result.completed) {
+        await loadData();
+        toast({
+          title: "Absences enregistrés",
+          description: "Les absences ont été enregistrés avec succès.",
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+          position: "top-left",
+        });
+        return;
+      }
       toast({
-        title: "Absences enregistrés",
-        description: "Les absences ont été enregistrés avec succès.",
-        status: "success",
+        title: "Weekend",
+        description:
+          "Service non disponible les weekends. Les absences doivent etre enregistrées manuellement",
+        status: "warning",
         duration: 4000,
         isClosable: true,
         position: "top-left",
@@ -385,6 +406,8 @@ const EmployeeAttendancePage = () => {
   };
 
   const attendanceAction = getAttendanceAction();
+
+  console.log("CAN VERIFY ?", canVerify);
 
   return (
     <Flex direction="column" ml="0.02rem" width="100vw" h="95.1vh" bg="#F8FAFC">
@@ -621,12 +644,11 @@ const EmployeeAttendancePage = () => {
           ) : null}
         </Flex>
 
-        <Flex>
+        <Flex justify="space-between">
           <Box ml="0.5rem">
             <EmployeeFilterMenu onFilterClicked={setFilter} />
           </Box>
 
-          <Spacer />
           <Box mr="1rem">
             <SearchBar
               placeholderText="Rechercher un employé"
@@ -733,15 +755,34 @@ const EmployeeAttendancePage = () => {
         justify="space-between"
         width="82vw"
       >
-        <Box
-          mt="0.6rem"
-          ml="1rem"
-          fontSize="1.2rem"
-          fontFamily="monospace"
-          fontWeight="600"
-        >
-          <DateDropdown onChange={setSelectedDate} />
-        </Box>
+        <HStack>
+          <Box ml="1rem">
+            <Checkbox
+              isChecked={includeWeekends}
+              onChange={(event) => setIncludeWeekends(event.target.checked)}
+            >
+              <Text mt="1rem" fontSize="1rem">
+                W/E
+              </Text>
+            </Checkbox>
+          </Box>
+          <Box ml="1rem">
+            <DateRangePicker value={dateRange} onChange={setDateRange} />
+          </Box>
+          <Box
+            ml="1.1rem"
+            fontSize="1.2rem"
+            fontFamily="monospace"
+            fontWeight="600"
+          >
+            <DateDropdown
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+              onChange={setSelectedDate}
+              includeWeekends={includeWeekends}
+            />
+          </Box>
+        </HStack>
 
         {(!dailyCheck || dailyCheck.status !== "LOCKED") && (
           <Box mt="0.8rem">

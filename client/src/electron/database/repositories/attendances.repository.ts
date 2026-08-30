@@ -792,48 +792,51 @@ export async function deleteAttendance(_id: string) {
 }
 
 export async function upsertAttendance(attendance: Attendance) {
-  console.log("========== UPSERT ATTENDANCE START ==========");
-  console.log("REMOTE ATTENDANCE:", attendance);
-
   /*
    * ============================================================
-   * 1. FIND BY EXACT ID
+   * 1. FIND EXISTING RECORD
    * ============================================================
+   *
+   * IMPORTANT:
+   *
+   * Sync must search deleted records too.
+   *
+   * A soft-deleted SQLite row still occupies its _id, even though
+   * normal application queries hide it.
    */
-
   let local = await getAttendanceByIdIncludingDeleted(attendance._id);
 
-  console.log("LOCAL BY ID:", local);
-
   /*
-   * ============================================================
-   * 2. FIND BY EMPLOYEE + DATE
-   * ============================================================
+   * If the exact _id does not exist, look for an existing
+   * attendance for the same employee/date.
+   *
+   * This query also includes deleted records.
    */
-
-  let localByEmployeeDate =
-    await getAttendanceByEmployeeAndDateIncludingDeleted(
+  if (!local) {
+    local = await getAttendanceByEmployeeAndDateIncludingDeleted(
       attendance.employeeId,
       attendance.date
     );
-
-  console.log("LOCAL BY EMPLOYEE + DATE:", localByEmployeeDate);
+  }
 
   /*
    * ============================================================
-   * 3. CONFLICT: SAME ID AND SAME EMPLOYEE/DATE
+   * 2. EXISTING LOCAL RECORD
    * ============================================================
    */
-
   if (local) {
     const localVersion = Number(local.serverVersion ?? 0);
     const remoteVersion = Number(attendance.serverVersion ?? 0);
 
-    console.log("VERSION COMPARISON:", {
-      localVersion,
-      remoteVersion,
+    console.log("ATTENDANCE UPSERT CONFLICT CHECK:", {
       localId: local._id,
       remoteId: attendance._id,
+      employeeId: attendance.employeeId,
+      date: attendance.date,
+      localVersion,
+      remoteVersion,
+      localIsDeleted: local.isDeleted,
+      remoteIsDeleted: attendance.isDeleted,
     });
 
     /*
@@ -841,14 +844,20 @@ export async function upsertAttendance(attendance: Attendance) {
      */
     if (remoteVersion < localVersion) {
       console.log(
-        `SKIPPING ATTENDANCE ${attendance._id}: LOCAL VERSION IS NEWER`
+        `SKIPPING ATTENDANCE ${attendance._id}: ` +
+          `LOCAL VERSION ${localVersion} > REMOTE VERSION ${remoteVersion}`
       );
 
       return local;
     }
 
     /*
-     * Update existing record.
+     * IMPORTANT:
+     *
+     * Never change local._id to attendance._id here.
+     *
+     * If the local record was found by employeeId + date,
+     * preserve its existing SQLite identity.
      */
     await run(
       `
@@ -883,184 +892,104 @@ export async function upsertAttendance(attendance: Attendance) {
         attendance.isDeleted ?? 0,
         attendance.createdAt,
         attendance.updatedAt,
-        attendance._id,
+
+        /*
+         * Preserve the local SQLite _id.
+         */
+        local._id,
       ]
     );
-
-    const updated = await getAttendanceByIdIncludingDeleted(attendance._id);
-
-    console.log("UPDATED ATTENDANCE:", updated);
-
-    return updated;
-  }
-
-  /*
-   * ============================================================
-   * 4. NO ID MATCH, BUT EMPLOYEE + DATE EXISTS
-   * ============================================================
-   */
-
-  if (localByEmployeeDate) {
-    console.warn(
-      "ATTENDANCE ID MISMATCH. SAME EMPLOYEE + DATE ALREADY EXISTS.",
-      {
-        localId: localByEmployeeDate._id,
-        remoteId: attendance._id,
-        employeeId: attendance.employeeId,
-        date: attendance.date,
-      }
-    );
-
-    const localVersion = Number(localByEmployeeDate.serverVersion ?? 0);
-
-    const remoteVersion = Number(attendance.serverVersion ?? 0);
 
     /*
-     * Do not overwrite newer local version.
+     * IMPORTANT:
+     *
+     * Since this record may now be isDeleted = 1, DO NOT use
+     * getAttendanceById() here if that function hides deleted rows.
      */
-    if (remoteVersion < localVersion) {
-      console.log("SKIPPING EMPLOYEE/DATE CONFLICT: LOCAL VERSION IS NEWER");
+    const result = await getAttendanceByIdIncludingDeleted(local._id);
 
-      return localByEmployeeDate;
+    if (!result) {
+      throw new Error(`ATTENDANCE ${local._id} DISAPPEARED AFTER UPDATE`);
     }
 
-    await run(
-      `
-      UPDATE attendances
-      SET
-        employeeId = ?,
-        date = ?,
-        clockIn = ?,
-        clockOut = ?,
-        status = ?,
-        source = ?,
-        lateMinutes = ?,
-        notes = ?,
-        serverVersion = ?,
-        isDeleted = ?,
-        createdAt = ?,
-        updatedAt = ?,
-        synced = 1,
-        lastSyncedAt = CURRENT_TIMESTAMP
-      WHERE _id = ?
-      `,
-      [
-        attendance.employeeId,
-        attendance.date,
-        attendance.clockIn ?? null,
-        attendance.clockOut ?? null,
-        attendance.status ?? null,
-        attendance.source ?? null,
-        attendance.lateMinutes ?? 0,
-        attendance.notes ?? null,
-        remoteVersion,
-        attendance.isDeleted ?? 0,
-        attendance.createdAt,
-        attendance.updatedAt,
-        localByEmployeeDate._id,
-      ]
-    );
-
-    const updated = await getAttendanceByIdIncludingDeleted(
-      localByEmployeeDate._id
-    );
-
-    console.log("UPDATED EMPLOYEE/DATE MATCH:", updated);
-
-    return updated;
-  }
-
-  /*
-   * ============================================================
-   * 5. NOTHING EXISTS
-   * ============================================================
-   */
-
-  const remoteVersion = Number(attendance.serverVersion ?? 0);
-
-  console.log("NO LOCAL ATTENDANCE FOUND. INSERTING:", {
-    id: attendance._id,
-    employeeId: attendance.employeeId,
-    date: attendance.date,
-    serverVersion: remoteVersion,
-  });
-
-  try {
-    await run(
-      `
-      INSERT INTO attendances (
-        _id,
-        employeeId,
-        date,
-        clockIn,
-        clockOut,
-        status,
-        source,
-        lateMinutes,
-        notes,
-        serverVersion,
-        isDeleted,
-        createdAt,
-        updatedAt,
-        synced,
-        lastSyncedAt
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
-      `,
-      [
-        attendance._id,
-        attendance.employeeId,
-        attendance.date,
-        attendance.clockIn ?? null,
-        attendance.clockOut ?? null,
-        attendance.status ?? null,
-        attendance.source ?? null,
-        attendance.lateMinutes ?? 0,
-        attendance.notes ?? null,
-        remoteVersion,
-        attendance.isDeleted ?? 0,
-        attendance.createdAt,
-        attendance.updatedAt,
-      ]
-    );
-  } catch (error) {
-    console.error("🚨 ATTENDANCE INSERT FAILED:", {
+    console.log("ATTENDANCE UPDATED FROM SERVER:", {
+      localId: local._id,
       remoteId: attendance._id,
       employeeId: attendance.employeeId,
       date: attendance.date,
       serverVersion: remoteVersion,
-      error,
+      isDeleted: attendance.isDeleted ?? 0,
     });
 
-    /*
-     *
-     * Find out what is actually occupying the ID.
-     */
-    const conflictingById = await getAttendanceByIdIncludingDeleted(
-      attendance._id
-    );
-
-    const conflictingByEmployeeDate =
-      await getAttendanceByEmployeeAndDateIncludingDeleted(
-        attendance.employeeId,
-        attendance.date
-      );
-
-    console.error("🚨 CONFLICTING ROW BY ID:", conflictingById);
-
-    console.error(
-      "🚨 CONFLICTING ROW BY EMPLOYEE + DATE:",
-      conflictingByEmployeeDate
-    );
-
-    throw error;
+    return result;
   }
 
-  const inserted = await getAttendanceByIdIncludingDeleted(attendance._id);
+  /*
+   * ============================================================
+   * 3. NO LOCAL RECORD
+   * ============================================================
+   */
 
-  console.log("INSERTED ATTENDANCE:", inserted);
+  await run(
+    `
+    INSERT INTO attendances (
+      _id,
+      employeeId,
+      date,
+      clockIn,
+      clockOut,
+      status,
+      source,
+      lateMinutes,
+      notes,
+      serverVersion,
+      isDeleted,
+      createdAt,
+      updatedAt,
+      synced,
+      lastSyncedAt
+    )
+    VALUES (
+      ?, ?, ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, 1, CURRENT_TIMESTAMP
+    )
+    `,
+    [
+      attendance._id,
+      attendance.employeeId,
+      attendance.date,
+      attendance.clockIn ?? null,
+      attendance.clockOut ?? null,
+      attendance.status ?? null,
+      attendance.source ?? null,
+      attendance.lateMinutes ?? 0,
+      attendance.notes ?? null,
+      Number(attendance.serverVersion ?? 0),
+      attendance.isDeleted ?? 0,
+      attendance.createdAt,
+      attendance.updatedAt,
+    ]
+  );
 
-  return inserted;
+  /*
+   * The inserted record may itself be a tombstone
+   * (isDeleted = 1), so query without the deletion filter.
+   */
+  const result = await getAttendanceByIdIncludingDeleted(attendance._id);
+
+  if (!result) {
+    throw new Error(`ATTENDANCE ${attendance._id} DISAPPEARED AFTER INSERT`);
+  }
+
+  console.log("ATTENDANCE INSERTED FROM SERVER:", {
+    id: result._id,
+    employeeId: result.employeeId,
+    date: result.date,
+    serverVersion: result.serverVersion,
+    isDeleted: result.isDeleted,
+  });
+
+  return result;
 }
 
 // Mark attendance as synced.

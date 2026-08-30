@@ -8,10 +8,16 @@ interface Props {
   onTaskClick: (task: Task) => void;
 }
 
+const priorityColor = {
+  HAUTE: "red.200",
+  MOYENNE: "yellow.200",
+  BASSE: "green.200",
+} as const;
+
 const TaskCard = ({ task, onTaskClick, onTaskDelete }: Props) => {
   return (
     <VStack
-      bg={task.isResolved ? "green.200" : "red.200"}
+      bg={priorityColor[task.priority]}
       border="1px solid black"
       borderRadius="0.4rem"
       mb="0.4rem"

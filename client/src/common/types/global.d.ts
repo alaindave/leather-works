@@ -180,7 +180,12 @@ declare global {
           updates: Partial<AttendanceWithEmployee>
         ) => Promise<AttendanceWithEmployee>;
 
-        markAbsent: (date: string) => Promise<AttendanceWithEmployee[]>;
+        markAbsent: (date: string) => Promise<{
+          absentAttendance: any;
+          source: "AUTO_SERVER" | "LOCAL" | "SKIPPED";
+          completed: boolean;
+          timestamp: string;
+        }>;
 
         delete: (_id: string) => Promise<AttendanceWithEmployee>;
       };

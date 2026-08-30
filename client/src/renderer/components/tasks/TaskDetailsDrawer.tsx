@@ -21,10 +21,10 @@ import {
 import { FiCheckCircle, FiUser } from "react-icons/fi";
 import Task from "../../../common/types/Task";
 import useAdminUser from "../../../store/auth.store";
-import useTaskStore from "../../../store/task.store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TaskResolutionPopover from "./TaskResolutionPopover";
 import { CiCalendarDate, CiClock2 } from "react-icons/ci";
+import useSyncStore from "../../../store/sync.store";
 
 interface Props {
   task: Task | null;
@@ -39,31 +39,48 @@ export default function TaskDetailsDrawer({
   onClose,
   onRefresh,
 }: Props) {
+  const [dbTask, setDbTask] = useState<Task | null>(null);
   const author = useAdminUser((store) => store.adminUser);
-  const addComment = useTaskStore((store: any) => store.addComment);
-  const storeTask = useTaskStore((store) =>
-    task ? store.tasks.find((t) => t._id === task._id) : undefined
-  );
+  const syncVersion = useSyncStore((store) => store.syncVersion);
 
-  const currentTask = storeTask ?? task;
+  useEffect(() => {
+    loadDbTask();
+  }, [syncVersion]);
+
+  const loadDbTask = async () => {
+    if (!task?._id) return;
+    try {
+      const dbTask = await window.electron.tasks.getById(task?._id);
+      setDbTask(dbTask);
+      console.log("TASK FROM SQLITE:", dbTask);
+    } catch (e) {
+      console.error("AN ERROR OCCURED WHILE FETCHING DB TASK", e);
+    }
+  };
+  const currentTask = dbTask ?? task;
 
   const [comment, setComment] = useState("");
 
   if (!currentTask) {
     return null;
   }
-  console.log("CURRENT TASK FROM STORE:", currentTask);
+  console.log("CURRENT TASK FROM DB:", currentTask);
 
   const handleTaskComment = async () => {
     if (!comment.trim()) {
       return;
     }
+    if (!task?._id) return;
     try {
-      await addComment(currentTask._id, author, comment);
+      await window.electron.taskComments.create({
+        taskId: task?._id,
+        author: author._id,
+        comment,
+      });
       setComment("");
-      onRefresh?.();
+      await loadDbTask();
     } catch (error) {
-      console.error("Failed to add task comment:", error);
+      console.error("FAILED TO ADD TASK COMMENT:", error);
     }
   };
 
@@ -94,20 +111,8 @@ export default function TaskDetailsDrawer({
     try {
       const result = await window.electron.tasks.update(updatedTask);
       console.log("TASK UPDATE RESULT:", result);
-      useTaskStore.setState((state) => ({
-        tasks: state.tasks.map((existingTask) =>
-          existingTask._id === updatedTask._id
-            ? {
-                ...existingTask,
-                ...updatedTask,
-              }
-            : existingTask
-        ),
-      }));
+      await loadDbTask();
       onRefresh?.();
-      setTimeout(() => {
-        onClose();
-      }, 2000);
       return true;
     } catch (error) {
       console.error("An error occurred during task update:", error);
@@ -116,7 +121,15 @@ export default function TaskDetailsDrawer({
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} placement="left" size="lg">
+    <Drawer
+      isOpen={isOpen}
+      onClose={() => {
+        setDbTask(null);
+        onClose();
+      }}
+      placement="left"
+      size="lg"
+    >
       <DrawerOverlay />
       <DrawerContent>
         <DrawerHeader borderBottomWidth="1px" borderColor="gray.500">

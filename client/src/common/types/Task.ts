@@ -2,7 +2,7 @@ import AdminUser from "./AdminUser.js";
 import PopulatedTaskComment from "./PopulatedTaskComment.js";
 import User from "./User.js";
 
-export type Priority = "HAUTE" | "MOYENNE" | "BASSE" | "";
+export type Priority = "HAUTE" | "MOYENNE" | "BASSE";
 
 export default interface Task {
   _id: string;
@@ -14,7 +14,7 @@ export default interface Task {
   comments?: PopulatedTaskComment[];
   priority: Priority;
   deadline: string;
-  serverVersion: number;
+  serverVersion?: number;
   isResolved?: number;
   resolutionNotes?: string;
   resolvedAt?: string;

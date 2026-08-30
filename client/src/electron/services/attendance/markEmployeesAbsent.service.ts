@@ -7,8 +7,27 @@ import {
   getAttendanceDailyCheckByDate,
 } from "../../database/repositories/attendanceDailyCheck.repository.js";
 
-export async function markEmployeesAbsent(date: string) {
+export async function markEmployeesAbsent(date: string): Promise<{
+  absentAttendance: any;
+  source: "AUTO_SERVER" | "LOCAL" | "SKIPPED";
+  completed: boolean;
+  timestamp: string;
+}> {
   const now = new Date().toISOString();
+  const today = new Date(date);
+
+  // Sunday = 0
+  // Saturday = 6
+  const dayOfWeek = today.getDay();
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    console.log("ABSENCE CHECK SKIPPED: WEEKEND");
+    return {
+      absentAttendance: null,
+      source: "SKIPPED" as const,
+      completed: false,
+      timestamp: now,
+    };
+  }
 
   /*
    * ---------------------------------------------------------
@@ -53,9 +72,8 @@ export async function markEmployeesAbsent(date: string) {
       return {
         absentAttendance,
         source: "AUTO_SERVER" as const,
-        synced: true,
         completed: true,
-        completedAt: now,
+        timestamp: now,
       };
     } catch (error) {
       console.warn(
@@ -75,13 +93,12 @@ export async function markEmployeesAbsent(date: string) {
 
   console.log("OFFLINE ABSENT ATTENDANCE", absentAttendance);
 
-  await completeMarkAbsent(now);
+  await completeMarkAbsent(now, date);
 
   return {
     absentAttendance,
     source: "LOCAL" as const,
-    synced: false,
     completed: true,
-    completedAt: now,
+    timestamp: now,
   };
 }

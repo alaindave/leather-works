@@ -128,8 +128,8 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       },
     };
 
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
+    set((store) => ({
+      tasks: store.tasks.map((task) =>
         task._id !== taskId
           ? task
           : {
@@ -152,14 +152,14 @@ const useTaskStore = create<TaskStore>((set, get) => ({
           `Task ${taskId} could not be reloaded after adding comment`
         );
       }
-      set((state) => ({
-        tasks: state.tasks.map((task) =>
+      set((store) => ({
+        tasks: store.tasks.map((task) =>
           task._id === taskId ? refreshedTask : task
         ),
       }));
     } catch (error) {
-      set((state) => ({
-        tasks: state.tasks.map((task) =>
+      set((store) => ({
+        tasks: store.tasks.map((task) =>
           task._id !== taskId
             ? task
             : {
@@ -168,7 +168,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
               }
         ),
       }));
-      console.error("An error occured while saving the comment", error);
+      console.error("AN ERROR OCCURED WHILE SAVING THE COMMENT", error);
       throw error;
     }
   },

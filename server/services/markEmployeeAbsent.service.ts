@@ -7,6 +7,15 @@ import { getNextSyncVersion } from "../utils/syncVersion.js";
 export async function markAbsentEmployees(
   date: string = new Date().toISOString().split("T")[0]
 ) {
+  const now = new Date(date);
+
+  // Sunday = 0
+  // Saturday = 6
+  const dayOfWeek = now.getDay();
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    console.log("ABSENCE CHECK SKIPPED: WEEKEND");
+    return;
+  }
   const CURRENT_TIMESTAMP = new Date();
 
   const employees = await Employee.find({

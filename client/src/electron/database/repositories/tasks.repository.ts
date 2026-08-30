@@ -4,7 +4,7 @@ import { addToSyncQueue } from "./sync.repository.js";
 import { randomUUID } from "crypto";
 import { getTaskCommentsWithAuthor } from "./tasks_comments.repository.js";
 
-type Priority = "Haute" | "Moyenne" | "Basse" | "";
+type Priority = "HAUTE" | "MOYENNE" | "BASSE";
 
 type TaskRow = {
   taskId: string;

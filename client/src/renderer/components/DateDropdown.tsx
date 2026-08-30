@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Select from "react-select";
 
 const formatter = new Intl.DateTimeFormat("en-CA", {
@@ -7,17 +7,51 @@ const formatter = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
-function getLast7Days() {
+function getDaysBetweenDates(startDate: Date | string, endDate: Date | string) {
+  const date1 = new Date(startDate);
+  const date2 = new Date(endDate);
+
+  // Convert both dates to UTC timestamps to ignore Daylight Saving Time (DST)
+  const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
+  const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
+
+  // One day in milliseconds: 1000s * 60m * 60h * 24d
+  const oneDay = 1000 * 60 * 60 * 24;
+
+  // Calculate the absolute difference and convert to days
+  return Math.floor(Math.abs(utc2 - utc1) / oneDay);
+}
+
+// Example usage:
+const start = "2026-08-01";
+const end = "2026-08-30";
+console.log(getDaysBetweenDates(start, end)); // Output: 29
+
+function getSelectedDays(
+  startDate: Date | string,
+  endDate: Date | string,
+  includeWeekends: boolean
+) {
   const days = [];
   let i = 0;
 
-  while (days.length < 30) {
-    const date = new Date();
+  const numberOfDays = getDaysBetweenDates(startDate, endDate);
+  console.log("NUMBER OF DAYS SELECTED:", numberOfDays);
+
+  while (days.length <= numberOfDays) {
+    const date = new Date(endDate);
     date.setDate(date.getDate() - i);
     const dayOfWeek = date.getDay();
 
-    // Skip weekend
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+    if (!includeWeekends) {
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        // Skip weekend
+        days.push({
+          label: formatDate(date),
+          value: formatter.format(date),
+        });
+      }
+    } else {
       days.push({
         label: formatDate(date),
         value: formatter.format(date),
@@ -44,7 +78,10 @@ function formatDate(date: Date) {
 }
 
 interface Props {
+  startDate: Date | string;
+  endDate: Date | string;
   onChange?: (date: string) => void;
+  includeWeekends: boolean;
 }
 
 interface Option {
@@ -52,22 +89,25 @@ interface Option {
   value: string;
 }
 
-export default function DateDropdown({ onChange }: Props) {
-  const options: Option[] = getLast7Days();
-  const [selected, setSelected] = useState<Option | null>(options[0] || null);
+export default function DateDropdown({
+  startDate,
+  endDate,
+  onChange,
+  includeWeekends,
+}: Props) {
+  const options: Option[] = getSelectedDays(
+    startDate,
+    endDate,
+    includeWeekends
+  );
+  console.log("OPTIONS ARRAY:", options);
+  const [selected, setSelected] = useState<Option | null>(options[0]);
   function handleChange(option: Option | null) {
     if (option) {
       setSelected(option);
       onChange?.(option.value);
     }
   }
-
-  useEffect(() => {
-    console.log("DateDropdown mounted");
-    return () => {
-      console.log("DateDropdown unmounted");
-    };
-  }, []);
 
   return (
     <Select

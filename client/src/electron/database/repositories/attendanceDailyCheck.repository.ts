@@ -326,7 +326,7 @@ export async function completeMarkAbsent(
     `
       UPDATE attendance_daily_checks
       SET
-        status= ?,
+        status= 'OPEN',
         markAbsentCompleted = 1,
         markAbsentCompletedAt = ?,
         updatedAt = ?,
@@ -334,7 +334,7 @@ export async function completeMarkAbsent(
       WHERE _id = ?
         AND isDeleted = 0
     `,
-    ["OPEN", completedAt, now(), existing._id]
+    [completedAt, now(), existing._id]
   );
 
   const record = await getAttendanceDailyCheckById(existing._id);
@@ -357,11 +357,11 @@ export async function prepareDailyAttendance(date: string) {
   const markAbsentResult = await markEmployeesAbsent(date);
   const markLeaveResult = await markEmployeesOnLeave();
 
-  if (markAbsentResult.completed && markLeaveResult.completed) {
+  if (markAbsentResult?.completed && markLeaveResult.completed) {
     return createAttendanceDailyCheck({
       markAbsentCompleted: {
         completed: true,
-        completedAt: markAbsentResult.completedAt,
+        completedAt: markAbsentResult.timestamp,
       },
       markLeaveCompleted: {
         completed: true,

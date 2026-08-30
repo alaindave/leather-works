@@ -247,18 +247,25 @@ const SyncStatus = ({ onSync }: SyncStatusProps) => {
 
             {/* LAST SYNC */}
             <HStack justify="space-between">
-              <Box position="relative" bottom="0.5rem" fontSize="1.2rem">
+              <Box position="relative" bottom="1rem" fontSize="1.2rem">
                 <PiClockClockwiseBold />
               </Box>
               <Text
                 position="relative"
                 right="0.5rem"
+                bottom="0.5rem"
                 fontSize="0.9rem"
                 color="gray.700"
               >
                 Dernière synchronisation
               </Text>
-              <Text fontSize="0.85rem" fontWeight="600" color="gray.600">
+              <Text
+                position="relative"
+                bottom="0.5rem"
+                fontSize="0.85rem"
+                fontWeight="600"
+                color="gray.600"
+              >
                 {formatLastSync()}
               </Text>
             </HStack>

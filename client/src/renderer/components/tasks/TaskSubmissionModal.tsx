@@ -412,7 +412,7 @@ const TaskSubmissionModal = ({
               </Text>
               <HStack height="50px">
                 {taskRecipients?.map((recipient) => (
-                  <Box mr="2rem" key={`${recipient._id}-${recipient.email}`}>
+                  <Box key={`${recipient._id}-${recipient.email}`}>
                     <Button
                       bg="transparent"
                       _hover={{ bg: "transparent" }}
@@ -429,7 +429,6 @@ const TaskSubmissionModal = ({
                     </Text>
                   </Box>
                 ))}
-
                 <Button
                   borderRadius="10px"
                   borderColor="black"

@@ -23,6 +23,7 @@ import Task from "../../../common/types/Task";
 import useAdminUser from "../../../store/auth.store";
 import useTaskStore from "../../../store/task.store";
 import TaskResolutionPopover from "./TaskResolutionPopover";
+import useSyncStore from "../../../store/sync.store";
 
 export default function TaskDetailsPage() {
   const { _id } = useParams();
@@ -30,10 +31,11 @@ export default function TaskDetailsPage() {
   const [comment, setComment] = useState("");
   const author = useAdminUser((store) => store.adminUser);
   const addComment = useTaskStore((store: any) => store.addComment);
+  const syncVersion = useSyncStore((store) => store.syncVersion);
 
   useEffect(() => {
     loadTask();
-  }, [_id]);
+  }, [_id, syncVersion]);
 
   const loadTask = async () => {
     if (!_id) return;

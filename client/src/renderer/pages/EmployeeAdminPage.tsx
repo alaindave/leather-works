@@ -216,6 +216,11 @@ const EmployeeAdminPage = () => {
     onDetailsOpen();
   };
 
+  const handleTaskClosed = () => {
+    setSelectedTask(null);
+    onDetailsClose();
+  };
+
   const handleTaskDelete = async (_id: string) => {
     console.log("ID TO DELETE:", _id);
 
@@ -469,7 +474,13 @@ const EmployeeAdminPage = () => {
             TASKS
         ==================================================== */}
 
-        <Box display="flex" flexDir="column" overflowY="auto" minH={0}>
+        <Box
+          maxH="42vh"
+          display="flex"
+          flexDir="column"
+          overflowY="auto"
+          minH={0}
+        >
           <TaskSubmissionModal
             isOpen={isCreateOpen}
             onClose={onCreateClose}
@@ -481,7 +492,7 @@ const EmployeeAdminPage = () => {
           <TaskDetailsDrawer
             task={selectedTask}
             isOpen={isDetailsOpen}
-            onClose={onDetailsClose}
+            onClose={handleTaskClosed}
             onRefresh={handleTaskRefresh}
           />
 
