@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { fr } from "date-fns/locale";
 import { Box, Flex, FormControl } from "@chakra-ui/react";
@@ -5,6 +6,12 @@ import { Box, Flex, FormControl } from "@chakra-ui/react";
 import "react-datepicker/dist/react-datepicker.css";
 
 registerLocale("fr", fr);
+
+/*
+ * ============================================================
+ * TYPES
+ * ============================================================
+ */
 
 export interface DateRange {
   startDate: string | Date;
@@ -14,36 +21,180 @@ export interface DateRange {
 interface DateRangePickerProps {
   value: DateRange;
   onChange: (range: DateRange) => void;
+  minDate?: string | Date;
+  maxDate?: string | Date;
+  disabled?: boolean;
 }
 
-function parseDate(dateString?: string | Date): Date | null {
-  if (!dateString) return null;
-  if (dateString instanceof Date) return null;
-  const [year, month, day] = dateString.split("-").map(Number);
+/*
+ * ============================================================
+ * DATE HELPERS
+ * ============================================================
+ */
 
-  if (!year || !month || !day) {
+/**
+ * Convert YYYY-MM-DD or Date into a LOCAL Date.
+ *
+ * We intentionally do NOT use:
+ *
+ * new Date("2026-08-30")
+ *
+ * because that is parsed as UTC and can shift the date
+ * depending on timezone.
+ */
+function toLocalDate(value?: string | Date): Date | null {
+  if (!value) {
     return null;
   }
 
-  return new Date(year, month - 1, day);
+  /*
+   * Date object
+   */
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      return null;
+    }
+
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  }
+
+  /*
+   * Only accept YYYY-MM-DD.
+   */
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  const date = new Date(year, month - 1, day);
+
+  /*
+   * Reject invalid dates such as:
+   *
+   * 2026-02-31
+   */
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
 }
 
 /**
- * Convert Date → YYYY-MM-DD
+ * Convert Date → YYYY-MM-DD.
  */
 function formatDatabaseDate(date: Date | null): string {
-  if (!date) return "";
+  if (!date || Number.isNaN(date.getTime())) {
+    return "";
+  }
 
   const year = date.getFullYear();
+
   const month = String(date.getMonth() + 1).padStart(2, "0");
+
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
 
-const today = new Date();
-const thirtyDaysAgo = new Date(today);
-thirtyDaysAgo.setDate(today.getDate() - 30);
+/**
+ * Normalize incoming DateRange values.
+ */
+function normalizeDateValue(value?: string | Date): string {
+  if (!value) {
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return formatDatabaseDate(value);
+  }
+
+  return value;
+}
+
+/*
+ * ============================================================
+ * PREVENT MANUAL DATE TYPING
+ * ============================================================
+ *
+ * react-datepicker has an internal input parser.
+ *
+ * Typing incomplete dates, especially years such as:
+ *
+ * 2
+ * 20
+ * 202
+ * 2026
+ *
+ * can cause repeated parsing/re-rendering.
+ *
+ * Since this component is intended to be calendar-driven,
+ * we prevent manual date editing completely.
+ *
+ * IMPORTANT:
+ *
+ * react-datepicker defines onKeyDown as:
+ *
+ * React.KeyboardEvent<HTMLElement>
+ *
+ * NOT:
+ *
+ * React.KeyboardEvent<HTMLInputElement>
+ */
+
+function preventManualDateTyping(event: React.KeyboardEvent<HTMLElement>) {
+  /*
+   * Keys that should remain available for navigation and
+   * accessibility.
+   */
+  const allowedKeys = new Set([
+    "Tab",
+    "Escape",
+    "Enter",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown",
+  ]);
+
+  /*
+   * Allow accessibility/navigation keys.
+   */
+  if (allowedKeys.has(event.key)) {
+    return;
+  }
+
+  /*
+   * Prevent everything else.
+   *
+   * This includes:
+   *
+   * 0-9
+   * /
+   * -
+   * Backspace
+   * Delete
+   * Home
+   * End
+   * etc.
+   *
+   * The calendar itself remains fully usable.
+   */
+  event.preventDefault();
+}
 
 /*
  * ============================================================
@@ -54,10 +205,95 @@ thirtyDaysAgo.setDate(today.getDate() - 30);
 export default function DateRangePicker({
   value,
   onChange,
+  minDate,
+  maxDate,
+  disabled = false,
 }: DateRangePickerProps) {
-  console.log("DEFAULT RANGE", value);
-  const startDate = parseDate(value.startDate);
-  const endDate = parseDate(value.endDate);
+  /*
+   * ============================================================
+   * NORMALIZE PARENT VALUES
+   * ============================================================
+   */
+
+  const normalizedStartDate = useMemo(
+    () => normalizeDateValue(value.startDate),
+    [value.startDate]
+  );
+
+  const normalizedEndDate = useMemo(
+    () => normalizeDateValue(value.endDate),
+    [value.endDate]
+  );
+
+  /*
+   * ============================================================
+   * LOCAL PICKER STATE
+   * ============================================================
+   *
+   * react-datepicker receives stable Date objects.
+   */
+
+  const [startDate, setStartDate] = useState<Date | null>(() =>
+    toLocalDate(normalizedStartDate)
+  );
+
+  const [endDate, setEndDate] = useState<Date | null>(() =>
+    toLocalDate(normalizedEndDate)
+  );
+
+  /*
+   * ============================================================
+   * PARENT → LOCAL SYNCHRONIZATION
+   * ============================================================
+   */
+
+  useEffect(() => {
+    const nextDate = toLocalDate(normalizedStartDate);
+
+    setStartDate((current) => {
+      const currentString = formatDatabaseDate(current);
+      const nextString = formatDatabaseDate(nextDate);
+
+      /*
+       * Do not update React state if the actual date did not
+       * change.
+       */
+      if (currentString === nextString) {
+        return current;
+      }
+
+      return nextDate;
+    });
+  }, [normalizedStartDate]);
+
+  useEffect(() => {
+    const nextDate = toLocalDate(normalizedEndDate);
+
+    setEndDate((current) => {
+      const currentString = formatDatabaseDate(current);
+      const nextString = formatDatabaseDate(nextDate);
+
+      /*
+       * Do not update React state if the actual date did not
+       * change.
+       */
+      if (currentString === nextString) {
+        return current;
+      }
+
+      return nextDate;
+    });
+  }, [normalizedEndDate]);
+
+  /*
+   * ============================================================
+   * MIN / MAX DATES
+   * ============================================================
+   */
+
+  const parsedMinDate = useMemo(() => toLocalDate(minDate), [minDate]);
+
+  const parsedMaxDate = useMemo(() => toLocalDate(maxDate), [maxDate]);
 
   /*
    * ============================================================
@@ -65,29 +301,44 @@ export default function DateRangePicker({
    * ============================================================
    */
 
-  const handleStartDateChange = (date: Date | null) => {
-    if (!date) {
+  const handleStartDateChange = useCallback(
+    (date: Date | null) => {
+      /*
+       * Update local state immediately.
+       */
+      setStartDate(date);
+
+      /*
+       * User cleared the date.
+       */
+      if (!date) {
+        onChange({
+          startDate: "",
+          endDate: normalizedEndDate,
+        });
+
+        return;
+      }
+
+      const newStartDate = formatDatabaseDate(date);
+
+      /*
+       * If start > end, clear the end date.
+       */
+      const shouldClearEnd =
+        Boolean(normalizedEndDate) && newStartDate > normalizedEndDate;
+
+      if (shouldClearEnd) {
+        setEndDate(null);
+      }
+
       onChange({
-        startDate: "",
-        endDate: value.endDate,
+        startDate: newStartDate,
+        endDate: shouldClearEnd ? "" : normalizedEndDate,
       });
-
-      return;
-    }
-
-    const newStartDate = formatDatabaseDate(date);
-
-    /*
-     * If the new start date is after the current end date,
-     * clear the end date.
-     */
-    const shouldClearEndDate = value.endDate && newStartDate > value.endDate;
-
-    onChange({
-      startDate: newStartDate,
-      endDate: shouldClearEndDate ? "" : value.endDate,
-    });
-  };
+    },
+    [normalizedEndDate, onChange]
+  );
 
   /*
    * ============================================================
@@ -95,21 +346,42 @@ export default function DateRangePicker({
    * ============================================================
    */
 
-  const handleEndDateChange = (date: Date | null) => {
-    if (!date) {
+  const handleEndDateChange = useCallback(
+    (date: Date | null) => {
+      /*
+       * User cleared the date.
+       */
+      if (!date) {
+        setEndDate(null);
+
+        onChange({
+          startDate: normalizedStartDate,
+          endDate: "",
+        });
+
+        return;
+      }
+
+      const newEndDate = formatDatabaseDate(date);
+
+      /*
+       * Never allow:
+       *
+       * endDate < startDate
+       */
+      if (normalizedStartDate && newEndDate < normalizedStartDate) {
+        return;
+      }
+
+      setEndDate(date);
+
       onChange({
-        ...value,
-        endDate: "",
+        startDate: normalizedStartDate,
+        endDate: newEndDate,
       });
-
-      return;
-    }
-
-    onChange({
-      ...value,
-      endDate: formatDatabaseDate(date),
-    });
-  };
+    },
+    [normalizedStartDate, onChange]
+  );
 
   /*
    * ============================================================
@@ -118,9 +390,15 @@ export default function DateRangePicker({
    */
 
   const invalidRange =
-    Boolean(value.startDate) &&
-    Boolean(value.endDate) &&
-    value.endDate < value.startDate;
+    Boolean(normalizedStartDate) &&
+    Boolean(normalizedEndDate) &&
+    normalizedEndDate < normalizedStartDate;
+
+  /*
+   * ============================================================
+   * RENDER
+   * ============================================================
+   */
 
   return (
     <Box>
@@ -129,34 +407,72 @@ export default function DateRangePicker({
         {/* START DATE */}
         {/* ================================================== */}
 
-        <FormControl width="auto" minW="180px" isInvalid={invalidRange}>
+        <FormControl
+          width="auto"
+          minW="180px"
+          isInvalid={invalidRange}
+          isDisabled={disabled}
+        >
           <DatePicker
-            selected={startDate ?? new Date(thirtyDaysAgo)}
+            selected={startDate}
             onChange={handleStartDateChange}
             locale="fr"
             dateFormat="dd/MM/yyyy"
             placeholderText="JJ/MM/AAAA"
+            minDate={parsedMinDate ?? undefined}
+            maxDate={endDate ? endDate : parsedMaxDate ?? undefined}
             showPopperArrow={false}
-            isClearable={false}
+            isClearable
+            disabled={disabled}
+            autoComplete="off"
             className="date-range-picker-input"
+            /*
+             * ==================================================
+             * CRITICAL FREEZE PREVENTION
+             * ==================================================
+             *
+             * Do not allow react-datepicker to process manual
+             * date typing.
+             */
+            onKeyDown={preventManualDateTyping}
           />
         </FormControl>
+
+        {/* ================================================== */}
+        {/* ARROW */}
+        {/* ================================================== */}
+
+        <Box pb="10px" color="gray.500" fontSize="14px" userSelect="none">
+          →
+        </Box>
 
         {/* ================================================== */}
         {/* END DATE */}
         {/* ================================================== */}
 
-        <FormControl width="auto" minW="180px" isInvalid={invalidRange}>
+        <FormControl
+          width="auto"
+          minW="180px"
+          isInvalid={invalidRange}
+          isDisabled={disabled}
+        >
           <DatePicker
-            selected={endDate ?? new Date(today)}
+            selected={endDate}
             onChange={handleEndDateChange}
             locale="fr"
             dateFormat="dd/MM/yyyy"
             placeholderText="JJ/MM/AAAA"
-            minDate={startDate ?? undefined}
+            minDate={startDate ?? parsedMinDate ?? undefined}
+            maxDate={parsedMaxDate ?? undefined}
             showPopperArrow={false}
-            isClearable={false}
+            isClearable
+            disabled={disabled}
+            autoComplete="off"
             className="date-range-picker-input"
+            /*
+             * Prevent manual date editing.
+             */
+            onKeyDown={preventManualDateTyping}
           />
         </FormControl>
       </Flex>
@@ -170,15 +486,26 @@ export default function DateRangePicker({
           .date-range-picker-input {
             width: 180px;
             height: 40px;
+
             padding: 0 12px;
+
             border: 1px solid #E2E8F0;
             border-radius: 6px;
+
             background: white;
-            font-size: 17px;
+
+            font-size: 16px;
             color: #1A202C;
+
             outline: none;
-            transition: border-color 0.15s ease,
-                        box-shadow 0.15s ease;
+
+            box-sizing: border-box;
+
+            transition:
+              border-color 0.15s ease,
+              box-shadow 0.15s ease;
+
+            cursor: pointer;
           }
 
           .date-range-picker-input:hover {
@@ -187,18 +514,36 @@ export default function DateRangePicker({
 
           .date-range-picker-input:focus {
             border-color: #3182CE;
-            box-shadow: 0 0 0 1px #3182CE;
+
+            box-shadow:
+              0 0 0 1px #3182CE;
+          }
+
+          .date-range-picker-input:disabled {
+            background: #F7FAFC;
+            color: #A0AEC0;
+            cursor: not-allowed;
           }
 
           .date-range-picker-input::placeholder {
             color: #A0AEC0;
           }
 
+          /*
+           * ==================================================
+           * CALENDAR
+           * ==================================================
+           */
+
           .react-datepicker {
             font-family: inherit;
+
             border: 1px solid #E2E8F0;
             border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+            box-shadow:
+              0 8px 24px rgba(0, 0, 0, 0.12);
+
             overflow: hidden;
           }
 
@@ -208,7 +553,7 @@ export default function DateRangePicker({
           }
 
           .react-datepicker__current-month {
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 600;
             color: #1A202C;
           }

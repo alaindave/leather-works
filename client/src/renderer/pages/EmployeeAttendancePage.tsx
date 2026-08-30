@@ -69,6 +69,19 @@ const today = new Date();
 const thirtyDaysAgo = new Date(today);
 thirtyDaysAgo.setDate(today.getDate() - 30);
 
+const formatErrorMessage = (error: Error | string): string => {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+      ? error
+      : "Une erreur est survenue.";
+
+  const ipcErrorPrefix = /^Error invoking remote method '[^']+':\s*Error:\s*/;
+
+  return message.replace(ipcErrorPrefix, "").trim();
+};
+
 const EmployeeAttendancePage = () => {
   const [attendances, setAttendances] = useState<AttendanceWithEmployee[]>([]);
   const [attendance, setAttendance] = useState<AttendanceWithEmployee | null>(
@@ -100,18 +113,7 @@ const EmployeeAttendancePage = () => {
   const syncVersion = useSyncStore((store) => store.syncVersion);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const toast = useToast();
-  const formatErrorMessage = (error: Error | string): string => {
-    const message =
-      error instanceof Error
-        ? error.message
-        : typeof error === "string"
-        ? error
-        : "Une erreur est survenue.";
 
-    const ipcErrorPrefix = /^Error invoking remote method '[^']+':\s*Error:\s*/;
-
-    return message.replace(ipcErrorPrefix, "").trim();
-  };
   const showActionError = (
     title: string,
     error: unknown,

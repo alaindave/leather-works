@@ -33,6 +33,85 @@ import { getPayrollPeriod } from "../../util/getPayrollPeriod";
 import { useErrorToast } from "../../hooks/useErrorToast";
 import useSyncStore from "../../../store/sync.store";
 
+const formatErrorMessage = (error: Error | string): string => {
+  let message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+      ? error
+      : "Une erreur est survenue.";
+
+  /*
+   * ============================================================
+   * 1. Remove Electron IPC wrapper
+   * ============================================================
+   *
+   * Example:
+   *
+   * Error invoking remote method 'payroll:createDraft':
+   * Error: SQLITE_CONSTRAINT: UNIQUE constraint failed...
+   */
+  message = message.replace(
+    /^Error invoking remote method '[^']+':\s*Error:\s*/i,
+    ""
+  );
+
+  /*
+   * ============================================================
+   * 2. Remove generic Error: prefix
+   * ============================================================
+   */
+  message = message.replace(/^Error:\s*/i, "");
+
+  /*
+   * ============================================================
+   * 3. Handle SQLite UNIQUE constraints
+   * ============================================================
+   */
+
+  if (
+    /SQLITE_CONSTRAINT:\s*UNIQUE constraint failed:\s*payroll_runs\.month,\s*payroll_runs\.year/i.test(
+      message
+    )
+  ) {
+    return "Une paie existe déjà pour ce mois et cette année.";
+  }
+
+  /*
+   * ============================================================
+   * 4. Handle other common SQLite errors
+   * ============================================================
+   */
+
+  if (/SQLITE_CONSTRAINT.*UNIQUE constraint failed/i.test(message)) {
+    return "Cette donnée existe déjà.";
+  }
+
+  if (/SQLITE_CONSTRAINT.*FOREIGN KEY constraint failed/i.test(message)) {
+    return "Cette opération ne peut pas être effectuée car des données associées sont manquantes.";
+  }
+
+  if (/SQLITE_CONSTRAINT.*NOT NULL constraint failed/i.test(message)) {
+    return "Certaines informations obligatoires sont manquantes.";
+  }
+
+  /*
+   * ============================================================
+   * 5. Remove raw SQLite prefix if still present
+   * ============================================================
+   */
+
+  message = message.replace(/^SQLITE_CONSTRAINT:\s*/i, "");
+
+  /*
+   * ============================================================
+   * 6. Fallback
+   * ============================================================
+   */
+
+  return message.trim() || "Une erreur est survenue.";
+};
+
 export default function PayrollPage() {
   const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,6 +127,28 @@ export default function PayrollPage() {
     console.log("PAYROLL PAGE: SYNC COMPLETED, RELOADING PAYROLL DATA");
     loadPayrollRun();
   }, [syncVersion]);
+
+  const showActionError = (
+    title: string,
+    error: unknown,
+    fallbackMessage: string
+  ) => {
+    console.error(title, error);
+
+    const message =
+      error instanceof Error || typeof error === "string"
+        ? formatErrorMessage(error)
+        : fallbackMessage;
+
+    toast({
+      title,
+      description: message,
+      status: "error",
+      duration: 3500,
+      isClosable: true,
+      position: "top-left",
+    });
+  };
 
   const loadPayrollRun = async () => {
     try {
@@ -94,10 +195,10 @@ export default function PayrollPage() {
       });
       await handlePayrollSync();
     } catch (error) {
-      showErrorMessage(
-        "Échec de création de bulletins de paie",
+      showActionError(
+        "Échec de creation de bulletins de paie",
         error,
-        "Impossible de créer les bulletins de paie."
+        "Impossible de creer les bulletins de paie."
       );
     }
   };

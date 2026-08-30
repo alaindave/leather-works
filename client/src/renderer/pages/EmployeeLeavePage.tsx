@@ -355,7 +355,7 @@ const EmployeeLeavePage = () => {
           borderWidth="0.3px"
           border="1px solid #E2E8F0"
           boxShadow="0 2px 10px rgba(15,23,42,.06)"
-          mb="2.7rem"
+          mb="2.5rem"
           ml="0.01rem"
           height="4rem"
           width="80vw"

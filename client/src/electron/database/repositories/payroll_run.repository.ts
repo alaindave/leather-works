@@ -19,18 +19,60 @@ import { addToSyncQueue } from "./sync.repository.js";
 
 export async function createPayrollRun(
   input: PayrollBatchResult,
-  admin: Omit<User, "password" | "notes">
+  admin: Omit<User, "password" | "notes">,
+  month: number,
+  year: number
 ) {
+  // ----------------------------------------------------------
+  // Validate payroll period
+  // ----------------------------------------------------------
+
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new Error("Invalid payroll month. Month must be between 1 and 12.");
+  }
+
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+    throw new Error("Invalid payroll year.");
+  }
+
   const date = new Date();
   const now = date.toISOString();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
+
+  // ----------------------------------------------------------
+  // Prevent duplicate payroll runs for the same period
+  // ----------------------------------------------------------
+
+  const existingPayrollRun = await get<PayrollRun>(
+    `
+    SELECT *
+    FROM payroll_runs
+    WHERE month = ?
+      AND year = ?
+      AND isDeleted = 0
+      AND status <> 'ANNULÉ'
+    LIMIT 1
+    `,
+    [month, year]
+  );
+
+  if (existingPayrollRun) {
+    throw new Error(`A payroll run already exists for ${month}/${year}.`);
+  }
+
+  // ----------------------------------------------------------
+  // Create payroll run
+  // ----------------------------------------------------------
 
   const payrollRun: PayrollRun = {
     _id: randomUUID(),
     generatedBy: admin._id,
+
+    // IMPORTANT:
+    // These now represent the payroll period selected by the user,
+    // not the current calendar month.
     month,
     year,
+
     employeeCount: input.employeeCount,
     totalBasicSalary: input.totalBasicSalary,
     totalEarnings: input.totalEarnings,
@@ -1226,14 +1268,40 @@ export async function paymentPayrollRun(
 // SAVE PAYROLL RESULT
 // ============================================================
 
+// ============================================================
+// SAVE PAYROLL RESULT
+// ============================================================
+
 export async function savePayrollResult(
   payrollRunId: string,
   result: PayrollResult
 ) {
-  const date = new Date();
-  const now = date.toISOString();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
+  const now = new Date().toISOString();
+
+  // ----------------------------------------------------------
+  // Get the payroll period from the payroll run
+  // ----------------------------------------------------------
+
+  const payrollRun = await get<PayrollRun>(
+    `
+    SELECT
+      _id,
+      month,
+      year
+    FROM payroll_runs
+    WHERE _id = ?
+      AND isDeleted = 0
+    LIMIT 1
+    `,
+    [payrollRunId]
+  );
+
+  if (!payrollRun) {
+    throw new Error(`Payroll run not found: ${payrollRunId}`);
+  }
+
+  const month = payrollRun.month;
+  const year = payrollRun.year;
 
   const payrollResultId = randomUUID();
 
@@ -1246,10 +1314,7 @@ export async function savePayrollResult(
     displayName: item.displayName,
     type: item.type,
     amount: item.amount,
-
-    // Server assigns the actual version.
     serverVersion: 0,
-
     createdAt: now,
     updatedAt: now,
   }));
@@ -1288,8 +1353,11 @@ export async function savePayrollResult(
         payrollResultId,
         payrollRunId,
         result.employeeId,
+
+        // Historical payroll period
         month,
         year,
+
         result.baseSalary,
         result.grossSalary,
         result.totalEarnings,
@@ -1355,8 +1423,12 @@ export async function savePayrollResult(
       _id: payrollResultId,
       payrollRunId,
       employeeId: result.employeeId,
+
+      // IMPORTANT:
+      // Use the payroll run's historical period.
       month,
       year,
+
       baseSalary: result.baseSalary,
       grossSalary: result.grossSalary,
       totalEarnings: result.totalEarnings,
