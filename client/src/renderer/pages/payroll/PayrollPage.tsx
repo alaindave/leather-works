@@ -319,11 +319,12 @@ export default function PayrollPage() {
           </Text>
         ) : (
           <TableContainer
-            maxWidth="70vw"
-            maxHeight="70vh"
+            maxW="70vw"
+            maxH="70vh"
             borderWidth="1px"
             borderRadius="lg"
             overflowY="auto"
+            mt="3rem"
           >
             <Table variant="simple" size="md">
               <Thead position="sticky" top={0} zIndex={1} bg="gray.50">

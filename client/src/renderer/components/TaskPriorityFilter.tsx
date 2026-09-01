@@ -32,17 +32,13 @@ const TaskPriorityFilter = ({ onFilterClicked }: Props) => {
         boxShadow="0 2px 10px rgba(15,23,42,.06)"
         _hover={{ bg: "transparent" }}
       >
-        <Text color="gray.800" position="relative" top="8px">
-          {filter || "Trier par priorité"}
-        </Text>
+        <Text color="gray.800">{filter || "Trier par priorité"}</Text>
       </MenuButton>
       <MenuList
         backgroundColor="#ffffff"
         borderColor="rgba(255,196,0,0.18)"
         borderRadius="18px"
         position="relative"
-        // left="17rem"
-        // bottom="9.5rem"
         overflowY="auto"
         _hover={{ color: "yellow" }}
       >
@@ -62,10 +58,7 @@ const TaskPriorityFilter = ({ onFilterClicked }: Props) => {
           <Box>
             <MdTask size="20px" />
           </Box>
-          <Text marginTop="15px" marginLeft="10px">
-            {" "}
-            Toutes les taches
-          </Text>
+          <Text ml="1rem"> Toutes les taches</Text>
         </MenuItem>
         <MenuItem
           color="gray.800"
@@ -83,9 +76,7 @@ const TaskPriorityFilter = ({ onFilterClicked }: Props) => {
           <Box>
             <FcHighPriority />
           </Box>
-          <Text marginTop="15px" marginLeft="10px">
-            Haute
-          </Text>
+          <Text ml="1rem">Haute</Text>
         </MenuItem>
         <MenuItem
           color="gray.800"
@@ -103,9 +94,7 @@ const TaskPriorityFilter = ({ onFilterClicked }: Props) => {
           <Box>
             <FcMediumPriority />
           </Box>
-          <Text marginTop="15px" marginLeft="10px">
-            Moyenne
-          </Text>
+          <Text ml="1rem">Moyenne</Text>
         </MenuItem>
         <MenuItem
           color="gray.800"
@@ -123,10 +112,7 @@ const TaskPriorityFilter = ({ onFilterClicked }: Props) => {
           <Box>
             <FcLowPriority />
           </Box>
-          <Text marginTop="15px" marginLeft="10px">
-            {" "}
-            Basse
-          </Text>
+          <Text ml="1rem"> Basse</Text>
         </MenuItem>
       </MenuList>
     </Menu>

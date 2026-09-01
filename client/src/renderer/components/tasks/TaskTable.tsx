@@ -105,8 +105,8 @@ const TaskTable = ({
       maxW="78vw"
     >
       <TableContainer
-        maxWidth="78vw"
-        maxHeight="68vh"
+        maxW="78vw"
+        maxH="70vh"
         borderWidth="1px"
         borderRadius="lg"
         overflowY="auto"

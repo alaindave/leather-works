@@ -31,17 +31,13 @@ const TaskStatusFilter = ({ onFilterClicked }: Props) => {
         boxShadow="0 2px 10px rgba(15,23,42,.06)"
         _hover={{ bg: "transparent" }}
       >
-        <Text color="gray.800" position="relative" top="8px">
-          {filter || "Trier par statut"}
-        </Text>
+        <Text color="gray.800">{filter || "Trier par statut"}</Text>
       </MenuButton>
       <MenuList
         backgroundColor="#ffffff"
         borderColor="rgba(255,196,0,0.18)"
         borderRadius="18px"
         position="relative"
-        // left="17rem"
-        // bottom="9.5rem"
         overflowY="auto"
         _hover={{ color: "yellow" }}
       >
@@ -61,10 +57,7 @@ const TaskStatusFilter = ({ onFilterClicked }: Props) => {
           <Box>
             <MdTask size="20px" />
           </Box>
-          <Text marginTop="15px" marginLeft="10px">
-            {" "}
-            Toutes les taches
-          </Text>
+          <Text ml="1rem"> Toutes les taches</Text>
         </MenuItem>
         <MenuItem
           color="gray.800"
@@ -82,9 +75,7 @@ const TaskStatusFilter = ({ onFilterClicked }: Props) => {
           <Box>
             <FcHighPriority />
           </Box>
-          <Text marginTop="15px" marginLeft="10px">
-            Resolue
-          </Text>
+          <Text ml="1rem">Resolue</Text>
         </MenuItem>
         <MenuItem
           color="gray.800"
@@ -102,9 +93,7 @@ const TaskStatusFilter = ({ onFilterClicked }: Props) => {
           <Box>
             <FcMediumPriority />
           </Box>
-          <Text marginTop="15px" marginLeft="10px">
-            Ouverte
-          </Text>
+          <Text ml="1rem">Ouverte</Text>
         </MenuItem>
       </MenuList>
     </Menu>

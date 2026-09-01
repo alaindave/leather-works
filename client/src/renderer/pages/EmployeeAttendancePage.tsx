@@ -254,7 +254,7 @@ const EmployeeAttendancePage = () => {
       toast({
         title: "Weekend",
         description:
-          "Service non disponible les weekends. Les absences doivent etre enregistrées manuellement",
+          "Service indisponible les weekends. Les absences doivent etre enregistrées manuellement",
         status: "warning",
         duration: 4000,
         isClosable: true,

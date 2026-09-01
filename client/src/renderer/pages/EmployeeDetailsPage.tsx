@@ -207,7 +207,7 @@ const EmployeeDetailsPage = () => {
                   borderRadius="0.4rem"
                   padding="0.4rem"
                 >
-                  <FaRegClock size="1.3rem" color="purple" />
+                  <FaRegClock size="1.2rem" color="blue" />
                   <Text color="gray.900">Présence</Text>
                 </HStack>
               </Link>
@@ -225,7 +225,7 @@ const EmployeeDetailsPage = () => {
                   borderRadius="0.4rem"
                   padding="0.4rem"
                 >
-                  <CiCalendarDate size="1.3rem" color="purple" />
+                  <CiCalendarDate size="1.2rem" color="blue" />
                   <Text>Congés</Text>
                 </HStack>
               </Link>
@@ -243,7 +243,7 @@ const EmployeeDetailsPage = () => {
                   borderRadius="0.4rem"
                   padding="0.4rem"
                 >
-                  <FaDollarSign size="1.3rem" color="purple" />
+                  <FaDollarSign size="1.1rem" color="blue" />
                   <Text>Fiche de paye</Text>
                 </HStack>
               </Link>

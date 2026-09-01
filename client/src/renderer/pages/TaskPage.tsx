@@ -84,7 +84,7 @@ const TaskPage = () => {
               _hover={{ bg: "transparent" }}
               fontSize="1rem"
               position="relative"
-              bottom="0.2rem"
+              top="0.5rem"
               right="1rem"
               onClick={loadTasks}
             >
@@ -96,7 +96,7 @@ const TaskPage = () => {
             fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
             color="gray.500"
             position="relative"
-            bottom="1.4rem"
+            bottom="0.5rem"
             left="1rem"
           >
             Gérez les taches
@@ -137,7 +137,7 @@ const TaskPage = () => {
           width="200px"
           position="relative"
           top="2rem"
-          left="0.5rem"
+          right="2rem"
           wrap="wrap"
         >
           <TaskStatusFilter onFilterClicked={setStatusFilter} />

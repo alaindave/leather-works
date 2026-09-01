@@ -126,6 +126,8 @@ const EmployeeListPage = () => {
                   </Text>
 
                   <Button
+                    position="relative"
+                    right="0.3rem"
                     variant="ghost"
                     size="md"
                     minWidth="32px"
@@ -141,7 +143,6 @@ const EmployeeListPage = () => {
                     }}
                     onClick={loadEmployees}
                     aria-label="Actualiser les employés"
-                    mt="0.5rem"
                   >
                     <FaSyncAlt />
                   </Button>
@@ -207,45 +208,42 @@ const EmployeeListPage = () => {
           </Flex>
         </Box>
       </Box>
-
       {/* =====================================================
-          LIST AREA
-      ===================================================== */}
-      <Flex flex="1" minHeight={0} width="100%" overflow="hidden">
-        <Box
-          width="100%"
-          height="100%"
-          minHeight={0}
-          overflowY="auto"
-          overflowX="hidden"
-          /*
-           * SAME horizontal padding as header.
-           * This is critical.
-           */
-          px={horizontalPadding}
-          py={{
-            base: "8px",
-            md: "10px",
-            lg: "12px",
-          }}
-          sx={{
-            "&::-webkit-scrollbar": {
-              width: "6px",
-            },
+    LIST AREA
+===================================================== */}
+      <Box
+        flex="1"
+        minH={0}
+        width="100%"
+        overflowY="auto"
+        overflowX="hidden"
+        px={horizontalPadding}
+        py={{
+          base: "8px",
+          md: "10px",
+          lg: "12px",
+        }}
+        sx={{
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
 
-            "&::-webkit-scrollbar-track": {
-              background: "transparent",
-            },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
 
-            "&::-webkit-scrollbar-thumb": {
-              background: "#CBD5E1",
-              borderRadius: "10px",
-            },
-          }}
-        >
+          "&::-webkit-scrollbar-thumb": {
+            background: "#CBD5E1",
+            borderRadius: "10px",
+          },
+
+          scrollPaddingBottom: "40px",
+        }}
+      >
+        <Box width="100%" minWidth={0} minHeight="max-content" pb="40px">
           {/* =================================================
-              LOADING
-          ================================================= */}
+        LOADING
+    ================================================= */}
           {loading ? (
             <VStack width="100%" spacing="8px" align="stretch">
               {[...Array(6)].map((_, index) => (
@@ -313,11 +311,14 @@ const EmployeeListPage = () => {
               }}
               m="0"
               p="0"
+              listStyleType="none"
+              flexShrink={0}
             >
               {filteredEmployees.map((employee) => (
                 <ListItem
                   key={employee._id}
                   width="100%"
+                  flexShrink={0}
                   bg="#ffffff"
                   border="1px solid #E2E8F0"
                   borderRadius="8px"
@@ -334,8 +335,8 @@ const EmployeeListPage = () => {
               ))}
 
               {/* =================================================
-                  EMPTY STATE
-              ================================================= */}
+            EMPTY STATE
+        ================================================= */}
               {filteredEmployees.length === 0 && (
                 <Flex
                   width="100%"
@@ -349,6 +350,7 @@ const EmployeeListPage = () => {
                   border="1px solid #E2E8F0"
                   borderRadius="8px"
                   px="20px"
+                  flexShrink={0}
                 >
                   <VStack spacing="6px">
                     <Text
@@ -379,7 +381,7 @@ const EmployeeListPage = () => {
             </List>
           )}
         </Box>
-      </Flex>
+      </Box>
     </Flex>
   );
 };

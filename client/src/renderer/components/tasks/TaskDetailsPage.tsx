@@ -158,7 +158,6 @@ export default function TaskDetailsPage() {
             fontWeight="700"
             fontFamily="monospace"
             color="gray.800"
-            mt="1rem"
           >
             {task?.taskNumber}
           </Text>
@@ -170,7 +169,7 @@ export default function TaskDetailsPage() {
           ) : (
             <FaHourglassStart size="1.2rem" color="green" />
           )}
-          <Text mt="1rem" fontSize="1.1rem">
+          <Text fontSize="1.1rem">
             {task?.deadline &&
             new Date(task?.deadline).getDay() === new Date().getDay()
               ? "Aujurd'hui"
@@ -214,12 +213,7 @@ export default function TaskDetailsPage() {
             ================================================== */}
             <Grid templateColumns="3fr 2fr">
               <Box>
-                <Text
-                  fontSize="1.1rem"
-                  fontWeight="600"
-                  color="gray.500"
-                  mb={3}
-                >
+                <Text fontSize="1.1rem" fontWeight="600" color="gray.500">
                   Auteur
                 </Text>
 
@@ -231,34 +225,22 @@ export default function TaskDetailsPage() {
                         ? `${task.author.firstName} ${task.author.lastName}`
                         : "Auteur"
                     }
-                    position="relative"
-                    bottom="0.3rem"
                   />
 
-                  <Box position="relative" top="0.5rem">
+                  <Box>
                     <Text fontSize="md" fontWeight="600" color="gray.800">
                       {task?.author
                         ? `${task.author.firstName} ${task.author.lastName}`
                         : "Auteur inconnu"}
                     </Text>
                     <HStack>
-                      <Text
-                        position="relative"
-                        bottom="1rem"
-                        fontSize="1rem"
-                        color="gray.600"
-                      >
+                      <Text fontSize="1rem" color="gray.600">
                         {task?.submittedAt &&
                           new Date(task.submittedAt).toLocaleDateString(
                             "fr-FR"
                           )}
                       </Text>
-                      <Text
-                        position="relative"
-                        bottom="1rem"
-                        fontSize="1rem"
-                        color="gray.600"
-                      >
+                      <Text fontSize="1rem" color="gray.600">
                         {task?.submittedAt &&
                           new Date(task.submittedAt).toLocaleTimeString(
                             "fr-FR",
@@ -282,34 +264,24 @@ export default function TaskDetailsPage() {
                 </Text>
 
                 {task?.recipients?.length ? (
-                  <HStack spacing={3} flexWrap="wrap">
+                  <Grid
+                    templateColumns="repeat(2, minmax(0, 1fr))"
+                    gap={3}
+                    width="100%"
+                  >
                     {task?.recipients.map((user) => (
-                      <HStack
-                        key={user._id}
-                        spacing={2}
-                        bg="white"
-                        border="1px solid"
-                        borderColor="gray.200"
-                        borderRadius="full"
-                        px={3}
-                        py={1.5}
-                      >
+                      <HStack key={user._id} spacing={2} px={3} py={1.5}>
                         <Avatar
                           size="sm"
                           name={`${user.firstName} ${user.lastName}`}
                         />
 
-                        <Text
-                          position="relative"
-                          top="0.3rem"
-                          fontSize="sm"
-                          color="gray.700"
-                        >
+                        <Text fontSize="sm" color="gray.700">
                           {user.firstName} {user.lastName}
                         </Text>
                       </HStack>
                     ))}
-                  </HStack>
+                  </Grid>
                 ) : (
                   <Text fontSize="sm" color="gray.500">
                     Aucun destinataire.
@@ -361,26 +333,13 @@ export default function TaskDetailsPage() {
               >
                 <Flex justify="space-between">
                   <Box mb={3}>
-                    <HStack>
-                      {" "}
-                      <Icon as={FiCheckCircle} color="green.500" boxSize={5} />
-                      <Text
-                        position="relative"
-                        top="0.5rem"
-                        fontWeight="600"
-                        color="green.700"
-                      >
-                        Tâche résolue
+                    {task.resolvedBy && (
+                      <Text ml="1rem" fontSize="md" color="gray.800" mt={1}>
+                        {task.resolvedBy}
                       </Text>
-                    </HStack>
+                    )}
                     {task.resolvedAt && (
-                      <Text
-                        position="relative"
-                        left="2rem"
-                        bottom="0.8rem"
-                        fontSize="sm"
-                        color="gray.600"
-                      >
+                      <Text ml="1rem" fontSize="sm" color="gray.600">
                         {new Date(task.resolvedAt).toLocaleDateString("fr-FR")}{" "}
                         {"à"}{" "}
                         {new Date(task.resolvedAt).toLocaleString("fr-FR", {
@@ -390,29 +349,32 @@ export default function TaskDetailsPage() {
                       </Text>
                     )}
                   </Box>
-                  {task.resolvedBy && (
-                    <Text fontSize="md" color="gray.600" mt={1}>
-                      {task.resolvedBy}
-                    </Text>
-                  )}
+
+                  <Text
+                    ml="1rem"
+                    mt="0.5rem"
+                    fontWeight="600"
+                    color="green.700"
+                  >
+                    Tâche résolue
+                  </Text>
                 </Flex>
 
                 {task.resolutionNotes && (
                   <Box>
                     <Text
-                      position="relative"
-                      left="20rem"
-                      bottom="2rem"
+                      ml="1rem"
+                      mt="0.5rem"
                       fontSize="md"
                       fontWeight="600"
                       color="gray.600"
-                      mb={1}
                     >
                       Notes
                     </Text>
 
                     <Text
-                      ml="2rem"
+                      ml="1rem"
+                      mt="0.5rem"
                       fontSize="md"
                       color="gray.700"
                       whiteSpace="pre-wrap"
@@ -468,7 +430,7 @@ export default function TaskDetailsPage() {
                             {comment.createdAt && (
                               <Text
                                 position="relative"
-                                bottom="1.5rem"
+                                bottom="0.5rem"
                                 fontSize="sm"
                                 color="gray.400"
                               >
@@ -488,8 +450,6 @@ export default function TaskDetailsPage() {
                           </VStack>
 
                           <Text
-                            position="relative"
-                            bottom="1.5rem"
                             fontSize="md"
                             color="gray.700"
                             whiteSpace="pre-wrap"

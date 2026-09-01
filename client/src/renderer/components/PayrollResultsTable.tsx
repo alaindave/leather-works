@@ -36,10 +36,11 @@ export default function PayrollResultsTable({ payrollResults }: Props) {
 
   return (
     <TableContainer
-      height="50vh"
+      maxH="50vh"
       borderWidth="1px"
       borderRadius="lg"
       overflowY="auto"
+      overflowX="hidden"
       width="78vw"
     >
       <Table variant="simple" size="sm">

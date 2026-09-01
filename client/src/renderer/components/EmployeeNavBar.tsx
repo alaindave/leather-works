@@ -452,14 +452,16 @@ const EmployeeNavBar = () => {
                   _hover={{ bg: "transparent" }}
                   _expanded={{ bg: "transparent" }}
                 >
-                  <MdPersonOutline
-                    color="blue"
-                    size="27px"
-                    style={{
-                      display: "block",
-                      margin: "0",
-                    }}
-                  />
+                  <Box ml="0.25rem">
+                    <MdPersonOutline
+                      color="blue"
+                      size="27px"
+                      style={{
+                        display: "block",
+                        margin: "0",
+                      }}
+                    />
+                  </Box>
                 </MenuButton>
 
                 <MenuList bg="#ffffff" minWidth="150px">
