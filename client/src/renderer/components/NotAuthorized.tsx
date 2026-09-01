@@ -4,7 +4,6 @@ import {
   Icon as ChakraIcon,
   HStack,
   Icon,
-  PlacementWithLogical,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -12,15 +11,14 @@ import {
   PopoverTrigger,
   Text,
 } from "@chakra-ui/react";
-import { useState } from "react";
-import { IconType } from "react-icons";
+import { ComponentProps, useState } from "react";
 
 interface Props {
   buttonText: string;
-  placement: PlacementWithLogical;
-  icon?: IconType;
-  width: string;
-  color: string;
+  icon: React.ElementType;
+  placement?: "left" | "right" | "top" | "bottom";
+  width?: ComponentProps<typeof Button>["w"];
+  color?: string;
 }
 
 const NotAuthorized = ({

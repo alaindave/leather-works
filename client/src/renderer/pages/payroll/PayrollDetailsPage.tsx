@@ -176,10 +176,10 @@ const PayrollDetailsPage = () => {
         </Link>
         <Box ml="2rem">
           <HStack>
-            <Text mt="0.8rem" ml="0.5rem" fontSize="1.4rem" fontWeight="600">
+            <Text mt="1rem" ml="0.5rem" fontSize="1.4rem" fontWeight="600">
               Fiches de paye
             </Text>
-            <Box>
+            <Box mt="1rem">
               <MdOutlineChevronRight fontSize="1.3rem" />
             </Box>
             <Text mt="0.9rem" color="gray.600">
@@ -249,13 +249,8 @@ const PayrollDetailsPage = () => {
           </HStack>
           {/* Audit log */}
 
-          <Text
-            position="relative"
-            left="0.5rem"
-            bottom="1rem"
-            color="gray.500"
-          >
-            ---- Créee le{" "}
+          <Text position="relative" left="0.5rem" color="gray.500">
+            - Créee le{" "}
             {payrollRun?.createdAt &&
               new Date(payrollRun?.createdAt).toLocaleDateString("fr-FR", {
                 day: "numeric",
@@ -264,17 +259,12 @@ const PayrollDetailsPage = () => {
               })}
             {"  "}à {payrollRun?.createdAt && formatTime(payrollRun?.createdAt)}{" "}
             {"  "}
-            par {payrollRun?.generatedByName}---
+            par {payrollRun?.generatedByName}.
           </Text>
           {/* Cancelled payroll run */}
           {payrollRun?.status === "ANNULÉ" ? (
-            <Text
-              position="relative"
-              left="0.5rem"
-              bottom="2rem"
-              color="gray.500"
-            >
-              --- Annulée le{" "}
+            <Text color="gray.500">
+              - Annulée le{" "}
               {payrollRun?.cancelledAt &&
                 new Date(payrollRun?.cancelledAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
@@ -284,20 +274,15 @@ const PayrollDetailsPage = () => {
               {"  "}à{" "}
               {payrollRun?.cancelledAt && formatTime(payrollRun?.cancelledAt)}{" "}
               {"  "}
-              par {payrollRun?.cancelledByName}---
+              par {payrollRun?.cancelledByName}.
             </Text>
           ) : null}
           {/* Verifying payroll */}
           {payrollRun?.status === "VERIFICATION" ||
           payrollRun?.status === "APPROUVÉ" ||
           payrollRun?.status === "PAYÉ" ? (
-            <Text
-              position="relative"
-              left="0.5rem"
-              bottom="2rem"
-              color="gray.500"
-            >
-              --- Soumise pour verification le{" "}
+            <Text color="gray.500">
+              - Soumise pour verification le{" "}
               {payrollRun?.submittedForVerificationAt &&
                 new Date(
                   payrollRun?.submittedForVerificationAt
@@ -310,19 +295,14 @@ const PayrollDetailsPage = () => {
               {payrollRun?.submittedForVerificationAt &&
                 formatTime(payrollRun?.submittedForVerificationAt)}{" "}
               {"  "}
-              par {payrollRun?.submittedForVerificationByName}---
+              par {payrollRun?.submittedForVerificationByName}.
             </Text>
           ) : null}
           {/* Approved payroll */}
           {payrollRun?.status === "APPROUVÉ" ||
           payrollRun?.status === "PAYÉ" ? (
-            <Text
-              position="relative"
-              left="0.5rem"
-              bottom="3rem"
-              color="gray.500"
-            >
-              --- Approuvée le{" "}
+            <Text color="gray.500">
+              - Approuvée le{" "}
               {payrollRun?.approvedAt &&
                 new Date(payrollRun?.approvedAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
@@ -332,18 +312,13 @@ const PayrollDetailsPage = () => {
               {"  "}à{" "}
               {payrollRun?.approvedAt && formatTime(payrollRun?.approvedAt)}{" "}
               {"  "}
-              par {payrollRun?.approvedByName}---
+              par {payrollRun?.approvedByName}.
             </Text>
           ) : null}
           {/* Paid payroll */}
           {payrollRun?.status === "PAYÉ" ? (
-            <Text
-              position="relative"
-              left="0.5rem"
-              bottom="4rem"
-              color="gray.500"
-            >
-              ---Payée le{" "}
+            <Text color="gray.500">
+              -Payée le{" "}
               {payrollRun?.paidAt &&
                 new Date(payrollRun?.paidAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
@@ -352,7 +327,7 @@ const PayrollDetailsPage = () => {
                 })}
               {"  "}à {payrollRun?.paidAt && formatTime(payrollRun?.paidAt)}{" "}
               {"  "}
-              par {payrollRun?.paidByName}---
+              par {payrollRun?.paidByName}.
             </Text>
           ) : null}
         </Box>
@@ -383,13 +358,16 @@ const PayrollDetailsPage = () => {
           </Badge>
         )}
       </HStack>
-      <PayrollDashboard
-        employeeCount={payrollRun?.employeeCount ?? 0}
-        totalBasicSalary={payrollRun?.totalBasicSalary ?? 0}
-        totalEarnings={payrollRun?.totalEarnings ?? 0}
-        totalDeductions={payrollRun?.totalDeductions ?? 0}
-        totalNetSalary={payrollRun?.totalNetSalary ?? 0}
-      />
+      <Box ml="1rem">
+        <PayrollDashboard
+          employeeCount={payrollRun?.employeeCount ?? 0}
+          totalBasicSalary={payrollRun?.totalBasicSalary ?? 0}
+          totalEarnings={payrollRun?.totalEarnings ?? 0}
+          totalDeductions={payrollRun?.totalDeductions ?? 0}
+          totalNetSalary={payrollRun?.totalNetSalary ?? 0}
+        />
+      </Box>
+
       {/* Payroll results table */}
       <Box ml="1rem" mb="1rem">
         <PayrollResultsTable payrollResults={payrollResults} />

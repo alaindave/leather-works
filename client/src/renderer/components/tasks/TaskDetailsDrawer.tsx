@@ -17,6 +17,7 @@ import {
   Text,
   Textarea,
   VStack,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { FiCheckCircle, FiUser } from "react-icons/fi";
 import Task from "../../../common/types/Task";
@@ -40,49 +41,83 @@ export default function TaskDetailsDrawer({
   onRefresh,
 }: Props) {
   const [dbTask, setDbTask] = useState<Task | null>(null);
+  const [comment, setComment] = useState("");
+
   const author = useAdminUser((store) => store.adminUser);
   const syncVersion = useSyncStore((store) => store.syncVersion);
 
+  // ============================================================
+  // LOAD TASK FROM SQLITE
+  // ============================================================
+
   useEffect(() => {
-    loadDbTask();
-  }, [syncVersion]);
+    if (task?._id) {
+      loadDbTask();
+    }
+  }, [task?._id, syncVersion]);
 
   const loadDbTask = async () => {
     if (!task?._id) return;
+
     try {
-      const dbTask = await window.electron.tasks.getById(task?._id);
+      const dbTask = await window.electron.tasks.getById(task._id);
+
       setDbTask(dbTask);
+
       console.log("TASK FROM SQLITE:", dbTask);
-    } catch (e) {
-      console.error("AN ERROR OCCURED WHILE FETCHING DB TASK", e);
+    } catch (error) {
+      console.error("AN ERROR OCCURRED WHILE FETCHING DB TASK:", error);
     }
   };
+
   const currentTask = dbTask ?? task;
 
-  const [comment, setComment] = useState("");
+  // ============================================================
+  // CLOSE
+  // ============================================================
 
-  if (!currentTask) {
-    return null;
-  }
-  console.log("CURRENT TASK FROM DB:", currentTask);
+  const handleClose = () => {
+    setDbTask(null);
+    setComment("");
+    onClose();
+  };
+
+  // ============================================================
+  // COMMENT
+  // ============================================================
 
   const handleTaskComment = async () => {
     if (!comment.trim()) {
       return;
     }
-    if (!task?._id) return;
+
+    if (!currentTask?._id) {
+      return;
+    }
+
+    if (!author?._id) {
+      console.error("CANNOT ADD COMMENT: ADMIN USER NOT AVAILABLE");
+      return;
+    }
+
     try {
       await window.electron.taskComments.create({
-        taskId: task?._id,
+        taskId: currentTask._id,
         author: author._id,
-        comment,
+        comment: comment.trim(),
       });
+
       setComment("");
+
       await loadDbTask();
     } catch (error) {
       console.error("FAILED TO ADD TASK COMMENT:", error);
     }
   };
+
+  // ============================================================
+  // RESOLUTION
+  // ============================================================
 
   const handleResolution = async (
     notes: string | undefined
@@ -96,6 +131,7 @@ export default function TaskDetailsDrawer({
 
       return false;
     }
+
     const resolvedBy = `${author.firstName} ${author.lastName}`;
 
     const updatedTask: Task = {
@@ -110,65 +146,152 @@ export default function TaskDetailsDrawer({
 
     try {
       const result = await window.electron.tasks.update(updatedTask);
+
       console.log("TASK UPDATE RESULT:", result);
+
       await loadDbTask();
+
       onRefresh?.();
+
       return true;
     } catch (error) {
-      console.error("An error occurred during task update:", error);
+      console.error("AN ERROR OCCURRED DURING TASK UPDATE:", error);
+
       return false;
     }
   };
 
+  // ============================================================
+  // EMPTY STATE
+  // ============================================================
+
+  if (!currentTask) {
+    return null;
+  }
+
   return (
     <Drawer
       isOpen={isOpen}
-      onClose={() => {
-        setDbTask(null);
-        onClose();
-      }}
+      onClose={handleClose}
       placement="left"
-      size="lg"
+      size={{
+        base: "full",
+        sm: "sm",
+        md: "md",
+        lg: "lg",
+      }}
     >
       <DrawerOverlay />
-      <DrawerContent>
-        <DrawerHeader borderBottomWidth="1px" borderColor="gray.500">
-          <VStack align="start" spacing={1} position="relative">
-            <Flex justify="space-between">
-              <Box>
-                <HStack>
-                  <Text fontWeight="bold" fontFamily="monospace">
+
+      <DrawerContent
+        maxW={{
+          base: "100vw",
+          sm: "420px",
+          md: "520px",
+          lg: "650px",
+        }}
+      >
+        {/* =====================================================
+            HEADER
+        ====================================================== */}
+
+        <DrawerHeader
+          borderBottomWidth="1px"
+          borderColor="gray.300"
+          px={{
+            base: 4,
+            sm: 5,
+            md: 6,
+          }}
+          py={{
+            base: 4,
+            md: 5,
+          }}
+        >
+          <VStack
+            align="stretch"
+            spacing={{
+              base: 4,
+              md: 5,
+            }}
+          >
+            {/* =================================================
+                TASK HEADER
+            ================================================== */}
+
+            <Flex
+              width="100%"
+              justify="space-between"
+              align="flex-start"
+              gap={3}
+            >
+              {/* Task information */}
+
+              <Box minW={0} flex="1">
+                <Flex
+                  direction={{
+                    base: "column",
+                    sm: "row",
+                  }}
+                  align={{
+                    base: "flex-start",
+                    sm: "center",
+                  }}
+                  gap={2}
+                >
+                  <Text
+                    fontWeight="bold"
+                    fontFamily="monospace"
+                    fontSize={{
+                      base: "0.95rem",
+                      md: "1rem",
+                    }}
+                    color="gray.700"
+                    wordBreak="break-word"
+                  >
                     {currentTask.taskNumber}
                   </Text>
 
                   <Badge
                     colorScheme={currentTask.isResolved ? "green" : "yellow"}
-                    mb="1rem"
-                    ml="2rem"
+                    alignSelf={{
+                      base: "flex-start",
+                      sm: "center",
+                    }}
                   >
-                    {currentTask.isResolved ? "Resolue" : "Ouverte"}
+                    {currentTask.isResolved ? "Résolue" : "Ouverte"}
                   </Badge>
-                </HStack>
+                </Flex>
 
                 {/* Author */}
-                <HStack position="relative" bottom="1rem">
+
+                <HStack mt={3} spacing={3} align="center">
                   <Avatar
-                    size="sm"
+                    size={{
+                      base: "sm",
+                      md: "md",
+                    }}
                     name={`${currentTask.author.firstName} ${currentTask.author.lastName}`}
                   />
 
-                  <Box ml="0.1rem">
-                    <Text position="relative" top="0.4rem" fontSize="1.1rem">
-                      {currentTask.author.firstName}{" "}
-                      {currentTask.author.lastName}
-                    </Text>
-                  </Box>
+                  <Text
+                    fontSize={{
+                      base: "0.95rem",
+                      md: "1.05rem",
+                    }}
+                    fontWeight="500"
+                    color="gray.800"
+                    wordBreak="break-word"
+                  >
+                    {currentTask.author.firstName} {currentTask.author.lastName}
+                  </Text>
                 </HStack>
               </Box>
 
               {/* Resolve button */}
+
               {!currentTask.isResolved && (
-                <Box position="absolute" right="0.2rem">
+                <Box flexShrink={0}>
                   <TaskResolutionPopover onSubmit={handleResolution} />
                 </Box>
               )}
@@ -178,125 +301,160 @@ export default function TaskDetailsDrawer({
                 DATES
             ================================================== */}
 
-            <Flex
+            <SimpleGrid
+              columns={{
+                base: 1,
+                sm: 2,
+              }}
+              spacing={3}
+              width="100%"
               bg="gray.100"
-              borderRadius="0.4rem"
-              height="4.5rem"
-              width="42vw"
-              justify="space-between"
-              mt="0.2rem"
+              borderRadius="md"
+              p={{
+                base: 3,
+                md: 4,
+              }}
             >
-              {/* Opened date */}
-              <HStack ml="3rem" position="relative" top="0.6rem">
-                <Box
-                  position="relative"
-                  right="0.3rem"
-                  bottom="0.8rem"
-                  fontSize="1.7rem"
+              {/* Opened */}
+
+              <Flex align="center" gap={3} minW={0}>
+                <Flex
+                  flexShrink={0}
+                  fontSize={{
+                    base: "1.5rem",
+                    md: "1.7rem",
+                  }}
                   color="blue.500"
+                  align="center"
+                  justify="center"
                 >
                   <CiCalendarDate />
-                </Box>
+                </Flex>
 
-                <Box>
-                  <Text mt="0.3rem" fontSize="0.93rem" color="gray.600">
+                <Box minW={0}>
+                  <Text fontSize="0.8rem" color="gray.500" mb={1}>
                     Ouverte le
                   </Text>
-                  <HStack>
+
+                  <Flex wrap="wrap" columnGap={2} rowGap={0}>
                     <Text
-                      position="relative"
-                      bottom="0.98rem"
-                      fontSize="0.98rem"
-                      color="gray.600"
+                      fontSize={{
+                        base: "0.85rem",
+                        md: "0.9rem",
+                      }}
+                      color="gray.700"
                     >
-                      {currentTask.submittedAt &&
-                        new Date(currentTask.submittedAt).toLocaleDateString(
-                          "fr-FR"
-                        )}{" "}
+                      {currentTask.submittedAt
+                        ? new Date(currentTask.submittedAt).toLocaleDateString(
+                            "fr-FR"
+                          )
+                        : "-"}
                     </Text>
+
                     <Text
-                      position="relative"
-                      bottom="0.98rem"
-                      fontSize="0.98rem"
-                      color="gray.600"
+                      fontSize={{
+                        base: "0.85rem",
+                        md: "0.9rem",
+                      }}
+                      color="gray.700"
                     >
-                      {currentTask.submittedAt &&
-                        new Date(currentTask?.submittedAt).toLocaleTimeString(
-                          "fr-FR",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )}
+                      {currentTask.submittedAt
+                        ? new Date(currentTask.submittedAt).toLocaleTimeString(
+                            "fr-FR",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )
+                        : "-"}
                     </Text>
-                  </HStack>
+                  </Flex>
                 </Box>
-              </HStack>
+              </Flex>
 
               {/* Deadline */}
-              <HStack position="relative" top="0.6rem">
-                <Box
-                  fontSize="1.6rem"
-                  mr="0.3rem"
-                  position="relative"
-                  right="0.3rem"
-                  bottom="0.8rem"
+
+              <Flex align="center" gap={3} minW={0}>
+                <Flex
+                  flexShrink={0}
+                  fontSize={{
+                    base: "1.5rem",
+                    md: "1.7rem",
+                  }}
                   color="blue.500"
+                  align="center"
+                  justify="center"
                 >
                   <CiClock2 />
-                </Box>
+                </Flex>
 
-                <Box mr="3rem">
-                  <Text fontSize="0.94rem" color="gray.600" mt="0.3rem">
+                <Box minW={0}>
+                  <Text fontSize="0.8rem" color="gray.500" mb={1}>
                     Date limite
                   </Text>
 
-                  <Box
-                    position="relative"
-                    bottom="1.1rem"
-                    fontSize="0.95rem"
-                    color="gray.600"
+                  <Text
+                    fontSize={{
+                      base: "0.85rem",
+                      md: "0.9rem",
+                    }}
+                    color="gray.700"
                   >
-                    {currentTask.deadline &&
-                    new Date(currentTask.deadline).getDay() ===
-                      new Date().getDay() ? (
-                      <Text color="brown">Aujurd'hui</Text>
-                    ) : (
-                      currentTask.deadline &&
-                      new Date(currentTask.deadline).toLocaleDateString("fr-FR")
-                    )}
-                  </Box>
+                    {currentTask.deadline
+                      ? (() => {
+                          const deadline = new Date(currentTask.deadline);
+
+                          const today = new Date();
+
+                          const isToday =
+                            deadline.getFullYear() === today.getFullYear() &&
+                            deadline.getMonth() === today.getMonth() &&
+                            deadline.getDate() === today.getDate();
+
+                          return isToday
+                            ? "Aujourd'hui"
+                            : deadline.toLocaleDateString("fr-FR");
+                        })()
+                      : "-"}
+                  </Text>
                 </Box>
-              </HStack>
-            </Flex>
+              </Flex>
+            </SimpleGrid>
 
             {/* =================================================
                 SUBJECT + MESSAGE
             ================================================== */}
 
-            <Flex width="42vw" justify="space-between">
-              <Box>
-                <Text
-                  mt="1rem"
-                  whiteSpace="pre-wrap"
-                  fontSize="1.18rem"
-                  color="gray.900"
-                >
-                  {currentTask.subject}
-                </Text>
+            <Box width="100%">
+              <Text
+                fontSize={{
+                  base: "1.05rem",
+                  sm: "1.15rem",
+                  md: "1.2rem",
+                }}
+                fontWeight="600"
+                color="gray.900"
+                mb={2}
+                wordBreak="break-word"
+              >
+                {currentTask.subject}
+              </Text>
 
-                <Text
-                  position="relative"
-                  bottom="0.3rem"
-                  fontSize="1.1rem"
-                  fontWeight="300"
-                  color="black"
-                  fontFamily="system-ui"
-                >
-                  {currentTask.message}
-                </Text>
-              </Box>
-            </Flex>
+              <Text
+                fontSize={{
+                  base: "0.95rem",
+                  sm: "1rem",
+                  md: "1.05rem",
+                }}
+                fontWeight="400"
+                color="gray.700"
+                fontFamily="system-ui"
+                whiteSpace="pre-wrap"
+                wordBreak="break-word"
+              >
+                {currentTask.message}
+              </Text>
+            </Box>
           </VStack>
         </DrawerHeader>
 
@@ -304,30 +462,60 @@ export default function TaskDetailsDrawer({
             BODY
         ====================================================== */}
 
-        <DrawerBody>
-          <VStack align="stretch" spacing={1}>
+        <DrawerBody
+          px={{
+            base: 4,
+            sm: 5,
+            md: 6,
+          }}
+          py={{
+            base: 4,
+            md: 5,
+          }}
+        >
+          <VStack
+            align="stretch"
+            spacing={{
+              base: 5,
+              md: 6,
+            }}
+          >
             {/* =================================================
                 RECIPIENTS
             ================================================== */}
 
             <Box>
-              <Text fontWeight="bold" mb={3} fontSize="1.2rem">
+              <Text
+                fontWeight="bold"
+                mb={3}
+                fontSize={{
+                  base: "1rem",
+                  md: "1.1rem",
+                }}
+                color="gray.800"
+              >
                 Destinataires
               </Text>
 
               <Stack spacing={3}>
                 {currentTask.recipients?.map((user) => (
-                  <HStack key={user._id}>
+                  <HStack key={user._id} spacing={3} minW={0}>
                     <Avatar
                       size="sm"
+                      flexShrink={0}
                       name={`${user.firstName} ${user.lastName}`}
                     />
 
-                    <Box ml="0.1rem">
-                      <Text position="relative" top="0.4rem" fontSize="1.1rem">
-                        {user.firstName} {user.lastName}
-                      </Text>
-                    </Box>
+                    <Text
+                      fontSize={{
+                        base: "0.9rem",
+                        md: "1rem",
+                      }}
+                      color="gray.700"
+                      wordBreak="break-word"
+                    >
+                      {user.firstName} {user.lastName}
+                    </Text>
                   </HStack>
                 ))}
               </Stack>
@@ -339,46 +527,94 @@ export default function TaskDetailsDrawer({
 
             {currentTask.isResolved && (
               <Box>
-                <Divider borderColor="gray.500" />
+                <Divider borderColor="gray.300" mb={5} />
 
-                <VStack align="stretch" spacing={3}>
+                <VStack align="stretch" spacing={4}>
                   {/* Resolved date */}
-                  <HStack>
-                    <Icon as={FiCheckCircle} color="green.500" />
 
-                    <Box>
-                      <Text position="relative" top="1rem">
-                        Resolue le
+                  <HStack align="flex-start" spacing={3}>
+                    <Icon
+                      as={FiCheckCircle}
+                      color="green.500"
+                      boxSize={5}
+                      mt={1}
+                      flexShrink={0}
+                    />
+
+                    <Box minW={0}>
+                      <Text fontSize="0.8rem" color="gray.500" mb={1}>
+                        Résolue le
                       </Text>
 
-                      <Text>
-                        {currentTask.resolvedAt &&
-                          new Date(currentTask.resolvedAt)
-                            .toLocaleString("fr-FR")
-                            .replaceAll(" ", " à ")}
+                      <Text
+                        fontSize={{
+                          base: "0.9rem",
+                          md: "1rem",
+                        }}
+                        color="gray.700"
+                        wordBreak="break-word"
+                      >
+                        {currentTask.resolvedAt
+                          ? new Date(currentTask.resolvedAt)
+                              .toLocaleString("fr-FR")
+                              .replaceAll(" ", " à ")
+                          : "-"}
                       </Text>
                     </Box>
                   </HStack>
 
                   {/* Resolved by */}
-                  {currentTask.resolvedBy && (
-                    <HStack>
-                      <Icon as={FiUser} />
 
-                      <Text position="relative" top="0.4rem">
+                  {currentTask.resolvedBy && (
+                    <HStack align="flex-start" spacing={3}>
+                      <Icon as={FiUser} boxSize={5} mt={1} flexShrink={0} />
+
+                      <Text
+                        fontSize={{
+                          base: "0.9rem",
+                          md: "1rem",
+                        }}
+                        color="gray.700"
+                        wordBreak="break-word"
+                      >
                         par {currentTask.resolvedBy}
                       </Text>
                     </HStack>
                   )}
 
                   {/* Resolution notes */}
+
                   {currentTask.resolutionNotes && (
-                    <Box p={3} bg="gray.100" rounded="md">
-                      <Text fontWeight="bold" mb={1}>
-                        Notes de resolution
+                    <Box
+                      p={{
+                        base: 3,
+                        md: 4,
+                      }}
+                      bg="gray.100"
+                      borderRadius="md"
+                      width="100%"
+                    >
+                      <Text
+                        fontWeight="bold"
+                        mb={2}
+                        fontSize={{
+                          base: "0.9rem",
+                          md: "1rem",
+                        }}
+                      >
+                        Notes de résolution
                       </Text>
 
-                      <Text fontFamily="mono">
+                      <Text
+                        fontFamily="mono"
+                        fontSize={{
+                          base: "0.8rem",
+                          md: "0.9rem",
+                        }}
+                        color="gray.700"
+                        whiteSpace="pre-wrap"
+                        wordBreak="break-word"
+                      >
                         {currentTask.resolutionNotes}
                       </Text>
                     </Box>
@@ -387,78 +623,120 @@ export default function TaskDetailsDrawer({
               </Box>
             )}
 
-            <Divider borderColor="gray.500" />
-
             {/* =================================================
                 COMMENTS
             ================================================== */}
 
             <Box>
-              <Text fontWeight="bold" mb={4}>
+              <Divider borderColor="gray.300" mb={5} />
+
+              <Text
+                fontWeight="bold"
+                mb={4}
+                fontSize={{
+                  base: "1rem",
+                  md: "1.1rem",
+                }}
+                color="gray.800"
+              >
                 Commentaires ({currentTask.comments?.length ?? 0})
               </Text>
 
               <Stack spacing={4}>
-                {currentTask.comments?.map((comment) => (
-                  <Box key={comment._id} borderWidth="1px" rounded="md" p={3}>
-                    <HStack mb={2}>
+                {currentTask.comments?.map((taskComment) => (
+                  <Box
+                    key={taskComment._id}
+                    borderWidth="1px"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    p={{
+                      base: 3,
+                      md: 4,
+                    }}
+                    bg="white"
+                  >
+                    {/* Comment author */}
+
+                    <HStack align="flex-start" spacing={3}>
                       <Avatar
                         size="sm"
-                        name={`${comment.author.firstName} ${comment.author.lastName}`}
+                        flexShrink={0}
+                        name={`${taskComment.author.firstName} ${taskComment.author.lastName}`}
                       />
 
-                      <Box
-                        flex={1}
-                        position="relative"
-                        top="1rem"
-                        left="0.2rem"
-                      >
-                        <Text fontWeight="semibold">
-                          {comment.author.firstName} {comment.author.lastName}
-                        </Text>
-                        <HStack>
+                      <Box flex="1" minW={0}>
+                        <Flex
+                          direction={{
+                            base: "column",
+                            sm: "row",
+                          }}
+                          justify="space-between"
+                          align={{
+                            base: "flex-start",
+                            sm: "center",
+                          }}
+                          gap={1}
+                        >
                           <Text
-                            position="relative"
-                            bottom="1.1rem"
-                            fontSize="0.92rem"
-                            color="gray.500"
+                            fontWeight="semibold"
+                            fontSize={{
+                              base: "0.9rem",
+                              md: "0.95rem",
+                            }}
+                            color="gray.800"
+                            wordBreak="break-word"
                           >
-                            {comment.createdAt &&
-                              new Date(comment.createdAt).toLocaleDateString(
-                                "fr-FR"
-                              )}
+                            {taskComment.author.firstName}{" "}
+                            {taskComment.author.lastName}
                           </Text>
+
                           <Text
-                            position="relative"
-                            bottom="1.1rem"
-                            fontSize="0.92rem"
+                            fontSize="0.75rem"
                             color="gray.500"
+                            flexShrink={0}
                           >
-                            {comment.createdAt &&
-                              new Date(comment.createdAt).toLocaleTimeString(
-                                "fr-FR",
-                                {
+                            {taskComment.createdAt
+                              ? `${new Date(
+                                  taskComment.createdAt
+                                ).toLocaleDateString("fr-FR")} ${new Date(
+                                  taskComment.createdAt
+                                ).toLocaleTimeString("fr-FR", {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   timeZone: "Africa/Bujumbura",
-                                }
-                              )}
+                                })}`
+                              : ""}
                           </Text>
-                        </HStack>
+                        </Flex>
+
+                        {/* Comment text */}
+
+                        <Text
+                          mt={2}
+                          fontFamily="mono"
+                          fontSize={{
+                            base: "0.8rem",
+                            md: "0.9rem",
+                          }}
+                          color="gray.700"
+                          whiteSpace="pre-wrap"
+                          wordBreak="break-word"
+                        >
+                          {taskComment.comment}
+                        </Text>
                       </Box>
                     </HStack>
-
-                    <Text
-                      fontFamily="mono"
-                      ml="2.5rem"
-                      whiteSpace="pre-wrap"
-                      position="relative"
-                      bottom="0.6rem"
-                    >
-                      {comment.comment}
-                    </Text>
                   </Box>
                 ))}
+
+                {/* Empty comments */}
+
+                {(!currentTask.comments ||
+                  currentTask.comments.length === 0) && (
+                  <Text color="gray.500" fontSize="0.9rem">
+                    Aucun commentaire pour le moment.
+                  </Text>
+                )}
               </Stack>
             </Box>
           </VStack>
@@ -468,18 +746,64 @@ export default function TaskDetailsDrawer({
             FOOTER / COMMENT INPUT
         ====================================================== */}
 
-        <DrawerFooter borderTopWidth="1px">
-          <HStack w="100%">
+        <DrawerFooter
+          borderTopWidth="1px"
+          borderColor="gray.200"
+          px={{
+            base: 3,
+            sm: 4,
+            md: 5,
+          }}
+          py={{
+            base: 3,
+            md: 4,
+          }}
+        >
+          <Flex
+            width="100%"
+            direction={{
+              base: "column",
+              sm: "row",
+            }}
+            gap={2}
+            align={{
+              base: "stretch",
+              sm: "flex-end",
+            }}
+          >
             <Textarea
-              placeholder="Ecrivez vos commentaires..."
+              flex="1"
+              minH={{
+                base: "70px",
+                sm: "45px",
+              }}
+              maxH="140px"
+              resize="vertical"
+              placeholder="Écrivez vos commentaires..."
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(event) => setComment(event.target.value)}
+              fontSize={{
+                base: "0.9rem",
+                md: "0.95rem",
+              }}
             />
 
-            <Button colorScheme="blue" onClick={handleTaskComment}>
+            <Button
+              colorScheme="blue"
+              onClick={handleTaskComment}
+              isDisabled={!comment.trim()}
+              width={{
+                base: "100%",
+                sm: "auto",
+              }}
+              minW={{
+                sm: "110px",
+              }}
+              flexShrink={0}
+            >
               Commenter
             </Button>
-          </HStack>
+          </Flex>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

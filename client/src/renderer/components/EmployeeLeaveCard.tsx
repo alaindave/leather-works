@@ -185,19 +185,6 @@ const EmployeeLeaveCard = ({ leave, onDelete, gridTemplate }: Props) => {
       );
   };
 
-  // Handle cancel
-  // const handleCancel = () => {
-  //   window.electron.leave
-  //     .cancel(leave._id)
-  //     .then((leave) => {
-  //       console.log("CANCELLED LEAVE: ", leave);
-  //       setLocalLeave(leave);
-  //     })
-  //     .catch((error) =>
-  //       console.error("AN ERROR OCCURED WHILE CANCELLING LEAVE", error)
-  //     );
-  // };
-
   // Handle cancel confirmation
   const handleCancelConfirmation = () => {
     window.electron.leave

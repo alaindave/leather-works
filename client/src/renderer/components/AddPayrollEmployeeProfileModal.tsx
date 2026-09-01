@@ -118,9 +118,7 @@ export default function AddPayrollEmployeeProfileModal({
         spinnerPlacement="start"
         isDisabled={loading}
       >
-        <Text fontSize="1rem" marginTop="1rem">
-          Ajouter
-        </Text>
+        <Text fontSize="1rem">Ajouter</Text>
       </Button>
       <Modal isOpen={isOpen} onClose={onClose} size="lg">
         <ModalOverlay backdropFilter="blur(0.8rem)" />

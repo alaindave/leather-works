@@ -176,8 +176,6 @@ const SyncStatus = ({ onSync }: SyncStatusProps) => {
           color="gray.700"
         >
           <Box
-            position="relative"
-            bottom="0.4rem"
             width="0.7rem"
             height="0.7rem"
             borderRadius="full"

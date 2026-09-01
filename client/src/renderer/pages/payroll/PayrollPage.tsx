@@ -260,7 +260,7 @@ export default function PayrollPage() {
               fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
               fontWeight="700"
               ml="1rem"
-              mt="0.7rem"
+              mt="1.1rem"
             >
               Fiches de paye
             </Text>
@@ -271,7 +271,7 @@ export default function PayrollPage() {
               _hover={{ bg: "transparent" }}
               fontSize="1rem"
               position="relative"
-              bottom="0.2rem"
+              top="0.5rem"
               right="1rem"
               onClick={handlePayrollSync}
             >
@@ -283,7 +283,7 @@ export default function PayrollPage() {
             fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
             color="gray.500"
             position="relative"
-            bottom="1.4rem"
+            bottom="0.5rem"
             left="1rem"
           >
             Gérez les fiches de payes

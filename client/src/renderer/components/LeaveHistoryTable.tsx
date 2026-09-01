@@ -56,16 +56,24 @@ export default function LeaveHistoryTable({ leaves }: Props) {
         <Tbody>
           {leaves.map((leave) => (
             <Tr key={leave._id}>
-              <Td>{new Date(leave.submittedAt).toLocaleDateString("fr-FR")}</Td>
+              <Td fontSize="1rem">
+                {new Date(leave.submittedAt).toLocaleDateString("fr-FR")}
+              </Td>
 
-              <Td>{new Date(leave.startDate).toLocaleDateString("fr-FR")}</Td>
+              <Td fontSize="1rem">
+                {new Date(leave.startDate).toLocaleDateString("fr-FR")}
+              </Td>
 
-              <Td>{new Date(leave.endDate).toLocaleDateString("fr-FR")}</Td>
+              <Td fontSize="1rem">
+                {new Date(leave.endDate).toLocaleDateString("fr-FR")}
+              </Td>
 
-              <Td fontWeight="medium">{leave.subject}</Td>
+              <Td fontSize="1rem" fontWeight="medium">
+                {leave.subject}
+              </Td>
 
-              <Td maxW="16rem">
-                <Text whiteSpace="normal" mt="1rem" noOfLines={3}>
+              <Td fontSize="1rem" maxW="20rem">
+                <Text whiteSpace="normal" noOfLines={3}>
                   {leave.notes}
                 </Text>
               </Td>

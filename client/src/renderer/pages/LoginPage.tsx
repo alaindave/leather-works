@@ -35,8 +35,10 @@ type AuthData = z.infer<typeof schema>;
 const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+
   const setLogIn = useAdminUser((store) => store.login);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const clearTasks = useTaskStore((store) => store.clearTasks);
   const loadTopTasks = useTaskStore((store) => store.loadTopTasks);
 
@@ -53,7 +55,6 @@ const LoginPage = () => {
       console.log("ONLINE:", online);
 
       if (!online) {
-        //Offline login
         const offlineUser = await window.electron.offlineUsers.login({
           email: credentials.email,
           password: credentials.password,
@@ -80,9 +81,10 @@ const LoginPage = () => {
         return;
       }
 
-      //Online login
       const adminUser = await window.electron.auth.login(credentials);
+
       console.log("ADMIN USER:", adminUser);
+
       if (adminUser) {
         const offlineUser = await window.electron.offlineUsers.save({
           _id: adminUser._id,
@@ -96,7 +98,6 @@ const LoginPage = () => {
 
         console.log("Offline user successfully saved: ", offlineUser);
 
-        //Save user to zustand store
         setLogIn(
           adminUser._id,
           adminUser.firstName,
@@ -105,6 +106,7 @@ const LoginPage = () => {
           adminUser.role,
           adminUser.notes ?? ""
         );
+
         await loadTopTasks(adminUser._id);
         navigate("/admin", { replace: true });
       }
@@ -121,33 +123,62 @@ const LoginPage = () => {
   };
 
   return (
-    <Flex justify="center" align="center" minH="100vh" px={6}>
+    <Flex
+      w="100%"
+      minH="100%"
+      justify="center"
+      align="center"
+      px={{ base: 4, sm: 6, md: 8 }}
+      py={{ base: 4, md: 6 }}
+    >
       <Box
+        w="100%"
+        maxW="460px"
         bg="white"
         border="1px solid"
         borderColor="#D1D5DB"
-        borderRadius="18px"
+        borderRadius={{
+          base: "14px",
+          md: "18px",
+        }}
         boxShadow="0 6px 20px rgba(0,0,0,0.12)"
-        w="460px"
-        p={10}
+        p={{
+          base: 6,
+          sm: 8,
+          md: 10,
+        }}
       >
         <form
           noValidate
           onSubmit={handleSubmit(handleLogin)}
           onChange={handleChange}
         >
-          <VStack spacing={6} align="stretch">
+          <VStack
+            spacing={{
+              base: 4,
+              sm: 5,
+              md: 6,
+            }}
+            align="stretch"
+          >
             <Image
               src={logo}
-              h="90px"
-              boxSize="7.3rem"
+              boxSize={{
+                base: "5.5rem",
+                sm: "6.5rem",
+                md: "7.3rem",
+              }}
               objectFit="contain"
               mx="auto"
             />
 
             <Text
               textAlign="center"
-              fontSize="1.6rem"
+              fontSize={{
+                base: "1.4rem",
+                sm: "1.5rem",
+                md: "1.6rem",
+              }}
               fontWeight="700"
               color="#1F2937"
             >
@@ -156,14 +187,23 @@ const LoginPage = () => {
 
             <FormControl>
               <InputGroup>
-                <InputLeftElement pointerEvents="none" h="52px">
+                <InputLeftElement
+                  pointerEvents="none"
+                  h={{
+                    base: "48px",
+                    md: "52px",
+                  }}
+                >
                   <IoIosMail size="20px" color="#5B6472" />
                 </InputLeftElement>
 
                 <Input
                   type="email"
                   placeholder="Email"
-                  h="52px"
+                  h={{
+                    base: "48px",
+                    md: "52px",
+                  }}
                   pl="42px"
                   bg="#F9FAFB"
                   border="1px solid"
@@ -186,14 +226,23 @@ const LoginPage = () => {
 
             <FormControl>
               <InputGroup>
-                <InputLeftElement pointerEvents="none" h="52px">
+                <InputLeftElement
+                  pointerEvents="none"
+                  h={{
+                    base: "48px",
+                    md: "52px",
+                  }}
+                >
                   <FaUnlockAlt size="16px" color="#5B6472" />
                 </InputLeftElement>
 
                 <Input
                   type="password"
                   placeholder="Mot de passe"
-                  h="52px"
+                  h={{
+                    base: "48px",
+                    md: "52px",
+                  }}
                   pl="42px"
                   bg="#F9FAFB"
                   border="1px solid"
@@ -215,12 +264,14 @@ const LoginPage = () => {
 
               {errorMessage && (
                 <Text
+                  mt={3}
                   color="#D13438"
-                  fontSize="1rem"
+                  fontSize={{
+                    base: "0.875rem",
+                    md: "1rem",
+                  }}
                   fontWeight="500"
-                  position="relative"
-                  left="4rem"
-                  top="1rem"
+                  textAlign="center"
                 >
                   {errorMessage}
                 </Text>
@@ -229,11 +280,21 @@ const LoginPage = () => {
 
             <Button
               type="submit"
-              h="56px"
+              w="100%"
+              h={{
+                base: "50px",
+                md: "56px",
+              }}
               bg="#0078D4"
-              mt="1rem"
+              mt={{
+                base: 2,
+                md: 4,
+              }}
               color="white"
-              fontSize="1.2rem"
+              fontSize={{
+                base: "1rem",
+                md: "1.1rem",
+              }}
               fontWeight="600"
               leftIcon={<CiLock size={22} />}
               isLoading={isLoggingIn}
@@ -250,9 +311,10 @@ const LoginPage = () => {
             </Button>
 
             <Text
-              position="relative"
-              top="0.5rem"
-              fontSize="1.1rem"
+              fontSize={{
+                base: "1rem",
+                md: "1.1rem",
+              }}
               textAlign="center"
               color="#1F2937"
             >

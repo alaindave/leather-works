@@ -1,9 +1,3 @@
-import axios from "axios";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useForm, type FieldValues } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import useAdminUser from "../../store/auth.store";
 import {
   Box,
   Button,
@@ -22,27 +16,39 @@ import {
   VStack,
   useDisclosure,
   Image,
+  SimpleGrid,
 } from "@chakra-ui/react";
-import { MdAlternateEmail } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useForm, type FieldValues } from "react-hook-form";
+import useAdminUser from "../../store/auth.store";
+import { MdAlternateEmail, MdPerson2, MdBusiness } from "react-icons/md";
 import { FaSave } from "react-icons/fa";
-import { MdPerson2 } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
 import { RiLockPasswordFill } from "react-icons/ri";
 import logo from "../assets/afritan_logo.png";
 import { useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const schema = z
   .object({
     firstName: z.string().min(3, { message: "Minimum de 3 caractères requis" }),
+
     lastName: z.string().min(3, { message: "Minimum de 3 caractères requis" }),
+
     email: z.string().email("Addresse email non valide."),
+
+    // Dummy field.
+    // This is collected by the form but is NOT sent to the backend.
+    department: z.string(),
+
     password: z
       .string()
-      .min(6, { message: "Minimum de 8 caractères requis" })
+      .min(8, { message: "Minimum de 8 caractères requis" })
       .regex(/[a-z]/, "Incluez au moins une lettre minuscule.")
       .regex(/[A-Z]/, "Incluez au moins une lettre majuscule.")
       .regex(/[0-9]/, "Incluez au moins un chiffre."),
+
     confirmPassword: z.string(),
   })
   .superRefine(({ confirmPassword, password }, ctx) => {
@@ -57,14 +63,19 @@ const schema = z
 
 type UserData = z.infer<typeof schema>;
 
+const labelColor = "#374151";
+
 const inputStyle = {
+  w: "100%",
   bg: "#F9FAFB",
   color: "#1F2937",
   border: "1px solid",
   borderColor: "#B8C2CC",
   borderRadius: "6px",
-  h: "48px",
-  width: "20rem",
+  h: {
+    base: "46px",
+    md: "48px",
+  },
   _placeholder: {
     color: "#6B7280",
   },
@@ -77,12 +88,12 @@ const inputStyle = {
   },
 };
 
-const labelColor = "#374151";
-
 const SignUp = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
+
   const setAuth = useAdminUser((store) => store.login);
+
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -90,14 +101,18 @@ const SignUp = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserData>({ resolver: zodResolver(schema) });
+  } = useForm<UserData>({
+    resolver: zodResolver(schema),
+  });
 
   const onSubmit = async (data: FieldValues) => {
     setIsLoggingIn(true);
     setErrorMessage("");
+
     console.log("FORM SUBMITTED:", data);
 
     try {
+      // Department is intentionally NOT sent to the backend.
       const res = await window.electron.auth.sign_up({
         firstName: data.firstName,
         lastName: data.lastName,
@@ -106,6 +121,7 @@ const SignUp = () => {
       });
 
       console.log("USER SIGN UP SUCCESS: ", res);
+
       setAuth(
         res._id,
         res.firstName,
@@ -114,6 +130,7 @@ const SignUp = () => {
         res.role,
         res.notes ?? ""
       );
+
       navigate("/admin");
     } catch (error) {
       console.error("AN ERROR OCCURED WHILE SIGNING UP", error);
@@ -138,274 +155,306 @@ const SignUp = () => {
           color: "#106EBE",
         }}
       >
-        <Text mt="0.8rem" fontSize="1rem">
-          Créer un compte
-        </Text>
+        <Text fontSize="1rem">Créer un compte</Text>
       </Button>
-      <Modal size="3xl" isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay backdropFilter="auto" backdropBlur="1rem" />
+
+      <Modal
+        size={{
+          base: "full",
+          sm: "lg",
+          md: "2xl",
+          lg: "3xl",
+        }}
+        isOpen={isOpen}
+        onClose={onClose}
+        isCentered
+        scrollBehavior="inside"
+      >
+        <ModalOverlay backdropFilter="auto" backdropBlur="6px" />
+
         <ModalContent
+          mx={{
+            base: 2,
+            sm: 4,
+          }}
+          my={{
+            base: 2,
+            sm: 4,
+          }}
           bg="#FFFFFF"
           border="1px solid"
           borderColor="#D1D9E0"
-          borderRadius="12px"
+          borderRadius={{
+            base: "10px",
+            md: "12px",
+          }}
           boxShadow="0 12px 40px rgba(0,0,0,0.15)"
-          position="relative"
-          bottom="1rem"
+          maxH="calc(100vh - 24px)"
+          overflow="hidden"
         >
-          {" "}
           <form noValidate onSubmit={handleSubmit(onSubmit)}>
-            <ModalHeader color="#1F2937">
-              <HStack position="relative" left="130px">
-                <Box position="relative" right="20px">
-                  <Image src={logo} boxSize="4.8rem" borderRadius="20px" />
-                </Box>
-                <VStack position="relative" top="10px" left="18px">
-                  <Text position="relative" top="8px" fontSize="1.5rem">
-                    {" "}
+            {/* HEADER */}
+            <ModalHeader
+              color="#1F2937"
+              px={{
+                base: 5,
+                md: 8,
+              }}
+              pt={{
+                base: 5,
+                md: 7,
+              }}
+              pb={{
+                base: 4,
+                md: 5,
+              }}
+            >
+              <HStack
+                justify="center"
+                spacing={{
+                  base: 3,
+                  md: 4,
+                }}
+                pr={8}
+              >
+                <Image
+                  src={logo}
+                  boxSize={{
+                    base: "3.8rem",
+                    md: "4.8rem",
+                  }}
+                  objectFit="contain"
+                  borderRadius="12px"
+                  flexShrink={0}
+                />
+
+                <VStack align="start" spacing={0}>
+                  <Text
+                    fontSize={{
+                      base: "1.2rem",
+                      sm: "1.35rem",
+                      md: "1.5rem",
+                    }}
+                    fontWeight="600"
+                    lineHeight="1.3"
+                  >
                     Créer un compte admin
                   </Text>
+
                   <Text
                     color="#6B7280"
-                    fontSize="15px"
-                    position="relative"
-                    right="15px"
-                    bottom="20px"
+                    fontSize={{
+                      base: "0.8rem",
+                      md: "0.9rem",
+                    }}
+                    mt={1}
                   >
                     Remplissez le formulaire
                   </Text>
                 </VStack>
               </HStack>
             </ModalHeader>
-            <ModalCloseButton color="#6B7280" _hover={{ bg: "#F3F4F6" }} />{" "}
-            <ModalBody>
-              <FormControl>
-                <VStack
-                  spacing="12px"
-                  marginBottom="10px"
-                  position="relative"
-                  bottom="15px"
-                >
-                  {/* Last name input */}
-                  <Box>
-                    <HStack>
-                      <Box marginBottom="10px">
-                        <MdPerson2 color="#F2B705" size="1.3rem" />
-                      </Box>
-                      <FormLabel
-                        color={labelColor}
-                        fontWeight="600"
-                        marginBottom="10px"
-                      >
-                        {" "}
-                        Nom
-                      </FormLabel>
-                    </HStack>
 
+            <ModalCloseButton
+              color="#6B7280"
+              top={{
+                base: 3,
+                md: 4,
+              }}
+              right={{
+                base: 3,
+                md: 4,
+              }}
+              _hover={{
+                bg: "#F3F4F6",
+              }}
+            />
+
+            {/* BODY */}
+            <ModalBody
+              px={{
+                base: 5,
+                md: 8,
+              }}
+              py={{
+                base: 3,
+                md: 4,
+              }}
+            >
+              <FormControl>
+                <SimpleGrid
+                  columns={{
+                    base: 1,
+                    md: 2,
+                  }}
+                  spacing={{
+                    base: 4,
+                    md: 5,
+                  }}
+                >
+                  {/* LAST NAME */}
+                  <FormField
+                    icon={<MdPerson2 color="#F2B705" size="1.3rem" />}
+                    label="Nom"
+                    error={errors.lastName?.message}
+                  >
                     <Input
                       {...inputStyle}
                       type="text"
                       {...register("lastName")}
-                      marginBottom="3px"
                     />
-                    <Box position="relative" width="250px" marginBottom="12px">
-                      <Text
-                        position="absolute"
-                        className="text-danger"
-                        fontSize="0.8rem"
-                        whiteSpace="nowrap"
-                      >
-                        {errors.lastName?.message}
-                      </Text>
-                    </Box>
-                  </Box>
-                  {/* First name input */}
-                  <Box>
-                    <HStack>
-                      <Box marginBottom="10px">
-                        <MdPerson2 color="#F2B705" size="1.3rem" />
-                      </Box>
-                      <FormLabel
-                        color={labelColor}
-                        fontWeight="600"
-                        marginBottom="10px"
-                      >
-                        {" "}
-                        Prenom
-                      </FormLabel>
-                    </HStack>
+                  </FormField>
+
+                  {/* FIRST NAME */}
+                  <FormField
+                    icon={<MdPerson2 color="#F2B705" size="1.3rem" />}
+                    label="Prénom"
+                    error={errors.firstName?.message}
+                  >
                     <Input
                       {...inputStyle}
                       type="text"
                       {...register("firstName")}
-                      marginBottom="3px"
                     />
-                    <Box position="relative" width="250px" marginBottom="12px">
-                      <Text
-                        position="absolute"
-                        className="text-danger"
-                        fontSize="0.8rem"
-                        whiteSpace="nowrap"
-                      >
-                        {errors.firstName?.message}
-                      </Text>
-                    </Box>
-                  </Box>
-                  {/* Email input */}
-                  <Box>
-                    <HStack>
-                      <Box marginBottom="10px">
-                        <MdAlternateEmail color="#F2B705" size="1.3rem" />
-                      </Box>
-                      <FormLabel
-                        color={labelColor}
-                        fontWeight="600"
-                        marginBottom="10px"
-                      >
-                        {" "}
-                        Email
-                      </FormLabel>
-                    </HStack>
+                  </FormField>
+
+                  {/* EMAIL */}
+                  <FormField
+                    icon={<MdAlternateEmail color="#F2B705" size="1.3rem" />}
+                    label="Email"
+                    error={errors.email?.message}
+                  >
                     <Input
                       {...inputStyle}
                       type="email"
                       {...register("email")}
-                      marginBottom="3px"
                     />
-                    <Box position="relative" width="250px" marginBottom="15px">
-                      <Text
-                        position="absolute"
-                        className="text-danger"
-                        fontSize="0.8rem"
-                        whiteSpace="nowrap"
-                      >
-                        {errors.email?.message}
-                      </Text>
-                    </Box>
-                  </Box>
-                  {/* Password input */}
-                  <Box>
-                    <HStack>
-                      <Box marginBottom="10px">
-                        <RiLockPasswordFill color="#F2B705" size="1.3rem" />
-                      </Box>
-                      <FormLabel
-                        color={labelColor}
-                        fontWeight="600"
-                        marginBottom="10px"
-                      >
-                        {" "}
-                        Mot de passe
-                      </FormLabel>
-                    </HStack>
+                  </FormField>
+
+                  {/* DUMMY DEPARTMENT */}
+                  <FormField
+                    icon={<MdBusiness color="#F2B705" size="1.3rem" />}
+                    label="Département"
+                  >
+                    <Input
+                      {...inputStyle}
+                      type="text"
+                      placeholder="Ex. Administration"
+                      {...register("department")}
+                    />
+                  </FormField>
+
+                  {/* PASSWORD */}
+                  <FormField
+                    icon={<RiLockPasswordFill color="#F2B705" size="1.3rem" />}
+                    label="Mot de passe"
+                    error={errors.password?.message}
+                  >
                     <Input
                       {...inputStyle}
                       type="password"
                       placeholder="Min. 8 car. avec 1 chiffre et 1 lettre maj"
                       {...register("password")}
-                      marginBottom="3px"
                     />
-                    <Box position="relative" width="250px" marginBottom="15px">
-                      <Text
-                        position="absolute"
-                        className="text-danger"
-                        fontSize="0.8rem"
-                        whiteSpace="nowrap"
-                      >
-                        {errors.password?.message}
-                      </Text>
-                    </Box>
-                  </Box>
-                  {/* Confirm Password input */}
-                  <Box>
-                    <HStack>
-                      <Box marginBottom="10px">
-                        <RiLockPasswordFill color="#F2B705" size="1.3rem" />
-                      </Box>
-                      <FormLabel
-                        color={labelColor}
-                        fontWeight="600"
-                        marginBottom="10px"
-                      >
-                        {" "}
-                        Confirmez le mot de passe
-                      </FormLabel>
-                    </HStack>
+                  </FormField>
+
+                  {/* CONFIRM PASSWORD */}
+                  <FormField
+                    icon={<RiLockPasswordFill color="#F2B705" size="1.3rem" />}
+                    label="Confirmez le mot de passe"
+                    error={errors.confirmPassword?.message}
+                  >
                     <Input
                       {...inputStyle}
                       type="password"
                       placeholder="Min. 8 car. avec 1 chiffre et 1 lettre maj"
                       {...register("confirmPassword")}
-                      marginBottom="3px"
                     />
-                    <Box position="relative" width="250px" marginBottom="12px">
-                      <Text
-                        position="absolute"
-                        className="text-danger"
-                        fontSize="0.8rem"
-                        whiteSpace="nowrap"
-                      >
-                        {errors.confirmPassword?.message}
-                      </Text>
-                    </Box>
-                  </Box>
-                  <Text fontSize="1.1rem" fontWeight="600" color="red.600">
+                  </FormField>
+                </SimpleGrid>
+
+                {errorMessage && (
+                  <Text
+                    mt={4}
+                    textAlign="center"
+                    fontSize={{
+                      base: "0.85rem",
+                      md: "0.95rem",
+                    }}
+                    fontWeight="600"
+                    color="red.600"
+                  >
                     {errorMessage}
                   </Text>
-                </VStack>
+                )}
               </FormControl>
             </ModalBody>
-            <ModalFooter bg="#FFFFFF">
-              {" "}
-              <HStack position="relative" bottom="10px" right="12rem">
+
+            {/* FOOTER */}
+            <ModalFooter
+              px={{
+                base: 5,
+                md: 8,
+              }}
+              py={{
+                base: 4,
+                md: 5,
+              }}
+              bg="#FFFFFF"
+              borderTop="1px solid"
+              borderColor="#EDF0F2"
+            >
+              <HStack w="100%" justify="flex-end" spacing={3} flexWrap="wrap">
+                {/* CANCEL */}
                 <Button
-                  borderColor="#ffffff"
-                  borderRadius="10px"
+                  borderRadius="8px"
                   bg="#08162b"
+                  color="#FFFFFF"
                   borderWidth="0.5px"
-                  colorScheme=" #320b01"
-                  color="#1a000d"
-                  mr={3}
+                  borderColor="#08162b"
                   onClick={onClose}
+                  leftIcon={<RxCrossCircled color="#FFFFFF" size="18px" />}
+                  h={{
+                    base: "42px",
+                    md: "44px",
+                  }}
+                  px={{
+                    base: 4,
+                    md: 5,
+                  }}
+                  _hover={{
+                    bg: "#14243D",
+                  }}
                 >
-                  <HStack>
-                    <Box>
-                      <RxCrossCircled color="#ffffff" size="18px" />
-                    </Box>
-                    <Text
-                      color="#ffffff"
-                      position="relative"
-                      top="8px"
-                      fontSize="1rem"
-                    >
-                      Annuler
-                    </Text>
-                  </HStack>
+                  Annuler
                 </Button>
 
+                {/* SUBMIT */}
                 <Button
                   type="submit"
-                  borderRadius="10px"
-                  borderColor="black"
+                  borderRadius="8px"
                   bg="#F2B705"
-                  borderWidth="0.5px"
-                  colorScheme=" #320b01"
                   color="black"
-                  mr={3}
+                  borderWidth="0.5px"
+                  borderColor="#D49F00"
                   isLoading={isLoggingIn}
-                  loadingText="Connexion..."
+                  loadingText="Création..."
                   spinnerPlacement="start"
                   isDisabled={isLoggingIn}
+                  leftIcon={<FaSave />}
+                  h={{
+                    base: "42px",
+                    md: "44px",
+                  }}
+                  px={{
+                    base: 4,
+                    md: 5,
+                  }}
+                  _hover={{
+                    bg: "#DFA900",
+                  }}
                 >
-                  <HStack>
-                    <Box>
-                      <FaSave />
-                    </Box>
-                    <Text position="relative" top="8px" fontSize="1rem">
-                      {" "}
-                      Se connecter
-                    </Text>
-                  </HStack>
+                  Créer le compte
                 </Button>
               </HStack>
             </ModalFooter>
@@ -413,6 +462,58 @@ const SignUp = () => {
         </ModalContent>
       </Modal>
     </>
+  );
+};
+
+type FormFieldProps = {
+  icon: React.ReactNode;
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+};
+
+const FormField = ({ icon, label, error, children }: FormFieldProps) => {
+  return (
+    <Box minW={0}>
+      <HStack spacing={2} mb={2} align="center">
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          flexShrink={0}
+        >
+          {icon}
+        </Box>
+
+        <FormLabel
+          color={labelColor}
+          fontWeight="600"
+          mb={0}
+          fontSize={{
+            base: "0.9rem",
+            md: "0.95rem",
+          }}
+        >
+          {label}
+        </FormLabel>
+      </HStack>
+
+      {children}
+
+      <Box
+        minH={{
+          base: "18px",
+          md: "20px",
+        }}
+        mt={1}
+      >
+        {error && (
+          <Text color="red.500" fontSize="0.75rem" lineHeight="1.2">
+            {error}
+          </Text>
+        )}
+      </Box>
+    </Box>
   );
 };
 

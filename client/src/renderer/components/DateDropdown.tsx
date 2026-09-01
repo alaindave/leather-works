@@ -27,11 +27,7 @@ const start = "2026-08-01";
 const end = "2026-08-30";
 console.log(getDaysBetweenDates(start, end)); // Output: 29
 
-function getSelectedDays(
-  startDate: Date | string,
-  endDate: Date | string,
-  includeWeekends: boolean
-) {
+function getSelectedDays(startDate: Date | string, endDate: Date | string) {
   const days = [];
   let i = 0;
 
@@ -41,22 +37,11 @@ function getSelectedDays(
   while (days.length <= numberOfDays) {
     const date = new Date(endDate);
     date.setDate(date.getDate() - i);
-    const dayOfWeek = date.getDay();
 
-    if (!includeWeekends) {
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-        // Skip weekend
-        days.push({
-          label: formatDate(date),
-          value: formatter.format(date),
-        });
-      }
-    } else {
-      days.push({
-        label: formatDate(date),
-        value: formatter.format(date),
-      });
-    }
+    days.push({
+      label: formatDate(date),
+      value: formatter.format(date),
+    });
 
     i++;
   }
@@ -81,7 +66,6 @@ interface Props {
   startDate: Date | string;
   endDate: Date | string;
   onChange?: (date: string) => void;
-  includeWeekends: boolean;
 }
 
 interface Option {
@@ -89,17 +73,8 @@ interface Option {
   value: string;
 }
 
-export default function DateDropdown({
-  startDate,
-  endDate,
-  onChange,
-  includeWeekends,
-}: Props) {
-  const options: Option[] = getSelectedDays(
-    startDate,
-    endDate,
-    includeWeekends
-  );
+export default function DateDropdown({ startDate, endDate, onChange }: Props) {
+  const options: Option[] = getSelectedDays(startDate, endDate);
   console.log("OPTIONS ARRAY:", options);
   const [selected, setSelected] = useState<Option | null>(options[0]);
   function handleChange(option: Option | null) {

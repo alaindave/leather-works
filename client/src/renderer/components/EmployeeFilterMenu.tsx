@@ -37,9 +37,7 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
         boxShadow="0 2px 10px rgba(15,23,42,.06)"
         _hover={{ bg: "transparent" }}
       >
-        <Text color="gray.800" position="relative" top="8px">
-          {filter || "Trier par département"}
-        </Text>
+        <Text color="gray.800">{filter || "Trier par département"}</Text>
       </MenuButton>
       <MenuList
         backgroundColor="#ffffff"
@@ -49,7 +47,7 @@ const EmployeeFilterMenu = ({ onFilterClicked }: Props) => {
         ml="3rem"
         position="relative"
         left="17rem"
-        bottom="9.5rem"
+        bottom="3rem"
         overflowY="auto"
         _hover={{ color: "yellow" }}
       >

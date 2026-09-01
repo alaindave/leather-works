@@ -25,7 +25,7 @@ export default function AttendanceTable({ records }: AttendanceTableProps) {
       bg="white"
       boxShadow="sm"
       overflowY="auto"
-      maxH="35vh"
+      maxH="65vh"
     >
       <Table variant="simple" size="md">
         <Thead position="sticky" top={0} zIndex={1} bg="gray.50">

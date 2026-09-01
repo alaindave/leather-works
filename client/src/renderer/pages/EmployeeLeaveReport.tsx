@@ -52,19 +52,19 @@ const EmployeeLeaveReport = () => {
             <FaArrowLeftLong color="black" />
           </Box>
         </Link>
-        <Box mt="0.5rem">
+        <Box>
           <HStack ml="0.3rem" position="relative" bottom="1rem">
             <Text fontSize="1.1rem" fontWeight="500">
               Employés
             </Text>
-            <Box position="relative" bottom="0.3rem">
+            <Box>
               <MdOutlineChevronRight fontSize="1.3rem" />
             </Box>
             <Text fontSize="1.1rem" fontWeight="500">
               {" "}
               {employee?.firstName} {employee?.lastName}
             </Text>
-            <Box position="relative" bottom="0.3rem">
+            <Box>
               <MdOutlineChevronRight fontSize="1.3rem" />
             </Box>
             <Text fontSize="1.1rem" fontWeight="500">

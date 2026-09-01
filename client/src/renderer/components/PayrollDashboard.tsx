@@ -3,6 +3,7 @@ import { BsFillPeopleFill } from "react-icons/bs";
 import { FaRegArrowAltCircleDown, FaRegCreditCard } from "react-icons/fa";
 import { IoWalletOutline } from "react-icons/io5";
 import { formatCurrency } from "../util/currencyFormatter";
+import { FaDollarSign } from "react-icons/fa";
 import { usePayrollSettings } from "../hooks/payroll_settings.hook";
 
 interface Props {
@@ -24,7 +25,7 @@ const PayrollDashboard = ({
   const currency = payrollSettings?.currency ?? "BIF";
 
   return (
-    <Flex position="relative" bottom="2rem" justify="space-evenly" width="100%">
+    <HStack>
       <Box
         bg="linear-gradient(
           135deg,
@@ -35,16 +36,17 @@ const PayrollDashboard = ({
         boxShadow="0 2px 8px rgba(0,0,0,0.5)"
         borderRadius="0.4rem"
         width="12rem"
-        height="8rem"
+        height="6rem"
       >
-        <HStack position="relative" top="2rem">
+        <HStack>
           <Box
             width="2.2rem"
             height="2.2rem"
             backgroundColor="#000080"
             borderRadius="10px"
             padding="8px"
-            marginLeft="8px"
+            ml="0.5rem"
+            mt="1rem"
           >
             <BsFillPeopleFill color="#ffffff" size="1.2rem" />
           </Box>
@@ -65,7 +67,6 @@ const PayrollDashboard = ({
           fontSize="1.3rem"
           position="relative"
           left="5.5rem"
-          top="1.8rem"
           fontWeight="700"
         >
           {employeeCount}
@@ -82,18 +83,19 @@ const PayrollDashboard = ({
         boxShadow="0 2px 8px rgba(0,0,0,0.5)"
         borderRadius="0.4rem"
         width="12rem"
-        height="8rem"
+        height="6rem"
       >
-        <HStack position="relative" top="2rem">
+        <HStack>
           <Box
             width="2.2rem"
             height="2.2rem"
             backgroundColor="#000080"
             borderRadius="10px"
             padding="8px"
-            marginLeft="8px"
+            mt="1rem"
+            ml="0.5rem"
           >
-            <BsFillPeopleFill color="#ffffff" size="1.2rem" />
+            <FaDollarSign color="#ffffff" size="1.2rem" />
           </Box>
 
           <Text
@@ -112,7 +114,6 @@ const PayrollDashboard = ({
           fontSize="1.15rem"
           position="relative"
           left="3rem"
-          top="1.8rem"
           fontWeight="700"
         >
           {formatCurrency(totalBasicSalary, currency)}
@@ -129,9 +130,9 @@ const PayrollDashboard = ({
         padding="32px"
         borderRadius="0.4rem"
         width="15rem"
-        height="8rem"
+        height="6rem"
       >
-        <HStack>
+        <HStack position="relative" bottom="1rem">
           <Box
             width="2.2rem"
             height="2.2rem"
@@ -139,6 +140,7 @@ const PayrollDashboard = ({
             borderRadius="10px"
             padding="8px"
             position="relative"
+            bottom="0.5rem"
             right="1.3rem"
           >
             <IoWalletOutline color="#ffffff" size="1.2rem" />
@@ -147,8 +149,6 @@ const PayrollDashboard = ({
             color="gray.700"
             fontSize="1.3rem"
             fontWeight="700"
-            position="relative"
-            left="0.1rem"
             right="1.5rem"
           >
             Remunerations
@@ -158,7 +158,8 @@ const PayrollDashboard = ({
           color="gray.600"
           fontSize="1.15rem"
           position="relative"
-          left="3.5rem"
+          bottom="1rem"
+          left="2.5rem"
           fontWeight="700"
         >
           {formatCurrency(totalEarnings, currency)}
@@ -174,7 +175,7 @@ const PayrollDashboard = ({
         padding="30px"
         borderRadius="0.4rem"
         width="13rem"
-        height="8rem"
+        height="6rem"
       >
         <HStack>
           <Box
@@ -185,6 +186,7 @@ const PayrollDashboard = ({
             padding="8px"
             position="relative"
             right="1rem"
+            bottom="1rem"
           >
             <FaRegArrowAltCircleDown color="#ffffff" size="1.2rem" />
           </Box>
@@ -195,6 +197,7 @@ const PayrollDashboard = ({
             marginLeft="0.8rem"
             position="relative"
             right="1.5rem"
+            bottom="1rem"
           >
             Deductions
           </Text>
@@ -204,6 +207,7 @@ const PayrollDashboard = ({
           fontSize="1.15rem"
           position="relative"
           left="2rem"
+          bottom="1rem"
           fontWeight="700"
         >
           {formatCurrency(totalDeductions, currency)}
@@ -219,7 +223,7 @@ const PayrollDashboard = ({
         padding="30px"
         borderRadius="0.4rem"
         width="13rem"
-        height="8rem"
+        height="6rem"
       >
         <HStack>
           <Box
@@ -230,6 +234,7 @@ const PayrollDashboard = ({
             backgroundColor="blue.500"
             position="relative"
             right="1rem"
+            bottom="1rem"
           >
             <FaRegCreditCard color="#ffffff" size="1.2rem" />
           </Box>
@@ -240,6 +245,7 @@ const PayrollDashboard = ({
             position="relative"
             left="1rem"
             right="1rem"
+            bottom="1rem"
           >
             Net
           </Text>
@@ -249,12 +255,13 @@ const PayrollDashboard = ({
           fontSize="1.15rem"
           position="relative"
           left="1.5rem"
+          bottom="1rem"
           fontWeight="700"
         >
           {formatCurrency(totalNetSalary, currency)}
         </Text>
       </Box>
-    </Flex>
+    </HStack>
   );
 };
 

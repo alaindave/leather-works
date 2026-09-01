@@ -38,12 +38,12 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
           color="purple.600"
           fontSize="1.3rem"
           position="relative"
-          bottom="0.6rem"
+          bottom="0.5rem"
           right="0.4rem"
         />
       </Box>
 
-      <Box flex="1" minW={0} ml="0.3rem" mt="1.5rem">
+      <Box flex="1" minW={0} ml="0.3rem">
         <Text
           color="gray.700"
           fontWeight="700"
@@ -56,8 +56,6 @@ const EmployeeDetailsCard = ({ property, value, icon }: Props) => {
           color="gray.600"
           fontSize={{ base: "md", md: "lg" }}
           wordBreak="break-word"
-          position="relative"
-          bottom="0.8rem"
         >
           {value}
           {property === "Salaire" ? " FBU" : ""}

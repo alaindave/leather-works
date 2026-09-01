@@ -87,7 +87,6 @@ const EmployeeAttendancePage = () => {
   const [attendance, setAttendance] = useState<AttendanceWithEmployee | null>(
     null
   );
-  const [includeWeekends, setIncludeWeekends] = useState(false);
   const [selectedDate, setSelectedDate] = useState(formattedDate);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState("");
@@ -200,22 +199,6 @@ const EmployeeAttendancePage = () => {
       setLoading(false);
     }
   };
-
-  // const attendanceSync = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const result = await window.electron.sync();
-  //     if (!result.success) {
-  //       console.error(result.message);
-  //     }
-  //     await loadAttendance();
-  //     await loadDailyCheck();
-  //   } catch (error) {
-  //     console.error("AN ERROR OCCURED WHILE SYNCING ATTENDANCE:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const attendanceDailyCheckSync = async () => {
     try {
@@ -501,7 +484,7 @@ const EmployeeAttendancePage = () => {
                 fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
                 fontWeight="700"
                 ml="0.5rem"
-                mt="0.7rem"
+                mt="1.2rem"
               >
                 Présences
               </Text>
@@ -510,11 +493,11 @@ const EmployeeAttendancePage = () => {
                 color="gray.800"
                 _hover={{ bg: "transparent" }}
                 fontSize="1rem"
-                position="relative"
-                bottom="0.2rem"
                 right="1rem"
                 onClick={loadData}
                 isLoading={loading}
+                position="relative"
+                top="0.5rem"
               >
                 <FaSyncAlt />
               </Button>
@@ -522,10 +505,15 @@ const EmployeeAttendancePage = () => {
             <Text
               fontWeight="500"
               left="0.45rem"
-              fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
+              fontSize={{
+                base: "0.85rem",
+                sm: "0.9rem",
+                md: "0.95rem",
+                lg: "1rem",
+              }}
               color="gray.500"
               position="relative"
-              bottom="1.4rem"
+              bottom="0.5rem"
             >
               Gérez la liste de présence
             </Text>
@@ -542,7 +530,7 @@ const EmployeeAttendancePage = () => {
             >
               <HStack>
                 <FaCheckDouble />
-                <Text mt="1rem">Vérifier</Text>
+                <Text>Vérifier</Text>
               </HStack>
             </Button>
           )}
@@ -586,7 +574,7 @@ const EmployeeAttendancePage = () => {
             >
               <HStack>
                 <FaLock />
-                <Text mt="1rem">Confirmer</Text>
+                <Text>Confirmer</Text>
               </HStack>
             </Button>
           )}
@@ -601,39 +589,26 @@ const EmployeeAttendancePage = () => {
             <Button
               colorScheme="red"
               onClick={markAbsent}
-              mt="0.5rem"
+              mt="1rem"
               mr="1.3rem"
               isLoading={checkLoading}
             >
               <HStack>
                 <RiPresentationFill />
-                <Text mt="1rem">Marquer les absences</Text>
+                <Text>Marquer les absences</Text>
               </HStack>
             </Button>
           )}
 
           <Spacer />
-          {/* <Button
-            bg="#4F46E5"
-            color="#ffffff"
-            onClick={handleExport}
-            mt="0.5rem"
-            mr="1.3rem"
-          >
-            <HStack>
-              <Box>
-                <HiOutlineDownload />
-              </Box>
-              <Text mt="1rem">Exporter</Text>
-            </HStack>
-          </Button> */}
+
           {dailyCheck?.status !== "LOCKED" ? (
             <Button
               colorScheme="blue"
               size="md"
               onClick={onAddAttendanceOpen}
               zIndex="1"
-              mt="0.5rem"
+              mt="1rem"
               mr="1.3rem"
               _hover={{ backgroundColor: "#4F46E5" }}
             >
@@ -641,17 +616,17 @@ const EmployeeAttendancePage = () => {
                 {" "}
                 <FaCirclePlus size="1.2rem" />
               </Box>
-              <Text mt="0.8rem">Ajouter un employé</Text>
+              <Text>Ajouter un employé</Text>
             </Button>
           ) : null}
         </Flex>
 
         <Flex justify="space-between">
-          <Box ml="0.5rem">
+          <Box mt="1.5rem" ml="0.5rem">
             <EmployeeFilterMenu onFilterClicked={setFilter} />
           </Box>
 
-          <Box mr="1rem">
+          <Box mt="1.5rem" mr="1rem">
             <SearchBar
               placeholderText="Rechercher un employé"
               onSearch={setSearchText}
@@ -721,7 +696,6 @@ const EmployeeAttendancePage = () => {
           </Text>
         ) : (
           attendances
-            // .filter((a) => a.status !== "ABSENT" && a.status !== "CONGÉ")
             .filter((a) => !filter || a.department === filter)
             .filter((a) =>
               `${a.firstName} ${a.lastName}`
@@ -745,49 +719,20 @@ const EmployeeAttendancePage = () => {
         )}
       </Box>
       {/* ================= FOOTER  ================= */}
-      <Flex
-        bg="linear-gradient(
-        135deg,
-        rgba(255,255,255,0.08),
-        rgba(255,255,255,0.03)
-      )"
-        boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-        mr="0.15rem"
-        height="6.1rem"
-        justify="space-between"
-        width="82vw"
-      >
-        <HStack>
-          <Box ml="1rem">
-            <Checkbox
-              isChecked={includeWeekends}
-              onChange={(event) => setIncludeWeekends(event.target.checked)}
-            >
-              <Text mt="1rem" fontSize="1rem">
-                W/E
-              </Text>
-            </Checkbox>
-          </Box>
-          <Box ml="1rem">
-            <DateRangePicker value={dateRange} onChange={setDateRange} />
-          </Box>
-          <Box
-            ml="1.1rem"
-            fontSize="1.2rem"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            <DateDropdown
-              startDate={dateRange.startDate}
-              endDate={dateRange.endDate}
-              onChange={setSelectedDate}
-              includeWeekends={includeWeekends}
-            />
-          </Box>
-        </HStack>
+      <Flex width="75vw" height="5.3rem" justify="space-between">
+        <Box ml="2.5rem">
+          <DateRangePicker value={dateRange} onChange={setDateRange} />
+        </Box>
+        <Box fontSize="1.2rem" fontFamily="monospace" fontWeight="600">
+          <DateDropdown
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+            onChange={setSelectedDate}
+          />
+        </Box>
 
         {(!dailyCheck || dailyCheck.status !== "LOCKED") && (
-          <Box mt="0.8rem">
+          <Box mt="0.2rem" mr="1rem">
             <Switch
               colorScheme="blue"
               size="lg"
@@ -796,18 +741,6 @@ const EmployeeAttendancePage = () => {
             />
           </Box>
         )}
-
-        <Box
-          color="gray.800"
-          fontSize="24px"
-          fontWeight="600"
-          mt="0.6rem"
-          mr="2rem"
-        >
-          {String(time.getHours()).padStart(2, "0")}:
-          {String(time.getMinutes()).padStart(2, "0")}:
-          {String(time.getSeconds()).padStart(2, "0")}
-        </Box>
       </Flex>
       <AddAttendanceModal
         date={selectedDate}

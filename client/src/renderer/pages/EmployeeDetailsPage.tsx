@@ -9,33 +9,25 @@ import {
   Button,
   Flex,
   HStack,
-  Icon,
   Stack,
   Text,
   VStack,
   useDisclosure,
 } from "@chakra-ui/react";
-import { FiClock, FiBriefcase, FiCalendar } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { FaArrowLeftLong } from "react-icons/fa6";
-import { FaUserEdit } from "react-icons/fa";
-import { GoDotFill } from "react-icons/go";
-import { FaRegTrashCan } from "react-icons/fa6";
+import { CiCalendarDate } from "react-icons/ci";
+import { FaDollarSign, FaRegClock } from "react-icons/fa";
 import { MdAutoDelete } from "react-icons/md";
 import { RxCrossCircled } from "react-icons/rx";
-import { FaDollarSign } from "react-icons/fa";
+import { GoDotFill } from "react-icons/go";
+
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import type Employee from "../../common/types/Employee";
-import useAdminUser from "../../store/auth.store";
-import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
-import UpdateEmployee from "../components/UpdateEmployee";
-import ComponentErrorFallback from "./ComponentErrorFallback";
-import NotAuthorized from "../components/NotAuthorized";
-import { CiCalendarDate } from "react-icons/ci";
-import { FaRegClock } from "react-icons/fa";
-import EmployeePhotoUpload from "../components/EmployeePhotoUpload";
 import Attendance from "../../common/types/Attendance";
+import type Employee from "../../common/types/Employee";
+import EmployeeDetailsTab from "../components/EmployeeDetailsTab";
+import EmployeePhotoUpload from "../components/EmployeePhotoUpload";
+import ComponentErrorFallback from "./ComponentErrorFallback";
 
 type PhotoState = {
   photo_url?: string;
@@ -49,15 +41,8 @@ const EmployeeDetailsPage = () => {
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const adminUser = useAdminUser((store) => store.adminUser);
   const location = useLocation();
   const { photo_url } = (location.state as PhotoState) || "";
-  const statusColor = {
-    PONCTUEL: "green",
-    RETARD: "orange",
-    ABSENT: "red",
-    CONGÉ: "blue",
-  } as const;
 
   useEffect(() => {
     if (!_id) return;
@@ -82,8 +67,10 @@ const EmployeeDetailsPage = () => {
 
   const refreshEmployee = async () => {
     try {
-      if (!_id) return;
-      const updatedEmployee = await window.electron.employees.getById(_id);
+      if (!employee?._id) return;
+      const updatedEmployee = await window.electron.employees.getById(
+        employee?._id
+      );
       setEmployee(updatedEmployee);
       console.log("FETCHED UPDATED EMPLOYEE:", updatedEmployee);
     } catch (error) {
@@ -104,6 +91,7 @@ const EmployeeDetailsPage = () => {
     }
   };
 
+  if (!employee) return;
   return (
     <>
       {/* DELETE MODAL */}
@@ -169,41 +157,42 @@ const EmployeeDetailsPage = () => {
       >
         <VStack spacing={4} align="stretch">
           {/* HEADER */}
-          <Stack
+          <Flex
             direction={{ base: "column", md: "row" }}
             justify="space-between"
             align={{ base: "flex-start", md: "center" }}
-            spacing={4}
           >
-            <HStack align="center">
-              <Link to="/employees_admin/employees_list">
-                <Box
-                  p={2}
-                  border="1px solid #14376b"
-                  borderRadius="10px"
-                  ml="0.5rem"
-                  mb="1.3rem"
-                >
-                  <FaArrowLeftLong color="black" />
-                </Box>
-              </Link>
-
-              <Box ml="0.5rem" mt="0.8rem">
-                <Text fontSize="1.4rem" fontWeight="600" color="#1F2937">
-                  Détails de l'employé
-                </Text>
-                <Text
-                  fontSize="1rem"
-                  fontWeight="500"
-                  color="gray.500"
-                  position="relative"
-                  bottom="1.4rem"
-                >
-                  Consultez et gérez les informations de l'employé
-                </Text>
-              </Box>
-            </HStack>
             <HStack>
+              <HStack ml="0.3rem" mt="0.5rem">
+                {/* Profile photo */}
+                <EmployeePhotoUpload
+                  employeeId={_id!}
+                  currentPhoto={photo_url}
+                  onUploaded={refreshEmployee}
+                />
+                {/* Name and role */}
+                <VStack spacing={3}>
+                  <Text
+                    fontSize="1.2rem"
+                    fontWeight="700"
+                    color="gray.700"
+                    textAlign="center"
+                  >
+                    {employee?.firstName} {employee?.lastName}
+                  </Text>
+                  <HStack position="relative" bottom="1rem">
+                    <Text>{employee?.role}</Text>
+                    <Box>
+                      {" "}
+                      <GoDotFill />
+                    </Box>
+                    <Text>{employee?.department}</Text>
+                  </HStack>
+                </VStack>
+              </HStack>
+            </HStack>
+            {/* ATTENDANCE,LEAVES,PAYSLIPS */}
+            <HStack mr="1rem" mb="1rem">
               <Link
                 to={{
                   pathname: `/employees_admin/employees_list/${_id}/attendances`,
@@ -219,9 +208,7 @@ const EmployeeDetailsPage = () => {
                   padding="0.4rem"
                 >
                   <FaRegClock size="1.3rem" color="purple" />
-                  <Text color="gray.900" position="relative" top="0.4rem">
-                    Présence
-                  </Text>
+                  <Text color="gray.900">Présence</Text>
                 </HStack>
               </Link>
               <Link
@@ -239,9 +226,7 @@ const EmployeeDetailsPage = () => {
                   padding="0.4rem"
                 >
                   <CiCalendarDate size="1.3rem" color="purple" />
-                  <Text position="relative" top="0.4rem">
-                    Congés
-                  </Text>
+                  <Text>Congés</Text>
                 </HStack>
               </Link>
               <Link
@@ -259,279 +244,28 @@ const EmployeeDetailsPage = () => {
                   padding="0.4rem"
                 >
                   <FaDollarSign size="1.3rem" color="purple" />
-                  <Text position="relative" top="0.4rem">
-                    Fiche de paye
-                  </Text>
+                  <Text>Fiche de paye</Text>
                 </HStack>
               </Link>
             </HStack>
-            {adminUser?.role === "MANAGER" ? (
-              <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
-                <Box position="relative" bottom="1rem">
-                  <UpdateEmployee
-                    _id={_id}
-                    employee={employee}
-                    onUpdated={refreshEmployee}
-                  />
-                </Box>
-              </ErrorBoundary>
-            ) : (
-              <Box position="relative" right="1.3rem" bottom="1.5rem">
-                <NotAuthorized
-                  buttonText="Modifier"
-                  icon={FaUserEdit}
-                  placement="left"
-                  width="13rem"
-                  color="#4F46E5"
-                />
-              </Box>
-            )}
-          </Stack>
+          </Flex>
 
           {/* MAIN CONTENT */}
           <Stack direction={{ base: "column", lg: "row" }} spacing={4}>
-            {/* LEFT PANEL */}
-            <Box>
-              <Box
-                border="1px solid"
-                borderColor="gray.500"
-                width="27vw"
-                height="45.5vh"
-                ml="1rem"
-                bg="#ffffff"
-              >
-                <Box bg="purple.700" height="8rem" />
-                <Box height="15vh" bg="#ffffff" position="relative">
-                  <EmployeePhotoUpload
-                    employeeId={_id!}
-                    currentPhoto={photo_url}
-                    onUploaded={refreshEmployee}
-                  />
-                </Box>
-                <VStack
-                  position="relative"
-                  bottom="3rem"
-                  bg="#ffffff"
-                  spacing={3}
-                >
-                  <Text
-                    fontSize="1.2rem"
-                    fontWeight="700"
-                    color="gray.700"
-                    textAlign="center"
-                  >
-                    {employee?.firstName} {employee?.lastName}
-                  </Text>
-                  <Text color="purple.600">{employee?.role}</Text>
-                  <HStack bg="green.100" px={3} py={1} borderRadius="1.1rem">
-                    <GoDotFill color="green" size="1.3rem" />
-                    <Text
-                      color="green.700"
-                      position="relative"
-                      top="0.4rem"
-                      right="0.3rem"
-                      fontSize="1rem"
-                    >
-                      Actif
-                    </Text>
-                  </HStack>
-                </VStack>
-              </Box>
-              {/* Quick info */}
-              <VStack
-                spacing={4}
-                align="stretch"
-                ml={4}
-                mt={1}
-                position="relative"
-                bottom="0.3rem"
-              >
-                <Box
-                  borderWidth="1px"
-                  borderColor="gray.500"
-                  p={4}
-                  bg="white"
-                  boxShadow="sm"
-                >
-                  <VStack spacing={4} align="stretch">
-                    {/* Department */}
-                    <Flex justify="space-between" align="center">
-                      <HStack spacing={3}>
-                        <Flex
-                          w="42px"
-                          h="42px"
-                          bg="purple.50"
-                          justify="center"
-                          align="center"
-                        >
-                          <Icon
-                            as={FiBriefcase}
-                            color="purple.500"
-                            boxSize={5}
-                          />
-                        </Flex>
-
-                        <Box>
-                          <Text fontWeight="bold">Département</Text>
-                        </Box>
-                      </HStack>
-
-                      <Text fontWeight="400">{employee?.department}</Text>
-                    </Flex>
-
-                    {/* Hire Date */}
-                    <Flex justify="space-between" align="center">
-                      <HStack spacing={3}>
-                        <Flex
-                          w="42px"
-                          h="42px"
-                          bg="purple.50"
-                          justify="center"
-                          align="center"
-                        >
-                          <Icon
-                            as={FiCalendar}
-                            color="purple.500"
-                            boxSize={5}
-                          />
-                        </Flex>
-
-                        <Box>
-                          <Text fontWeight="bold">Date d'embauche</Text>
-                        </Box>
-                      </HStack>
-
-                      <Text fontWeight="400">
-                        {employee?.dateHired &&
-                          new Date(employee?.dateHired).toLocaleDateString(
-                            "fr-FR"
-                          )}
-                      </Text>
-                    </Flex>
-                  </VStack>
-                </Box>
-                {/* Attendance status */}
-                <Box
-                  borderWidth="1px"
-                  borderColor="gray.500"
-                  p={4}
-                  bg="white"
-                  boxShadow="sm"
-                  position="relative"
-                  bottom="1rem"
-                >
-                  <Flex justify="space-between" align="center">
-                    {attendance?.status === "CONGÉ" ||
-                    attendance?.status === "ABSENT" ? (
-                      <HStack spacing={2}>
-                        <Text
-                          fontWeight="bold"
-                          color={
-                            attendance.status === "CONGÉ"
-                              ? "blue.500"
-                              : "red.500"
-                          }
-                          position="relative"
-                          left="8rem"
-                          fontSize="1.1rem"
-                        >
-                          {attendance?.status === "CONGÉ"
-                            ? "En congé"
-                            : "Absent"}
-                        </Text>
-                      </HStack>
-                    ) : (
-                      <>
-                        <HStack spacing={3}>
-                          <Box>
-                            {attendance?.clockIn ? (
-                              <HStack
-                                spacing={1}
-                                color="gray.500"
-                                fontSize="sm"
-                              >
-                                <Icon
-                                  as={FiClock}
-                                  fontSize="1.1rem"
-                                  color="purple.500"
-                                />
-                                <Text mt="1rem" fontSize="0.95rem">
-                                  Arrivée à{" "}
-                                  {attendance?.clockIn &&
-                                    new Date(
-                                      attendance?.clockIn
-                                    ).toLocaleTimeString("fr-FR", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                </Text>
-                              </HStack>
-                            ) : (
-                              <Text
-                                color="blue.600"
-                                fontSize="1.2rem"
-                                ml="7rem"
-                                mt="0.5rem"
-                              >
-                                Pas de pointage{" "}
-                              </Text>
-                            )}
-                          </Box>
-                        </HStack>
-
-                        <HStack spacing={2}>
-                          <Text
-                            mt="1rem"
-                            fontWeight="bold"
-                            color={statusColor[attendance?.status!]}
-                          >
-                            {attendance?.status}
-                          </Text>
-                        </HStack>
-                      </>
-                    )}
-                  </Flex>
-                </Box>
-              </VStack>
-
-              <Box bg="transparent" position="relative" bottom="1rem">
-                {adminUser?.role === "MANAGER" ? (
-                  <Button
-                    bg="red.100"
-                    color="red.600"
-                    width="9rem"
-                    height="2.3rem"
-                    onClick={onOpen}
-                    fontSize="1rem"
-                    ml="8rem"
-                    leftIcon={<FaRegTrashCan fontSize="1.1rem" />}
-                  >
-                    Supprimer
-                  </Button>
-                ) : (
-                  <Box position="relative" left="5rem" bottom="1rem">
-                    <NotAuthorized
-                      buttonText="Supprimer"
-                      icon={FaRegTrashCan}
-                      placement="bottom"
-                      width="13rem"
-                      color="red"
-                    />
-                  </Box>
-                )}
-              </Box>
-            </Box>
-
             {/* RIGHT PANEL */}
             <Box
-              bg="#F8F9FB"
-              border="1px solid"
-              borderColor="gray.500`"
+              border="1px solid rgba(255,255,255,0.12)"
+              boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+              borderRadius="0.4rem"
               overflowY="auto"
               height="70.6vh"
+              ml="15rem"
             >
               <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
-                <EmployeeDetailsTab employee={employee} />
+                <EmployeeDetailsTab
+                  employee={employee}
+                  refreshEmployee={refreshEmployee}
+                />
               </ErrorBoundary>
             </Box>
           </Stack>

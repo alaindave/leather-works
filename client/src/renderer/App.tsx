@@ -3,23 +3,25 @@ import { initializeRendererSync } from "./services/syncManager.service";
 import "./styles/App.css";
 import { Box, Flex } from "@chakra-ui/react";
 import LoginPage from "./pages/LoginPage";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   useEffect(() => {
     initializeRendererSync();
   }, []);
+
   return (
     <Flex
-      margin="0"
-      minHeight="100vh"
+      w="100%"
+      minH="100vh"
       bgGradient="linear(to-br, #1E3A5F, #0078D4)"
       direction="column"
       align="center"
       justify="center"
-      height="100vh"
+      px={{ base: 4, sm: 6, md: 8 }}
+      py={{ base: 4, md: 6 }}
+      overflow="auto"
     >
-      <Box>
+      <Box w="100%" maxW="1400px" minW={0}>
         <LoginPage />
       </Box>
     </Flex>

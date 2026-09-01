@@ -3,62 +3,64 @@ import {
   Flex,
   HStack,
   Text,
-  MenuButton,
   MenuList,
   MenuItem,
   Menu,
   Button,
   List,
   ListItem,
-  Divider,
   useBreakpointValue,
+  MenuButton,
 } from "@chakra-ui/react";
 import { FaHome, FaRegCalendarAlt } from "react-icons/fa";
 import { FaFileSignature, FaRegClock } from "react-icons/fa6";
 import { IoPeopleSharp } from "react-icons/io5";
 import { MdPersonOutline } from "react-icons/md";
-import { IoIosArrowUp } from "react-icons/io";
-import { FaSignOutAlt } from "react-icons/fa";
-import { FaTasks } from "react-icons/fa";
+import { CiCalendarDate, CiClock2 } from "react-icons/ci";
+import { FaSignOutAlt, FaTasks } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
-import { GoDotFill } from "react-icons/go";
 import "../styles/App.css";
 import Logo from "./Logo";
 import useAdminUser from "../../store/auth.store";
 import { ErrorBoundary } from "react-error-boundary";
 import PageErrorFallback from "../pages/PageErrorFallback";
-import { checkOnline } from "../services/connectivity_check.service";
-import { useEffect, useState } from "react";
 import useTaskStore from "../../store/task.store";
-import useSyncStore from "../../store/sync.store";
 import SyncStatus from "./SyncStatus";
+import { useEffect, useState } from "react";
 
 const EmployeeNavBar = () => {
   const adminUser = useAdminUser((store) => store.adminUser);
   const setLogOut = useAdminUser((store) => store.logout);
   const clearTasks = useTaskStore((store) => store.clearTasks);
-  const status = useSyncStore((state) => state.status);
-
+  const [time, setTime] = useState<Date>(new Date());
   const navigate = useNavigate();
-  const [online, setOnline] = useState<boolean>(false);
+
+  const sidebarWidth = useBreakpointValue({
+    base: "100%",
+    md: "215px",
+    lg: "220px",
+    xl: "235px",
+  });
+
+  const sidebarHeight = {
+    base: "calc(100vh - 46px)",
+    md: "calc(100vh - 52px)",
+  };
 
   useEffect(() => {
-    async function check() {
-      const result = await checkOnline();
-      setOnline(result);
-    }
+    const interval = setInterval(() => {
+      setTime(new Date());
+    }, 10000);
 
-    check();
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
-  const sidebarWidth = useBreakpointValue({
-    base: "15rem",
-    md: "17rem",
-    lg: "18rem",
-  });
 
   const handleLogOut = async () => {
     try {
       const logout = await window.electron.auth.logout();
+
       if (logout) {
         setLogOut();
         await clearTasks();
@@ -69,246 +71,515 @@ const EmployeeNavBar = () => {
     }
   };
 
-  console.log("SYNC STORE:", useSyncStore.getState());
-
   return (
-    <Flex
-      position="relative"
-      direction="column"
-      height="95.1vh"
-      width={sidebarWidth}
-      bg="#F8F9FB"
-      borderRight="1px solid"
-      borderColor="#D1D9E0"
-      boxShadow="2px 0 8px rgba(0,0,0,0.04)"
-      borderRadius="0"
-      justify="space-between"
-    >
-      <Flex position="relative" left="0.4rem">
-        <Box padding="10px">
+    <>
+      {/* =====================================================
+          SIDEBAR
+      ===================================================== */}
+      <Flex
+        direction="column"
+        height={sidebarHeight}
+        minHeight={sidebarHeight}
+        width={sidebarWidth}
+        flexShrink={0}
+        bg="#F8F9FB"
+        borderRight={{ base: "none", md: "1px solid #E2E8F0" }}
+        borderBottom={{ base: "1px solid", md: "none" }}
+        borderColor="#D1D9E0"
+        boxShadow="2px 0 8px rgba(0,0,0,0.04)"
+        overflow="hidden"
+      >
+        {/* =================================================
+            LOGO
+        ================================================= */}
+        <Box
+          px={{ base: "10px", md: "8px" }}
+          pt={{ base: "8px", md: "10px" }}
+          pb={{ base: "8px", md: "14px" }}
+          flexShrink={0}
+        >
           <Logo text="Gestion de personnel" />
         </Box>
-      </Flex>
 
-      <Box position="relative" bottom="2rem" left="1rem">
-        <List>
-          <ListItem marginBottom="10px">
-            <HStack position="relative" right="1.5rem">
-              <NavLink className="nav-button" end to="/employees_admin">
-                <HStack>
-                  <Box ml="1rem">
-                    <FaHome size="1.4rem" />
-                  </Box>
-                  <Text mt="1rem" fontSize="1.3rem">
+        {/* =================================================
+            NAVIGATION
+        ================================================= */}
+        <Box
+          flex="1"
+          minHeight={0}
+          overflowY="auto"
+          overflowX="hidden"
+          px={{ base: "10px", md: "10px" }}
+          py={{ base: "12px", md: "18px" }}
+        >
+          <List
+            height="100%"
+            display="flex"
+            flexDirection="column"
+            justifyContent="space-evenly"
+          >
+            {/* Dashboard */}
+            <ListItem flex="1" display="flex" alignItems="center">
+              <NavLink
+                className="nav-button"
+                end
+                to="/employees_admin"
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                }}
+              >
+                <HStack
+                  width="100%"
+                  minHeight="42px"
+                  px="12px"
+                  spacing="12px"
+                  align="center"
+                >
+                  <Flex
+                    width="24px"
+                    minWidth="24px"
+                    justify="center"
+                    align="center"
+                  >
+                    <FaHome size="1.25rem" />
+                  </Flex>
+
+                  <Text
+                    fontSize={{ base: "1rem", md: "1.15rem" }}
+                    fontWeight="500"
+                    lineHeight="1"
+                    whiteSpace="nowrap"
+                  >
                     Tableau de bord
                   </Text>
                 </HStack>
               </NavLink>
-            </HStack>
-          </ListItem>
+            </ListItem>
 
-          <ListItem marginBottom="10px">
-            <HStack position="relative" right="1.5rem">
+            {/* Employees */}
+            <ListItem flex="1" display="flex" alignItems="center">
               <ErrorBoundary FallbackComponent={PageErrorFallback}>
                 <NavLink
                   to="/employees_admin/employees_list"
                   className="nav-button"
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    height: "100%",
+                    alignItems: "center",
+                  }}
                 >
-                  <HStack>
-                    <Box ml="1rem">
-                      <IoPeopleSharp size="1.4rem" />
-                    </Box>
-                    <Text mt="1rem" fontSize="1.3rem">
+                  <HStack
+                    width="100%"
+                    minHeight="42px"
+                    px="12px"
+                    spacing="12px"
+                    align="center"
+                  >
+                    <Flex
+                      width="24px"
+                      minWidth="24px"
+                      justify="center"
+                      align="center"
+                    >
+                      <IoPeopleSharp size="1.3rem" />
+                    </Flex>
+
+                    <Text
+                      fontSize={{ base: "1rem", md: "1.15rem" }}
+                      fontWeight="500"
+                      lineHeight="1"
+                      whiteSpace="nowrap"
+                    >
                       Employés
                     </Text>
                   </HStack>
                 </NavLink>
               </ErrorBoundary>
-            </HStack>
-          </ListItem>
+            </ListItem>
 
-          <ListItem marginBottom="10px">
-            <HStack position="relative" right="1.5rem">
+            {/* Attendance */}
+            <ListItem flex="1" display="flex" alignItems="center">
               <ErrorBoundary FallbackComponent={PageErrorFallback}>
                 <NavLink
                   className="nav-button"
                   to="/employees_admin/attendances"
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    height: "100%",
+                    alignItems: "center",
+                  }}
                 >
-                  <HStack>
-                    <Box ml="1rem">
-                      <FaRegClock size="1.4rem" />
-                    </Box>
-                    <Text mt="1rem" fontSize="1.3rem">
+                  <HStack
+                    width="100%"
+                    minHeight="42px"
+                    px="12px"
+                    spacing="12px"
+                    align="center"
+                  >
+                    <Flex
+                      width="24px"
+                      minWidth="24px"
+                      justify="center"
+                      align="center"
+                    >
+                      <FaRegClock size="1.25rem" />
+                    </Flex>
+
+                    <Text
+                      fontSize={{ base: "1rem", md: "1.15rem" }}
+                      fontWeight="500"
+                      lineHeight="1"
+                      whiteSpace="nowrap"
+                    >
                       Présence
                     </Text>
                   </HStack>
                 </NavLink>
               </ErrorBoundary>
-            </HStack>
-          </ListItem>
+            </ListItem>
 
-          <ListItem marginBottom="10px">
-            <HStack position="relative" right="1.5rem">
+            {/* Leaves */}
+            <ListItem flex="1" display="flex" alignItems="center">
               <ErrorBoundary FallbackComponent={PageErrorFallback}>
-                <NavLink className="nav-button" to="/employees_admin/leaves">
-                  <HStack>
-                    <Box ml="1rem">
-                      <FaRegCalendarAlt size="1.4rem" />
-                    </Box>
-                    <Text mt="1rem" fontSize="1.3rem">
+                <NavLink
+                  className="nav-button"
+                  to="/employees_admin/leaves"
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    height: "100%",
+                    alignItems: "center",
+                  }}
+                >
+                  <HStack
+                    width="100%"
+                    minHeight="42px"
+                    px="12px"
+                    spacing="12px"
+                    align="center"
+                  >
+                    <Flex
+                      width="24px"
+                      minWidth="24px"
+                      justify="center"
+                      align="center"
+                    >
+                      <FaRegCalendarAlt size="1.25rem" />
+                    </Flex>
+
+                    <Text
+                      fontSize={{ base: "1rem", md: "1.15rem" }}
+                      fontWeight="500"
+                      lineHeight="1"
+                      whiteSpace="nowrap"
+                    >
                       Congés
                     </Text>
                   </HStack>
                 </NavLink>
               </ErrorBoundary>
-            </HStack>
-          </ListItem>
+            </ListItem>
 
-          <ListItem marginBottom="10px">
-            <HStack position="relative" right="1.4rem">
-              <NavLink className="nav-button" to="/employees_admin/payroll">
-                <HStack>
-                  <Box ml="1rem">
-                    <FaFileSignature size="1.4rem" />
-                  </Box>
-                  <Text mt="1rem" fontSize="1.3rem">
+            {/* Payroll */}
+            <ListItem flex="1" display="flex" alignItems="center">
+              <NavLink
+                className="nav-button"
+                to="/employees_admin/payroll"
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                }}
+              >
+                <HStack
+                  width="100%"
+                  minHeight="42px"
+                  px="12px"
+                  spacing="12px"
+                  align="center"
+                >
+                  <Flex
+                    width="24px"
+                    minWidth="24px"
+                    justify="center"
+                    align="center"
+                  >
+                    <FaFileSignature size="1.25rem" />
+                  </Flex>
+
+                  <Text
+                    fontSize={{ base: "1rem", md: "1.15rem" }}
+                    fontWeight="500"
+                    lineHeight="1"
+                    whiteSpace="nowrap"
+                  >
                     Fiches de paye
                   </Text>
                 </HStack>
               </NavLink>
-            </HStack>
-          </ListItem>
+            </ListItem>
 
-          <ListItem marginBottom="20px">
-            <HStack position="relative" right="1.4rem">
-              <NavLink className="nav-button" to="/employees_admin/tasks">
-                <HStack>
-                  <Box ml="1rem">
-                    <FaTasks size="1.4rem" />
-                  </Box>
-                  <Text mt="1rem" fontSize="1.3rem">
-                    Taches
+            {/* Tasks */}
+            <ListItem flex="1" display="flex" alignItems="center">
+              <NavLink
+                className="nav-button"
+                to="/employees_admin/tasks"
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                }}
+              >
+                <HStack
+                  width="100%"
+                  minHeight="42px"
+                  px="12px"
+                  spacing="12px"
+                  align="center"
+                >
+                  <Flex
+                    width="24px"
+                    minWidth="24px"
+                    justify="center"
+                    align="center"
+                  >
+                    <FaTasks size="1.25rem" />
+                  </Flex>
+
+                  <Text
+                    fontSize={{ base: "1rem", md: "1.15rem" }}
+                    fontWeight="500"
+                    lineHeight="1"
+                    whiteSpace="nowrap"
+                  >
+                    Tâches
                   </Text>
                 </HStack>
               </NavLink>
-            </HStack>
-          </ListItem>
-        </List>
-      </Box>
-
-      {/* ADMIN USER AREA */}
-      <Flex
-        position="absolute"
-        bottom="0.4rem"
-        border="1px solid #E2E8F0"
-        bg="gray.100"
-        boxShadow="0 2px 10px rgba(15,23,42,.06)"
-        borderRadius="0.5rem"
-        height="3.9rem"
-        width={sidebarWidth}
-        justify="space-evenly"
-      >
-        <Flex
-          height="40px"
-          width="40px"
-          borderWidth="2px"
-          borderRadius="20px"
-          bg="#ffffff"
-          borderColor="blue"
-          justifyContent="center"
-          alignItems="center"
-          ml="0.2rem"
-          mt="0.5rem"
-        >
-          <Menu>
-            <MenuButton
-              background="transparent"
-              color="#374151"
-              _hover={{ bg: "transparent" }}
-              _expanded={{ bg: "transparent" }}
-              as={Button}
-              rightIcon={<MdPersonOutline color="blue" size="2rem" />}
-              position="relative"
-              right="0.2rem"
-            />
-            <MenuList bg="#ffffff" position="relative" left="1.8rem">
-              <MenuItem
-                bg="gray.700"
-                _hover={{ bg: "#e68a00" }}
-                onClick={handleLogOut}
+            </ListItem>
+            {/* Reports */}
+            <ListItem flex="1" display="flex" alignItems="center">
+              <NavLink
+                className="nav-button"
+                to="/admin"
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                }}
               >
-                <FaSignOutAlt color="#ffffff" />
-                <Text color="#ffffff" mt="0.8rem" ml="0.8rem">
-                  Deconnection
-                </Text>
-              </MenuItem>
-            </MenuList>
-          </Menu>
-        </Flex>
+                <HStack
+                  width="100%"
+                  minHeight="42px"
+                  px="12px"
+                  spacing="12px"
+                  align="center"
+                >
+                  <Flex
+                    width="24px"
+                    minWidth="24px"
+                    justify="center"
+                    align="center"
+                  >
+                    <FaTasks size="1.25rem" />
+                  </Flex>
 
-        <Box position="relative">
-          <HStack>
-            <Text
-              mt="0.2rem"
-              color="gray.800"
-              fontSize="1rem"
-              fontWeight={700}
-              padding="2px"
-            >
-              {adminUser?.firstName} {adminUser?.lastName}
-            </Text>
-            <Box
-              position="absolute"
-              top="0.3px"
-              right="1rem"
-              width="20px"
-            ></Box>
-          </HStack>
-          <Text
-            position="relative"
-            bottom="1.1rem"
-            color="gray.600"
-            fontWeight="500"
-            fontSize="0.95rem"
+                  <Text
+                    fontSize={{ base: "1rem", md: "1.15rem" }}
+                    fontWeight="500"
+                    lineHeight="1"
+                    whiteSpace="nowrap"
+                  >
+                    Rapports
+                  </Text>
+                </HStack>
+              </NavLink>
+            </ListItem>
+          </List>
+        </Box>
+
+        {/* =================================================
+            ADMIN USER
+        ================================================= */}
+        <Box width="100%" px="0" pt="8px" pb="0" flexShrink={0}>
+          <Flex
+            width="100%"
+            minHeight="58px"
+            borderTop="1px solid #D1D9E0"
+            borderBottom="1px solid #D1D9E0"
+            bg="gray.100"
+            boxShadow="0 2px 10px rgba(15,23,42,.06)"
+            align="center"
+            px={{ base: "10px", md: "12px" }}
+            gap="8px"
           >
-            {adminUser?.email}
-          </Text>
+            {/* User menu */}
+            <Flex
+              height="38px"
+              width="38px"
+              minWidth="38px"
+              borderWidth="2px"
+              borderRadius="50%"
+              bg="#ffffff"
+              borderColor="blue"
+              justify="center"
+              align="center"
+              flexShrink={0}
+            >
+              <Menu>
+                <MenuButton
+                  as={Box}
+                  width="34px"
+                  height="34px"
+                  minWidth="34px"
+                  minHeight="34px"
+                  padding="0"
+                  margin="0"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  background="transparent"
+                  border="none"
+                  cursor="pointer"
+                  _hover={{ bg: "transparent" }}
+                  _expanded={{ bg: "transparent" }}
+                >
+                  <MdPersonOutline
+                    color="blue"
+                    size="27px"
+                    style={{
+                      display: "block",
+                      margin: "0",
+                    }}
+                  />
+                </MenuButton>
+
+                <MenuList bg="#ffffff" minWidth="150px">
+                  <MenuItem
+                    bg="gray.700"
+                    _hover={{ bg: "#e68a00" }}
+                    onClick={handleLogOut}
+                  >
+                    <FaSignOutAlt color="#ffffff" />
+
+                    <Text color="#ffffff" ml="8px" fontSize="0.9rem">
+                      Déconnexion
+                    </Text>
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Flex>
+
+            {/* User information */}
+            <Box minWidth={0} flex="1" overflow="hidden">
+              <Text
+                color="gray.800"
+                fontSize="0.9rem"
+                fontWeight={700}
+                lineHeight="1.2"
+                whiteSpace="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
+              >
+                {adminUser?.firstName} {adminUser?.lastName}
+              </Text>
+
+              <Text
+                mt="3px"
+                color="gray.600"
+                fontWeight="500"
+                fontSize="0.78rem"
+                lineHeight="1.2"
+                whiteSpace="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
+              >
+                {adminUser?.email}
+              </Text>
+            </Box>
+          </Flex>
         </Box>
       </Flex>
 
-      {/*Lower bar*/}
+      {/* =====================================================
+    LOWER APPLICATION BAR
+===================================================== */}
       <Flex
-        position="relative"
-        top="3rem"
+        position="fixed"
+        bottom="0"
+        left="0"
         width="100vw"
-        height="6.5vh"
+        height={{ base: "46px", md: "52px" }}
         bg="gray.200"
-        justify="space-between"
+        borderTop="1px solid"
+        borderColor="#D1D9E0"
+        align="center"
+        zIndex={1000}
+        display="grid"
+        gridTemplateColumns="1fr auto 1fr"
+        px={{ base: "12px", md: "16px" }}
       >
-        <Text ml="1rem" mt="0.4rem" fontSize="1rem" color="gray.800">
+        {/* =================================================
+      LEFT: COMPANY NAME
+  ================================================= */}
+        <Text
+          justifySelf="start"
+          fontSize={{ base: "0.8rem", md: "0.95rem" }}
+          color="gray.800"
+          whiteSpace="nowrap"
+          overflow="hidden"
+          textOverflow="ellipsis"
+          minWidth={0}
+        >
           Afritan-Gestion de personnel
         </Text>
-        <HStack>
-          {/* <Text color="gray.700" fontWeight="600" mt="0.4rem">
-            Dernière synchronisation:{" "}
-          </Text>
 
-          <Text position="relative" right="0.3rem" mt="0.4rem">
-            {lastSyncAt
-              ? new Date(lastSyncAt).toLocaleTimeString("fr-FR", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "-"}
-          </Text> */}
+        {/* =================================================
+      CENTER: SYNC STATUS
+  ================================================= */}
+        <Flex justifySelf="center" align="center" minWidth="0">
           <SyncStatus onSync={async () => await window.electron.sync()} />
-        </HStack>
+        </Flex>
 
-        <Text mt="0.4rem" mr="2rem" color="gray.800">
-          Version 1.0.0
-        </Text>
+        {/* =================================================
+      RIGHT: DATE + TIME
+  ================================================= */}
+        <HStack
+          justifySelf="end"
+          justify="flex-end"
+          spacing={{ base: 1, md: 3 }}
+          width="auto"
+          flexShrink={0}
+        >
+          {/* Date */}
+          <Flex align="center" gap={1} whiteSpace="nowrap">
+            <CiCalendarDate color="#0078D4" size={22} />
+
+            <Text color="gray.900" fontSize={{ base: "0.75rem", md: "0.9rem" }}>
+              {time.toLocaleDateString("fr-FR")}
+            </Text>
+          </Flex>
+
+          {/* Time */}
+          <Flex align="center" gap={1} whiteSpace="nowrap">
+            <CiClock2 color="#0078D4" size={22} />
+
+            <Text color="gray.900" fontSize={{ base: "0.75rem", md: "0.9rem" }}>
+              {String(time.getHours()).padStart(2, "0")}:
+              {String(time.getMinutes()).padStart(2, "0")}
+            </Text>
+          </Flex>
+        </HStack>
       </Flex>
-    </Flex>
+    </>
   );
 };
 

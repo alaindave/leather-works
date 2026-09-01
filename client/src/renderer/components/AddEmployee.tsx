@@ -113,7 +113,7 @@ const AddEmployee = ({ onAddEmployee }: Props) => {
         isDisabled={isSaving}
       >
         <IoPersonAdd fontSize="1.2rem" />
-        <Text fontSize="1rem" marginLeft="10px" marginTop="15px">
+        <Text fontSize="1rem" ml="10px">
           Ajouter un employé
         </Text>
       </Button>

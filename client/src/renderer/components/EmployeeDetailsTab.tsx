@@ -14,11 +14,14 @@ import {
   Tabs,
   useToast,
   useDisclosure,
+  HStack,
 } from "@chakra-ui/react";
 import { FaBuilding, FaCalendarAlt, FaHashtag } from "react-icons/fa";
 import { FaHouseChimneyWindow } from "react-icons/fa6";
 import { GiRelationshipBounds, GiRotaryPhone } from "react-icons/gi";
 import { IoPerson } from "react-icons/io5";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { FaUserEdit } from "react-icons/fa";
 import { MdAttachMoney, MdWork } from "react-icons/md";
 import { LuPaperclip } from "react-icons/lu";
 import useAdminUser from "../../store/auth.store";
@@ -28,12 +31,17 @@ import { useEffect, useState, useRef } from "react";
 import { EmployeeDocument } from "../../common/types/EmployeeDocuments";
 import EmployeeDocumentsList from "./EmployeeDocumentsList";
 import UploadDocumentModal from "./UploadDocumentModal";
+import NotAuthorized from "./NotAuthorized";
+import { ErrorBoundary } from "react-error-boundary";
+import UpdateEmployee from "./UpdateEmployee";
+import ComponentErrorFallback from "../pages/ComponentErrorFallback";
 
 interface Props {
-  employee: Employee | null;
+  employee: Employee;
+  refreshEmployee: () => void;
 }
 
-const EmployeeDetailsTab = ({ employee }: Props) => {
+const EmployeeDetailsTab = ({ employee, refreshEmployee }: Props) => {
   const [documents, setDocuments] = useState<EmployeeDocument[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -42,6 +50,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
     onClose: onDeletionClose,
   } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const adminUser = useAdminUser((store) => store.adminUser);
   const [documentToDelete, setDocumentToDelete] =
     useState<EmployeeDocument | null>(null);
   const toast = useToast();
@@ -58,8 +67,6 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
         console.error("ERROR FETCHING DOCUMENT:", error);
       });
   }, [employee]);
-
-  const user = useAdminUser((store) => store.adminUser);
 
   const handleRefresh = () => {
     if (!employee) return;
@@ -124,14 +131,15 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
   if (!employee) return null;
 
   return (
-    <Box maxH="90vh" w="47vw">
+    <Box w="47vw" maxH="90vh" h="90vh" display="flex" flexDirection="column">
       <Tabs
         variant="enclosed"
-        h="100%"
+        flex="1"
         minH={0}
         display="flex"
         flexDirection="column"
       >
+        {/* ==================== TABS ==================== */}
         <TabList
           flexShrink={0}
           position="sticky"
@@ -156,7 +164,6 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             px={{ base: 3, md: 5 }}
             _selected={{
               color: "purple.600",
-              borderColor: "#F2B705",
               bg: "transparent",
             }}
             _hover={{
@@ -174,7 +181,6 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             px={{ base: 3, md: 5 }}
             _selected={{
               color: "purple.600",
-              borderColor: "#F2B705",
               bg: "transparent",
             }}
             _hover={{
@@ -192,7 +198,6 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             px={{ base: 3, md: 5 }}
             _selected={{
               color: "purple.600",
-              borderColor: "#F2B705",
               bg: "transparent",
             }}
             _hover={{
@@ -201,6 +206,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
           >
             Contact
           </Tab>
+
           <Tab
             flexShrink={0}
             color="gray.600"
@@ -220,6 +226,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
           </Tab>
         </TabList>
 
+        {/* ==================== SCROLLABLE CONTENT ==================== */}
         <TabPanels
           flex="1"
           minH={0}
@@ -246,6 +253,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               value={employee?.matricule || "N.D."}
               icon={FaHashtag}
             />
+
             <EmployeeDetailsCard
               property="No carte d'identité"
               value={employee?.idNum || "N.D."}
@@ -262,6 +270,7 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               icon={FaCalendarAlt}
             />
           </TabPanel>
+
           <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Poste"
@@ -290,12 +299,14 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               }
               icon={FaCalendarAlt}
             />
+
             <EmployeeDetailsCard
               property="Congés restants"
               value={employee?.remainingLeave || 0}
               icon={FaCalendarAlt}
             />
           </TabPanel>
+
           <TabPanel p={0}>
             <EmployeeDetailsCard
               property="Adresse"
@@ -327,21 +338,24 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
               icon={GiRotaryPhone}
             />
           </TabPanel>
+
           <TabPanel p={0}>
             <UploadDocumentModal
               isOpen={isOpen}
               onClose={onClose}
               employeeId={employee._id}
-              uploadedBy={user._id}
+              uploadedBy={adminUser._id}
               documentType="EMPLOYMENT_CONTRACT"
               onRefresh={handleRefresh}
             />
+
             <EmployeeDocumentsList
               documents={documents}
               onView={handleView}
               onDownload={handleDownload}
               onDelete={handleDelete}
             />
+
             <Button
               position="absolute"
               top="3rem"
@@ -355,7 +369,68 @@ const EmployeeDetailsTab = ({ employee }: Props) => {
             </Button>
           </TabPanel>
         </TabPanels>
+
+        {/* ==================== FIXED BOTTOM ACTION BAR ==================== */}
+        <HStack
+          flexShrink={0}
+          w="100%"
+          px={{ base: 2, md: 4 }}
+          py={3}
+          spacing={3}
+          bg="white"
+          borderTop="1px solid"
+          borderColor="gray.200"
+          justifyContent="flex-start"
+        >
+          {adminUser?.role === "MANAGER" ? (
+            <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
+              <Box>
+                <UpdateEmployee
+                  _id={employee._id}
+                  employee={employee}
+                  onUpdated={refreshEmployee}
+                />
+              </Box>
+            </ErrorBoundary>
+          ) : (
+            <Box>
+              <NotAuthorized
+                buttonText="Modifier"
+                icon={FaUserEdit}
+                placement="left"
+                width="13rem"
+                color="#4F46E5"
+              />
+            </Box>
+          )}
+
+          {adminUser?.role === "MANAGER" ? (
+            <Button
+              bg="red.100"
+              color="red.600"
+              width="9rem"
+              height="2.3rem"
+              onClick={onOpen}
+              fontSize="1rem"
+              leftIcon={<FaRegTrashCan fontSize="1.1rem" />}
+            >
+              Supprimer
+            </Button>
+          ) : (
+            <Box>
+              <NotAuthorized
+                buttonText="Supprimer"
+                icon={FaRegTrashCan}
+                placement="bottom"
+                width="13rem"
+                color="red"
+              />
+            </Box>
+          )}
+        </HStack>
       </Tabs>
+
+      {/* ==================== DELETE DOCUMENT DIALOG ==================== */}
       <AlertDialog
         isOpen={isDeletionOpen}
         leastDestructiveRef={cancelRef}

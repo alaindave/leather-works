@@ -16,23 +16,19 @@ const QuickActions = ({ onTaskCreate }: Props) => {
       boxShadow="0 2px 8px rgba(0,0,0,0.5)"
       borderRadius="md"
       w="full"
-      maxW="1000px"
-      h="110px"
+      h="50px"
+      maxW="1500px"
       mx="auto"
-      p={3}
+      p={2}
+      ml="4rem"
     >
-      <Text fontWeight="600" mb={3}>
-        Actions rapides
-      </Text>
-
-      <HStack spacing={0} align="center" h="full">
+      <HStack spacing={5} align="center" h="full">
         {/* CREATE TASK */}
         <HStack
           flex="1"
           spacing={3}
-          px={4}
+          px={2}
           py={2}
-          mb={5}
           cursor="pointer"
           onClick={onTaskCreate}
           _hover={{ bg: "blackAlpha.100", borderRadius: "md" }}
@@ -53,27 +49,17 @@ const QuickActions = ({ onTaskCreate }: Props) => {
             whiteSpace={{ base: "normal", lg: "nowrap" }}
             overflow="hidden"
             textOverflow="ellipsis"
-            mt={3}
           >
             Créer une nouvelle tâche
           </Text>
         </HStack>
 
-        <Divider
-          orientation="vertical"
-          alignSelf="center"
-          borderColor="gray.700"
-          height="60%"
-          mb={10}
-        />
-
         {/* SEARCH EMPLOYEE */}
         <HStack
           flex="1"
           spacing={3}
-          px={4}
+          px={2}
           py={2}
-          mb={5}
           cursor="pointer"
           _hover={{ bg: "blackAlpha.100", borderRadius: "md" }}
         >
@@ -93,27 +79,17 @@ const QuickActions = ({ onTaskCreate }: Props) => {
             whiteSpace={{ base: "normal", lg: "nowrap" }}
             overflow="hidden"
             textOverflow="ellipsis"
-            mt={3}
           >
             Rechercher un employé
           </Text>
         </HStack>
 
-        <Divider
-          orientation="vertical"
-          alignSelf="center"
-          borderColor="gray.700"
-          height="60%"
-          mb={10}
-        />
-
         {/* LEAVE */}
         <HStack
           flex="1"
           spacing={3}
-          px={4}
+          px={2}
           py={2}
-          mb={5}
           cursor="pointer"
           _hover={{ bg: "blackAlpha.100", borderRadius: "md" }}
         >
@@ -133,27 +109,17 @@ const QuickActions = ({ onTaskCreate }: Props) => {
             whiteSpace={{ base: "normal", lg: "nowrap" }}
             overflow="hidden"
             textOverflow="ellipsis"
-            mt={3}
           >
             Demande de congé
           </Text>
         </HStack>
 
-        <Divider
-          orientation="vertical"
-          alignSelf="center"
-          borderColor="gray.700"
-          height="60%"
-          mb={10}
-        />
-
         {/* REPORT */}
         <HStack
           flex="1"
           spacing={3}
-          px={4}
+          px={2}
           py={2}
-          mb={5}
           cursor="pointer"
           _hover={{ bg: "blackAlpha.100", borderRadius: "md" }}
         >
@@ -173,7 +139,6 @@ const QuickActions = ({ onTaskCreate }: Props) => {
             whiteSpace={{ base: "normal", lg: "nowrap" }}
             overflow="hidden"
             textOverflow="ellipsis"
-            mt={3}
           >
             Générer un rapport
           </Text>

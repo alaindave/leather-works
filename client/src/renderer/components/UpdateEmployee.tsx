@@ -169,10 +169,9 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
           transform: "scale(1.05)",
         }}
         onClick={onOpen}
-        mr="1rem"
       >
         <FaEdit color="#ffffff" size="1.2rem" />
-        <Text position="relative" top="8px" left="5px" fontSize="1.2rem">
+        <Text ml="1rem" fontSize="1rem">
           Modifier
         </Text>
       </Button>

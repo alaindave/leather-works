@@ -1,4 +1,4 @@
-import { Box, Image, VStack } from "@chakra-ui/react";
+import { Box, Image } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import defaultAvatar from "../assets/default-avatar.jpeg";
 
@@ -51,45 +51,43 @@ export default function EmployeePhotoUpload({
   }
 
   return (
-    <VStack spacing={3} position="relative" bottom="4rem">
-      <Box
-        w="140px"
-        h="140px"
-        borderRadius="full"
-        overflow="hidden"
-        border="1px solid"
-        borderColor={isDragging ? "blue.400" : "gray.300"}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        cursor="pointer"
-        position="relative"
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
+    <Box
+      w="120px"
+      h="120px"
+      borderRadius="full"
+      overflow="hidden"
+      border="1px solid"
+      borderColor={isDragging ? "blue.400" : "gray.300"}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      cursor="pointer"
+      position="relative"
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={handleDrop}
+    >
+      <input
+        type="file"
+        accept="image/*"
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          opacity: 0,
+          cursor: "pointer",
         }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
-      >
-        <input
-          type="file"
-          accept="image/*"
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            opacity: 0,
-            cursor: "pointer",
-          }}
-          onChange={handleSelect}
-        />
+        onChange={handleSelect}
+      />
 
-        <Image
-          src={preview || currentPhoto || defaultAvatar}
-          boxSize="140px"
-          objectFit="cover"
-        />
-      </Box>
-    </VStack>
+      <Image
+        src={preview || currentPhoto || defaultAvatar}
+        boxSize="140px"
+        objectFit="cover"
+      />
+    </Box>
   );
 }

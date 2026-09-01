@@ -10,8 +10,6 @@ import {
 } from "@chakra-ui/react";
 import { IoReloadOutline } from "react-icons/io5";
 import { useEffect, useRef, useState } from "react";
-import { CiCalendarDate, CiClock2 } from "react-icons/ci";
-import { FaSyncAlt } from "react-icons/fa";
 import { FaBell } from "react-icons/fa";
 
 import type Attendance from "../../common/types/Attendance";
@@ -262,10 +260,10 @@ const EmployeeAdminPage = () => {
       w="100%"
       minH="94vh"
       bg="#ffffff"
-      border="1px solid"
-      borderColor="#D1D9E0"
+      border="none"
       overflow="hidden"
       p={{ base: 3, md: 6 }}
+      position="relative"
     >
       {/* =====================================================
           HEADER
@@ -283,7 +281,7 @@ const EmployeeAdminPage = () => {
         }}
         gap={3}
       >
-        <Box position="relative" bottom="0.7rem">
+        <Box>
           <HStack>
             <Text
               fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
@@ -298,7 +296,7 @@ const EmployeeAdminPage = () => {
             fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
             color="gray.500"
             position="relative"
-            bottom="1.4rem"
+            bottom="0.5rem"
           >
             Vue d'ensemble de votre gestion de personnel
           </Text>
@@ -308,71 +306,20 @@ const EmployeeAdminPage = () => {
             MANUAL TASK REFRESH
         ==================================================== */}
 
-        <Button
-          position="relative"
-          bottom="2rem"
-          colorScheme="blue"
-          onClick={loadTasks}
-        >
+        <Button colorScheme="blue" onClick={loadTasks}>
           <Box>
             <IoReloadOutline />
           </Box>
 
-          <Text ml="0.5rem" mt="1rem">
-            Taches
-          </Text>
+          <Text ml="0.5rem">Taches</Text>
         </Button>
-
-        {/* ===================================================
-            DATE / TIME
-        ==================================================== */}
-
-        <Flex
-          bg="#F8F9FB"
-          border="1px solid"
-          borderColor="#D1D9E0"
-          borderRadius="8px"
-          boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-          overflow="hidden"
-          align="center"
-          flexWrap="wrap"
-          position="relative"
-          bottom="1.8rem"
-        >
-          <Flex px={3} py={2} align="center" gap={2}>
-            <CiCalendarDate color="#0078D4" size={22} />
-
-            <Text
-              color="gray.900"
-              fontSize="md"
-              position="relative"
-              top="0.5rem"
-            >
-              {new Date().toLocaleDateString("fr-FR")}
-            </Text>
-          </Flex>
-
-          <Flex px={3} py={2} align="center" gap={2}>
-            <CiClock2 color="#0078D4" size={22} />
-
-            <Text
-              color="gray.900"
-              fontSize="md"
-              position="relative"
-              top="0.5rem"
-            >
-              {String(time.getHours()).padStart(2, "0")}:
-              {String(time.getMinutes()).padStart(2, "0")}
-            </Text>
-          </Flex>
-        </Flex>
       </Flex>
 
       {/* =====================================================
           DASHBOARD
       ====================================================== */}
 
-      <Box>
+      <Box mt="3rem">
         <EmployeeDashboard
           employeeCount={employees.length}
           attendanceCount={dailyAttendance.length}
@@ -401,17 +348,17 @@ const EmployeeAdminPage = () => {
         ==================================================== */}
 
         <Box
-          border="1px solid"
-          borderColor="gray.500"
-          borderRadius="12px"
+          border="1px solid rgba(255,255,255,0.12)"
+          boxShadow="0 2px 8px rgba(0,0,0,0.5)"
+          borderRadius="5px"
           bg="#FFFFFF"
           p={5}
           display="flex"
           flexDir="column"
           flex={1}
-          minH="18rem"
-          maxH="23rem"
-          mt={4}
+          minH="15rem"
+          maxH="18rem"
+          mt="4rem"
           overflowY="auto"
           position="relative"
           left={tasks.length === 0 ? "15rem" : "0.5rem"}
@@ -421,8 +368,6 @@ const EmployeeAdminPage = () => {
               color="#1F2937"
               fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.3rem)"
               fontWeight="600"
-              position="relative"
-              top="0.4rem"
             >
               Notes
             </Text>
@@ -456,6 +401,7 @@ const EmployeeAdminPage = () => {
 
           <Button
             position="absolute"
+            top="0.5rem"
             right="1.3rem"
             colorScheme="blue"
             width="6rem"
@@ -480,6 +426,7 @@ const EmployeeAdminPage = () => {
           flexDir="column"
           overflowY="auto"
           minH={0}
+          mt="4rem"
         >
           <TaskSubmissionModal
             isOpen={isCreateOpen}
@@ -499,7 +446,7 @@ const EmployeeAdminPage = () => {
           {tasks.map((task) => (
             <Box
               key={task._id}
-              mt={6}
+              mt="0.1rem"
               ml={{
                 base: 0,
                 xl: 8,
@@ -519,7 +466,7 @@ const EmployeeAdminPage = () => {
           QUICK ACTIONS
       ====================================================== */}
 
-      <Box mb={8}>
+      <Box position="absolute" bottom="0.3rem">
         <QuickActions onTaskCreate={handleTaskCreate} />
       </Box>
 

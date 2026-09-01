@@ -5,16 +5,33 @@ import EmployeeNavBar from "./EmployeeNavBar";
 const EmployeeAdminLayout = () => {
   return (
     <Flex
+      direction={{ base: "column", md: "row" }}
       height="100vh"
       width="100%"
-      bg="#F8FAFC"
-      overflowY="hidden"
-      overflowX="hidden"
+      bg="#ffffff"
+      overflow="hidden"
     >
-      <Box>
+      {/* Navigation */}
+      <Box
+        flexShrink={0}
+        width={{ base: "100%", md: "210px", lg: "225px", xl: "240px" }}
+        maxWidth={{ base: "100%", md: "240px" }}
+        overflow="hidden"
+      >
         <EmployeeNavBar />
       </Box>
-      <Outlet />
+
+      {/* Page content */}
+      <Box
+        flex="1"
+        minWidth={0}
+        minHeight={0}
+        width="100%"
+        overflowY="auto"
+        overflowX="hidden"
+      >
+        <Outlet />
+      </Box>
     </Flex>
   );
 };

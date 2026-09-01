@@ -211,7 +211,8 @@ const EmployeeLeavePage = () => {
         direction="column"
         bg="#F8FAFC"
         justify="space-between"
-        width="100vw"
+        width="100%"
+        height="100%"
       >
         {/* Header */}
         <Flex ml="0.05rem" height="10rem" width="80vw">
@@ -222,7 +223,7 @@ const EmployeeLeavePage = () => {
                 fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
                 fontWeight="700"
                 ml="0.5rem"
-                mt="0.7rem"
+                mt="1.3rem"
               >
                 Congés
               </Text>
@@ -233,7 +234,7 @@ const EmployeeLeavePage = () => {
                 _hover={{ bg: "transparent" }}
                 fontSize="1rem"
                 position="relative"
-                bottom="0.2rem"
+                top="0.7rem"
                 right="1rem"
                 onClick={loadLeaves}
               >
@@ -243,10 +244,10 @@ const EmployeeLeavePage = () => {
             <Text
               fontWeight="500"
               left="0.45rem"
-              fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
+              fontSize="clamp(1rem, 1vw + 0.8rem, 1rem)"
               color="gray.500"
               position="relative"
-              bottom="1.4rem"
+              bottom="0.5rem"
             >
               Gérez les demandes de congés
             </Text>
@@ -265,7 +266,7 @@ const EmployeeLeavePage = () => {
               {" "}
               <FaCirclePlus size="1.2rem" />
             </Box>
-            <Text mt="0.8rem">Soumettre une demande</Text>
+            <Text>Soumettre une demande</Text>
           </Button>
         </Flex>
 
@@ -319,12 +320,7 @@ const EmployeeLeavePage = () => {
                 <Text color="gray.800" fontSize="1.1rem">
                   Congés
                 </Text>
-                <Text
-                  color="gray.800"
-                  fontSize="1.1rem"
-                  position="relative"
-                  bottom="1.4rem"
-                >
+                <Text color="gray.800" fontSize="1.1rem">
                   restants
                 </Text>
               </Box>
@@ -333,9 +329,8 @@ const EmployeeLeavePage = () => {
                 Actions
               </Text>
             </Grid>
-            <Box height="90vh" overflowX="hidden" overflowY="auto">
+            <Box height="80vh" overflowX="hidden" overflowY="auto">
               {leaves.map((leave, index) => {
-                console.log("Leave at index", index, leave);
                 return (
                   <EmployeeLeaveCard
                     key={leave?._id ?? index}
@@ -351,11 +346,7 @@ const EmployeeLeavePage = () => {
 
         {/* Footer */}
         <Flex
-          bg="#F8F9FB"
-          borderWidth="0.3px"
-          border="1px solid #E2E8F0"
-          boxShadow="0 2px 10px rgba(15,23,42,.06)"
-          mb="2.5rem"
+          mb="3.2rem"
           ml="0.01rem"
           height="4rem"
           width="80vw"
@@ -369,16 +360,6 @@ const EmployeeLeavePage = () => {
             fontWeight="600"
           >
             <MonthDropDown onChange={(month) => setSubmissionMonth(month)} />
-          </Box>
-
-          <Box
-            color="gray.800"
-            fontSize="24px"
-            fontWeight="600"
-            mt="0.5rem"
-            mr="2rem"
-          >
-            <Text>{new Date().toLocaleDateString("fr-FR")}</Text>
           </Box>
         </Flex>
       </Flex>

@@ -132,189 +132,58 @@ const EmployeePayslipDetails = () => {
 
   return (
     <Flex bg="#ffffff" width="100%" direction="column">
-      {/* Header */}
-      <HStack>
-        <Box
-          position="absolute"
-          top="1rem"
-          ml="0.4rem"
-          mr="2rem"
-          p={2}
-          border="1px solid #14376b"
-          borderRadius="10px"
-          onClick={() => navigate(-1)}
-        >
-          <FaArrowLeftLong color="black" />
-        </Box>
-        <Box ml="2rem">
-          <HStack>
-            <Text mt="0.8rem" ml="1.1rem" fontSize="1.4rem" fontWeight="600">
-              Fiches de paye
-            </Text>
-            <Box>
-              <MdOutlineChevronRight fontSize="1.3rem" />
-            </Box>
-            <Text mt="0.9rem" color="purple.600">
-              Periode du{" "}
-              {payrollResults?.month && payrollResults?.year
-                ? getPayrollPeriod(payrollResults.month, payrollResults.year)
-                : ""}
-            </Text>{" "}
-          </HStack>
-        </Box>
-      </HStack>
-      {/* Bio */}
-      <Flex>
-        <Flex
-          bg="#F8F9FB"
-          border="1px solid"
-          borderColor="#D1D9E0"
-          borderRadius="8px"
-          boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-          mt="1.2rem"
-          ml="1rem"
-          minH="11rem"
-          minW="30rem"
-        >
-          <Image
-            src={photo_url || defaultAvatar}
-            boxSize="8rem"
-            borderRadius="full"
-            objectFit="cover"
+      <Flex justify="space-between">
+        {/* Header */}
+        <HStack>
+          <Box
             mt="1rem"
-            ml="0.8rem"
-          />
-
-          <VStack ml="1rem">
-            <HStack mt="0.2rem" w="120px">
-              <Text fontWeight="600" fontSize="1.2rem">
-                {employee?.firstName}
+            p={3}
+            border="1px solid #14376b"
+            borderRadius="10px"
+            onClick={() => navigate(-1)}
+          >
+            <FaArrowLeftLong size="0.9rem" color="black" />
+          </Box>
+          <Box>
+            <HStack>
+              <Text ml="0.3rem" fontSize="1.3rem" fontWeight="600">
+                Fiches de paye
               </Text>
-              <Text fontWeight="600" fontSize="1.2rem">
-                {employee?.lastName}
-              </Text>
-            </HStack>
-
-            <HStack w="120px" position="relative" bottom="0.8rem">
-              <Text color="gray.600" fontSize="1.1rem">
-                Matricule:
-              </Text>
-              <Text color="gray.800" fontSize="1rem">
-                {employee?.matricule}
-              </Text>
-            </HStack>
-            <HStack w="120px" position="relative" bottom="1.7rem">
-              <Text color="gray.600" fontSize="1.1rem">
-                Poste:
-              </Text>
-              <Text color="gray.800" fontSize="1rem">
-                {employee?.role}
-              </Text>
-            </HStack>
-            <HStack w="120px" position="relative" bottom="2.5rem">
-              <Text color="gray.600" fontSize="1.1rem">
-                Departement:
-              </Text>
-              <Text color="gray.800" fontSize="1rem">
-                {employee?.department}
-              </Text>
-            </HStack>
-          </VStack>
-        </Flex>
-        {/* Payroll info */}
-        <HStack
-          bg="#F8F9FB"
-          border="1px solid"
-          borderColor="#D1D9E0"
-          borderRadius="8px"
-          boxShadow="0 2px 8px rgba(0,0,0,0.5)"
-          mt="1rem"
-          ml="0.5rem"
-          height="13rem"
-          width="45.7vw"
-        >
-          {/* Periode de paie */}
-          <HStack mt="0.4rem" ml="4rem">
-            <Box
-              borderRadius="0.5rem"
-              padding="0.3rem"
-              bg="purple.100"
-              position="relative"
-              bottom="0.7rem"
-              mr="1rem"
-            >
-              <CiCalendar size="2rem" color="purple.800" />
-            </Box>
-            <Box>
-              <Text color="gray.500" whiteSpace="nowrap">
-                Periode de paie
-              </Text>
-              <Text
-                position="relative"
-                bottom="1rem"
-                fontWeight="600"
-                whiteSpace="nowrap"
-              >
+              <Box>
+                <MdOutlineChevronRight fontSize="1.3rem" />
+              </Box>
+              <Text fontWeight="600" fontSize="1.1rem" color="gray.700">
+                Periode du{" "}
                 {payrollResults?.month && payrollResults?.year
                   ? getPayrollPeriod(payrollResults.month, payrollResults.year)
                   : ""}
               </Text>
-            </Box>
-          </HStack>
-          {/* Payroll status */}
-          <HStack mt="0.4rem" ml="1rem">
-            <Box
-              borderRadius="0.5rem"
-              padding="0.3rem"
-              bg={
-                payrollResults?.status && statusBgColor[payrollResults?.status]
-              }
-              fontSize="1.8rem"
-              position="relative"
-              bottom="0.7rem"
-              mr="1rem"
-            >
-              <LuInfo />
-            </Box>
-            <Box>
-              <Text color="gray.500">Statut</Text>
-              <Text
-                color={
-                  payrollResults?.status && statusColor[payrollResults?.status]
-                }
-                position="relative"
-                bottom="1rem"
-                fontWeight="700"
-              >
-                {payrollResults?.status && payrollResults.status}
-              </Text>
-            </Box>
-          </HStack>
-          {/* Creation date */}
-
-          {payrollResults?.status === "BROUILLON" ? (
-            <HStack mt="0.4rem" ml="1rem">
-              <Box
-                borderRadius="0.5rem"
-                padding="0.3rem"
-                bg="red.300"
-                fontSize="1.8rem"
-                position="relative"
-                bottom="0.7rem"
-                mr="1rem"
-              >
-                <MdFreeCancellation />
-              </Box>
               <Box>
-                <Text color="gray.500">Date de creation</Text>
+                <MdOutlineChevronRight fontSize="1.3rem" />
+              </Box>
+
+              <Text fontWeight="600" fontSize="1.1rem">
+                {employee?.firstName}
+              </Text>
+              <Text fontWeight="600" fontSize="1.1rem">
+                {employee?.lastName}
+              </Text>
+            </HStack>
+          </Box>
+        </HStack>
+        <VStack>
+          {/* Creation date */}
+          {payrollResults?.status === "BROUILLON" ? (
+            <HStack>
+              <Box>
                 <HStack>
-                  <Text position="relative" bottom="1rem" fontWeight="600">
+                  <Text fontWeight="600">
                     {payrollResults?.createdAt &&
                       new Date(payrollResults?.createdAt).toLocaleDateString(
                         "fr-FR"
                       )}
                   </Text>
-                  <Text position="relative" right="0.1rem" bottom="1rem">
+                  <Text>
                     {payrollResults?.createdAt &&
                       new Date(payrollResults?.createdAt).toLocaleTimeString(
                         "fr-FR",
@@ -331,65 +200,39 @@ const EmployeePayslipDetails = () => {
 
           {/* Cancellation date */}
           {payrollResults?.status === "ANNULÉ" ? (
-            <HStack mt="0.4rem" ml="1rem">
-              <Box
-                borderRadius="0.5rem"
-                padding="0.3rem"
-                bg="red.300"
-                fontSize="1.8rem"
-                position="relative"
-                bottom="0.7rem"
-                mr="1rem"
-              >
-                <MdFreeCancellation />
-              </Box>
-              <Box>
-                <Text color="gray.500">Date d'annulation</Text>
-                <Text position="relative" bottom="1rem" fontWeight="600">
+            <HStack mt="1rem" mr="1rem">
+              <HStack>
+                <Text fontWeight="600">
                   {payrollResults?.cancelledAt &&
                     new Date(payrollResults?.cancelledAt).toLocaleDateString(
                       "fr-FR"
                     )}
                 </Text>
-              </Box>
+                <Text>
+                  {payrollResults?.cancelledAt &&
+                    new Date(payrollResults?.cancelledAt).toLocaleTimeString(
+                      "fr-FR",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
+                </Text>
+              </HStack>
             </HStack>
           ) : null}
           {/* Date de verification */}
           {payrollResults?.status === "VERIFICATION" ? (
-            <HStack mt="0.4rem" ml="1rem">
-              <Box
-                borderRadius="0.5rem"
-                padding="0.3rem"
-                bg="blue.200"
-                fontSize="1.8rem"
-                position="relative"
-                bottom="0.7rem"
-                mr="1rem"
-              >
-                <FaRegCalendarCheck color="purple.500" />
-              </Box>
+            <HStack mt="1rem" mr="1rem">
               <Box>
-                <Text
-                  position="relative"
-                  bottom="0.1rem"
-                  color="gray.500"
-                  whiteSpace="normal"
-                >
-                  En verification
-                </Text>
                 <HStack>
-                  <Text
-                    position="relative"
-                    right="1rem"
-                    bottom="1rem"
-                    fontWeight="600"
-                  >
+                  <Text fontWeight="600">
                     {payrollResults?.verifiedAt &&
                       new Date(payrollResults?.verifiedAt).toLocaleDateString(
                         "fr-FR"
                       )}
                   </Text>
-                  <Text position="relative" bottom="1rem" right="1rem">
+                  <Text>
                     {payrollResults?.verifiedAt &&
                       new Date(payrollResults?.verifiedAt).toLocaleTimeString(
                         "fr-FR",
@@ -405,28 +248,16 @@ const EmployeePayslipDetails = () => {
           ) : null}
           {/* Approval date  */}
           {payrollResults?.status === "APPROUVÉ" ? (
-            <HStack mt="0.4rem" ml="1rem">
-              <Box
-                borderRadius="0.5rem"
-                padding="0.3rem"
-                bg="blue.100"
-                fontSize="1.8rem"
-                position="relative"
-                bottom="1rem"
-                mr="1rem"
-              >
-                <FcApproval color="blue.500" />
-              </Box>
-              <Box position="relative" bottom="0.1rem">
-                <Text color="gray.500">Date d'approbation</Text>
+            <HStack mt="1rem" mr="1rem">
+              <Box>
                 <HStack>
-                  <Text position="relative" bottom="1rem" fontWeight="600">
+                  <Text fontWeight="600">
                     {payrollResults?.approvedAt &&
                       new Date(payrollResults?.approvedAt).toLocaleDateString(
                         "fr-FR"
                       )}
                   </Text>
-                  <Text position="relative" bottom="1rem">
+                  <Text>
                     {payrollResults?.approvedAt &&
                       new Date(payrollResults?.approvedAt).toLocaleTimeString(
                         "fr-FR",
@@ -442,28 +273,16 @@ const EmployeePayslipDetails = () => {
           ) : null}
           {/* Payment date  */}
           {payrollResults?.status === "PAYÉ" ? (
-            <HStack mt="0.4rem" ml="1rem">
-              <Box
-                borderRadius="0.5rem"
-                padding="0.3rem"
-                bg="green.100"
-                fontSize="1.8rem"
-                position="relative"
-                bottom="0.7rem"
-                mr="1rem"
-              >
-                <MdPayment color="green.500" />
-              </Box>
+            <HStack mt="1rem" mr="1rem">
               <Box>
-                <Text color="gray.500">Date de paiement</Text>
                 <HStack>
-                  <Text position="relative" bottom="1rem" fontWeight="600">
+                  <Text fontWeight="600">
                     {payrollResults?.paidAt &&
                       new Date(payrollResults?.paidAt).toLocaleDateString(
                         "fr-FR"
                       )}
                   </Text>
-                  <Text position="relative" bottom="1rem">
+                  <Text>
                     {payrollResults?.paidAt &&
                       new Date(payrollResults?.paidAt).toLocaleTimeString(
                         "fr-FR",
@@ -477,8 +296,19 @@ const EmployeePayslipDetails = () => {
               </Box>
             </HStack>
           ) : null}
-        </HStack>
+          <Box>
+            <Text
+              color={
+                payrollResults?.status && statusColor[payrollResults?.status]
+              }
+              fontWeight="700"
+            >
+              {payrollResults?.status && payrollResults.status}
+            </Text>
+          </Box>
+        </VStack>
       </Flex>
+
       {/* Salary breakdown */}
       <HStack
         bg="#F8F9FB"
@@ -488,7 +318,7 @@ const EmployeePayslipDetails = () => {
         boxShadow="0 2px 8px rgba(0,0,0,0.5)"
         height="15vh"
         width="78vw"
-        mt="0.5rem"
+        mt="3rem"
         ml="1rem"
         gap={10}
         padding={10}
@@ -527,7 +357,7 @@ const EmployeePayslipDetails = () => {
       {/* Earnings and deductions breakdown */}
       <HStack
         ml="1rem"
-        mt="0.5rem"
+        mt="5rem"
         spacing="1rem"
         width="calc(100% - 4rem)"
         height="400px"
@@ -536,7 +366,7 @@ const EmployeePayslipDetails = () => {
         {/* Earnings */}
         <Box
           width="40vw"
-          height="43vh"
+          height="50vh"
           border="1px solid"
           bg="#ffffff"
           borderColor="#D1D9E0"
@@ -618,7 +448,7 @@ const EmployeePayslipDetails = () => {
         {/* Deductions */}
         <Box
           width="40vw"
-          height="43vh"
+          height="50vh"
           border="1px solid"
           bg="#ffffff"
           borderColor="#D1D9E0"
