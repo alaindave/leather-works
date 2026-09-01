@@ -147,6 +147,7 @@ const EmployeeAttendanceCard = ({
   const [photo_url, setPhotoUrl] = useState("");
 
   useEffect(() => {
+    if (!localAttendance?.clockOut) return;
     const formatted = formatTime(localAttendance?.clockOut);
 
     setClockOutValue(formatted);
@@ -420,7 +421,6 @@ const EmployeeAttendanceCard = ({
             <Editable
               position="relative"
               right="1rem"
-              bottom="0.5rem"
               value={draftClockOut ?? ""}
               onChange={setDraftClockOut}
               submitOnBlur={false}
@@ -513,7 +513,6 @@ const EmployeeAttendanceCard = ({
         ) : localAttendance?.status === "ABSENT" ||
           localAttendance?.status === "CONGÉ" ? (
           <Badge
-            mb="1.1rem"
             fontSize="0.9rem"
             bg={attendance.status === "CONGÉ" ? "#3182CE" : "#E53E3E"}
             color="gray.200"
@@ -529,7 +528,7 @@ const EmployeeAttendanceCard = ({
 
       {/* Action buttons */}
       {isUnlocked ? (
-        <Box position="relative" right="1rem" mb="1rem">
+        <Box position="relative" right="1rem">
           {!localAttendance?.clockOut &&
           localAttendance?.status !== "ABSENT" &&
           localAttendance?.status !== "CONGÉ" ? (
@@ -557,7 +556,7 @@ const EmployeeAttendanceCard = ({
           )}
         </Box>
       ) : (
-        <Box mb="1.2rem">
+        <Box>
           <FaLock size="1.3rem" color="#D4A017" />
         </Box>
       )}

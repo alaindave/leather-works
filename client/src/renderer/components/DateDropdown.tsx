@@ -32,7 +32,6 @@ function getSelectedDays(startDate: Date | string, endDate: Date | string) {
   let i = 0;
 
   const numberOfDays = getDaysBetweenDates(startDate, endDate);
-  console.log("NUMBER OF DAYS SELECTED:", numberOfDays);
 
   while (days.length <= numberOfDays) {
     const date = new Date(endDate);
@@ -75,7 +74,6 @@ interface Option {
 
 export default function DateDropdown({ startDate, endDate, onChange }: Props) {
   const options: Option[] = getSelectedDays(startDate, endDate);
-  console.log("OPTIONS ARRAY:", options);
   const [selected, setSelected] = useState<Option | null>(options[0]);
   function handleChange(option: Option | null) {
     if (option) {

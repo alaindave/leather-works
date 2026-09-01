@@ -8,7 +8,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import PayrollSettings from "../../../common/types/payroll/PayrollSettings";
+import { PayrollSettings } from "../../../common/types/payroll/Payroll";
 
 export default function PayrollDefaults() {
   const toast = useToast();
@@ -210,10 +210,11 @@ export default function PayrollDefaults() {
   };
 
   return (
-    <Stack spacing={5}>
+    <Stack ml="5rem" spacing={5}>
       <FormControl>
         <FormLabel>Monnaie</FormLabel>
         <Select
+          width="150px"
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
           isDisabled={loading || saving}
@@ -230,6 +231,7 @@ export default function PayrollDefaults() {
         <FormLabel>Jour de paie</FormLabel>
 
         <Input
+          width="150px"
           type="number"
           min={1}
           max={31}
@@ -243,6 +245,7 @@ export default function PayrollDefaults() {
         <FormLabel>Jours ouvrables par mois</FormLabel>
 
         <Input
+          width="150px"
           type="number"
           min={1}
           max={31}
@@ -256,6 +259,7 @@ export default function PayrollDefaults() {
         <FormLabel>Heures de travail par jour</FormLabel>
 
         <Input
+          width="150px"
           type="number"
           min={1}
           max={24}
@@ -266,6 +270,7 @@ export default function PayrollDefaults() {
       </FormControl>
 
       <Button
+        width="180px"
         onClick={save}
         colorScheme="blue"
         isLoading={saving}

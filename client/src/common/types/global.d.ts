@@ -190,6 +190,19 @@ declare global {
         delete: (_id: string) => Promise<AttendanceWithEmployee>;
       };
 
+      attendanceReports: {
+        savePdf: (date: string) => Promise<{
+          success: boolean;
+          canceled?: boolean;
+          filePath?: string;
+        }>;
+
+        printPdf: (date: string) => Promise<{
+          success: boolean;
+          canceled?: boolean;
+        }>;
+      };
+
       leave: {
         create: (leave: Partial<Leave>) => Promise<LeaveWithEmployee>;
         getLeaveByEmployeeId: (employeeId: string) => Promise<Leave[]>;
@@ -301,11 +314,11 @@ declare global {
       payrollRun: {
         createPayrollDraft(
           admin: AdminUser,
-          month: number,
-          year: number
+          year: number,
+          month: number
         ): Promise<PayrollRun>;
 
-        getPayrollRuns(): Promise<PayrollRun[]>;
+        getPayrollRuns(year: number, month: number): Promise<PayrollRun[]>;
 
         getPayrollRunById(_id: string): Promise<PayrollRun | null>;
 

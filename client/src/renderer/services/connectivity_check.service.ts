@@ -1,29 +1,15 @@
 const API_URL = import.meta.env.VITE_API_URL;
-
 const RETRY_WINDOW = 60_000; // 60 seconds
 const RETRY_INTERVAL = 5_000; // retry every 5 seconds
 const REQUEST_TIMEOUT = 10_000; // individual backend request timeout
-const INTERNET_CHECK_TIMEOUT = 5_000;
 
 const hasInternetAccess = async (): Promise<boolean> => {
-  const controller = new AbortController();
-
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, INTERNET_CHECK_TIMEOUT);
-
-  try {
-    const response = await fetch("https://clients3.google.com/generate_204", {
-      method: "GET",
-      cache: "no-store",
-      signal: controller.signal,
-    });
-
-    return response.ok;
-  } catch {
+  if (navigator.onLine) {
+    console.log("THE BROWSER REPORTS BEING ONLINE.");
+    return true;
+  } else {
+    console.log("THE BROWSER REPORTS BEING OFFLINE.");
     return false;
-  } finally {
-    clearTimeout(timeout);
   }
 };
 

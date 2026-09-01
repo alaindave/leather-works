@@ -23,6 +23,7 @@ import { FaCheckDouble, FaLock, FaSyncAlt } from "react-icons/fa";
 import { FaCirclePlus } from "react-icons/fa6";
 import { GiConfirmed } from "react-icons/gi";
 import { MdAutoDelete } from "react-icons/md";
+import { FaDownload } from "react-icons/fa";
 import { PiSealCheck } from "react-icons/pi";
 import { RiPresentationFill } from "react-icons/ri";
 import { RxCrossCircled } from "react-icons/rx";
@@ -362,6 +363,20 @@ const EmployeeAttendancePage = () => {
     }
   };
 
+  const download = async () => {
+    try {
+      const result = await window.electron.attendanceReports.savePdf(
+        selectedDate
+      );
+      console.log("DOWNLOAD RESULTS FOR ", result);
+    } catch (e) {
+      console.error(
+        "AN ERROR OCCURED WHILE DOWNLOADING THE ATTENDANCE REPORT ",
+        e
+      );
+    }
+  };
+
   const getAttendanceAction = () => {
     if (!canVerify) {
       return "MARK_ABSENT";
@@ -389,11 +404,7 @@ const EmployeeAttendancePage = () => {
 
     return null;
   };
-
   const attendanceAction = getAttendanceAction();
-
-  console.log("CAN VERIFY ?", canVerify);
-
   return (
     <Flex direction="column" ml="0.02rem" width="100vw" h="95.1vh" bg="#F8FAFC">
       {/* ================= ALERT DIALOG ================= */}
@@ -443,10 +454,7 @@ const EmployeeAttendancePage = () => {
                     <Box>
                       <MdAutoDelete size="1.2rem" />
                     </Box>
-                    <Text marginTop="0.9rem" fontSize="1rem">
-                      {" "}
-                      Supprimer
-                    </Text>
+                    <Text fontSize="1rem"> Supprimer</Text>
                   </HStack>
                 </Button>
                 <Button
@@ -464,7 +472,7 @@ const EmployeeAttendancePage = () => {
                     <Box>
                       <RxCrossCircled color="#ffffff" size="1.2rem" />
                     </Box>
-                    <Text color="#ffffff" marginTop="0.9rem" fontSize="1rem">
+                    <Text color="#ffffff" fontSize="1rem">
                       Annuler
                     </Text>
                   </HStack>
@@ -483,8 +491,8 @@ const EmployeeAttendancePage = () => {
                 color="#1F2937"
                 fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
                 fontWeight="700"
-                ml="0.5rem"
-                mt="1.2rem"
+                ml="1rem"
+                mt="1.3rem"
               >
                 Présences
               </Text>
@@ -497,7 +505,7 @@ const EmployeeAttendancePage = () => {
                 onClick={loadData}
                 isLoading={loading}
                 position="relative"
-                top="0.5rem"
+                top="0.8rem"
               >
                 <FaSyncAlt />
               </Button>
@@ -514,17 +522,17 @@ const EmployeeAttendancePage = () => {
               color="gray.500"
               position="relative"
               bottom="0.5rem"
+              ml="0.5rem"
             >
               Gérez la liste de présence
             </Text>
           </Box>
-
           <Spacer />
           {attendanceAction === "VERIFY" && (
             <Button
               colorScheme="blue"
               onClick={verify}
-              mt="0.5rem"
+              mt="1rem"
               mr="1.3rem"
               isLoading={checkLoading}
             >
@@ -534,7 +542,6 @@ const EmployeeAttendancePage = () => {
               </HStack>
             </Button>
           )}
-
           {attendanceAction === "NOTIFY_MANAGER" && (
             <Button
               colorScheme="purple"
@@ -549,26 +556,24 @@ const EmployeeAttendancePage = () => {
               </HStack>
             </Button>
           )}
-
           {attendanceAction === "WAITING_CONFIRMATION" && (
             <Button
               colorScheme="orange"
               pointerEvents="none"
-              mt="0.5rem"
+              mt="1.3rem"
               mr="1.3rem"
             >
               <HStack>
                 <GiConfirmed />
-                <Text mt="1rem">En attente de confirmation</Text>
+                <Text>En attente de confirmation</Text>
               </HStack>
             </Button>
           )}
-
           {attendanceAction === "CONFIRM" && (
             <Button
               colorScheme="green"
               onClick={lock}
-              mt="0.5rem"
+              mt="1.3rem"
               mr="1.3rem"
               isLoading={checkLoading}
             >
@@ -578,13 +583,11 @@ const EmployeeAttendancePage = () => {
               </HStack>
             </Button>
           )}
-
           {attendanceAction === "LOCKED" && (
-            <Box position="absolute" top="1rem" right="1.5rem">
+            <Box mt="1.3rem">
               <FaLock size="2rem" color="#D4A017" />
             </Box>
           )}
-
           {attendanceAction === "MARK_ABSENT" && (
             <Button
               colorScheme="red"
@@ -599,26 +602,37 @@ const EmployeeAttendancePage = () => {
               </HStack>
             </Button>
           )}
-
           <Spacer />
-
-          {dailyCheck?.status !== "LOCKED" ? (
+          <Box>
+            {dailyCheck?.status !== "LOCKED" ? (
+              <Button
+                colorScheme="blue"
+                size="md"
+                onClick={onAddAttendanceOpen}
+                zIndex="1"
+                mt="1.2rem"
+                mr="3rem"
+                _hover={{ backgroundColor: "#4F46E5" }}
+              >
+                <Box mr="0.5rem">
+                  {" "}
+                  <FaCirclePlus size="1.2rem" />
+                </Box>
+                <Text>Ajouter un employé</Text>
+              </Button>
+            ) : null}
             <Button
-              colorScheme="blue"
-              size="md"
-              onClick={onAddAttendanceOpen}
-              zIndex="1"
-              mt="1rem"
-              mr="1.3rem"
-              _hover={{ backgroundColor: "#4F46E5" }}
+              position="absolute"
+              top="1rem"
+              right="0.5rem"
+              fontSize="1.3rem"
+              bg="transparent"
+              onClick={download}
+              _hover={{ bg: "transparent" }}
             >
-              <Box mr="0.5rem">
-                {" "}
-                <FaCirclePlus size="1.2rem" />
-              </Box>
-              <Text>Ajouter un employé</Text>
+              <FaDownload />
             </Button>
-          ) : null}
+          </Box>
         </Flex>
 
         <Flex justify="space-between">

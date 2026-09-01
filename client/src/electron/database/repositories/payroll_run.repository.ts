@@ -20,8 +20,8 @@ import { addToSyncQueue } from "./sync.repository.js";
 export async function createPayrollRun(
   input: PayrollBatchResult,
   admin: Omit<User, "password" | "notes">,
-  month: number,
-  year: number
+  year: number,
+  month: number
 ) {
   // ----------------------------------------------------------
   // Validate payroll period
@@ -46,17 +46,17 @@ export async function createPayrollRun(
     `
     SELECT *
     FROM payroll_runs
-    WHERE month = ?
-      AND year = ?
+    WHERE year = ?
+      AND month = ?
       AND isDeleted = 0
       AND status <> 'ANNULÉ'
     LIMIT 1
     `,
-    [month, year]
+    [year, month]
   );
 
   if (existingPayrollRun) {
-    throw new Error(`A payroll run already exists for ${month}/${year}.`);
+    throw new Error(`Une fiche de paye existe déjà pour ${month}/${year}.`);
   }
 
   // ----------------------------------------------------------
@@ -66,23 +66,15 @@ export async function createPayrollRun(
   const payrollRun: PayrollRun = {
     _id: randomUUID(),
     generatedBy: admin._id,
-
-    // IMPORTANT:
-    // These now represent the payroll period selected by the user,
-    // not the current calendar month.
     month,
     year,
-
     employeeCount: input.employeeCount,
     totalBasicSalary: input.totalBasicSalary,
     totalEarnings: input.totalEarnings,
     totalDeductions: input.totalDeductions,
     totalNetSalary: input.totalNetSalary,
     status: "BROUILLON",
-
-    // Server assigns the real version after sync.
     serverVersion: 0,
-
     synced: 0,
     createdAt: now,
     updatedAt: now,
@@ -143,7 +135,7 @@ export async function createPayrollRun(
 // GET PAYROLL RUNS
 // ============================================================
 
-export async function getPayrollRuns() {
+export async function getPayrollRuns(year: number, month: number) {
   return await all<PayrollRun>(
     `
     SELECT
@@ -152,9 +144,12 @@ export async function getPayrollRuns() {
     FROM payroll_runs pr
     LEFT JOIN admin_users gen
       ON pr.generatedBy = gen._id
-    WHERE pr.isDeleted = 0
+    WHERE pr.isDeleted = 0 
+      AND year=? 
+      AND month=?
     ORDER BY pr.createdAt DESC
-    `
+    `,
+    [year, month]
   );
 }
 

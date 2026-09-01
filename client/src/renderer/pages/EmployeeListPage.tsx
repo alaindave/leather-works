@@ -105,7 +105,13 @@ const EmployeeListPage = () => {
           {/* =================================================
               TITLE + FILTER
           ================================================= */}
-          <Flex width="100%" align="center" justify="space-between" gap="16px">
+          <Flex
+            mt="0.5rem"
+            width="100%"
+            align="center"
+            justify="space-between"
+            gap="16px"
+          >
             {/* TITLE */}
             <Box minWidth={0} flex="1">
               <Box>

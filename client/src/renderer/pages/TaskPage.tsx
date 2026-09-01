@@ -73,7 +73,7 @@ const TaskPage = () => {
               fontSize="clamp(1.3rem, 1vw + 0.8rem, 1.4rem)"
               fontWeight="700"
               ml="1rem"
-              mt="0.7rem"
+              mt="1.3rem"
             >
               Taches
             </Text>
@@ -84,7 +84,7 @@ const TaskPage = () => {
               _hover={{ bg: "transparent" }}
               fontSize="1rem"
               position="relative"
-              top="0.5rem"
+              top="0.7rem"
               right="1rem"
               onClick={loadTasks}
             >
@@ -93,7 +93,7 @@ const TaskPage = () => {
           </HStack>
           <Text
             fontWeight="500"
-            fontSize="clamp(1rem, 1vw + 0.8rem, 1.1rem)"
+            fontSize="clamp(1rem, 1vw + 0.8rem, 1rem)"
             color="gray.500"
             position="relative"
             bottom="0.5rem"

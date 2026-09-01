@@ -204,6 +204,20 @@ contextBridge.exposeInMainWorld("electron", {
     ),
 },
 
+attendanceReports: {
+    savePdf: (date:string) =>
+      ipcRenderer.invoke(
+        "attendance-report:save-pdf",
+        date
+      ),
+
+    printPdf: (date:string) =>
+      ipcRenderer.invoke(
+        "attendance-report:print-pdf",
+        date
+      ),
+  },
+
   leave: {
     create: (
    leave:Partial<Leave>
@@ -576,17 +590,17 @@ payrollEmployeeProfiles: {
 payrollRun: {
 
   createPayrollDraft: (
-    admin: AdminUser,month:number,year:number
+    admin: AdminUser,year:number,month:number
   ) => {
     return ipcRenderer.invoke(
       "payroll:createDraft",
-      admin,month,year
+      admin,year,month
     );
   },
 
-  getPayrollRuns: () => {
+  getPayrollRuns: (year:number,month:number) => {
     return ipcRenderer.invoke(
-      "payroll:getRuns"
+      "payroll:getRuns",year,month
     );
   },
 

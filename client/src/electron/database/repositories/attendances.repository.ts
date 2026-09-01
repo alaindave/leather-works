@@ -522,6 +522,57 @@ export async function getAttendanceByDate(date: string): Promise<
   );
 }
 
+// Daily attendance report
+export async function getDailyAttendanceReport(date: string): Promise<
+  (Attendance & {
+    matricule?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    department?: string;
+  })[]
+> {
+  return all(
+    `
+    SELECT
+      e._id,
+      e.matricule,
+      e.firstName,
+      e.lastName,
+      e.role,
+      e.department,
+
+      a._id,
+      a.date,
+      a.clockIn,
+      a.clockOut,
+      a.status,
+      a.source,
+      a.lateMinutes,
+      a.notes,
+      a.serverVersion,
+      a.isDeleted,
+      a.createdAt,
+      a.updatedAt
+
+    FROM employees e
+
+    LEFT JOIN attendances a
+      ON a.employeeId = e._id
+      AND a.date = ?
+      AND COALESCE(a.isDeleted, 0) = 0
+
+    WHERE COALESCE(e.isDeleted, 0) = 0
+      AND e.status = 'ACTIF'
+
+    ORDER BY
+      e.lastName ASC,
+      e.firstName ASC
+    `,
+    [date]
+  );
+}
+
 /**
  * Get one attendance record for an employee on a specific date.
  *

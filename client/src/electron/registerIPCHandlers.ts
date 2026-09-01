@@ -1,7 +1,7 @@
 import { registerAppIPC } from "./ipc/app.ipc.js";
 import { registerAttendanceIPC } from "./ipc/attendances.ipc.js";
 import { registerAdminUsersIPC } from "./ipc/admin_users.ipc.js";
-import { registerAttendanceExportIPC } from "./ipc/attendances_export.ipc.js";
+import { registerAttendanceReportIPC } from "./ipc/attendance_report.ipc.js";
 import { registerAuthIPC } from "./ipc/auth.ipc.js";
 import { registerEmployeeIPC } from "./ipc/employees.ipc.js";
 import { registerEmployeeDocumentIPC } from "./ipc/employees_documents.ipc.js";
@@ -24,7 +24,7 @@ export function registerIPCHandlers() {
   registerEmployeeDocumentIPC();
   registerAttendanceIPC();
   registerAttendanceDailyCheckIPC();
-  registerAttendanceExportIPC();
+  registerAttendanceReportIPC();
   registerLeaveIPC();
   registerTaskIPC();
   registerTaskCommentIPC();

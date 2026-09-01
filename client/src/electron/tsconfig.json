@@ -9,6 +9,7 @@
     "outDir": "../../dist-electron",
     "rootDir": "../",
     "moduleResolution": "node16",
+    "jsx": "react-jsx",
     "skipLibCheck": true,
     "types": ["node"],
     "esModuleInterop": true,

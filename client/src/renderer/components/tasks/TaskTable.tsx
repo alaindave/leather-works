@@ -65,7 +65,6 @@ const TaskTable = ({
   };
 
   const filteredTasks = tasks.filter((task) => {
-    // const search = searchText.trim().toLowerCase();
     const search = searchText.replace(/[\s-]/g, "").toLowerCase();
 
     if (!search) {

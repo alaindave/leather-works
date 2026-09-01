@@ -31,14 +31,9 @@ export function registerPayrollGenerationIPC() {
     async (
       _,
       admin: Omit<User, "password" | "notes">,
-      month: number,
-      year: number
+      year: number,
+      month: number
     ) => {
-      // Current payroll period
-      // const date = new Date();
-      // const month = date.getMonth() + 1;
-      // const year = date.getFullYear();
-
       //  Fetch payroll settings
       const payrollSettings = await getPayrollSettings();
       if (!payrollSettings) {
@@ -81,7 +76,6 @@ export function registerPayrollGenerationIPC() {
       }
 
       // Calculate payroll
-
       const batch = await calculatePayrollsWithSummary(
         payrollInputsWithAttendance,
         admin,
@@ -89,7 +83,7 @@ export function registerPayrollGenerationIPC() {
       );
 
       // Create payroll run
-      const payrollRun = await createPayrollRun(batch, admin, month, year);
+      const payrollRun = await createPayrollRun(batch, admin, year, month);
 
       // Save payroll results
       await savePayrollResults(payrollRun._id, batch.results);
@@ -149,8 +143,8 @@ export function registerPayrollGenerationIPC() {
     }
   );
 
-  ipcMain.handle("payroll:getRuns", async () => {
-    return await getPayrollRuns();
+  ipcMain.handle("payroll:getRuns", async (_, year: number, month: number) => {
+    return await getPayrollRuns(year, month);
   });
 
   ipcMain.handle("payroll:getRunById", async (_, id: string) => {

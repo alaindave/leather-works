@@ -38,6 +38,9 @@ const NotAuthorized = ({
           bg={buttonClicked ? "red" : color}
           w={width}
           mt={4}
+          _hover={{
+            bg: "red",
+          }}
           leftIcon={
             <ChakraIcon
               as={icon}
@@ -49,7 +52,7 @@ const NotAuthorized = ({
           onClick={() => setButtonClicked((prev) => !prev)}
           fontSize="1.1rem"
         >
-          <Text position="relative" right="0.3rem" top="0.5rem">
+          <Text position="relative" right="0.3rem">
             {buttonText}
           </Text>
         </Button>

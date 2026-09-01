@@ -197,7 +197,6 @@ const ClockIn = ({
               >
                 <Badge
                   mr="0.3rem"
-                  mb="1rem"
                   bg={awayStatus === "CONGÉ" ? "#3182CE" : "#E53E3E"}
                   color="gray.200"
                   fontSize="14px"
@@ -228,7 +227,6 @@ const ClockIn = ({
         ) : (
           <Badge
             mr="0.3rem"
-            mb="1rem"
             bg={awayStatus === "CONGÉ" ? "#3182CE" : "#E53E3E"}
             color="gray.200"
             fontSize="0.9rem"
@@ -336,7 +334,6 @@ const ClockIn = ({
           ) : (
             <Editable
               position="relative"
-              bottom="0.5rem"
               value={draftClockIn ?? "_ _ _ _"}
               onChange={setDraftClockIn}
               submitOnBlur={false}

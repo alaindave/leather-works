@@ -113,9 +113,7 @@ export default function AddPayrollComponentModal({ type, onCreated }: Props) {
         spinnerPlacement="start"
         isDisabled={loading}
       >
-        <Text fontSize="1rem" marginLeft="0.7rem" marginTop="1rem">
-          Ajouter
-        </Text>
+        <Text fontSize="1rem">Ajouter</Text>
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} size="lg">

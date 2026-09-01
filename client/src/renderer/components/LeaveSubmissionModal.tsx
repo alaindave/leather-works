@@ -491,10 +491,7 @@ const LeaveSubmissionModal = ({
                   <Box>
                     <FaSave />
                   </Box>
-                  <Text position="relative" top="8px" fontSize="1rem">
-                    {" "}
-                    Soumettre
-                  </Text>
+                  <Text fontSize="1rem"> Soumettre</Text>
                 </HStack>
               </Button>
               <Button
@@ -511,12 +508,7 @@ const LeaveSubmissionModal = ({
                   <Box>
                     <RxCrossCircled color="#ffffff" size="18px" />
                   </Box>
-                  <Text
-                    color="#ffffff"
-                    position="relative"
-                    top="8px"
-                    fontSize="1rem"
-                  >
+                  <Text color="#ffffff" fontSize="1rem">
                     Annuler
                   </Text>
                 </HStack>

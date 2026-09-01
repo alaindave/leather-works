@@ -215,7 +215,7 @@ const SyncStatus = ({ onSync }: SyncStatusProps) => {
                   _hover={{ bg: "transparent" }}
                   fontSize="1rem"
                   position="relative"
-                  bottom="0.2rem"
+                  top="0.3rem"
                   right="1rem"
                   onClick={handleSync}
                 >
@@ -237,7 +237,7 @@ const SyncStatus = ({ onSync }: SyncStatusProps) => {
                 borderRadius="full"
                 px={2}
                 position="relative"
-                bottom="0.2rem"
+                top="0.3rem"
               >
                 {pendingChanges}
               </Badge>
@@ -245,25 +245,18 @@ const SyncStatus = ({ onSync }: SyncStatusProps) => {
 
             {/* LAST SYNC */}
             <HStack justify="space-between">
-              <Box position="relative" bottom="1rem" fontSize="1.2rem">
+              <Box position="relative" fontSize="1.2rem">
                 <PiClockClockwiseBold />
               </Box>
               <Text
                 position="relative"
                 right="0.5rem"
-                bottom="0.5rem"
                 fontSize="0.9rem"
                 color="gray.700"
               >
                 Dernière synchronisation
               </Text>
-              <Text
-                position="relative"
-                bottom="0.5rem"
-                fontSize="0.85rem"
-                fontWeight="600"
-                color="gray.600"
-              >
+              <Text fontSize="0.85rem" fontWeight="600" color="gray.600">
                 {formatLastSync()}
               </Text>
             </HStack>

@@ -159,7 +159,7 @@ export default function PayrollComponentList({ type, showTaxable }: Props) {
           </Text>
         </Box>
 
-        <Flex gap={3}>
+        <Flex gap={3} mr="1rem">
           <AddPayrollComponentModal type={type} onCreated={loadComponents} />
 
           <Button colorScheme="yellow" onClick={save}>
@@ -171,6 +171,9 @@ export default function PayrollComponentList({ type, showTaxable }: Props) {
       {/* Table */}
       <TableContainer
         height="100%"
+        width="78vw"
+        ml="1rem"
+        mt="1.5rem"
         overflowY="auto"
         border="1px solid"
         borderColor="gray.200"

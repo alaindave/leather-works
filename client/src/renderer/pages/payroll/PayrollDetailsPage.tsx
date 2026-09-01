@@ -182,7 +182,7 @@ const PayrollDetailsPage = () => {
             <Box mt="1rem">
               <MdOutlineChevronRight fontSize="1.3rem" />
             </Box>
-            <Text mt="0.9rem" color="gray.600">
+            <Text mt="1rem" color="gray.600">
               Periode du{" "}
               {payrollRun?.month && payrollRun?.year
                 ? getPayrollPeriod(payrollRun.month, payrollRun.year)
@@ -197,6 +197,7 @@ const PayrollDetailsPage = () => {
                     width="10rem"
                     bg="#ffffff"
                     border="1px solid gray"
+                    mt="1rem"
                   >
                     <Box color="red.400" fontSize="1.2rem" mr="0.7rem">
                       <MdOutlineCancel />
@@ -210,6 +211,7 @@ const PayrollDetailsPage = () => {
                         width="10rem"
                         bg="#ffffff"
                         border="1px solid gray"
+                        mt="1rem"
                       >
                         <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
                           <GiConfirmed />
@@ -224,6 +226,7 @@ const PayrollDetailsPage = () => {
                         width="10rem"
                         bg="#ffffff"
                         border="1px solid gray"
+                        mt="1rem"
                       >
                         <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
                           <GiConfirmed />
@@ -237,6 +240,7 @@ const PayrollDetailsPage = () => {
                       width="10rem"
                       bg="#ffffff"
                       border="1px solid gray"
+                      mt="1rem"
                     >
                       <Box color="green.600" fontSize="1.2rem" mr="0.7rem">
                         <GiConfirmed />
