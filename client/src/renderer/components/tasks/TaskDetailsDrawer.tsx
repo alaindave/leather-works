@@ -598,7 +598,7 @@ export default function TaskDetailsDrawer({
                         fontWeight="bold"
                         mb={2}
                         fontSize={{
-                          base: "0.9rem",
+                          base: "1rem",
                           md: "1rem",
                         }}
                       >
@@ -680,8 +680,8 @@ export default function TaskDetailsDrawer({
                           <Text
                             fontWeight="semibold"
                             fontSize={{
-                              base: "0.9rem",
-                              md: "0.95rem",
+                              base: "1.1rem",
+                              md: "1.1rem",
                             }}
                             color="gray.800"
                             wordBreak="break-word"
@@ -715,8 +715,8 @@ export default function TaskDetailsDrawer({
                           mt={2}
                           fontFamily="mono"
                           fontSize={{
-                            base: "0.8rem",
-                            md: "0.9rem",
+                            base: "1rem",
+                            md: "1rem",
                           }}
                           color="gray.700"
                           whiteSpace="pre-wrap"

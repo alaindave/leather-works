@@ -368,7 +368,10 @@ const EmployeeAttendancePage = () => {
       const result = await window.electron.attendanceReports.savePdf(
         selectedDate
       );
-      console.log("DOWNLOAD RESULTS FOR ", result);
+      if (result.canceled) {
+        return;
+      }
+      console.log("DOWNLOAD RESULTS: ", result);
     } catch (e) {
       console.error(
         "AN ERROR OCCURED WHILE DOWNLOADING THE ATTENDANCE REPORT ",

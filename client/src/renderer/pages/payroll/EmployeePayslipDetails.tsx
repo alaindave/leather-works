@@ -42,11 +42,11 @@ import PayslipItemDisplay from "../../components/payroll/PayslipItemDisplay";
 import { usePayrollSettings } from "../../hooks/payroll_settings.hook";
 import { formatCurrency } from "../../util/currencyFormatter";
 import { getPayrollPeriod } from "../../util/getPayrollPeriod";
+import useSyncStore from "../../../store/sync.store";
 
 const EmployeePayslipDetails = () => {
   const { _id: employeeId, payslipId } = useParams();
   const navigate = useNavigate();
-  const [photo_url, setPhotoUrl] = useState("");
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [payrollResults, setPayrollResults] = useState<PayrollResult | null>(
     {} as PayrollResult
@@ -64,6 +64,7 @@ const EmployeePayslipDetails = () => {
     (total, item) => total + item.amount,
     0
   );
+  const syncVersion = useSyncStore((store) => store.syncVersion);
   const payrollSettings = usePayrollSettings();
   const currency = payrollSettings?.currency ?? "BIF";
   const statusColor = {
@@ -83,9 +84,8 @@ const EmployeePayslipDetails = () => {
 
   useEffect(() => {
     loadEmployee();
-    loadEmployeePhoto();
     loadPayroll();
-  }, [employee?.photo_path]);
+  }, [employee?.photo_path, syncVersion]);
 
   const loadEmployee = async () => {
     if (!employeeId) return;
@@ -97,14 +97,6 @@ const EmployeePayslipDetails = () => {
     } catch (e) {
       console.error("AN ERROR OCCURED WHILE FETCHING THE EMPLOYEE", e);
     }
-  };
-
-  const loadEmployeePhoto = async () => {
-    if (!employee?.photo_path) return;
-    const base64 = await window.electron.employees.getPhotoUrl(
-      employee.photo_path
-    );
-    setPhotoUrl(`data:image/jpeg;base64,${base64}`);
   };
 
   const loadPayroll = async () => {
@@ -174,7 +166,7 @@ const EmployeePayslipDetails = () => {
         <VStack>
           {/* Creation date */}
           {payrollResults?.status === "BROUILLON" ? (
-            <HStack>
+            <HStack mr="2rem">
               <Box>
                 <HStack>
                   <Text fontWeight="600">

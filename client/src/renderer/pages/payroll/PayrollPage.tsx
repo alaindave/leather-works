@@ -341,12 +341,12 @@ export default function PayrollPage() {
             </Text>
           ) : (
             <Box mb="2rem" ml="2rem">
-              <Box mb="0.3rem">
+              <Box mb="0.7rem">
                 <PayrollStatusFilter onFilterClicked={setStatusFilter} />
               </Box>
               <TableContainer
                 maxW="70vw"
-                maxH="70vh"
+                maxH="50vh"
                 borderWidth="1px"
                 borderRadius="lg"
                 overflowY="auto"

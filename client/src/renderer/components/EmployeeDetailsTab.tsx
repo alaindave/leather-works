@@ -410,7 +410,6 @@ const EmployeeDetailsTab = ({ employee, refreshEmployee }: Props) => {
               color="red.600"
               width="9rem"
               height="2.3rem"
-              onClick={onOpen}
               fontSize="1rem"
               leftIcon={<FaRegTrashCan fontSize="1.1rem" />}
             >

@@ -208,7 +208,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                 >
                   <FaUserEdit color="#F2B705" size="2.3rem" />
                 </Flex>
-                <VStack position="relative" top="0.7rem" right="3rem">
+                <VStack position="relative" right="3rem">
                   <Text position="relative" top="0.5rem" fontSize="1.7rem">
                     {" "}
                     Modification
@@ -218,14 +218,13 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                     fontSize="15px"
                     position="relative"
                     left="4rem"
-                    bottom="20px"
+                    bottom="0.4rem"
                   >
                     Modifiez les informations de l'employé
                   </Text>
                 </VStack>
               </HStack>
             </ModalHeader>
-            <ModalCloseButton />
             <ModalBody marginLeft={4}>
               <HStack
                 spacing="0.8rem"
@@ -661,9 +660,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                       <Box>
                         <FaSave />
                       </Box>
-                      <Text position="relative" top="8px" fontSize="1rem">
-                        Modifier
-                      </Text>
+                      <Text fontSize="1rem">Modifier</Text>
                     </HStack>
                   </Button>
                   <Button
@@ -679,12 +676,7 @@ const UpdateEmployee = ({ _id, employee, onUpdated }: Props) => {
                       <Box>
                         <RxCrossCircled color="#ffffff" size="18px" />
                       </Box>
-                      <Text
-                        color="#ffffff"
-                        position="relative"
-                        top="8px"
-                        fontSize="1rem"
-                      >
+                      <Text color="#ffffff" fontSize="1rem">
                         Fermer
                       </Text>
                     </HStack>
