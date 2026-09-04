@@ -5,6 +5,7 @@ import Attendance from "../models/attendance.model.js";
 import { getNextSyncVersion } from "../utils/syncVersion.js";
 
 export async function markAbsentEmployees(
+  companyId?: string,
   date: string = new Date().toISOString().split("T")[0]
 ) {
   const now = new Date(date);
@@ -19,6 +20,7 @@ export async function markAbsentEmployees(
   const CURRENT_TIMESTAMP = new Date();
 
   const employees = await Employee.find({
+    companyId,
     status: "ACTIF",
     isDeleted: 0,
   }).lean();
@@ -27,6 +29,7 @@ export async function markAbsentEmployees(
 
   if (employees.length === 0) {
     return {
+      companyId,
       date,
       totalEmployees: 0,
       created: 0,
@@ -37,6 +40,7 @@ export async function markAbsentEmployees(
   const employeeIds = employees.map((employee) => employee._id);
 
   const existingAttendances = await Attendance.find({
+    companyId,
     employeeId: { $in: employeeIds },
     date,
   })
@@ -56,6 +60,7 @@ export async function markAbsentEmployees(
    */
   if (employeesToMarkAbsent.length === 0) {
     return {
+      companyId,
       date,
       totalEmployees: employees.length,
       created: 0,
@@ -79,27 +84,24 @@ export async function markAbsentEmployees(
     operations.push({
       updateOne: {
         filter: {
+          companyId,
           employeeId: employee._id,
           date,
         },
 
         update: {
           $setOnInsert: {
+            companyId,
             _id: randomUUID(),
-
             employeeId: employee._id,
             date,
-
             status: "ABSENT" as const,
             source: "AUTO_SERVER" as const,
-
             createdAt: CURRENT_TIMESTAMP,
             updatedAt: CURRENT_TIMESTAMP,
-
             serverVersion,
           },
         },
-
         upsert: true,
       },
     });
@@ -111,6 +113,7 @@ export async function markAbsentEmployees(
   const alreadyExists = employees.length - created;
 
   console.log("MARKED ABSENT EMPLOYEES:", {
+    companyId,
     date,
     totalEmployees: employees.length,
     created,
@@ -118,6 +121,7 @@ export async function markAbsentEmployees(
   });
 
   return {
+    companyId,
     date,
     totalEmployees: employees.length,
     created,

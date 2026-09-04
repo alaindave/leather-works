@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
 export interface LeaveDocument {
+  companyId: string;
   _id: string;
   employeeId: string;
   submittedAt: Date;
@@ -18,6 +19,11 @@ export interface LeaveDocument {
 
 const leaveSchema = new Schema<LeaveDocument>(
   {
+    companyId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     _id: {
       type: String,
       required: true,
@@ -82,8 +88,9 @@ const leaveSchema = new Schema<LeaveDocument>(
     },
     isDeleted: {
       type: Number,
-      default: 0,
       required: true,
+      default: 0,
+      enum: [0, 1],
     },
   },
   {

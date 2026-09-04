@@ -1,4 +1,5 @@
 export default interface TaskComment {
+  companyId: string;
   _id: string;
   taskId: string;
   author: string;

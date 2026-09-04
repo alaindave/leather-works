@@ -1,8 +1,8 @@
 import { BrowserWindow } from "electron";
-import { SyncQueueItem } from "../../../common/types/sync.js";
+import { SyncQueueItem } from "../../../common/types/Sync.js";
 import { all, run } from "../db.js";
 
-async function notifyPendingChanges(): Promise<void> {
+export async function notifyPendingChanges(): Promise<void> {
   try {
     const pendingItems = await getUnsyncedItems();
     const pendingChanges = pendingItems.length;

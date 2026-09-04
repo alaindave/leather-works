@@ -14,39 +14,51 @@ import Leave from "../../common/types/Leave.js";
 
 export function registerLeaveIPC() {
   console.log("REGISTERING LEAVES IPC");
+
   ipcMain.handle("leave:create", async (_, leave: Partial<Leave>) => {
     console.log("LEAVE IPC RECEIVED FOR EMPLOYEE:", leave.employeeId);
+
     return createLeave(leave);
   });
 
   ipcMain.handle(
     "leave:getLeaveByEmployeeId",
-    async (_, employeeId: string) => {
-      return getLeaveByEmployeeId(employeeId);
+    async (_, companyId: string, employeeId: string) => {
+      return getLeaveByEmployeeId(companyId, employeeId);
     }
   );
 
-  ipcMain.handle("leave:getLeaveById", async (_, _id: string) => {
-    return getLeaveById(_id);
-  });
+  ipcMain.handle(
+    "leave:getLeaveById",
+    async (_, companyId: string, _id: string) => {
+      return getLeaveById(companyId, _id);
+    }
+  );
 
-  ipcMain.handle("leave:getOnGoing", async (_, date: string) => {
-    return getOngoingLeaves(date);
-  });
+  ipcMain.handle(
+    "leave:getOnGoing",
+    async (_, companyId: string, date: string) => {
+      return getOngoingLeaves(companyId, date);
+    }
+  );
 
-  ipcMain.handle("leave:getLeaveByMonth", async (_, month: string) => {
-    return getLeaveByMonth(month);
-  });
+  ipcMain.handle(
+    "leave:getLeaveByMonth",
+    async (_, companyId: string, month: string) => {
+      return getLeaveByMonth(companyId, month);
+    }
+  );
 
-  ipcMain.handle("leave:cancel", async (_, _id: string) => {
-    return cancelLeave(_id);
+  ipcMain.handle("leave:cancel", async (_, companyId: string, _id: string) => {
+    return cancelLeave(companyId, _id);
   });
 
   ipcMain.handle(
     "leave:update",
     async (
       _,
-      _id,
+      companyId: string,
+      _id: string,
       updates: {
         subject?: string;
         notes?: string;
@@ -55,11 +67,11 @@ export function registerLeaveIPC() {
         status?: string;
       }
     ) => {
-      return updateLeave(_id, updates);
+      return updateLeave(companyId, _id, updates);
     }
   );
 
-  ipcMain.handle("leave:delete", async (_, _id: string) => {
-    return deleteLeave(_id);
+  ipcMain.handle("leave:delete", async (_, companyId: string, _id: string) => {
+    return deleteLeave(companyId, _id);
   });
 }

@@ -1,4 +1,4 @@
-import Attendance from "../../../common/types/Attendance.js";
+import { Attendance } from "../../../common/types/Attendance.js";
 import {
   VerifyAttendanceDailyCheckInput,
   VerifyDailyAttendanceResult,
@@ -27,7 +27,10 @@ export async function verifyDailyAttendance(
   /*
    * 1. Get the daily check.
    */
-  const check = await getAttendanceDailyCheckByDate(input.date);
+  const check = await getAttendanceDailyCheckByDate(
+    input.companyId,
+    input.date
+  );
 
   if (!check) {
     throw new Error(
@@ -80,7 +83,7 @@ export async function verifyDailyAttendance(
   /*
    * 5. Get all active employees.
    */
-  const employees = await getAllEmployees();
+  const employees = await getAllEmployees(input.companyId);
 
   const activeEmployees = employees.filter(
     (employee) => employee.status === "ACTIF" && employee.isDeleted === 0
@@ -89,7 +92,10 @@ export async function verifyDailyAttendance(
   /*
    * 6. Get all attendance records for the date.
    */
-  const attendances: Attendance[] = await getAttendanceByDate(input.date);
+  const attendances: Attendance[] = await getAttendanceByDate(
+    input.companyId,
+    input.date
+  );
 
   /*
    * 7. Build a set of employees who have attendance records.
@@ -166,6 +172,7 @@ export async function verifyDailyAttendance(
    * transition from OPEN → VERIFIED.
    */
   const verified = await verifyAttendanceDailyCheck({
+    companyId: input.companyId,
     date: input.date,
     verifiedBy: input.verifiedBy,
   });
@@ -174,6 +181,7 @@ export async function verifyDailyAttendance(
    * 11. Return verification information to the caller.
    */
   return {
+    companyId: input.companyId,
     success: true,
     date: input.date,
     checkId: verified._id,

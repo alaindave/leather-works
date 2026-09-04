@@ -23,6 +23,7 @@ import {
 import { createSocket } from "./socket.js";
 import { ensureStorageDirectories } from "./storage/directories.js";
 import { isDev } from "./util/env.util.js";
+import { getCompanyId } from "./database/repositories/companies.repository.js";
 
 /* =========================================================
    PATHS
@@ -290,24 +291,23 @@ async function createMainWindow(): Promise<BrowserWindow> {
 
 async function initializeAppDatabase(): Promise<void> {
   console.log("INITIALIZING DATABASE...");
-
   await initializeDatabase();
-
   console.log("DATABASE INITIALIZED.");
 
   /*
    * Payroll maintenance.
    */
+  const companyId = await getCompanyId();
 
-  console.log("REMOVING DELETED PAYROLL COMPONENTS...");
-
-  await removeDeletedPayrollComponentsFromEmployeeProfiles();
-
-  console.log("INITIALIZING EMPLOYEE PAYROLL PROFILES...");
-
-  await initializeEmployeePayrollProfiles();
-
-  console.log("PAYROLL INITIALIZATION COMPLETE.");
+  if (companyId) {
+    console.log("REMOVING DELETED PAYROLL COMPONENTS...");
+    await removeDeletedPayrollComponentsFromEmployeeProfiles(companyId);
+    console.log("INITIALIZING EMPLOYEE PAYROLL PROFILES...");
+    await initializeEmployeePayrollProfiles(companyId);
+    console.log("PAYROLL INITIALIZATION COMPLETE.");
+  } else {
+    console.log("PAYROLL INITIALIZATION CANCELLED.NO COMPANY ID PROVIDED.");
+  }
 }
 
 /* =========================================================
@@ -340,16 +340,12 @@ function initializeIPC(): void {
 
 async function initializeAttendance(): Promise<void> {
   console.log("PROCESSING TODAY'S APPROVED LEAVES...");
-
+  const companyId = await getCompanyId();
+  if (!companyId) return;
   try {
-    const result = await markEmployeesOnLeave();
-
+    const result = await markEmployeesOnLeave(companyId);
     console.log("MARK EMPLOYEES ON LEAVE RESULT:", result);
   } catch (error) {
-    /*
-     * Attendance preparation should not
-     * prevent the application from starting.
-     */
     console.error("FAILED TO PROCESS EMPLOYEES ON LEAVE:", error);
   }
 }

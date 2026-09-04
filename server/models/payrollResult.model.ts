@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 import { PayrollItemDocument } from "./payrollItem.model.js";
 
 export interface PayrollResultDocument {
+  companyId: string;
   _id: string;
   payrollRunId: string;
   employeeId: string;
@@ -31,6 +32,11 @@ export interface PayrollResultDocument {
 
 const PayrollResultSchema = new Schema<PayrollResultDocument>(
   {
+    companyId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     _id: {
       type: String,
       required: true,

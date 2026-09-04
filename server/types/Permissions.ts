@@ -1,0 +1,26 @@
+export interface RoleDefinition {
+  name: string;
+  permissions: Permission[];
+}
+
+export type Permission =
+  | "employees.read"
+  | "employees.write"
+  | "attendance.read"
+  | "attendance.write"
+  | "leave.read"
+  | "leave.write"
+  | "payroll.read"
+  | "payroll.write"
+  | "payroll.approve"
+  | "payroll.pay"
+  | "inventory.read"
+  | "inventory.write"
+  | "production.read"
+  | "production.write"
+  | "accounting.read"
+  | "accounting.write"
+  | "users.read"
+  | "users.write"
+  | "settings.read"
+  | "settings.write";

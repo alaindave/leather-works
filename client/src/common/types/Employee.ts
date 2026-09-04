@@ -1,4 +1,5 @@
 export default interface Employee {
+  companyId: string;
   _id: string;
   firstName: string;
   lastName: string;

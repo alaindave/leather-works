@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface PayrollSettings extends Document {
+  companyId: string;
   _id: string;
   currency: string;
   workingDays: number;
@@ -13,6 +14,11 @@ export interface PayrollSettings extends Document {
 }
 
 const PayrollSettingsSchema = new Schema<PayrollSettings>({
+  companyId: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   _id: {
     type: String,
     required: true,

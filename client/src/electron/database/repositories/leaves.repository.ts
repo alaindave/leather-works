@@ -5,7 +5,11 @@ import { getEmployeeById } from "./employees.repository.js";
 import { addToSyncQueue } from "./sync.repository.js";
 
 export async function createLeave(leave: Partial<Leave>) {
-  const employee = await getEmployeeById(leave.employeeId!);
+  if (!leave.companyId) {
+    throw new Error("COMPANY ID IS REQUIRED");
+  }
+
+  const employee = await getEmployeeById(leave.companyId, leave.employeeId!);
 
   if (!employee) {
     throw new Error("No employee found with the given ID");
@@ -34,6 +38,7 @@ export async function createLeave(leave: Partial<Leave>) {
   await run(
     `
     INSERT INTO leaves (
+      companyId,
       _id,
       employeeId,
       submittedAt,
@@ -49,9 +54,10 @@ export async function createLeave(leave: Partial<Leave>) {
       createdAt,
       updatedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
     `,
     [
+      leave.companyId,
       _id,
       leave.employeeId,
       submittedAt,
@@ -68,6 +74,7 @@ export async function createLeave(leave: Partial<Leave>) {
   );
 
   const savedLeave = {
+    companyId: leave.companyId,
     _id,
     ...leave,
     employeeId: leave.employeeId,
@@ -83,21 +90,24 @@ export async function createLeave(leave: Partial<Leave>) {
   console.log("LEAVE TO SAVE TO SYNC QUEUE", savedLeave);
 
   await addToSyncQueue({
+    companyId: leave.companyId,
     entity: "leave",
     entityId: _id,
     operation: "create",
     payload: JSON.stringify(savedLeave),
   });
 
-  return getLeaveById(_id);
+  return getLeaveById(leave.companyId, _id);
 }
 
 export async function getLeaveById(
+  companyId: string,
   _id: string
 ): Promise<Leave | undefined | null> {
   return get(
     `
     SELECT
+      l.companyId,
       l._id,
       l.employeeId,
       l.submittedAt,
@@ -118,56 +128,71 @@ export async function getLeaveById(
       e.remainingLeave
     FROM leaves l
     JOIN employees e
-      ON l.employeeId = e._id
-    WHERE l._id = ?
+      ON l.companyId = e.companyId
+      AND l.employeeId = e._id
+    WHERE l.companyId = ?
+      AND l._id = ?
       AND l.isDeleted = 0
       AND e.isDeleted = 0
     ORDER BY l.submittedAt ASC
     `,
-    [_id]
+    [companyId, _id]
   );
 }
 
-export async function getAllLeave() {
-  return all(`
-    SELECT *
-    FROM leaves
-    WHERE isDeleted = 0
-    ORDER BY submittedAt DESC
-  `);
-}
-
-export async function getLeaveByEmployeeId(employeeId: string) {
+export async function getAllLeave(companyId: string) {
   return all(
     `
     SELECT *
     FROM leaves
-    WHERE employeeId = ?
+    WHERE companyId = ?
       AND isDeleted = 0
     ORDER BY submittedAt DESC
     `,
-    [employeeId]
+    [companyId]
   );
 }
 
-export async function getOngoingLeaves(date: string): Promise<Leave[]> {
+export async function getLeaveByEmployeeId(
+  companyId: string,
+  employeeId: string
+): Promise<Leave[]> {
+  return all<Leave>(
+    `
+    SELECT *
+    FROM leaves
+    WHERE companyId = ?
+      AND employeeId = ?
+      AND isDeleted = 0
+    ORDER BY submittedAt DESC
+    `,
+    [companyId, employeeId]
+  );
+}
+
+export async function getOngoingLeaves(
+  companyId: string,
+  date: string
+): Promise<Leave[]> {
   return all(
     `
     SELECT *
     FROM leaves
-    WHERE startDate <= date(?)
+    WHERE companyId = ?
+      AND startDate <= date(?)
       AND endDate >= date(?)
       AND status = 'APPROUVÉ'
       AND isDeleted = 0
     `,
-    [date, date]
+    [companyId, date, date]
   );
 }
 
-export async function getLeaveByMonth(month: string) {
+export async function getLeaveByMonth(companyId: string, month: string) {
   return all(
     `
     SELECT
+      l.companyId,
       l._id,
       l.employeeId,
       l.submittedAt,
@@ -180,6 +205,7 @@ export async function getLeaveByMonth(month: string) {
       l.serverVersion,
       l.createdAt,
       l.updatedAt,
+      l.isDeleted,
       e.firstName,
       e.lastName,
       e.department,
@@ -187,30 +213,33 @@ export async function getLeaveByMonth(month: string) {
       e.remainingLeave
     FROM leaves l
     JOIN employees e
-      ON l.employeeId = e._id
-    WHERE l.submittedMonth = ?
+      ON l.companyId = e.companyId
+      AND l.employeeId = e._id
+    WHERE l.companyId = ?
+      AND l.submittedMonth = ?
       AND l.isDeleted = 0
       AND e.isDeleted = 0
     ORDER BY l.submittedAt ASC
     `,
-    [month]
+    [companyId, month]
   );
 }
 
-export async function getLeaveRecord(employeeId: string) {
+export async function getLeaveRecord(companyId: string, employeeId: string) {
   return get(
     `
     SELECT *
     FROM leaves
-    WHERE employeeId = ?
+    WHERE companyId = ?
+      AND employeeId = ?
       AND isDeleted = 0
     `,
-    [employeeId]
+    [companyId, employeeId]
   );
 }
 
-export async function cancelLeave(_id: string) {
-  const leave = await getLeaveById(_id);
+export async function cancelLeave(companyId: string, _id: string) {
+  const leave = await getLeaveById(companyId, _id);
 
   if (!leave) {
     throw new Error("LEAVE NOT FOUND");
@@ -234,18 +263,21 @@ export async function cancelLeave(_id: string) {
         synced = 0,
         updatedAt = ?
       WHERE _id = ?
+        AND companyId = ?
         AND isDeleted = 0
       `,
-      [updatedAt, _id]
+      [updatedAt, _id, companyId]
     );
 
-    const updatedLeave = await getLeaveById(_id);
+    const updatedLeave = await getLeaveById(companyId, _id);
 
     await addToSyncQueue({
+      companyId,
       entity: "leave",
       entityId: _id,
       operation: "update",
       payload: JSON.stringify({
+        companyId,
         _id,
         employeeId: leave.employeeId,
         status: "ANNULÉ",
@@ -276,7 +308,7 @@ export async function cancelLeave(_id: string) {
     throw new Error("INVALID LEAVE PERIOD");
   }
 
-  const employee = await getEmployeeById(leave.employeeId);
+  const employee = await getEmployeeById(companyId, leave.employeeId);
 
   if (!employee) {
     throw new Error("EMPLOYEE NOT FOUND");
@@ -295,9 +327,10 @@ export async function cancelLeave(_id: string) {
       updatedAt = ?,
       synced = 0
     WHERE _id = ?
+      AND companyId = ?
       AND isDeleted = 0
     `,
-    [leaveDays, updatedAt, leave.employeeId]
+    [leaveDays, updatedAt, leave.employeeId, companyId]
   );
 
   /*
@@ -311,9 +344,10 @@ export async function cancelLeave(_id: string) {
       synced = 0,
       updatedAt = ?
     WHERE _id = ?
+      AND companyId = ?
       AND isDeleted = 0
     `,
-    [updatedAt, _id]
+    [updatedAt, _id, companyId]
   );
 
   /*
@@ -323,10 +357,12 @@ export async function cancelLeave(_id: string) {
    * The server will assign the next version when pushed.
    */
   await addToSyncQueue({
+    companyId,
     entity: "leave",
     entityId: _id,
     operation: "update",
     payload: JSON.stringify({
+      companyId,
       _id,
       employeeId: leave.employeeId,
       status: "ANNULÉ",
@@ -338,14 +374,16 @@ export async function cancelLeave(_id: string) {
   /*
    * Queue employee balance update separately.
    */
-  const updatedEmployee = await getEmployeeById(leave.employeeId);
+  const updatedEmployee = await getEmployeeById(companyId, leave.employeeId);
 
   if (updatedEmployee) {
     await addToSyncQueue({
+      companyId,
       entity: "employee",
       entityId: leave.employeeId,
       operation: "update",
       payload: JSON.stringify({
+        companyId,
         _id: leave.employeeId,
         remainingLeave: updatedEmployee.remainingLeave,
         updatedAt,
@@ -354,10 +392,11 @@ export async function cancelLeave(_id: string) {
     });
   }
 
-  return getLeaveById(_id);
+  return getLeaveById(companyId, _id);
 }
 
 export async function updateLeave(
+  companyId: string,
   _id: string,
   updates: {
     subject?: string;
@@ -367,7 +406,7 @@ export async function updateLeave(
     status?: string;
   }
 ) {
-  const existing = await getLeaveById(_id);
+  const existing = await getLeaveById(companyId, _id);
 
   if (!existing) {
     throw new Error("LEAVE NOT FOUND");
@@ -416,12 +455,14 @@ export async function updateLeave(
   fields.push("updatedAt = datetime('now')");
 
   values.push(_id);
+  values.push(companyId);
 
   await run(
     `
     UPDATE leaves
     SET ${fields.join(", ")}
     WHERE _id = ?
+      AND companyId = ?
       AND isDeleted = 0
     `,
     values
@@ -430,6 +471,7 @@ export async function updateLeave(
   const updatedAt = new Date().toISOString();
 
   const savedUpdates = {
+    companyId,
     _id,
     employeeId: existing.employeeId,
     ...updates,
@@ -440,17 +482,18 @@ export async function updateLeave(
   console.log("LEAVE TO SAVE TO SYNC QUEUE", savedUpdates);
 
   await addToSyncQueue({
+    companyId,
     entity: "leave",
     entityId: _id,
     operation: "update",
     payload: JSON.stringify(savedUpdates),
   });
 
-  return getLeaveById(_id);
+  return getLeaveById(companyId, _id);
 }
 
-export async function deleteLeave(_id: string) {
-  const existing = await getLeaveById(_id);
+export async function deleteLeave(companyId: string, _id: string) {
+  const existing = await getLeaveById(companyId, _id);
 
   if (!existing) {
     throw new Error("LEAVE NOT FOUND");
@@ -466,11 +509,13 @@ export async function deleteLeave(_id: string) {
       synced = 0,
       updatedAt = ?
     WHERE _id = ?
+      AND companyId = ?
     `,
-    [now, _id]
+    [now, _id, companyId]
   );
 
   const deletedLeave = {
+    companyId,
     _id,
     employeeId: existing.employeeId,
     serverVersion: existing.serverVersion ?? 0,
@@ -482,20 +527,32 @@ export async function deleteLeave(_id: string) {
   console.log("LEAVE TO DELETE FROM SYNC QUEUE", deletedLeave);
 
   await addToSyncQueue({
+    companyId,
     entity: "leave",
     entityId: _id,
     operation: "delete",
     payload: JSON.stringify(deletedLeave),
   });
 
-  return getLeaveById(_id);
+  /*
+   * The record is now soft-deleted, so getLeaveById()
+   * intentionally won't return it.
+   */
+  return deletedLeave;
 }
 
 export async function upsertLeave(leave: Leave) {
+  if (!leave.companyId) {
+    throw new Error("COMPANY ID IS REQUIRED");
+  }
+
   /*
-   * Find the local record by ID.
+   * Find the local record by ID, including deleted records.
+   *
+   * This is important for sync because a deleted local record
+   * must not be treated as completely missing.
    */
-  const local = await getLeaveById(leave._id);
+  const local = await getLeaveByIdIncludingDeleted(leave.companyId, leave._id);
 
   console.log("PULLED LEAVE TO SYNC:", leave);
 
@@ -513,6 +570,7 @@ export async function upsertLeave(leave: Leave) {
    */
   if (local) {
     const localVersion = Number(local.serverVersion ?? 0);
+
     const remoteVersion = Number(leave.serverVersion ?? 0);
 
     if (remoteVersion <= localVersion) {
@@ -531,6 +589,7 @@ export async function upsertLeave(leave: Leave) {
   await run(
     `
     INSERT INTO leaves (
+      companyId,
       _id,
       employeeId,
       submittedAt,
@@ -546,7 +605,7 @@ export async function upsertLeave(leave: Leave) {
       updatedAt,
       synced
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
     ON CONFLICT(_id)
     DO UPDATE SET
       employeeId = excluded.employeeId,
@@ -564,6 +623,7 @@ export async function upsertLeave(leave: Leave) {
       synced = 1
     `,
     [
+      leave.companyId,
       leave._id,
       leave.employeeId,
       leave.submittedAt,
@@ -580,19 +640,58 @@ export async function upsertLeave(leave: Leave) {
     ]
   );
 
-  return getLeaveById(leave._id);
+  return getLeaveByIdIncludingDeleted(leave.companyId, leave._id);
 }
 
-export async function markLeaveSynced(_id: string) {
+export async function markLeaveSynced(companyId: string, _id: string) {
   await run(
     `
     UPDATE leaves
     SET
       synced = 1
     WHERE _id = ?
+      AND companyId = ?
     `,
-    [_id]
+    [_id, companyId]
   );
 
   return true;
+}
+
+/**
+ * Used internally by sync.
+ *
+ * Unlike getLeaveById(), this does NOT filter isDeleted.
+ *
+ * This is necessary because a server tombstone must be
+ * recognized during synchronization.
+ */
+async function getLeaveByIdIncludingDeleted(
+  companyId: string,
+  _id: string
+): Promise<Leave | undefined | null> {
+  return get<Leave>(
+    `
+    SELECT
+      l.companyId,
+      l._id,
+      l.employeeId,
+      l.submittedAt,
+      l.submittedMonth,
+      l.startDate,
+      l.endDate,
+      l.subject,
+      l.notes,
+      l.status,
+      l.serverVersion,
+      l.createdAt,
+      l.updatedAt,
+      l.isDeleted
+    FROM leaves l
+    WHERE l.companyId = ?
+      AND l._id = ?
+    LIMIT 1
+    `,
+    [companyId, _id]
+  );
 }

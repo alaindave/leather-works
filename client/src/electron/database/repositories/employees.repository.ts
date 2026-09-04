@@ -5,16 +5,18 @@ import { addToSyncQueue } from "./sync.repository.js";
 import { initializeEmployeePayrollProfilesForEmployee } from "../../services/payroll/payrollProfile.service.js";
 
 /*
- *
  * ============================================================
  * CREATE EMPLOYEE
  * ============================================================
  *
+ *
  */
 export async function createEmployee(
+  companyId: string,
   employee: Omit<
     Employee,
     | "_id"
+    | "companyId"
     | "synced"
     | "isDeleted"
     | "createdAt"
@@ -31,6 +33,7 @@ export async function createEmployee(
   await run(
     `
     INSERT INTO employees (
+      companyId,
       _id,
       firstName,
       lastName,
@@ -55,11 +58,12 @@ export async function createEmployee(
       isDeleted
     )
     VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-      ?,?,?,?,0,0
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+      ?,?,?,0,0
     )
     `,
     [
+      companyId,
       _id,
       employee.firstName,
       employee.lastName,
@@ -83,28 +87,31 @@ export async function createEmployee(
     ]
   );
 
-  await initializeEmployeePayrollProfilesForEmployee(_id);
+  await initializeEmployeePayrollProfilesForEmployee(companyId, _id);
 
-  const savedEmployee = {
+  const savedEmployee: Employee = {
     _id,
+    companyId,
     ...employee,
     createdAt: time,
     updatedAt: time,
     serverVersion,
     synced: 0,
     isDeleted: 0,
+    lastSyncedAt: null,
   };
 
   console.log("EMPLOYEE TO SAVE TO SYNC QUEUE:", savedEmployee);
 
   await addToSyncQueue({
+    companyId,
     entity: "employee",
     entityId: _id,
     operation: "create",
     payload: JSON.stringify(savedEmployee),
   });
 
-  return getEmployeeById(_id);
+  return getEmployeeById(companyId, _id);
 }
 
 /**
@@ -112,15 +119,16 @@ export async function createEmployee(
  * GET EMPLOYEE BY ID
  * ============================================================
  */
-export function getEmployeeById(_id: string) {
+export function getEmployeeById(companyId: string, _id: string) {
   return get<Employee>(
     `
     SELECT *
     FROM employees
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
       AND isDeleted = 0
     `,
-    [_id]
+    [companyId, _id]
   );
 }
 
@@ -129,15 +137,16 @@ export function getEmployeeById(_id: string) {
  * GET EMPLOYEE BY EMPLOYEE ID / MATRICULE
  * ============================================================
  */
-export function getEmployeeByEmployeeID(employeeID: string) {
+export function getEmployeeByEmployeeID(companyId: string, employeeID: string) {
   return get<Employee>(
     `
     SELECT *
     FROM employees
-    WHERE matricule = ?
+    WHERE companyId = ?
+      AND matricule = ?
       AND isDeleted = 0
     `,
-    [employeeID]
+    [companyId, employeeID]
   );
 }
 
@@ -146,14 +155,16 @@ export function getEmployeeByEmployeeID(employeeID: string) {
  * GET ALL EMPLOYEES
  * ============================================================
  */
-export function getAllEmployees() {
+export function getAllEmployees(companyId: string) {
   return all<Employee>(
     `
     SELECT *
     FROM employees
-    WHERE isDeleted = 0
+    WHERE companyId = ?
+      AND isDeleted = 0
     ORDER BY lastName ASC
-    `
+    `,
+    [companyId]
   );
 }
 
@@ -162,21 +173,23 @@ export function getAllEmployees() {
  * SEARCH EMPLOYEES
  * ============================================================
  */
-export function searchEmployees(searchTerm: string) {
+export function searchEmployees(companyId: string, searchTerm: string) {
   const search = `%${searchTerm}%`;
 
   return all<Employee>(
     `
     SELECT *
     FROM employees
-    WHERE isDeleted = 0
+    WHERE companyId = ?
+      AND isDeleted = 0
       AND (
         firstName LIKE ?
         OR lastName LIKE ?
         OR matricule LIKE ?
       )
+    ORDER BY lastName ASC
     `,
-    [search, search, search]
+    [companyId, search, search, search]
   );
 }
 
@@ -185,16 +198,13 @@ export function searchEmployees(searchTerm: string) {
  * UPDATE EMPLOYEE
  * ============================================================
  *
- * IMPORTANT:
- *
- * A local edit does NOT increment serverVersion.
- *
- * serverVersion represents the version of the employee on the
- * server. The server assigns a new version when this change
- * is pushed.
  */
-export async function updateEmployee(_id: string, data: Partial<Employee>) {
-  const existing = await getEmployeeById(_id);
+export async function updateEmployee(
+  companyId: string,
+  _id: string,
+  data: Partial<Omit<Employee, "companyId">>
+) {
+  const existing = await getEmployeeByIdIncludingDeleted(companyId, _id);
 
   if (!existing) {
     throw new Error("Employee not found");
@@ -205,7 +215,6 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
   /*
    * Keep the existing serverVersion.
    *
-   * The client must never invent a server version.
    */
   const serverVersion = existing.serverVersion ?? 0;
 
@@ -232,7 +241,8 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
       updatedAt = ?,
       serverVersion = ?,
       synced = 0
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
     [
       data.firstName ?? existing.firstName,
@@ -253,17 +263,15 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
       data.remainingLeave ?? existing.remainingLeave,
       updatedAt,
       serverVersion,
+      companyId,
       _id,
     ]
   );
 
   /*
    * Read the complete updated employee from SQLite.
-   *
-   * This is better than constructing { _id, ...data } because
-   * the latter can omit fields that weren't part of the update.
    */
-  const updatedEmployee = await getEmployeeByIdIncludingDeleted(_id);
+  const updatedEmployee = await getEmployeeByIdIncludingDeleted(companyId, _id);
 
   if (!updatedEmployee) {
     throw new Error("Failed to retrieve updated employee");
@@ -272,6 +280,7 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
   console.log("EMPLOYEE TO SAVE TO SYNC QUEUE:", updatedEmployee);
 
   await addToSyncQueue({
+    companyId,
     entity: "employee",
     entityId: _id,
     operation: "update",
@@ -286,14 +295,9 @@ export async function updateEmployee(_id: string, data: Partial<Employee>) {
  * DELETE EMPLOYEE
  * ============================================================
  *
- * Soft delete.
- *
- * serverVersion remains unchanged locally.
- * The server will assign a new version when the delete reaches
- * the backend.
  */
-export async function deleteEmployee(_id: string) {
-  const existing = await getEmployeeByIdIncludingDeleted(_id);
+export async function deleteEmployee(companyId: string, _id: string) {
+  const existing = await getEmployeeByIdIncludingDeleted(companyId, _id);
 
   if (!existing) {
     throw new Error("Employee not found");
@@ -309,9 +313,10 @@ export async function deleteEmployee(_id: string) {
       synced = 0,
       updatedAt = ?,
       serverVersion = ?
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [updatedAt, existing.serverVersion ?? 0, _id]
+    [updatedAt, existing.serverVersion ?? 0, companyId, _id]
   );
 
   /*
@@ -321,10 +326,11 @@ export async function deleteEmployee(_id: string) {
     `
     SELECT _id
     FROM payroll_employee_profiles
-    WHERE employeeId = ?
+    WHERE companyId = ?
+      AND employeeId = ?
       AND isDeleted = 0
     `,
-    [_id]
+    [companyId, _id]
   );
 
   /*
@@ -339,17 +345,20 @@ export async function deleteEmployee(_id: string) {
         enabled = 0,
         synced = 0,
         updatedAt = ?
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
-      [updatedAt, profile._id]
+      [updatedAt, companyId, profile._id]
     );
 
     await addToSyncQueue({
+      companyId,
       entity: "payroll_profile",
       entityId: profile._id,
       operation: "delete",
       payload: JSON.stringify({
         _id: profile._id,
+        companyId,
         employeeId: _id,
         updatedAt,
       }),
@@ -359,9 +368,10 @@ export async function deleteEmployee(_id: string) {
   /*
    * Queue the complete employee deletion payload.
    */
-  const deletedEmployee = await getEmployeeByIdIncludingDeleted(_id);
+  const deletedEmployee = await getEmployeeByIdIncludingDeleted(companyId, _id);
 
   await addToSyncQueue({
+    companyId,
     entity: "employee",
     entityId: _id,
     operation: "delete",
@@ -370,6 +380,7 @@ export async function deleteEmployee(_id: string) {
 
   console.log("EMPLOYEE AND PAYROLL PROFILE DELETION QUEUED", {
     employeeId: _id,
+    companyId,
     payrollProfilesDeleted: payrollProfiles.length,
     updatedAt,
     serverVersion: existing.serverVersion ?? 0,
@@ -381,26 +392,38 @@ export async function deleteEmployee(_id: string) {
  * GET UNSYNCED EMPLOYEES
  * ============================================================
  */
-export function getUnsyncedEmployees() {
+export function getUnsyncedEmployees(companyId: string) {
   return all<Employee>(
     `
     SELECT *
     FROM employees
-    WHERE synced = 0
+    WHERE companyId = ?
+      AND synced = 0
     ORDER BY serverVersion ASC
-    `
+    `,
+    [companyId]
   );
 }
 
-/*
+/**
  * ============================================================
  * UPSERT EMPLOYEE FROM SERVER
  * ============================================================
  *
  */
 export async function upsertEmployee(employee: Employee) {
-  const local = await getEmployeeByIdIncludingDeleted(employee._id);
+  if (!employee.companyId) {
+    throw new Error(
+      `Cannot upsert employee ${employee._id}: companyId is missing`
+    );
+  }
+
+  const companyId = employee.companyId;
+
+  const local = await getEmployeeByIdIncludingDeleted(companyId, employee._id);
+
   const incomingVersion = Number(employee.serverVersion ?? 0);
+
   const localVersion = Number(local?.serverVersion ?? 0);
 
   /*
@@ -412,6 +435,7 @@ export async function upsertEmployee(employee: Employee) {
     await run(
       `
       INSERT INTO employees (
+        companyId,
         _id,
         firstName,
         lastName,
@@ -437,10 +461,12 @@ export async function upsertEmployee(employee: Employee) {
         lastSyncedAt
       )
       VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,CURRENT_TIMESTAMP
+        ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+        ?,?,?,?, ?,0,CURRENT_TIMESTAMP
       )
       `,
       [
+        companyId,
         employee._id,
         employee.firstName,
         employee.lastName,
@@ -466,7 +492,8 @@ export async function upsertEmployee(employee: Employee) {
     );
 
     console.log(
-      `INSERTED EMPLOYEE FROM SERVER: ${employee._id} (v${incomingVersion})`
+      `INSERTED EMPLOYEE FROM SERVER: ${employee._id} ` +
+        `(company ${companyId}, v${incomingVersion})`
     );
 
     return;
@@ -476,12 +503,13 @@ export async function upsertEmployee(employee: Employee) {
    * ==========================================================
    * CASE 2: Local employee has unsynced changes
    * ==========================================================
-   * The push operation needs to reach the server first.
    */
   if (local.synced === 0) {
     console.warn(
-      `SKIPPING SERVER EMPLOYEE ${employee._id}: LOCAL CHANGES ARE UNSYNCED`,
+      `SKIPPING SERVER EMPLOYEE ${employee._id}: ` +
+        `LOCAL CHANGES ARE UNSYNCED`,
       {
+        companyId,
         localVersion,
         incomingVersion,
       }
@@ -492,13 +520,14 @@ export async function upsertEmployee(employee: Employee) {
 
   /*
    * ==========================================================
-   * CASE 3: Incoming version is older
+   * CASE 3: Incoming version is older/equal
    * ==========================================================
    */
   if (incomingVersion <= localVersion) {
     console.log(
-      `SKIPPING EMPLOYEE ${employee._id}: LOCAL VERSION IS NEWER/EQUAL`,
+      `SKIPPING EMPLOYEE ${employee._id}: ` + `LOCAL VERSION IS NEWER/EQUAL`,
       {
+        companyId,
         localVersion,
         incomingVersion,
       }
@@ -538,7 +567,8 @@ export async function upsertEmployee(employee: Employee) {
       isDeleted = ?,
       synced = 1,
       lastSyncedAt = CURRENT_TIMESTAMP
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
     [
       employee.firstName,
@@ -561,13 +591,14 @@ export async function upsertEmployee(employee: Employee) {
       employee.updatedAt,
       incomingVersion,
       employee.isDeleted ?? 0,
+      companyId,
       employee._id,
     ]
   );
 
   console.log(
     `UPDATED EMPLOYEE FROM SERVER: ${employee._id} ` +
-      `(v${localVersion} → v${incomingVersion})`
+      `(company ${companyId}, v${localVersion} → v${incomingVersion})`
   );
 }
 
@@ -576,18 +607,18 @@ export async function upsertEmployee(employee: Employee) {
  * MARK EMPLOYEE AS SYNCED
  * ============================================================
  *
- * Does NOT modify serverVersion.
  */
-export async function markEmployeeSynced(_id: string) {
+export async function markEmployeeSynced(companyId: string, _id: string) {
   await run(
     `
     UPDATE employees
     SET
       synced = 1,
       lastSyncedAt = CURRENT_TIMESTAMP
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [_id]
+    [companyId, _id]
   );
 }
 
@@ -596,18 +627,15 @@ export async function markEmployeeSynced(_id: string) {
  * INTERNAL HELPER
  * ============================================================
  *
- * Unlike getEmployeeById(), this also returns soft-deleted
- * employees.
- *
- * This is necessary when processing server-side deletes.
  */
-async function getEmployeeByIdIncludingDeleted(_id: string) {
+async function getEmployeeByIdIncludingDeleted(companyId: string, _id: string) {
   return get<Employee>(
     `
     SELECT *
     FROM employees
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [_id]
+    [companyId, _id]
   );
 }

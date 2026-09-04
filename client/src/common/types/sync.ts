@@ -1,4 +1,5 @@
 export const SYNC_ENTITIES = {
+  COMPANY: "company",
   EMPLOYEE: "employee",
   ATTENDANCE: "attendance",
   LEAVE: "leave",
@@ -14,8 +15,10 @@ export const SYNC_ENTITIES = {
 export type SyncEntity = (typeof SYNC_ENTITIES)[keyof typeof SYNC_ENTITIES];
 
 export interface SyncQueueItem {
+  companyId: string;
   _id: string;
   entity:
+    | "company"
     | "employee"
     | "attendance"
     | "attendance_daily_check"

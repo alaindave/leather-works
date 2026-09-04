@@ -1,5 +1,7 @@
-import { SyncStatusEvent } from "../../common/types/sync";
+import { SyncStatusEvent } from "../../common/types/Sync";
 import useSyncStore from "../../store/sync.store";
+import { queryClient } from "../lib/queryClient";
+import { employeeQueryKeys } from "../modules/hr/employees/queries/employee.queries";
 
 let initialized = false;
 
@@ -16,20 +18,24 @@ export function initializeRendererSync() {
   console.log("RENDERER SYNC MANAGER INITIALIZING...");
 
   unsubscribeSyncStatus = window.electron.onSyncStatus(
-    ({ status, timestamp }: SyncStatusEvent) => {
+    async ({ status, timestamp }: SyncStatusEvent) => {
       const syncStore = useSyncStore.getState();
 
       console.log("RENDERER RECEIVED SYNC STATUS:", status, timestamp ?? "");
 
       switch (status) {
-        case "IDLE":
+        case "IDLE": {
           if (timestamp) {
             syncStore.setSyncCompleted(timestamp);
+            await queryClient.invalidateQueries({
+              queryKey: employeeQueryKeys.all,
+            });
           } else {
             syncStore.resetSyncStatus();
           }
-          break;
 
+          break;
+        }
         case "SYNCING":
           syncStore.setSyncing();
           break;

@@ -11,24 +11,30 @@ type UploadFile = {
   buffer: Buffer;
 };
 
-//Upload employee photo
+// Upload employee photo
 export async function uploadEmployeePhoto(
+  companyId: string,
   employeeId: string,
   file: UploadFile
 ) {
   const employee = await get<Employee>(
-    "SELECT * FROM employees WHERE _id = ?",
-    [employeeId]
+    `
+    SELECT *
+    FROM employees
+    WHERE companyId = ?
+      AND _id = ?
+    `,
+    [companyId, employeeId]
   );
 
   if (!employee) {
     throw new Error("Employee not found");
   }
 
-  //Get extension
+  // Get extension
   const ext = path.extname(file.name).toLowerCase();
 
-  //MIME type
+  // MIME type
   const mimeType =
     ext === ".png"
       ? "image/png"
@@ -36,7 +42,7 @@ export async function uploadEmployeePhoto(
       ? "image/webp"
       : "image/jpeg";
 
-  //Increment version
+  // Increment version
   const photoVersion = (employee.photo_version ?? 0) + 1;
 
   // Filename
@@ -76,7 +82,8 @@ export async function uploadEmployeePhoto(
       photo_mime_type = ?,
       photo_needs_upload = 1,
       updatedAt = ?
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
     [
       fileName,
@@ -86,11 +93,13 @@ export async function uploadEmployeePhoto(
       CURRENT_TIMESTAMP,
       mimeType,
       CURRENT_TIMESTAMP,
+      companyId,
       employeeId,
     ]
   );
 
   const syncPayload = {
+    companyId,
     employeeId,
     photo_filename: fileName,
     photo_path: relativePath,
@@ -104,17 +113,27 @@ export async function uploadEmployeePhoto(
   console.log("PHOTO TO ADD TO SYNC QUEUE:", syncPayload);
 
   await addToSyncQueue({
+    companyId,
     entity: "employee_photo",
     entityId: employeeId,
     operation: "update",
     payload: JSON.stringify(syncPayload),
   });
 
-  return get<Employee>("SELECT * FROM employees WHERE _id = ?", [employeeId]);
+  return get<Employee>(
+    `
+    SELECT *
+    FROM employees
+    WHERE companyId = ?
+      AND _id = ?
+    `,
+    [companyId, employeeId]
+  );
 }
 
 export async function updateEmployeePhotoMetadata(
-  _id: string,
+  companyId: string,
+  employeeId: string,
   data: {
     photo_path: string;
     photo_filename: string;
@@ -128,14 +147,15 @@ export async function updateEmployeePhotoMetadata(
     `
     UPDATE employees
     SET
-      photo_path=?,
-      photo_filename=?,
-      photo_version=?,
-      photo_hash=?,
-      photo_mime_type=?,
-      photo_last_modified=?,
-      photo_needs_upload=0
-    WHERE _id=?
+      photo_path = ?,
+      photo_filename = ?,
+      photo_version = ?,
+      photo_hash = ?,
+      photo_mime_type = ?,
+      photo_last_modified = ?,
+      photo_needs_upload = 0
+    WHERE companyId = ?
+      AND _id = ?
     `,
     [
       data.photo_path,
@@ -144,19 +164,24 @@ export async function updateEmployeePhotoMetadata(
       data.photo_hash ?? null,
       data.photo_mime_type ?? null,
       data.photo_last_modified ?? null,
-      _id,
+      companyId,
+      employeeId,
     ]
   );
 }
 
-export async function markEmployeePhotoSynced(employeeId: string) {
+export async function markEmployeePhotoSynced(
+  companyId: string,
+  employeeId: string
+) {
   await run(
     `
     UPDATE employees
     SET
       photo_needs_upload = 0
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [employeeId]
+    [companyId, employeeId]
   );
 }

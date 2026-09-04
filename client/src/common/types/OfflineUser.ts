@@ -1,4 +1,5 @@
 export default interface OfflineUser {
+  companyId: string;
   _id: string;
   email: string;
   password: string;

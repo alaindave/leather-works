@@ -1,12 +1,20 @@
 import { run, all } from "../db.js";
 
 export async function createEmployeesTable() {
+  /*
+   * ============================================================
+   * CREATE TABLE
+   * ============================================================
+   *
+   *
+   */
   await run(`
     CREATE TABLE IF NOT EXISTS employees (
+      companyId TEXT NOT NULL,
       _id TEXT PRIMARY KEY,
       firstName TEXT NOT NULL,
       lastName TEXT NOT NULL,
-      matricule TEXT NOT NULL UNIQUE,
+      matricule TEXT NOT NULL,
       idNum TEXT NOT NULL,
       dateBirth TEXT NOT NULL,
       role TEXT NOT NULL,
@@ -45,14 +53,43 @@ export async function createEmployeesTable() {
   `);
 
   /*
-   * Existing installations need an ALTER TABLE because
-   * CREATE TABLE IF NOT EXISTS does not modify existing tables.
+   * ============================================================
+   * CHECK EXISTING COLUMNS
+   * ============================================================
    */
+
   const columns = await all<{ name: string }>(`PRAGMA table_info(employees)`);
+
+  const hasCompanyId = columns.some((column) => column.name === "companyId");
 
   const hasServerVersion = columns.some(
     (column) => column.name === "serverVersion"
   );
+
+  /*
+   * ============================================================
+   * EXISTING DATABASE MIGRATION
+   * ============================================================
+   *
+   *
+   */
+
+  if (!hasCompanyId) {
+    console.log("ADDING companyId COLUMN TO EMPLOYEES...");
+
+    await run(`
+      ALTER TABLE employees
+      ADD COLUMN companyId TEXT NOT NULL DEFAULT ''
+    `);
+
+    console.log("companyId COLUMN ADDED SUCCESSFULLY.");
+  }
+
+  /*
+   * ============================================================
+   * serverVersion MIGRATION
+   * ============================================================
+   */
 
   if (!hasServerVersion) {
     console.log("ADDING serverVersion COLUMN TO EMPLOYEES...");
@@ -64,6 +101,31 @@ export async function createEmployeesTable() {
 
     console.log("serverVersion COLUMN ADDED SUCCESSFULLY.");
   }
+
+  /*
+   * ============================================================
+   * MULTI-TENANT INDEX
+   * ============================================================
+   */
+
+  await run(`
+    CREATE UNIQUE INDEX IF NOT EXISTS
+    idx_employees_company_matricule
+    ON employees(companyId, matricule)
+  `);
+
+  /*
+   * ============================================================
+   * COMPANY INDEX
+   * ============================================================
+   *
+   */
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS
+    idx_employees_company
+    ON employees(companyId)
+  `);
 
   console.log("EMPLOYEES TABLE INITIALIZED");
 }

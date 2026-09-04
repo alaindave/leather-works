@@ -5,10 +5,18 @@ import { PayrollSettings } from "../../../common/types/payroll/Payroll.js";
 
 const ENTITY = "payroll_settings";
 
-export async function getPayrollSettings(): Promise<PayrollSettings | null> {
+/**
+ * Get the payroll settings for a specific company.
+ *
+ * Payroll settings are a singleton per company.
+ */
+export async function getPayrollSettings(
+  companyId: string
+): Promise<PayrollSettings | null> {
   const settings = await get<PayrollSettings>(
     `
     SELECT
+      companyId,
       _id,
       currency,
       workingDays,
@@ -21,21 +29,28 @@ export async function getPayrollSettings(): Promise<PayrollSettings | null> {
       lastSyncedAt,
       isDeleted
     FROM payroll_settings
-    WHERE COALESCE(isDeleted, 0) = 0
+    WHERE companyId = ?
+      AND COALESCE(isDeleted, 0) = 0
     ORDER BY createdAt ASC
     LIMIT 1
-    `
+    `,
+    [companyId]
   );
 
   return settings ?? null;
 }
 
+/**
+ * Get payroll settings by ID, scoped to company.
+ */
 export async function getPayrollSettingsById(
+  companyId: string,
   _id: string
 ): Promise<PayrollSettings | null> {
   const settings = await get<PayrollSettings>(
     `
     SELECT
+      companyId,
       _id,
       currency,
       workingDays,
@@ -49,16 +64,24 @@ export async function getPayrollSettingsById(
       isDeleted
     FROM payroll_settings
     WHERE _id = ?
+      AND companyId = ?
     `,
-    [_id]
+    [_id, companyId]
   );
 
   return settings ?? null;
 }
 
+/**
+ * Create payroll settings for a company.
+ *
+ * Payroll settings are a singleton per company.
+ */
 export async function createPayrollSettings(
+  companyId: string,
   data: Omit<
     PayrollSettings,
+    | "companyId"
     | "_id"
     | "synced"
     | "serverVersion"
@@ -68,11 +91,10 @@ export async function createPayrollSettings(
     | "isDeleted"
   >
 ): Promise<PayrollSettings> {
-  // Payroll settings should be a singleton.
-  const existing = await getPayrollSettings();
+  const existing = await getPayrollSettings(companyId);
 
   if (existing) {
-    throw new Error("PAYROLL SETTINGS ALREADY EXIST");
+    throw new Error("PAYROLL SETTINGS ALREADY EXIST FOR THIS COMPANY");
   }
 
   const _id = randomUUID();
@@ -80,6 +102,7 @@ export async function createPayrollSettings(
   const serverVersion = 0;
 
   const settings: PayrollSettings = {
+    companyId,
     _id,
     currency: data.currency,
     workingDays: data.workingDays,
@@ -95,6 +118,7 @@ export async function createPayrollSettings(
   await run(
     `
     INSERT INTO payroll_settings (
+      companyId,
       _id,
       currency,
       workingDays,
@@ -106,9 +130,10 @@ export async function createPayrollSettings(
       updatedAt,
       isDeleted
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
+      settings.companyId,
       settings._id,
       settings.currency,
       settings.workingDays,
@@ -123,6 +148,7 @@ export async function createPayrollSettings(
   );
 
   await addToSyncQueue({
+    companyId: settings.companyId,
     entity: ENTITY,
     entityId: settings._id,
     operation: "create",
@@ -132,6 +158,12 @@ export async function createPayrollSettings(
   return settings;
 }
 
+/**
+ * Upsert payroll settings received from the server.
+ *
+ * This function intentionally does NOT add the record
+ * to the sync queue because it is a remote pull.
+ */
 export async function upsertPayrollSettings(
   settings: PayrollSettings
 ): Promise<PayrollSettings | null> {
@@ -139,7 +171,10 @@ export async function upsertPayrollSettings(
 
   console.log("SETTINGS TO UPSERT", settings);
 
-  const existing = await getPayrollSettingsById(settings._id);
+  const existing = await getPayrollSettingsById(
+    settings.companyId,
+    settings._id
+  );
 
   /*
    * Never overwrite a newer local server version with
@@ -165,6 +200,7 @@ export async function upsertPayrollSettings(
   await run(
     `
     INSERT INTO payroll_settings (
+      companyId,
       _id,
       currency,
       workingDays,
@@ -177,9 +213,10 @@ export async function upsertPayrollSettings(
       lastSyncedAt,
       isDeleted
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
     ON CONFLICT(_id) DO UPDATE SET
+      companyId = excluded.companyId,
       currency = excluded.currency,
       workingDays = excluded.workingDays,
       workingHours = excluded.workingHours,
@@ -192,6 +229,7 @@ export async function upsertPayrollSettings(
       isDeleted = excluded.isDeleted
     `,
     [
+      settings.companyId,
       settings._id,
       settings.currency,
       settings.workingDays,
@@ -209,10 +247,17 @@ export async function upsertPayrollSettings(
   return settings;
 }
 
+/**
+ * Update the complete payroll settings record.
+ */
 export async function updatePayrollSettings(
+  companyId: string,
   settings: PayrollSettings
 ): Promise<PayrollSettings> {
-  const existing = await getPayrollSettingsById(settings._id);
+  /*
+   * Always verify both companyId and _id.
+   */
+  const existing = await getPayrollSettingsById(companyId, settings._id);
 
   if (!existing) {
     throw new Error(`PAYROLL SETTINGS ${settings._id} NOT FOUND`);
@@ -222,6 +267,11 @@ export async function updatePayrollSettings(
 
   const updatedSettings: PayrollSettings = {
     ...settings,
+
+    /*
+     * Never allow the caller to change the tenant.
+     */
+    companyId,
 
     /*
      * Keep the server version that the client knows about.
@@ -247,6 +297,7 @@ export async function updatePayrollSettings(
       updatedAt = ?,
       isDeleted = ?
     WHERE _id = ?
+      AND companyId = ?
     `,
     [
       updatedSettings.currency,
@@ -258,10 +309,12 @@ export async function updatePayrollSettings(
       updatedSettings.updatedAt,
       updatedSettings.isDeleted,
       updatedSettings._id,
+      companyId,
     ]
   );
 
   await addToSyncQueue({
+    companyId,
     entity: ENTITY,
     entityId: updatedSettings._id,
     operation: "update",
@@ -271,7 +324,11 @@ export async function updatePayrollSettings(
   return updatedSettings;
 }
 
+/**
+ * Update only selected payroll settings fields.
+ */
 export async function updatePayrollSettingsFields(
+  companyId: string,
   _id: string,
   fields: Partial<
     Pick<
@@ -280,7 +337,7 @@ export async function updatePayrollSettingsFields(
     >
   >
 ): Promise<PayrollSettings> {
-  const existing = await getPayrollSettingsById(_id);
+  const existing = await getPayrollSettingsById(companyId, _id);
 
   if (!existing) {
     throw new Error(`PAYROLL SETTINGS ${_id} NOT FOUND`);
@@ -289,6 +346,11 @@ export async function updatePayrollSettingsFields(
   const updatedSettings: PayrollSettings = {
     ...existing,
     ...fields,
+
+    /*
+     * Keep the companyId from the existing record.
+     */
+    companyId,
 
     /*
      * Keep the current server version.
@@ -313,6 +375,7 @@ export async function updatePayrollSettingsFields(
       updatedAt = ?,
       isDeleted = ?
     WHERE _id = ?
+      AND companyId = ?
     `,
     [
       updatedSettings.currency,
@@ -324,10 +387,12 @@ export async function updatePayrollSettingsFields(
       updatedSettings.updatedAt,
       updatedSettings.isDeleted,
       updatedSettings._id,
+      companyId,
     ]
   );
 
   await addToSyncQueue({
+    companyId,
     entity: ENTITY,
     entityId: updatedSettings._id,
     operation: "update",
@@ -337,8 +402,14 @@ export async function updatePayrollSettingsFields(
   return updatedSettings;
 }
 
-export async function deletePayrollSettings(_id: string): Promise<void> {
-  const existing = await getPayrollSettingsById(_id);
+/**
+ * Soft delete payroll settings.
+ */
+export async function deletePayrollSettings(
+  companyId: string,
+  _id: string
+): Promise<void> {
+  const existing = await getPayrollSettingsById(companyId, _id);
 
   if (!existing) {
     throw new Error(`PAYROLL SETTINGS ${_id} NOT FOUND`);
@@ -348,6 +419,7 @@ export async function deletePayrollSettings(_id: string): Promise<void> {
 
   const deletedSettings: PayrollSettings = {
     ...existing,
+    companyId,
     isDeleted: 1,
     synced: 0,
     serverVersion: existing.serverVersion ?? 0,
@@ -362,11 +434,13 @@ export async function deletePayrollSettings(_id: string): Promise<void> {
       synced = 0,
       updatedAt = ?
     WHERE _id = ?
+      AND companyId = ?
     `,
-    [updatedAt, _id]
+    [updatedAt, _id, companyId]
   );
 
   await addToSyncQueue({
+    companyId,
     entity: ENTITY,
     entityId: _id,
     operation: "delete",
@@ -374,10 +448,14 @@ export async function deletePayrollSettings(_id: string): Promise<void> {
   });
 }
 
+/**
+ * Restore payroll settings.
+ */
 export async function restorePayrollSettings(
+  companyId: string,
   _id: string
 ): Promise<PayrollSettings> {
-  const existing = await getPayrollSettingsById(_id);
+  const existing = await getPayrollSettingsById(companyId, _id);
 
   if (!existing) {
     throw new Error(`PAYROLL SETTINGS ${_id} NOT FOUND`);
@@ -387,6 +465,7 @@ export async function restorePayrollSettings(
 
   const restoredSettings: PayrollSettings = {
     ...existing,
+    companyId,
     isDeleted: 0,
     synced: 0,
     serverVersion: existing.serverVersion ?? 0,
@@ -401,11 +480,13 @@ export async function restorePayrollSettings(
       synced = 0,
       updatedAt = ?
     WHERE _id = ?
+      AND companyId = ?
     `,
-    [updatedAt, _id]
+    [updatedAt, _id, companyId]
   );
 
   await addToSyncQueue({
+    companyId,
     entity: ENTITY,
     entityId: _id,
     operation: "update",
@@ -415,7 +496,13 @@ export async function restorePayrollSettings(
   return restoredSettings;
 }
 
-export async function markPayrollSettingsSynced(_id: string): Promise<void> {
+/**
+ * Mark payroll settings as synced.
+ */
+export async function markPayrollSettingsSynced(
+  companyId: string,
+  _id: string
+): Promise<void> {
   const now = new Date().toISOString();
 
   await run(
@@ -425,15 +512,22 @@ export async function markPayrollSettingsSynced(_id: string): Promise<void> {
       synced = 1,
       lastSyncedAt = ?
     WHERE _id = ?
+      AND companyId = ?
     `,
-    [now, _id]
+    [now, _id, companyId]
   );
 }
 
-export async function getUnsyncedPayrollSettings(): Promise<PayrollSettings[]> {
+/**
+ * Get unsynced payroll settings for a specific company.
+ */
+export async function getUnsyncedPayrollSettings(
+  companyId: string
+): Promise<PayrollSettings[]> {
   return all<PayrollSettings>(
     `
     SELECT
+      companyId,
       _id,
       currency,
       workingDays,
@@ -446,8 +540,10 @@ export async function getUnsyncedPayrollSettings(): Promise<PayrollSettings[]> {
       lastSyncedAt,
       isDeleted
     FROM payroll_settings
-    WHERE synced = 0
+    WHERE companyId = ?
+      AND synced = 0
     ORDER BY updatedAt ASC
-    `
+    `,
+    [companyId]
   );
 }

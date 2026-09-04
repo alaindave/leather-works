@@ -35,7 +35,7 @@ export function registerPayrollGenerationIPC() {
       month: number
     ) => {
       //  Fetch payroll settings
-      const payrollSettings = await getPayrollSettings();
+      const payrollSettings = await getPayrollSettings(admin.companyId);
       if (!payrollSettings) {
         throw new Error(
           `Veuillez d'abord configurer les paramètres de bulletins de paie. 
@@ -45,7 +45,7 @@ export function registerPayrollGenerationIPC() {
       console.log("PAYROLL SETTINGS:", payrollSettings);
 
       // Employee payroll inputs
-      const inputs = await getAllEmployeePayrollInputs();
+      const inputs = await getAllEmployeePayrollInputs(admin.companyId);
 
       console.log(
         `FETCHED ${inputs.length} EMPLOYEE PAYROLL INPUTS FOR ${month}/${year}`
@@ -55,6 +55,7 @@ export function registerPayrollGenerationIPC() {
       const payrollInputsWithAttendance = await Promise.all(
         inputs.map(async (employee) => {
           const attendance = await getPayrollAttendanceSummary(
+            admin.companyId,
             employee.employeeId,
             month,
             year
@@ -77,16 +78,23 @@ export function registerPayrollGenerationIPC() {
 
       // Calculate payroll
       const batch = await calculatePayrollsWithSummary(
+        admin.companyId,
         payrollInputsWithAttendance,
         admin,
         payrollSettings
       );
 
       // Create payroll run
-      const payrollRun = await createPayrollRun(batch, admin, year, month);
+      const payrollRun = await createPayrollRun(
+        admin.companyId,
+        batch,
+        admin,
+        year,
+        month
+      );
 
       // Save payroll results
-      await savePayrollResults(payrollRun._id, batch.results);
+      await savePayrollResults(admin.companyId, payrollRun._id, batch.results);
 
       return {
         payrollRun,
@@ -101,7 +109,7 @@ export function registerPayrollGenerationIPC() {
   ipcMain.handle(
     "payroll:submitForVerification",
     async (_, payrollRunId: string, admin: AdminUser) => {
-      return await verifyPayrollRun(payrollRunId, admin);
+      return await verifyPayrollRun(admin.companyId, payrollRunId, admin);
     }
   );
 
@@ -109,9 +117,16 @@ export function registerPayrollGenerationIPC() {
    * EN_VERIFICATION → BROUILLON
    * Reviewer sends payroll back for correction
    */
-  ipcMain.handle("payroll:returnToDraft", async (_, payrollRunId: string) => {
-    return await updatePayrollStatus(payrollRunId, "BROUILLON");
-  });
+  ipcMain.handle(
+    "payroll:returnToDraft",
+    async (_, payrollRunId: string, admin: AdminUser) => {
+      return await updatePayrollStatus(
+        admin.companyId,
+        payrollRunId,
+        "BROUILLON"
+      );
+    }
+  );
 
   /**
    * EN_VERIFICATION → APPROUVÉ
@@ -119,7 +134,7 @@ export function registerPayrollGenerationIPC() {
   ipcMain.handle(
     "payroll:approve",
     async (_, payrollRunId: string, admin: AdminUser) => {
-      return await approvePayrollRun(payrollRunId, admin);
+      return await approvePayrollRun(admin.companyId, payrollRunId, admin);
     }
   );
 
@@ -129,7 +144,7 @@ export function registerPayrollGenerationIPC() {
   ipcMain.handle(
     "payroll:markAsPaid",
     async (_, payrollRunId: string, admin: AdminUser) => {
-      return await paymentPayrollRun(payrollRunId, admin);
+      return await paymentPayrollRun(admin.companyId, payrollRunId, admin);
     }
   );
 
@@ -139,27 +154,40 @@ export function registerPayrollGenerationIPC() {
   ipcMain.handle(
     "payroll:cancel",
     async (_, payrollRunId: string, admin: AdminUser) => {
-      return await cancelPayrollRun(payrollRunId, admin);
+      return await cancelPayrollRun(admin.companyId, payrollRunId, admin);
     }
   );
 
-  ipcMain.handle("payroll:getRuns", async (_, year: number, month: number) => {
-    return await getPayrollRuns(year, month);
-  });
+  ipcMain.handle(
+    "payroll:getRuns",
+    async (_, companyId: string, year: number, month: number) => {
+      return await getPayrollRuns(companyId, year, month);
+    }
+  );
 
-  ipcMain.handle("payroll:getRunById", async (_, id: string) => {
-    return await getPayrollRunById(id);
-  });
+  ipcMain.handle(
+    "payroll:getRunById",
+    async (_, companyId: string, id: string) => {
+      return await getPayrollRunById(companyId, id);
+    }
+  );
 
-  ipcMain.handle("payroll:getResults", async (_, payrollRunId: string) => {
-    return await getPayrollResults(payrollRunId);
-  });
+  ipcMain.handle(
+    "payroll:getResults",
+    async (_, companyId: string, payrollRunId: string) => {
+      return await getPayrollResults(companyId, payrollRunId);
+    }
+  );
 
   ipcMain.handle(
     "payroll:getEmployeeResults",
-    async (_, employeeId: string, payrollRunId?: string) => {
+    async (_, companyId: string, employeeId: string, payrollRunId?: string) => {
       console.log("EMPLOYEE PAYSLIPS IPC RECEIVED FOR", employeeId);
-      const results = await getEmployeePayrollResults(employeeId, payrollRunId);
+      const results = await getEmployeePayrollResults(
+        companyId,
+        employeeId,
+        payrollRunId
+      );
       console.log("FETCHED RESULTS", results);
       return results;
     }
@@ -167,12 +195,20 @@ export function registerPayrollGenerationIPC() {
 
   ipcMain.handle(
     "payroll:getItems",
-    async (_, payrollResultId: string, employeeId?: string) => {
-      return await getPayrollItems(payrollResultId, employeeId);
+    async (
+      _,
+      companyId: string,
+      payrollResultId: string,
+      employeeId?: string
+    ) => {
+      return await getPayrollItems(companyId, payrollResultId, employeeId);
     }
   );
 
-  ipcMain.handle("payroll:deleteRun", async (_, payrollRunId: string) => {
-    return await deletePayrollRun(payrollRunId);
-  });
+  ipcMain.handle(
+    "payroll:deleteRun",
+    async (_, companyId: string, payrollRunId: string) => {
+      return await deletePayrollRun(companyId, payrollRunId);
+    }
+  );
 }

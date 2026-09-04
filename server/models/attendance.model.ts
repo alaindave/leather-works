@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
 export interface AttendanceDocument {
+  companyId: string;
   _id: string;
   employeeId: string;
   date: string;
@@ -18,6 +19,11 @@ export interface AttendanceDocument {
 
 const attendanceSchema = new Schema<AttendanceDocument>(
   {
+    companyId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     _id: {
       type: String,
       required: true,
@@ -80,8 +86,9 @@ const attendanceSchema = new Schema<AttendanceDocument>(
     },
     isDeleted: {
       type: Number,
-      default: 0,
       required: true,
+      default: 0,
+      enum: [0, 1],
     },
   },
   {

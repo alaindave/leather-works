@@ -1,4 +1,4 @@
-import type Attendance from "../../../common/types/Attendance.js";
+import type { Attendance } from "../../../common/types/Attendance.js";
 import { randomUUID } from "crypto";
 import { all, get, run } from "../db.js";
 import { getEmployeeById } from "./employees.repository.js";
@@ -9,12 +9,16 @@ import {
   PayrollAttendanceSummary,
 } from "../../../common/types/Attendance.js";
 import { isAttendanceDateLocked } from "./attendanceDailyCheck.repository.js";
-import AttendanceWithEmployee from "../../../common/types/AttendanceWithEmployee.js";
+import { AttendanceWithEmployee } from "../../../common/types/Attendance.js";
+import { getLeaveByEmployeeId } from "./leaves.repository.js";
 
 /**
  * Create a normal/manual attendance record.
  */
-export async function createAttendance(input: CreateAttendanceDto) {
+export async function createAttendance(
+  companyId: string,
+  input: CreateAttendanceDto
+) {
   let { employeeId, date, clockIn, clockOut, status } = input;
 
   let lateMinutes = 0;
@@ -31,13 +35,17 @@ export async function createAttendance(input: CreateAttendanceDto) {
     );
   }
 
-  const employee = await getEmployeeById(employeeId);
+  const employee = await getEmployeeById(companyId, employeeId);
 
   if (!employee) {
     throw new Error("Il n'y a pas d'employé avec cet identifiant");
   }
 
-  const existingAttendance = await getAttendanceRecord(employeeId, date);
+  const existingAttendance = await getAttendanceRecord(
+    companyId,
+    employeeId,
+    date
+  );
 
   console.log("EXISTING ATTENDANCE:", existingAttendance);
 
@@ -64,6 +72,7 @@ export async function createAttendance(input: CreateAttendanceDto) {
   await run(
     `
     INSERT INTO attendances (
+      companyId,
       _id,
       employeeId,
       date,
@@ -78,9 +87,10 @@ export async function createAttendance(input: CreateAttendanceDto) {
       createdAt,
       updatedAt
     )
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `,
     [
+      companyId,
       _id,
       employeeId,
       date,
@@ -98,6 +108,7 @@ export async function createAttendance(input: CreateAttendanceDto) {
   );
 
   const savedAttendance: Attendance = {
+    companyId,
     _id,
     employeeId,
     date,
@@ -114,19 +125,21 @@ export async function createAttendance(input: CreateAttendanceDto) {
   console.log("ATTENDANCE TO SAVE TO SYNC QUEUE", savedAttendance);
 
   await addToSyncQueue({
+    companyId,
     entity: "attendance",
     entityId: _id,
     operation: "create",
     payload: JSON.stringify(savedAttendance),
   });
 
-  return getAttendanceById(_id);
+  return getAttendanceById(companyId, _id);
 }
 
 /**
  * Create an ABSENT or CONGÉ attendance record.
  */
 export async function createAbsenceLeaveAttendance(
+  companyId: string,
   employeeId: string,
   status: "CONGÉ" | "ABSENT",
   date: string = new Date().toISOString().split("T")[0]
@@ -137,7 +150,11 @@ export async function createAbsenceLeaveAttendance(
     throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
   }
 
-  const existingAttendance = await getAttendanceRecord(employeeId, date);
+  const existingAttendance = await getAttendanceRecord(
+    companyId,
+    employeeId,
+    date
+  );
 
   if (existingAttendance) {
     console.log("ATTENDANCE ALREADY EXISTS:", existingAttendance);
@@ -145,7 +162,7 @@ export async function createAbsenceLeaveAttendance(
     return existingAttendance;
   }
 
-  const employee = await getEmployeeById(employeeId);
+  const employee = await getEmployeeById(companyId, employeeId);
 
   if (!employee) {
     throw new Error("EMPLOYEE NOT FOUND");
@@ -158,6 +175,7 @@ export async function createAbsenceLeaveAttendance(
   await run(
     `
     INSERT INTO attendances (
+      companyId,
       _id,
       employeeId,
       date,
@@ -170,9 +188,10 @@ export async function createAbsenceLeaveAttendance(
       lastSyncedAt,
       isDeleted
     )
-    VALUES (?,?,?,?,?,?,?,?,?,?,?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
     `,
     [
+      companyId,
       _id,
       employeeId,
       date,
@@ -188,6 +207,7 @@ export async function createAbsenceLeaveAttendance(
   );
 
   const savedAttendance: Attendance = {
+    companyId,
     _id,
     employeeId,
     date,
@@ -201,13 +221,14 @@ export async function createAbsenceLeaveAttendance(
   console.log("ATTENDANCE TO SAVE TO SYNC QUEUE", savedAttendance);
 
   await addToSyncQueue({
+    companyId,
     entity: "attendance",
     entityId: _id,
     operation: "create",
     payload: JSON.stringify(savedAttendance),
   });
 
-  const createdAttendance = await getAttendanceById(_id);
+  const createdAttendance = await getAttendanceById(companyId, _id);
 
   if (!createdAttendance) {
     throw new Error("FAILED TO CREATE ATTENDANCE RECORD");
@@ -220,6 +241,7 @@ export async function createAbsenceLeaveAttendance(
  * Get employees who don't have any attendance record for a date.
  */
 export async function getEmployeesWithoutAttendance(
+  companyId: string,
   date: string
 ): Promise<Employee[]> {
   return all(
@@ -231,15 +253,17 @@ export async function getEmployeesWithoutAttendance(
       e.remainingLeave
     FROM employees e
     LEFT JOIN attendances a
-      ON a.employeeId = e._id
+      ON a.companyId = ?
+      AND a.employeeId = e._id
       AND a.date = ?
       AND COALESCE(a.isDeleted, 0) = 0
-    WHERE COALESCE(e.isDeleted, 0) = 0
+    WHERE e.companyId = ?
+      AND COALESCE(e.isDeleted, 0) = 0
       AND e.status = 'ACTIF'
       AND a._id IS NULL
     ORDER BY e.lastName ASC, e.firstName ASC
     `,
-    [date]
+    [companyId, date, companyId]
   );
 }
 
@@ -247,6 +271,7 @@ export async function getEmployeesWithoutAttendance(
  * Get payroll attendance summary.
  */
 export async function getPayrollAttendanceSummary(
+  companyId: string,
   employeeId: string,
   month: number,
   year: number
@@ -283,12 +308,14 @@ export async function getPayrollAttendanceSummary(
 
     FROM attendances
 
-    WHERE employeeId = ?
+    WHERE companyId = ?
+      AND employeeId = ?
       AND date >= ?
       AND date < ?
       AND COALESCE(isDeleted, 0) = 0
     `,
     [
+      companyId,
       employeeId,
       `${year}-${String(month).padStart(2, "0")}-01`,
       getNextMonthDate(year, month),
@@ -296,6 +323,7 @@ export async function getPayrollAttendanceSummary(
   );
 
   return {
+    companyId,
     employeeId,
     lateDays: result?.lateDays ?? 0,
     totalLateMinutes: result?.totalLateMinutes ?? 0,
@@ -313,19 +341,22 @@ function getNextMonthDate(year: number, month: number): string {
  * Get active employees who did not clock in.
  */
 export async function getEmployeesWhoDidNotClockIn(
+  companyId: string,
   date: string
 ): Promise<Employee[]> {
   return all(
     `
     SELECT e.*
     FROM employees e
-    WHERE e.status = 'ACTIF'
+    WHERE e.companyId = ?
+      AND e.status = 'ACTIF'
       AND COALESCE(e.isDeleted, 0) = 0
 
       AND NOT EXISTS (
         SELECT 1
         FROM attendances a
-        WHERE a.employeeId = e._id
+        WHERE a.companyId = e.companyId
+          AND a.employeeId = e._id
           AND a.date = ?
           AND COALESCE(a.isDeleted, 0) = 0
           AND a.status IN ('PONCTUEL', 'RETARD')
@@ -334,13 +365,14 @@ export async function getEmployeesWhoDidNotClockIn(
       AND NOT EXISTS (
         SELECT 1
         FROM leaves l
-        WHERE l.employeeId = e._id
+        WHERE l.companyId = e.companyId
+          AND l.employeeId = e._id
           AND COALESCE(l.isDeleted, 0) = 0
           AND l.status = 'APPROUVÉ'
           AND date(?) BETWEEN l.startDate AND l.endDate
       )
     `,
-    [date, date]
+    [companyId, date, date]
   );
 }
 
@@ -359,6 +391,7 @@ export async function createAbsentAttendance(
   }
 
   const existingAttendance = await getAttendanceRecord(
+    attendance.companyId,
     attendance.employeeId,
     attendance.date
   );
@@ -374,6 +407,7 @@ export async function createAbsentAttendance(
   await run(
     `
     INSERT OR IGNORE INTO attendances (
+      companyId,
       _id,
       employeeId,
       date,
@@ -386,9 +420,10 @@ export async function createAbsentAttendance(
       isDeleted,
       lastSyncedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
     `,
     [
+      attendance.companyId,
       attendance._id,
       attendance.employeeId,
       attendance.date,
@@ -404,6 +439,7 @@ export async function createAbsentAttendance(
   );
 
   const absentAttendance = await getAttendanceRecord(
+    attendance.companyId,
     attendance.employeeId,
     attendance.date
   );
@@ -413,6 +449,7 @@ export async function createAbsentAttendance(
   }
 
   await addToSyncQueue({
+    companyId: attendance.companyId,
     entity: "attendance",
     entityId: attendance._id,
     operation: "create",
@@ -429,6 +466,7 @@ export async function createAbsentAttendance(
  * Get attendance by ID.
  */
 export async function getAttendanceById(
+  companyId: string,
   _id: string
 ): Promise<Attendance | undefined | null> {
   return get<Attendance>(
@@ -436,46 +474,58 @@ export async function getAttendanceById(
     SELECT *
     FROM attendances
     WHERE _id = ?
+      AND companyId = ?
       AND COALESCE(isDeleted, 0) = 0
     `,
-    [_id]
+    [_id, companyId]
   );
 }
 
 /**
- * Get all attendance records.
+ * Get all attendance records for a company.
  */
-export async function getAllAttendance(): Promise<Attendance[]> {
-  return all<Attendance>(`
+export async function getAllAttendance(
+  companyId: string
+): Promise<Attendance[]> {
+  return all<Attendance>(
+    `
     SELECT *
     FROM attendances
-    WHERE COALESCE(isDeleted, 0) = 0
+    WHERE companyId = ?
+      AND COALESCE(isDeleted, 0) = 0
     ORDER BY date DESC
-  `);
+    `,
+    [companyId]
+  );
 }
 
 /**
  * Get attendance records for an employee.
  */
 export async function getAttendanceByEmployee(
+  companyId: string,
   employeeId: string
 ): Promise<Attendance[]> {
   return all<Attendance>(
     `
     SELECT *
     FROM attendances
-    WHERE employeeId = ?
+    WHERE companyId = ?
+      AND employeeId = ?
       AND COALESCE(isDeleted, 0) = 0
     ORDER BY date DESC
     `,
-    [employeeId]
+    [companyId, employeeId]
   );
 }
 
 /**
  * Get all attendance records for a date, including employee information.
  */
-export async function getAttendanceByDate(date: string): Promise<
+export async function getAttendanceByDate(
+  companyId: string,
+  date: string
+): Promise<
   (Attendance & {
     matricule?: string;
     firstName?: string;
@@ -487,6 +537,7 @@ export async function getAttendanceByDate(date: string): Promise<
   return all(
     `
     SELECT
+      a.companyId,
       a._id,
       a.employeeId,
       a.date,
@@ -507,8 +558,10 @@ export async function getAttendanceByDate(date: string): Promise<
       e.department
     FROM attendances a
     JOIN employees e
-      ON a.employeeId = e._id
-    WHERE a.date = ?
+      ON a.companyId = e.companyId
+      AND a.employeeId = e._id
+    WHERE a.companyId = ?
+      AND a.date = ?
       AND COALESCE(a.isDeleted, 0) = 0
       AND COALESCE(e.isDeleted, 0) = 0
     ORDER BY
@@ -518,12 +571,17 @@ export async function getAttendanceByDate(date: string): Promise<
         ELSE a.createdAt
       END ASC
     `,
-    [date]
+    [companyId, date]
   );
 }
 
-// Daily attendance report
-export async function getDailyAttendanceReport(date: string): Promise<
+/**
+ * Daily attendance report.
+ */
+export async function getDailyAttendanceReport(
+  companyId: string,
+  date: string
+): Promise<
   (Attendance & {
     matricule?: string;
     firstName?: string;
@@ -535,6 +593,7 @@ export async function getDailyAttendanceReport(date: string): Promise<
   return all(
     `
     SELECT
+      e.companyId,
       e._id,
       e.matricule,
       e.firstName,
@@ -543,6 +602,7 @@ export async function getDailyAttendanceReport(date: string): Promise<
       e.department,
 
       a._id,
+      a.employeeId,
       a.date,
       a.clockIn,
       a.clockOut,
@@ -558,18 +618,20 @@ export async function getDailyAttendanceReport(date: string): Promise<
     FROM employees e
 
     LEFT JOIN attendances a
-      ON a.employeeId = e._id
+      ON a.companyId = e.companyId
+      AND a.employeeId = e._id
       AND a.date = ?
       AND COALESCE(a.isDeleted, 0) = 0
 
-    WHERE COALESCE(e.isDeleted, 0) = 0
+    WHERE e.companyId = ?
+      AND COALESCE(e.isDeleted, 0) = 0
       AND e.status = 'ACTIF'
 
     ORDER BY
       e.lastName ASC,
       e.firstName ASC
     `,
-    [date]
+    [date, companyId]
   );
 }
 
@@ -580,6 +642,7 @@ export async function getDailyAttendanceReport(date: string): Promise<
  * may have NULL in isDeleted from before the column migration.
  */
 export async function getAttendanceRecord(
+  companyId: string,
   employeeId: string,
   date: string
 ): Promise<Attendance | null> {
@@ -587,14 +650,16 @@ export async function getAttendanceRecord(
     `
     SELECT *
     FROM attendances
-    WHERE employeeId = ?
+    WHERE companyId = ?
+      AND employeeId = ?
       AND date = ?
       AND COALESCE(isDeleted, 0) = 0
     ORDER BY createdAt ASC
     LIMIT 1
     `,
-    [employeeId, date]
+    [companyId, employeeId, date]
   );
+
   return attendance ?? null;
 }
 
@@ -604,6 +669,7 @@ export async function getAttendanceRecord(
  * Unlike getAttendanceById, this searches by employee + date.
  */
 export async function getAttendanceByEmployeeAndDate(
+  companyId: string,
   employeeId: string,
   date: string
 ): Promise<Attendance | null> {
@@ -612,13 +678,14 @@ export async function getAttendanceByEmployeeAndDate(
       `
       SELECT *
       FROM attendances
-      WHERE employeeId = ?
+      WHERE companyId = ?
+        AND employeeId = ?
         AND date = ?
         AND COALESCE(isDeleted, 0) = 0
       ORDER BY createdAt ASC
       LIMIT 1
       `,
-      [employeeId, date]
+      [companyId, employeeId, date]
     )) ?? null
   );
 }
@@ -627,6 +694,7 @@ export async function getAttendanceByEmployeeAndDate(
  * Update an attendance record.
  */
 export async function updateAttendance(
+  companyId: string,
   _id: string,
   date: string,
   updates: Partial<AttendanceWithEmployee>
@@ -637,7 +705,7 @@ export async function updateAttendance(
     throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
   }
 
-  const existing = await getAttendanceById(_id);
+  const existing = await getAttendanceById(companyId, _id);
 
   console.log("EXISTING ATTENDANCE TO UPDATE", existing);
   console.log("UPDATES", updates);
@@ -679,6 +747,7 @@ export async function updateAttendance(
 
     savedUpdates = {
       ...savedUpdates,
+      companyId,
       _id,
       employeeId: existing.employeeId,
       date,
@@ -697,6 +766,7 @@ export async function updateAttendance(
 
     savedUpdates = {
       ...savedUpdates,
+      companyId,
       _id,
       date,
       employeeId: existing.employeeId,
@@ -713,6 +783,7 @@ export async function updateAttendance(
 
     savedUpdates = {
       ...savedUpdates,
+      companyId,
       _id,
       date,
       employeeId: existing.employeeId,
@@ -729,6 +800,7 @@ export async function updateAttendance(
 
     savedUpdates = {
       ...savedUpdates,
+      companyId,
       _id,
       date,
       employeeId: existing.employeeId,
@@ -745,6 +817,7 @@ export async function updateAttendance(
 
     savedUpdates = {
       ...savedUpdates,
+      companyId,
       _id,
       date,
       employeeId: existing.employeeId,
@@ -766,12 +839,14 @@ export async function updateAttendance(
   values.push(updatedAt);
 
   values.push(_id);
+  values.push(companyId);
 
   await run(
     `
     UPDATE attendances
     SET ${fields.join(", ")}
     WHERE _id = ?
+      AND companyId = ?
     `,
     values
   );
@@ -779,20 +854,24 @@ export async function updateAttendance(
   console.log("ATTENDANCE TO SAVE TO SYNC QUEUE", savedUpdates);
 
   await addToSyncQueue({
+    companyId,
     entity: "attendance",
     entityId: _id,
     operation: "update",
     payload: JSON.stringify(savedUpdates),
   });
 
-  return getAttendanceById(_id);
+  return getAttendanceById(companyId, _id);
 }
 
 /**
  * Soft delete an attendance record.
+ *
+ * If the attendance is a CONGÉ attendance, only the corresponding
+ * leave day is removed.
  */
-export async function deleteAttendance(_id: string) {
-  const existing = await getAttendanceById(_id);
+export async function deleteAttendance(companyId: string, _id: string) {
+  const existing = await getAttendanceById(companyId, _id);
 
   if (!existing) {
     throw new Error("ATTENDANCE RECORD NOT FOUND");
@@ -803,8 +882,240 @@ export async function deleteAttendance(_id: string) {
   const locked = await isAttendanceDateLocked(date);
 
   if (locked) {
-    throw new Error(`ATTENDANCE FOR ${date} IS LOCKED AND CANNOT BE MODIFIED`);
+    throw new Error(`LA LISTE DE PRESENCE DU ${date} EST VERROUILLEE.`);
   }
+
+  /*
+   * ============================================================
+   * HANDLE LEAVE ATTENDANCE
+   * ============================================================
+   */
+
+  if (existing.status === "CONGÉ") {
+    const leaves = await getLeaveByEmployeeId(
+      existing.companyId,
+      existing.employeeId
+    );
+
+    const correspondingLeave = leaves.find(
+      (leave) =>
+        leave.startDate <= date &&
+        leave.endDate >= date &&
+        leave.status !== "ANNULÉ"
+    );
+
+    if (correspondingLeave?._id) {
+      const leaveId = correspondingLeave._id;
+      const { startDate, endDate, status } = correspondingLeave;
+
+      /*
+       * ----------------------------------------------------------
+       * ONE-DAY LEAVE
+       * ----------------------------------------------------------
+       */
+
+      if (startDate === date && endDate === date) {
+        await run(
+          `
+          UPDATE leaves
+          SET
+            status = ?,
+            updatedAt = ?
+          WHERE _id = ?
+            AND companyId = ?
+          `,
+          ["ANNULÉ", new Date().toISOString(), leaveId, companyId]
+        );
+
+        if (status === "APPROUVÉ") {
+          const employee = await getEmployeeById(
+            existing.companyId,
+            existing.employeeId
+          );
+
+          if (employee) {
+            await run(
+              `
+              UPDATE employees
+              SET
+                remainingLeave = COALESCE(remainingLeave, 0) + 1,
+                updatedAt = ?,
+                synced = 0
+              WHERE _id = ?
+                AND companyId = ?
+              `,
+              [new Date().toISOString(), existing.employeeId, companyId]
+            );
+
+            const updatedEmployee = await getEmployeeById(
+              existing.companyId,
+              existing.employeeId
+            );
+
+            if (updatedEmployee) {
+              await addToSyncQueue({
+                companyId: updatedEmployee.companyId,
+                entity: "employee",
+                entityId: existing.employeeId,
+                operation: "update",
+                payload: JSON.stringify({
+                  _id: updatedEmployee._id,
+                  remainingLeave: updatedEmployee.remainingLeave,
+                  serverVersion: updatedEmployee.serverVersion ?? 0,
+                  updatedAt: updatedEmployee.updatedAt,
+                }),
+              });
+            }
+          }
+        }
+      } else if (startDate === date) {
+        /*
+         * ----------------------------------------------------------
+         * FIRST DAY OF MULTI-DAY LEAVE
+         * ----------------------------------------------------------
+         */
+
+        const newStartDate = addDays(startDate, 1);
+
+        await run(
+          `
+          UPDATE leaves
+          SET
+            startDate = ?,
+            updatedAt = ?
+          WHERE _id = ?
+            AND companyId = ?
+          `,
+          [newStartDate, new Date().toISOString(), leaveId, companyId]
+        );
+
+        if (status === "APPROUVÉ") {
+          await restoreOneLeaveDay(existing.companyId, existing.employeeId);
+        }
+      } else if (endDate === date) {
+        /*
+         * ----------------------------------------------------------
+         * LAST DAY OF MULTI-DAY LEAVE
+         * ----------------------------------------------------------
+         */
+
+        const newEndDate = addDays(endDate, -1);
+
+        await run(
+          `
+          UPDATE leaves
+          SET
+            endDate = ?,
+            updatedAt = ?
+          WHERE _id = ?
+            AND companyId = ?
+          `,
+          [newEndDate, new Date().toISOString(), leaveId, companyId]
+        );
+
+        if (status === "APPROUVÉ") {
+          await restoreOneLeaveDay(existing.companyId, existing.employeeId);
+        }
+      } else {
+        /*
+         * ----------------------------------------------------------
+         * MIDDLE DAY
+         * ----------------------------------------------------------
+         */
+
+        const dayBefore = addDays(date, -1);
+        const dayAfter = addDays(date, 1);
+
+        await run(
+          `
+          UPDATE leaves
+          SET
+            endDate = ?,
+            updatedAt = ?
+          WHERE _id = ?
+            AND companyId = ?
+          `,
+          [dayBefore, new Date().toISOString(), leaveId, companyId]
+        );
+
+        const {
+          _id: _ignoredId,
+          createdAt: _ignoredCreatedAt,
+          updatedAt: _ignoredUpdatedAt,
+          ...leaveData
+        } = correspondingLeave;
+
+        const newLeaveId = randomUUID();
+        const now = new Date().toISOString();
+
+        await run(
+          `
+          INSERT INTO leaves (
+            companyId,
+            _id,
+            employeeId,
+            startDate,
+            endDate,
+            subject,
+            notes,
+            status,
+            createdAt,
+            updatedAt,
+            synced,
+            isDeleted,
+            serverVersion
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          [
+            companyId,
+            newLeaveId,
+            existing.employeeId,
+            dayAfter,
+            endDate,
+            leaveData.subject ?? null,
+            leaveData.notes ?? null,
+            status,
+            now,
+            now,
+            0,
+            0,
+            0,
+          ]
+        );
+
+        await addToSyncQueue({
+          companyId,
+          entity: "leave",
+          entityId: newLeaveId,
+          operation: "create",
+          payload: JSON.stringify({
+            companyId,
+            _id: newLeaveId,
+            employeeId: existing.employeeId,
+            startDate: dayAfter,
+            endDate,
+            subject: leaveData.subject ?? null,
+            notes: leaveData.notes ?? null,
+            status,
+            createdAt: now,
+            updatedAt: now,
+            serverVersion: 0,
+          }),
+        });
+
+        if (status === "APPROUVÉ") {
+          await restoreOneLeaveDay(existing.companyId, existing.employeeId);
+        }
+      }
+    }
+  }
+
+  /*
+   * ============================================================
+   * DELETE ATTENDANCE
+   * ============================================================
+   */
 
   const now = new Date().toISOString();
 
@@ -816,11 +1127,13 @@ export async function deleteAttendance(_id: string) {
       synced = 0,
       updatedAt = ?
     WHERE _id = ?
+      AND companyId = ?
     `,
-    [now, _id]
+    [now, _id, companyId]
   );
 
   const deletePayload: Partial<Attendance> = {
+    companyId,
     _id,
     employeeId: existing.employeeId,
     date: existing.date,
@@ -833,13 +1146,78 @@ export async function deleteAttendance(_id: string) {
   console.log("ATTENDANCE TO DELETE FROM SYNC QUEUE", deletePayload);
 
   await addToSyncQueue({
+    companyId,
     entity: "attendance",
     entityId: _id,
     operation: "delete",
     payload: JSON.stringify(deletePayload),
   });
 
-  return getAttendanceById(_id);
+  return getAttendanceById(companyId, _id);
+}
+
+/**
+ * Restore exactly ONE day to an employee's remaining leave.
+ */
+async function restoreOneLeaveDay(companyId: string, employeeId: string) {
+  const employee = await getEmployeeById(companyId, employeeId);
+
+  if (!employee) {
+    throw new Error("EMPLOYEE NOT FOUND");
+  }
+
+  const now = new Date().toISOString();
+
+  const updatedRemainingLeave = (employee.remainingLeave ?? 0) + 1;
+
+  await run(
+    `
+    UPDATE employees
+    SET
+      remainingLeave = ?,
+      synced = 0,
+      updatedAt = ?
+    WHERE _id = ?
+      AND companyId = ?
+    `,
+    [updatedRemainingLeave, now, employeeId, companyId]
+  );
+
+  const updatedEmployee = await getEmployeeById(companyId, employeeId);
+
+  if (!updatedEmployee) {
+    throw new Error("FAILED TO UPDATE EMPLOYEE LEAVE BALANCE");
+  }
+
+  await addToSyncQueue({
+    companyId,
+    entity: "employee",
+    entityId: employeeId,
+    operation: "update",
+    payload: JSON.stringify({
+      _id: employeeId,
+      remainingLeave: updatedEmployee.remainingLeave,
+      serverVersion: updatedEmployee.serverVersion ?? 0,
+      updatedAt: updatedEmployee.updatedAt,
+    }),
+  });
+}
+
+/**
+ * Add/subtract calendar days without timezone problems.
+ */
+function addDays(dateString: string, days: number): string {
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  const date = new Date(year, month - 1, day);
+
+  date.setDate(date.getDate() + days);
+
+  const newYear = date.getFullYear();
+  const newMonth = String(date.getMonth() + 1).padStart(2, "0");
+  const newDay = String(date.getDate()).padStart(2, "0");
+
+  return `${newYear}-${newMonth}-${newDay}`;
 }
 
 export async function upsertAttendance(attendance: Attendance) {
@@ -848,23 +1226,24 @@ export async function upsertAttendance(attendance: Attendance) {
    * 1. FIND EXISTING RECORD
    * ============================================================
    *
-   * IMPORTANT:
-   *
    * Sync must search deleted records too.
    *
    * A soft-deleted SQLite row still occupies its _id, even though
    * normal application queries hide it.
    */
-  let local = await getAttendanceByIdIncludingDeleted(attendance._id);
+
+  let local = await getAttendanceByIdIncludingDeleted(
+    attendance.companyId,
+    attendance._id
+  );
 
   /*
    * If the exact _id does not exist, look for an existing
-   * attendance for the same employee/date.
-   *
-   * This query also includes deleted records.
+   * attendance for the same company/employee/date.
    */
   if (!local) {
     local = await getAttendanceByEmployeeAndDateIncludingDeleted(
+      attendance.companyId,
       attendance.employeeId,
       attendance.date
     );
@@ -875,11 +1254,13 @@ export async function upsertAttendance(attendance: Attendance) {
    * 2. EXISTING LOCAL RECORD
    * ============================================================
    */
+
   if (local) {
     const localVersion = Number(local.serverVersion ?? 0);
     const remoteVersion = Number(attendance.serverVersion ?? 0);
 
     console.log("ATTENDANCE UPSERT CONFLICT CHECK:", {
+      companyId: attendance.companyId,
       localId: local._id,
       remoteId: attendance._id,
       employeeId: attendance.employeeId,
@@ -910,10 +1291,12 @@ export async function upsertAttendance(attendance: Attendance) {
      * If the local record was found by employeeId + date,
      * preserve its existing SQLite identity.
      */
+
     await run(
       `
       UPDATE attendances
       SET
+        companyId = ?,
         employeeId = ?,
         date = ?,
         clockIn = ?,
@@ -929,8 +1312,10 @@ export async function upsertAttendance(attendance: Attendance) {
         synced = 1,
         lastSyncedAt = CURRENT_TIMESTAMP
       WHERE _id = ?
+        AND companyId = ?
       `,
       [
+        attendance.companyId,
         attendance.employeeId,
         attendance.date,
         attendance.clockIn ?? null,
@@ -943,27 +1328,26 @@ export async function upsertAttendance(attendance: Attendance) {
         attendance.isDeleted ?? 0,
         attendance.createdAt,
         attendance.updatedAt,
-
-        /*
-         * Preserve the local SQLite _id.
-         */
         local._id,
+        attendance.companyId,
       ]
     );
 
     /*
-     * IMPORTANT:
-     *
      * Since this record may now be isDeleted = 1, DO NOT use
      * getAttendanceById() here if that function hides deleted rows.
      */
-    const result = await getAttendanceByIdIncludingDeleted(local._id);
+    const result = await getAttendanceByIdIncludingDeleted(
+      attendance.companyId,
+      local._id
+    );
 
     if (!result) {
       throw new Error(`ATTENDANCE ${local._id} DISAPPEARED AFTER UPDATE`);
     }
 
     console.log("ATTENDANCE UPDATED FROM SERVER:", {
+      companyId: attendance.companyId,
       localId: local._id,
       remoteId: attendance._id,
       employeeId: attendance.employeeId,
@@ -984,6 +1368,7 @@ export async function upsertAttendance(attendance: Attendance) {
   await run(
     `
     INSERT INTO attendances (
+      companyId,
       _id,
       employeeId,
       date,
@@ -1002,10 +1387,11 @@ export async function upsertAttendance(attendance: Attendance) {
     )
     VALUES (
       ?, ?, ?, ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, 1, CURRENT_TIMESTAMP
+      ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP
     )
     `,
     [
+      attendance.companyId,
       attendance._id,
       attendance.employeeId,
       attendance.date,
@@ -1026,13 +1412,17 @@ export async function upsertAttendance(attendance: Attendance) {
    * The inserted record may itself be a tombstone
    * (isDeleted = 1), so query without the deletion filter.
    */
-  const result = await getAttendanceByIdIncludingDeleted(attendance._id);
+  const result = await getAttendanceByIdIncludingDeleted(
+    attendance.companyId,
+    attendance._id
+  );
 
   if (!result) {
     throw new Error(`ATTENDANCE ${attendance._id} DISAPPEARED AFTER INSERT`);
   }
 
   console.log("ATTENDANCE INSERTED FROM SERVER:", {
+    companyId: result.companyId,
     id: result._id,
     employeeId: result.employeeId,
     date: result.date,
@@ -1043,8 +1433,10 @@ export async function upsertAttendance(attendance: Attendance) {
   return result;
 }
 
-// Mark attendance as synced.
-export async function markAttendanceSynced(_id: string) {
+/**
+ * Mark attendance as synced.
+ */
+export async function markAttendanceSynced(companyId: string, _id: string) {
   await run(
     `
     UPDATE attendances
@@ -1052,12 +1444,14 @@ export async function markAttendanceSynced(_id: string) {
       synced = 1,
       lastSyncedAt = CURRENT_TIMESTAMP
     WHERE _id = ?
+      AND companyId = ?
     `,
-    [_id]
+    [_id, companyId]
   );
 }
 
 async function getAttendanceByIdIncludingDeleted(
+  companyId: string,
   _id: string
 ): Promise<Attendance | null> {
   return get<Attendance>(
@@ -1065,13 +1459,15 @@ async function getAttendanceByIdIncludingDeleted(
     SELECT *
     FROM attendances
     WHERE _id = ?
+      AND companyId = ?
     LIMIT 1
     `,
-    [_id]
+    [_id, companyId]
   );
 }
 
 async function getAttendanceByEmployeeAndDateIncludingDeleted(
+  companyId: string,
   employeeId: string,
   date: string
 ): Promise<Attendance | null> {
@@ -1079,10 +1475,11 @@ async function getAttendanceByEmployeeAndDateIncludingDeleted(
     `
     SELECT *
     FROM attendances
-    WHERE employeeId = ?
+    WHERE companyId = ?
+      AND employeeId = ?
       AND date = ?
     LIMIT 1
     `,
-    [employeeId, date]
+    [companyId, employeeId, date]
   );
 }

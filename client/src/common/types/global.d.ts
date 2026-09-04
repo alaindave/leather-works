@@ -33,6 +33,7 @@ interface SignUpCredentials {
 }
 
 interface LoggedUser {
+  companyId: string;
   _id: string;
   firstName: string;
   lastName: string;
@@ -100,20 +101,25 @@ declare global {
       };
 
       employees: {
-        create: (employee: Partial<Employee>) => Promise<Employee>;
+        create: (
+          companyId: string,
+          employee: Partial<Employee>
+        ) => Promise<Employee>;
         uploadPhoto: (
+          companyId: string,
           employeeId: string,
           file: { name: string; buffer: ArrayBuffer }
         ) => Promise<Employee>;
         getPhotoUrl: (relativePath: string) => Promise<string>;
-        getAll: () => Promise<Employee[]>;
-        getById: (_id: string) => Promise<Employee>;
-        search: (searchTerm: string) => Promise<Employee[]>;
+        getAll: (companyId: string) => Promise<Employee[]>;
+        getById: (companyId: string, _id: string) => Promise<Employee>;
+        search: (companyId: string, searchTerm: string) => Promise<Employee[]>;
         update: (
+          companyId: string,
           _id: string,
           data: Partial<Employee>
         ) => Promise<Employee | null>;
-        delete: (_id: string) => Promise<void>;
+        delete: (companyId: string, _id: string) => Promise<void>;
       };
 
       employees_documents: {

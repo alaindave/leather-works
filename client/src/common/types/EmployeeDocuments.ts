@@ -1,6 +1,7 @@
 export type EmployeeDocumentType = "EMPLOYMENT_CONTRACT" | "NATIONAL_ID";
 
 export interface EmployeeDocument {
+  companyId: string;
   _id: string;
   employeeId: string;
   uploadedBy: string;
@@ -19,6 +20,7 @@ export interface EmployeeDocument {
 }
 
 export interface UploadedEmployeeDocument {
+  companyId: string;
   employeeId: string;
   uploadedBy: string;
   documentType: EmployeeDocumentType;

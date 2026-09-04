@@ -4,6 +4,7 @@ import {
 } from "./PayrollComponent.js";
 
 export default interface PayrollEmployeeProfile {
+  companyId: string;
   _id?: string;
   employeeId: string;
   componentId: string;
@@ -33,6 +34,7 @@ export default interface PayrollEmployeeProfile {
 }
 
 export interface CreatePayrollProfileDto {
+  companyId: string;
   name: string;
   displayName: string;
   displayOrder?: number;

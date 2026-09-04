@@ -15,49 +15,71 @@ import {
 export function registerPayrollSettingsIPC() {
   console.log("REGISTERING PAYROLL SETTINGS IPC");
 
-  ipcMain.handle("payroll-settings:get", async () => {
-    return await getPayrollSettings();
-  });
-
-  ipcMain.handle("payroll-settings:getById", async (_, _id: string) => {
-    return await getPayrollSettingsById(_id);
-  });
-  ipcMain.handle("payroll-settings:create", async (_, data) => {
-    return await createPayrollSettings(data);
-  });
-
-  ipcMain.handle("payroll-settings:update", async (_, settings) => {
-    return await updatePayrollSettings(settings);
+  ipcMain.handle("payroll-settings:get", async (_, companyId: string) => {
+    return await getPayrollSettings(companyId);
   });
 
   ipcMain.handle(
-    "payroll-settings:updateFields",
-    async (_, _id: string, fields) => {
-      return await updatePayrollSettingsFields(_id, fields);
+    "payroll-settings:getById",
+    async (_, companyId: string, _id: string) => {
+      return await getPayrollSettingsById(companyId, _id);
     }
   );
 
-  ipcMain.handle("payroll-settings:delete", async (_, _id: string) => {
-    await deletePayrollSettings(_id);
+  ipcMain.handle(
+    "payroll-settings:create",
+    async (_, companyId: string, data) => {
+      return await createPayrollSettings(companyId, data);
+    }
+  );
 
-    return {
-      success: true,
-    };
-  });
+  ipcMain.handle(
+    "payroll-settings:update",
+    async (_, companyId: string, settings) => {
+      return await updatePayrollSettings(companyId, settings);
+    }
+  );
 
-  ipcMain.handle("payroll-settings:restore", async (_, _id: string) => {
-    return await restorePayrollSettings(_id);
-  });
+  ipcMain.handle(
+    "payroll-settings:updateFields",
+    async (_, companyId: string, _id: string, fields) => {
+      return await updatePayrollSettingsFields(companyId, _id, fields);
+    }
+  );
 
-  ipcMain.handle("payroll-settings:markSynced", async (_, _id: string) => {
-    await markPayrollSettingsSynced(_id);
+  ipcMain.handle(
+    "payroll-settings:delete",
+    async (_, companyId: string, _id: string) => {
+      await deletePayrollSettings(companyId, _id);
 
-    return {
-      success: true,
-    };
-  });
+      return {
+        success: true,
+      };
+    }
+  );
 
-  ipcMain.handle("payroll-settings:getUnsynced", async () => {
-    return await getUnsyncedPayrollSettings();
-  });
+  ipcMain.handle(
+    "payroll-settings:restore",
+    async (_, companyId: string, _id: string) => {
+      return await restorePayrollSettings(companyId, _id);
+    }
+  );
+
+  ipcMain.handle(
+    "payroll-settings:markSynced",
+    async (_, companyId: string, _id: string) => {
+      await markPayrollSettingsSynced(companyId, _id);
+
+      return {
+        success: true,
+      };
+    }
+  );
+
+  ipcMain.handle(
+    "payroll-settings:getUnsynced",
+    async (_, companyId: string) => {
+      return await getUnsyncedPayrollSettings(companyId);
+    }
+  );
 }

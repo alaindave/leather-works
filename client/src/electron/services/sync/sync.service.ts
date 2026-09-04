@@ -2,8 +2,11 @@ import { app, BrowserWindow } from "electron";
 import { pushPendingChanges } from "./push.service.js";
 import { pullLatestChanges } from "./pull.service.js";
 import { NetworkService } from "./network.service.js";
-import { getUnsyncedItems } from "../../database/repositories/sync.repository.js";
-import { SyncStatusEvent } from "../../../common/types/sync.js";
+import {
+  getUnsyncedItems,
+  notifyPendingChanges,
+} from "../../database/repositories/sync.repository.js";
+import { SyncStatusEvent } from "../../../common/types/Sync.js";
 
 const API_URL = app.isPackaged
   ? "https://leather-works.onrender.com"
@@ -136,6 +139,7 @@ export default async function sync() {
       timestamp: new Date().toISOString(),
       pendingChanges,
     });
+    await notifyPendingChanges();
   } catch (error) {
     console.error("SYNC FAILED:", error);
 

@@ -26,13 +26,19 @@ export function registerAttendanceDailyCheckIPC() {
     }
   );
 
-  ipcMain.handle("attendanceDailyCheck:getById", async (_, id: string) => {
-    return getAttendanceDailyCheckById(id);
-  });
+  ipcMain.handle(
+    "attendanceDailyCheck:getById",
+    async (_, companyId: string, _id: string) => {
+      return getAttendanceDailyCheckById(companyId, _id);
+    }
+  );
 
-  ipcMain.handle("attendanceDailyCheck:getByDate", async (_, date: string) => {
-    return getAttendanceDailyCheckByDate(date);
-  });
+  ipcMain.handle(
+    "attendanceDailyCheck:getByDate",
+    async (_, companyId: string, date: string) => {
+      return getAttendanceDailyCheckByDate(companyId, date);
+    }
+  );
 
   ipcMain.handle("attendanceDailyCheck:getAll", async () => {
     return getAllAttendanceDailyChecks();
@@ -40,8 +46,8 @@ export function registerAttendanceDailyCheckIPC() {
 
   ipcMain.handle(
     "attendanceDailyCheck:completeMarkAbsent",
-    async (_, completedAt: string) => {
-      return completeMarkAbsent(completedAt);
+    async (_, companyId: string, completedAt: string) => {
+      return completeMarkAbsent(companyId, completedAt);
     }
   );
 

@@ -12,6 +12,7 @@ export type PayrollCalculationType =
   | "FORMULE_RETARD";
 
 export interface CreatePayrollComponentDto {
+  companyId: string;
   name: string;
   displayName: string;
   type: PayrollComponentType;
@@ -31,6 +32,7 @@ export interface CreatePayrollComponentDto {
 }
 
 export default interface PayrollComponent {
+  companyId: string;
   _id: string;
   name: string;
   displayName: string;

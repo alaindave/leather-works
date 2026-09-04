@@ -1,4 +1,5 @@
 import { ipcMain } from "electron";
+
 import {
   createTaskComment,
   deleteTaskComment,
@@ -6,15 +7,27 @@ import {
 } from "../database/repositories/tasks_comments.repository.js";
 
 export function registerTaskCommentIPC() {
-  ipcMain.handle("task-comments:create", async (_event, payload) => {
-    return await createTaskComment(payload);
-  });
+  // Create task comment
+  ipcMain.handle(
+    "task-comments:create",
+    async (_, companyId: string, payload) => {
+      return await createTaskComment(companyId, payload);
+    }
+  );
 
-  ipcMain.handle("task-comments:get", async (_event, taskId: string) => {
-    return await getTaskCommentsWithAuthor(taskId);
-  });
+  // Get task comments
+  ipcMain.handle(
+    "task-comments:get",
+    async (_, companyId: string, taskId: string) => {
+      return await getTaskCommentsWithAuthor(companyId, taskId);
+    }
+  );
 
-  ipcMain.handle("task-comments:delete", async (_event, commentId: string) => {
-    return await deleteTaskComment(commentId);
-  });
+  // Delete task comment
+  ipcMain.handle(
+    "task-comments:delete",
+    async (_, companyId: string, commentId: string) => {
+      return await deleteTaskComment(companyId, commentId);
+    }
+  );
 }

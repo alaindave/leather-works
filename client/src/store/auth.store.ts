@@ -5,42 +5,34 @@ import User from "../common/types/User";
 interface AdminUserStore {
   adminUser: Omit<User, "password">;
   isAuthenticated: boolean;
-  login: (
-    _id: string,
-    firstName: string,
-    lastName: string,
-    email: string,
-    role: "MANAGER" | "ADMIN",
-    notes: string
-  ) => void;
+
+  login: (user: Omit<User, "password">) => void;
+
   logout: () => void;
+
   saveNotes: (notes: string) => void;
 }
+
+const emptyAdminUser = {} as Omit<User, "password">;
 
 const useAdminUser = create<AdminUserStore>()(
   persist(
     (set) => ({
-      adminUser: {} as Omit<User, "password">,
+      adminUser: emptyAdminUser,
       isAuthenticated: false,
-      login: (_id, firstName, lastName, email, role, notes) => {
+
+      login: (user) => {
         set({
-          adminUser: {
-            _id,
-            firstName,
-            lastName,
-            email,
-            role,
-            notes,
-          },
+          adminUser: user,
           isAuthenticated: true,
         });
       },
 
       logout: () =>
-        set(() => ({
-          adminUser: {} as Omit<User, "password">,
+        set({
+          adminUser: emptyAdminUser,
           isAuthenticated: false,
-        })),
+        }),
 
       saveNotes: (notes: string) =>
         set((state) => ({
@@ -55,4 +47,5 @@ const useAdminUser = create<AdminUserStore>()(
     }
   )
 );
+
 export default useAdminUser;

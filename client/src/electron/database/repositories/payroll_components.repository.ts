@@ -17,20 +17,23 @@ import {
 export async function createPayrollComponent(
   component: CreatePayrollComponentDto
 ): Promise<PayrollComponent | null> {
+  if (!component.companyId) {
+    throw new Error("Cannot create payroll component without companyId");
+  }
+
   console.log("RECEIVED PAYROLL COMPONENT:", component);
 
   const _id = randomUUID();
   const now = new Date().toISOString();
 
   /*
-   * serverVersion is NULL/0 locally until the server accepts
+   * serverVersion is NULL locally until the server accepts
    * the entity and assigns its first serverVersion.
-   *
-   * The client must never generate a serverVersion.
    */
   await run(
     `
       INSERT INTO payroll_components (
+        companyId,
         _id,
         name,
         displayName,
@@ -47,11 +50,13 @@ export async function createPayrollComponent(
         createdAt,
         updatedAt,
         lastSyncedAt,
-        isDeleted
+        isDeleted,
+        serverVersion
       )
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-      `,
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `,
     [
+      component.companyId,
       _id,
       component.name,
       component.displayName,
@@ -69,6 +74,7 @@ export async function createPayrollComponent(
       now,
       null,
       0,
+      null,
     ]
   );
 
@@ -85,17 +91,18 @@ export async function createPayrollComponent(
   console.log("PAYROLL COMPONENT TO SAVE TO SYNC QUEUE", savedPayrollComponent);
 
   await addToSyncQueue({
+    companyId: component.companyId,
     entity: "payroll_component",
     entityId: _id,
     operation: "create",
     payload: JSON.stringify(savedPayrollComponent),
   });
 
-  const newComponent = await getPayrollComponentById(_id);
+  const newComponent = await getPayrollComponentById(component.companyId, _id);
 
   // Add the new component to employee payroll profiles.
   if (newComponent) {
-    await addPayrollComponentToAllEmployees(newComponent);
+    await addPayrollComponentToAllEmployees(component.companyId, newComponent);
   }
 
   return newComponent;
@@ -106,11 +113,53 @@ export async function createPayrollComponent(
 // ============================================================
 
 export async function upsertPayrollComponent(component: PayrollComponent) {
+  const companyId = component.companyId;
+
+  if (!companyId) {
+    throw new Error("Cannot upsert payroll component without companyId");
+  }
+
   console.log("COMPONENT TO UPSERT:", component);
+
+  const incomingServerVersion = component.serverVersion ?? 0;
+
+  const existing = await get<{
+    serverVersion: number | null;
+    synced: number;
+  }>(
+    `
+    SELECT
+      serverVersion,
+      synced
+    FROM payroll_components
+    WHERE companyId = ?
+      AND _id = ?
+    `,
+    [companyId, component._id]
+  );
+
+  /*
+   * Never overwrite a newer local/server version.
+   */
+  if (
+    existing &&
+    Number(existing.serverVersion ?? 0) > Number(incomingServerVersion)
+  ) {
+    return;
+  }
+
+  /*
+   * Never overwrite a local change that has not yet
+   * been pushed to the server.
+   */
+  if (existing && existing.synced === 0) {
+    return;
+  }
 
   await run(
     `
     INSERT INTO payroll_components (
+      companyId,
       _id,
       name,
       displayName,
@@ -131,11 +180,10 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       isDeleted
     )
 
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 
     ON CONFLICT(_id)
     DO UPDATE SET
-
       name = excluded.name,
       displayName = excluded.displayName,
       type = excluded.type,
@@ -147,7 +195,7 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       isSystem = excluded.isSystem,
       requiresHRApproval = excluded.requiresHRApproval,
       enabled = excluded.enabled,
-      synced = excluded.synced,
+      synced = 1,
       createdAt = excluded.createdAt,
       updatedAt = excluded.updatedAt,
       lastSyncedAt = excluded.lastSyncedAt,
@@ -155,6 +203,7 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       isDeleted = excluded.isDeleted
     `,
     [
+      companyId,
       component._id,
       component.name,
       component.displayName,
@@ -167,14 +216,16 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
       component.isSystem,
       component.requiresHRApproval,
       component.enabled,
-      component.synced,
+      1,
       component.createdAt,
       component.updatedAt,
       component.lastSyncedAt ?? null,
-      component.serverVersion ?? null,
+      incomingServerVersion,
       component.isDeleted ?? 0,
     ]
   );
+
+  return await getPayrollComponentById(companyId, component._id);
 }
 
 // ============================================================
@@ -182,15 +233,17 @@ export async function upsertPayrollComponent(component: PayrollComponent) {
 // ============================================================
 
 export async function getPayrollComponentById(
+  companyId: string,
   _id: string
 ): Promise<PayrollComponent | null> {
   return await get<PayrollComponent>(
     `
     SELECT *
     FROM payroll_components
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [_id]
+    [companyId, _id]
   );
 }
 
@@ -199,6 +252,7 @@ export async function getPayrollComponentById(
 // ============================================================
 
 export async function getEnabledPayrollComponents(
+  companyId: string,
   type?: "EARNING" | "DEDUCTION"
 ): Promise<PayrollComponent[]> {
   if (type) {
@@ -206,13 +260,13 @@ export async function getEnabledPayrollComponents(
       `
       SELECT *
       FROM payroll_components
-      WHERE
-        enabled = 1
+      WHERE companyId = ?
+        AND enabled = 1
         AND isDeleted = 0
         AND type = ?
       ORDER BY displayOrder
       `,
-      [type]
+      [companyId, type]
     );
   }
 
@@ -220,11 +274,12 @@ export async function getEnabledPayrollComponents(
     `
     SELECT *
     FROM payroll_components
-    WHERE
-      enabled = 1
+    WHERE companyId = ?
+      AND enabled = 1
       AND isDeleted = 0
     ORDER BY displayOrder
-    `
+    `,
+    [companyId]
   );
 }
 
@@ -233,6 +288,7 @@ export async function getEnabledPayrollComponents(
 // ============================================================
 
 export async function getPayrollComponents(
+  companyId: string,
   type?: "EARNING" | "DEDUCTION"
 ): Promise<PayrollComponent[]> {
   if (type) {
@@ -240,12 +296,12 @@ export async function getPayrollComponents(
       `
       SELECT *
       FROM payroll_components
-      WHERE
-        isDeleted = 0
+      WHERE companyId = ?
+        AND isDeleted = 0
         AND type = ?
       ORDER BY displayOrder ASC
       `,
-      [type]
+      [companyId, type]
     );
   }
 
@@ -253,9 +309,11 @@ export async function getPayrollComponents(
     `
     SELECT *
     FROM payroll_components
-    WHERE isDeleted = 0
+    WHERE companyId = ?
+      AND isDeleted = 0
     ORDER BY displayOrder ASC
-    `
+    `,
+    [companyId]
   );
 }
 
@@ -263,22 +321,22 @@ export async function getPayrollComponents(
 // UPDATE
 // ============================================================
 
-export async function updatePayrollComponents(components: PayrollComponent[]) {
+export async function updatePayrollComponents(
+  companyId: string,
+  components: PayrollComponent[]
+) {
+  if (!companyId) {
+    throw new Error("Cannot update payroll components without companyId");
+  }
+
   console.log("COMPONENTS TO UPDATE:", components);
 
   for (const component of components) {
-    /*
-     * updatedAt represents the moment the LOCAL entity was edited.
-     *
-     * Do not use CURRENT_TIMESTAMP here because we want the exact
-     * client-side edit timestamp to be sent to the server.
-     */
     const updatedAt = new Date().toISOString();
 
     await run(
       `
       UPDATE payroll_components
-
       SET
         name = ?,
         displayName = ?,
@@ -292,8 +350,8 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
         enabled = ?,
         synced = 0,
         updatedAt = ?
-
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
       [
         component.name,
@@ -307,24 +365,19 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
         component.requiresHRApproval ?? 0,
         component.enabled,
         updatedAt,
+        companyId,
         component._id,
       ]
     );
 
     /*
-     * IMPORTANT:
-     *
-     * We preserve the existing serverVersion here.
-     *
-     * If this component has already been synchronized, its old
-     * serverVersion tells us which server version the client
-     * currently knows about.
-     *
-     * The server will allocate a NEW serverVersion when it
-     * receives this update.
+     * Preserve the last serverVersion known by the client.
+     * The server will allocate a new version when this update
+     * is accepted.
      */
     const updatedPayrollComponent = {
       ...component,
+      companyId,
       _id: component._id,
       updatedAt,
       serverVersion: component.serverVersion ?? null,
@@ -337,6 +390,7 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
     );
 
     await addToSyncQueue({
+      companyId,
       entity: "payroll_component",
       entityId: component._id,
       operation: "update",
@@ -344,7 +398,7 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
     });
 
     // Update employee payroll profiles.
-    await updatePayrollComponentDefaults(updatedPayrollComponent);
+    await updatePayrollComponentDefaults(companyId, updatedPayrollComponent);
   }
 
   return components;
@@ -354,62 +408,71 @@ export async function updatePayrollComponents(components: PayrollComponent[]) {
 // DELETE
 // ============================================================
 
-export async function deletePayrollComponent(_id: string) {
+export async function deletePayrollComponent(companyId: string, _id: string) {
+  if (!companyId) {
+    throw new Error("Cannot delete payroll component without companyId");
+  }
+
   const updatedAt = new Date().toISOString();
 
   /*
-   * Soft delete locally.
-   *
-   * serverVersion remains the last serverVersion known by
-   * this client. The server will assign a new version when
-   * it receives the delete.
+   * Get the component before soft deleting it so that
+   * its existing serverVersion can be sent to the server.
    */
-  const component = await getPayrollComponentById(_id);
+  const component = await getPayrollComponentById(companyId, _id);
+
+  if (!component) {
+    throw new Error(`PAYROLL COMPONENT NOT FOUND: ${_id}`);
+  }
 
   await run(
     `
     UPDATE payroll_components
-
     SET
       isDeleted = 1,
       synced = 0,
       updatedAt = ?
-
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [updatedAt, _id]
+    [updatedAt, companyId, _id]
   );
 
   console.log("PAYROLL COMPONENT DELETION:", {
+    companyId,
     _id,
     deleted: true,
     updatedAt,
-    serverVersion: component?.serverVersion ?? null,
+    serverVersion: component.serverVersion ?? null,
   });
 
-  await removeDeletedPayrollComponentsFromEmployeeProfiles();
+  await removeDeletedPayrollComponentsFromEmployeeProfiles(companyId);
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_component",
     entityId: _id,
     operation: "delete",
     payload: JSON.stringify({
+      companyId,
       _id,
       updatedAt,
-      serverVersion: component?.serverVersion ?? null,
+      serverVersion: component.serverVersion ?? null,
       isDeleted: 1,
     }),
   });
+
+  return true;
 }
 
 // ============================================================
 // ENABLE
 // ============================================================
 
-export async function enablePayrollComponent(id: string) {
+export async function enablePayrollComponent(companyId: string, id: string) {
   const updatedAt = new Date().toISOString();
 
-  const component = await getPayrollComponentById(id);
+  const component = await getPayrollComponentById(companyId, id);
 
   if (!component) {
     throw new Error(`PAYROLL COMPONENT NOT FOUND: ${id}`);
@@ -418,19 +481,19 @@ export async function enablePayrollComponent(id: string) {
   await run(
     `
     UPDATE payroll_components
-
     SET
       enabled = 1,
       synced = 0,
       updatedAt = ?
-
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [updatedAt, id]
+    [updatedAt, companyId, id]
   );
 
   const updatedComponent = {
     ...component,
+    companyId,
     enabled: 1,
     updatedAt,
     synced: 0,
@@ -438,23 +501,24 @@ export async function enablePayrollComponent(id: string) {
   };
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_component",
     entityId: id,
     operation: "update",
     payload: JSON.stringify(updatedComponent),
   });
 
-  return getPayrollComponentById(id);
+  return getPayrollComponentById(companyId, id);
 }
 
 // ============================================================
 // DISABLE
 // ============================================================
 
-export async function disablePayrollComponent(id: string) {
+export async function disablePayrollComponent(companyId: string, id: string) {
   const updatedAt = new Date().toISOString();
 
-  const component = await getPayrollComponentById(id);
+  const component = await getPayrollComponentById(companyId, id);
 
   if (!component) {
     throw new Error(`PAYROLL COMPONENT NOT FOUND: ${id}`);
@@ -463,19 +527,19 @@ export async function disablePayrollComponent(id: string) {
   await run(
     `
     UPDATE payroll_components
-
     SET
       enabled = 0,
       synced = 0,
       updatedAt = ?
-
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [updatedAt, id]
+    [updatedAt, companyId, id]
   );
 
   const updatedComponent = {
     ...component,
+    companyId,
     enabled: 0,
     updatedAt,
     synced: 0,
@@ -483,13 +547,14 @@ export async function disablePayrollComponent(id: string) {
   };
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_component",
     entityId: id,
     operation: "update",
     payload: JSON.stringify(updatedComponent),
   });
 
-  return getPayrollComponentById(id);
+  return getPayrollComponentById(companyId, id);
 }
 
 // ============================================================
@@ -497,21 +562,24 @@ export async function disablePayrollComponent(id: string) {
 // ============================================================
 
 export async function markPayrollComponentSynced(
+  companyId: string,
   _id: string,
   serverVersion?: number
 ) {
   await run(
     `
     UPDATE payroll_components
-
     SET
       synced = 1,
       lastSyncedAt = ?,
-      serverVersion = COALESCE(?, serverVersion)
-
-    WHERE _id = ?
+      serverVersion = COALESCE(
+        ?,
+        serverVersion
+      )
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [new Date().toISOString(), serverVersion ?? null, _id]
+    [new Date().toISOString(), serverVersion ?? null, companyId, _id]
   );
 
   return true;
@@ -521,16 +589,18 @@ export async function markPayrollComponentSynced(
 // GET UNSYNCED COMPONENTS
 // ============================================================
 
-export async function getUnsyncedPayrollComponents(): Promise<
-  PayrollComponent[]
-> {
+export async function getUnsyncedPayrollComponents(
+  companyId: string
+): Promise<PayrollComponent[]> {
   return await all<PayrollComponent>(
     `
     SELECT *
     FROM payroll_components
-    WHERE
-      synced = 0
+    WHERE companyId = ?
+      AND synced = 0
       AND isDeleted = 0
-    `
+    ORDER BY updatedAt ASC
+    `,
+    [companyId]
   );
 }

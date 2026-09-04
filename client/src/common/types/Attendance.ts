@@ -1,4 +1,5 @@
-export default interface Attendance {
+export interface Attendance {
+  companyId: string;
   _id: string;
   employeeId: string;
   date: string;
@@ -17,6 +18,7 @@ export default interface Attendance {
 }
 
 export interface PayrollAttendanceSummary {
+  companyId: string;
   employeeId: string;
   lateDays: number;
   totalLateMinutes: number;
@@ -24,9 +26,19 @@ export interface PayrollAttendanceSummary {
 }
 
 export interface CreateAttendanceDto {
+  companyId: string;
   employeeId: string;
   date: string;
   clockIn?: string;
   clockOut?: string | null;
   status?: "PONCTUEL" | "RETARD" | "ABSENT" | "CONGÉ" | null;
+}
+
+export interface AttendanceWithEmployee extends Attendance {
+  companyId: string;
+  firstName: string;
+  lastName: string;
+  matricule: string;
+  role: string;
+  department: string;
 }

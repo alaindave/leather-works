@@ -10,45 +10,71 @@ import {
   deleteEmployee,
   searchEmployees,
 } from "../database/repositories/employees.repository.js";
+
 import { uploadEmployeePhoto } from "../database/repositories/employees_photos.repository.js";
 
 export function registerEmployeeIPC() {
   console.log("REGISTERING EMPLOYEES IPC");
-  ipcMain.handle("employees:create", async (_, employee) => {
+
+  // Create employee
+  ipcMain.handle("employees:create", async (_, companyId, employee) => {
     console.log("EMPLOYEE CREATE IPC RECEIVED");
-    return createEmployee(employee);
+
+    return createEmployee(companyId, employee);
   });
 
-  ipcMain.handle("employees:uploadPhoto", async (_, employeeId, file) => {
-    console.log("EMPLOYEE PHOTO UPLOAD RECEIVED");
-    const upload_results = await uploadEmployeePhoto(employeeId, file);
-    console.log("UPLOAD RESULTS:", upload_results);
-    return upload_results;
+  // Upload employee photo
+  ipcMain.handle(
+    "employees:uploadPhoto",
+    async (_, companyId, employeeId, file) => {
+      console.log("EMPLOYEE PHOTO UPLOAD RECEIVED");
+
+      const uploadResults = await uploadEmployeePhoto(
+        companyId,
+        employeeId,
+        file
+      );
+
+      console.log("UPLOAD RESULTS:", uploadResults);
+
+      return uploadResults;
+    }
+  );
+
+  // Get all employees
+  ipcMain.handle("employees:getAll", async (_, companyId) => {
+    return getAllEmployees(companyId);
   });
 
-  ipcMain.handle("employees:getAll", async () => {
-    return getAllEmployees();
+  // Get employee by ID
+  ipcMain.handle("employees:getById", async (_, companyId, employeeId) => {
+    return getEmployeeById(companyId, employeeId);
   });
 
-  ipcMain.handle("employees:getById", async (_, _id) => {
-    return getEmployeeById(_id);
-  });
-
+  // Get employee photo
   ipcMain.handle("photos:getUrl", (_, relativePath: string) => {
     const fullPath = path.join(app.getPath("userData"), relativePath);
+
     const buffer = fs.readFileSync(fullPath);
+
     return buffer.toString("base64");
   });
 
-  ipcMain.handle("employees:update", async (_, _id, employee) => {
-    return updateEmployee(_id, employee);
+  // Update employee
+  ipcMain.handle(
+    "employees:update",
+    async (_, companyId, employeeId, employee) => {
+      return updateEmployee(companyId, employeeId, employee);
+    }
+  );
+
+  // Delete employee
+  ipcMain.handle("employees:delete", async (_, companyId, employeeId) => {
+    return deleteEmployee(companyId, employeeId);
   });
 
-  ipcMain.handle("employees:delete", async (_, _id) => {
-    return deleteEmployee(_id);
-  });
-
-  ipcMain.handle("employees:search", async (_, searchTerm) => {
-    return searchEmployees(searchTerm);
+  // Search employees
+  ipcMain.handle("employees:search", async (_, companyId, searchTerm) => {
+    return searchEmployees(companyId, searchTerm);
   });
 }

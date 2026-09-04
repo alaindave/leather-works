@@ -1,4 +1,5 @@
 export default interface Leave {
+  companyId: string;
   _id: string;
   employeeId: string;
   submittedAt: string;

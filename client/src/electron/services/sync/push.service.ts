@@ -51,14 +51,37 @@ export async function pushPendingChanges(): Promise<PushPendingChangesResult> {
 
   console.log("ITEMS TO PUSH SYNC:", pending);
 
+  /*
+   * ---------------------------------------------------------
+   * VALIDATE COMPANY IDS
+   * ---------------------------------------------------------
+   *
+   * Every tenant-owned sync item must contain companyId.
+   *
+   * The payload should also contain companyId because the
+   * backend needs to know which company owns the record.
+   */
+  for (const item of pending) {
+    const data = JSON.parse(item.payload);
+
+    if (!data.companyId) {
+      throw new Error(`Cannot push sync item ${item._id}: missing companyId`);
+    }
+  }
+
   const form = new FormData();
 
-  const items = pending.map((item) => ({
-    queueId: item._id,
-    entity: item.entity,
-    operation: item.operation,
-    data: JSON.parse(item.payload),
-  }));
+  const items = pending.map((item) => {
+    const data = JSON.parse(item.payload);
+
+    return {
+      queueId: item._id,
+      companyId: data.companyId,
+      entity: item.entity,
+      operation: item.operation,
+      data,
+    };
+  });
 
   // ---------------------------------------------------------
   // SYNC METADATA
@@ -137,61 +160,73 @@ export async function pushPendingChanges(): Promise<PushPendingChangesResult> {
 
     const data = JSON.parse(item.payload);
 
+    const companyId = data.companyId;
+
+    if (!companyId) {
+      console.error(`SYNCED ITEM ${item._id} HAS NO COMPANY ID`);
+
+      continue;
+    }
+
     switch (item.entity) {
       case "employee":
-        await markEmployeeSynced(data._id);
+        await markEmployeeSynced(companyId, data._id);
         break;
 
       case "employee_photo":
-        await markEmployeePhotoSynced(data.employeeId);
+        await markEmployeePhotoSynced(companyId, data.employeeId);
         break;
 
       case "employee_document":
-        await markEmployeeDocumentSynced(data._id);
+        await markEmployeeDocumentSynced(companyId, data._id);
         break;
 
       case "attendance":
-        await markAttendanceSynced(data._id);
+        await markAttendanceSynced(companyId, data._id);
         break;
 
       case "attendance_daily_check":
-        await markAttendanceDailyCheckSynced(data._id);
+        await markAttendanceDailyCheckSynced(companyId, data._id);
         break;
 
       case "leave":
-        await markLeaveSynced(data._id);
+        await markLeaveSynced(companyId, data._id);
         break;
 
       case "task":
-        await markTaskSynced(data._id);
+        await markTaskSynced(companyId, data._id);
         break;
 
       case "task_comment":
-        await markTaskCommentsSynced(data._id);
+        await markTaskCommentsSynced(companyId, data._id);
         break;
 
       case "payroll_settings":
-        await markPayrollSettingsSynced(data._id);
+        await markPayrollSettingsSynced(companyId, data._id);
         break;
 
       case "payroll_component":
-        await markPayrollComponentSynced(data._id);
+        await markPayrollComponentSynced(companyId, data._id);
         break;
 
       case "payroll_profile":
-        await markPayrollEmployeeProfileSynced(data._id);
+        await markPayrollEmployeeProfileSynced(companyId, data._id);
         break;
 
       case "payroll_run":
-        await markPayrollRunSynced(data._id);
+        await markPayrollRunSynced(companyId, data._id);
         break;
 
       case "payroll_result":
-        await markPayrollResultSynced(data._id);
+        await markPayrollResultSynced(companyId, data._id);
         break;
 
       case "payroll_item":
-        await markPayrollItemSynced(data._id);
+        await markPayrollItemSynced(companyId, data._id);
+        break;
+
+      default:
+        console.warn(`UNKNOWN SYNC ENTITY: ${item.entity}`);
         break;
     }
   }

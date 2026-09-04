@@ -1,5 +1,7 @@
 import { IpcMainInvokeEvent, ipcMain } from "electron";
+
 import EmployeePayrollProfile from "../../common/types/payroll/PayrollEmployeeProfile.js";
+
 import {
   createEmployeePayrollProfile,
   updateManyEmployeePayrollProfiles,
@@ -26,21 +28,29 @@ import {
   addPayrollComponentToAllEmployees,
   resetEmployeePayrollProfileToDefaults,
 } from "../services/payroll/payrollProfile.service.js";
+
 import CreatePayrollProfileDto from "../../common/types/payroll/CreatePayrollProfileDto.js";
 
 /* -------------------------------------------------------------------------- */
-/*                                    Repository                                 */
+/*                         PAYROLL EMPLOYEE PROFILE IPC                       */
 /* -------------------------------------------------------------------------- */
+
 export function registerPayrollEmployeeProfileIPC() {
   console.log("REGISTERING PAYROLL EMPLOYEE PROFILE IPC");
+
+  /* ------------------------------------------------------------------------ */
+  /*                              Repository                                   */
+  /* ------------------------------------------------------------------------ */
+
   ipcMain.handle(
     "payrollEmployeeProfiles:create",
     async (
       _: IpcMainInvokeEvent,
+      companyId: string,
       employeeID: string,
       profile: CreatePayrollProfileDto
     ) => {
-      return await createEmployeePayrollProfile(employeeID, profile);
+      return await createEmployeePayrollProfile(companyId, employeeID, profile);
     }
   );
 
@@ -48,30 +58,48 @@ export function registerPayrollEmployeeProfileIPC() {
     "payrollEmployeeProfiles:createMany",
     async (
       _: IpcMainInvokeEvent,
+      companyId: string,
       employeeID: string,
       profiles: CreatePayrollProfileDto[]
     ) => {
-      return await createManyEmployeePayrollProfiles(employeeID, profiles);
+      return await createManyEmployeePayrollProfiles(
+        companyId,
+        employeeID,
+        profiles
+      );
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:update",
-    async (_: IpcMainInvokeEvent, profiles: EmployeePayrollProfile[]) => {
-      return await updateManyEmployeePayrollProfiles(profiles);
+    async (
+      _: IpcMainInvokeEvent,
+      companyId: string,
+      profiles: EmployeePayrollProfile[]
+    ) => {
+      return await updateManyEmployeePayrollProfiles(companyId, profiles);
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:updateMany",
-    async (_: IpcMainInvokeEvent, profiles: EmployeePayrollProfile[]) => {
-      return await updateManyEmployeePayrollProfiles(profiles);
+    async (
+      _: IpcMainInvokeEvent,
+      companyId: string,
+      profiles: EmployeePayrollProfile[]
+    ) => {
+      return await updateManyEmployeePayrollProfiles(companyId, profiles);
     }
   );
 
+  /*
+   * Upsert receives the complete profile.
+   *
+   * The repository derives companyId from profile.companyId.
+   */
   ipcMain.handle(
     "payrollEmployeeProfiles:upsert",
-    async (_, profile: EmployeePayrollProfile) => {
+    async (_: IpcMainInvokeEvent, profile: EmployeePayrollProfile) => {
       return await upsertEmployeePayrollProfile(profile);
     }
   );
@@ -85,112 +113,163 @@ export function registerPayrollEmployeeProfileIPC() {
 
   ipcMain.handle(
     "payrollEmployeeProfiles:get",
-    async (_: IpcMainInvokeEvent, _id: string) => {
-      return await getEmployeePayrollProfile(_id);
+    async (_: IpcMainInvokeEvent, companyId: string, _id: string) => {
+      return await getEmployeePayrollProfile(companyId, _id);
     }
   );
 
-  //Get all
+  /* ------------------------------------------------------------------------ */
+  /*                                Get All                                    */
+  /* ------------------------------------------------------------------------ */
+
   ipcMain.handle(
     "payrollEmployeeProfiles:getAll",
-    async (_, employeeID?: string, type?: "EARNING" | "DEDUCTION") => {
-      return await getAllEmployeePayrollProfiles(employeeID, type);
+    async (
+      _: IpcMainInvokeEvent,
+      companyId: string,
+      employeeID?: string,
+      type?: "EARNING" | "DEDUCTION"
+    ) => {
+      return await getAllEmployeePayrollProfiles(companyId, employeeID, type);
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:getByEmployee",
-    async (_: IpcMainInvokeEvent, employeeId: string) => {
-      return await getEmployeePayrollProfilesByEmployee(employeeId);
+    async (_: IpcMainInvokeEvent, companyId: string, employeeId: string) => {
+      return await getEmployeePayrollProfilesByEmployee(companyId, employeeId);
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:getByComponent",
-    async (_: IpcMainInvokeEvent, employeeId: string, componentId: string) => {
+    async (
+      _: IpcMainInvokeEvent,
+      companyId: string,
+      employeeId: string,
+      componentId: string
+    ) => {
       return await getEmployeePayrollProfileByComponent(
+        companyId,
         employeeId,
         componentId
       );
     }
   );
 
-  ipcMain.handle("payrollEmployeeProfiles:getUnsynced", async () => {
-    return await getUnsyncedEmployeePayrollProfiles();
-  });
+  /* ------------------------------------------------------------------------ */
+  /*                               Sync                                        */
+  /* ------------------------------------------------------------------------ */
+
+  ipcMain.handle(
+    "payrollEmployeeProfiles:getUnsynced",
+    async (_: IpcMainInvokeEvent, companyId: string) => {
+      return await getUnsyncedEmployeePayrollProfiles(companyId);
+    }
+  );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:markSynced",
-    async (_: IpcMainInvokeEvent, id) => {
-      return await markPayrollEmployeeProfileSynced(id);
+    async (_: IpcMainInvokeEvent, companyId: string, id: string) => {
+      return await markPayrollEmployeeProfileSynced(companyId, id);
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:markManySynced",
-    async (_: IpcMainInvokeEvent, ids) => {
-      return await markManyPayrollEmployeeProfileSynced(ids);
+    async (_: IpcMainInvokeEvent, companyId: string, ids: string[]) => {
+      return await markManyPayrollEmployeeProfileSynced(companyId, ids);
     }
   );
 
+  /* ------------------------------------------------------------------------ */
+  /*                              Delete                                       */
+  /* ------------------------------------------------------------------------ */
+
   ipcMain.handle(
     "payrollEmployeeProfiles:delete",
-    async (_: IpcMainInvokeEvent, id) => {
-      return await deleteEmployeePayrollProfile(id);
+    async (_: IpcMainInvokeEvent, companyId: string, id: string) => {
+      return await deleteEmployeePayrollProfile(companyId, id);
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:restore",
-    async (_: IpcMainInvokeEvent, id) => {
-      return await restoreEmployeePayrollProfile(id);
+    async (_: IpcMainInvokeEvent, companyId: string, id: string) => {
+      return await restoreEmployeePayrollProfile(companyId, id);
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:permanentlyDelete",
-    async (_: IpcMainInvokeEvent, id) => {
-      return await permanentlyDeleteEmployeePayrollProfile(id);
+    async (_: IpcMainInvokeEvent, companyId: string, id: string) => {
+      return await permanentlyDeleteEmployeePayrollProfile(companyId, id);
     }
   );
+
+  /* ------------------------------------------------------------------------ */
+  /*                              Existence                                    */
+  /* ------------------------------------------------------------------------ */
 
   ipcMain.handle(
     "payrollEmployeeProfiles:exists",
-    async (_: IpcMainInvokeEvent, employeeId, componentId) => {
-      return await employeePayrollProfileExists(employeeId, componentId);
+    async (
+      _: IpcMainInvokeEvent,
+      companyId: string,
+      employeeId: string,
+      componentId: string
+    ) => {
+      return await employeePayrollProfileExists(
+        companyId,
+        employeeId,
+        componentId
+      );
     }
   );
 
-  ipcMain.handle("payrollEmployeeProfiles:count", async () => {
-    return await countEmployeePayrollProfiles();
-  });
+  /* ------------------------------------------------------------------------ */
+  /*                                Count                                      */
+  /* ------------------------------------------------------------------------ */
+
+  ipcMain.handle(
+    "payrollEmployeeProfiles:count",
+    async (_: IpcMainInvokeEvent, companyId: string) => {
+      return await countEmployeePayrollProfiles(companyId);
+    }
+  );
 
   /* -------------------------------------------------------------------------- */
-  /*                                    Service                                 */
+  /*                                  Services                                  */
   /* -------------------------------------------------------------------------- */
 
-  ipcMain.handle("payrollEmployeeProfiles:initialize", async () => {
-    return await initializeEmployeePayrollProfiles();
-  });
+  ipcMain.handle(
+    "payrollEmployeeProfiles:initialize",
+    async (_: IpcMainInvokeEvent, companyId: string) => {
+      return await initializeEmployeePayrollProfiles(companyId);
+    }
+  );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:initializeForEmployee",
-    async (_, employeeId) => {
-      return await initializeEmployeePayrollProfilesForEmployee(employeeId);
+    async (_: IpcMainInvokeEvent, companyId: string, employeeId: string) => {
+      return await initializeEmployeePayrollProfilesForEmployee(
+        companyId,
+        employeeId
+      );
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:addComponentToEmployees",
-    async (_, component) => {
-      return await addPayrollComponentToAllEmployees(component);
+    async (_: IpcMainInvokeEvent, companyId: string, component) => {
+      return await addPayrollComponentToAllEmployees(companyId, component);
     }
   );
 
   ipcMain.handle(
     "payrollEmployeeProfiles:resetToDefaults",
-    async (_, employeeId) => {
-      return await resetEmployeePayrollProfileToDefaults(employeeId);
+    async (_: IpcMainInvokeEvent, companyId: string, employeeId: string) => {
+      return await resetEmployeePayrollProfileToDefaults(companyId, employeeId);
     }
   );
 }

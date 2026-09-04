@@ -80,7 +80,6 @@ function toLocalDate(value?: string | Date): Date | null {
   /*
    * Reject invalid dates such as:
    *
-   * 2026-02-31
    */
   if (
     date.getFullYear() !== year ||
@@ -110,9 +109,6 @@ function formatDatabaseDate(date: Date | null): string {
   return `${year}-${month}-${day}`;
 }
 
-/**
- * Normalize incoming DateRange values.
- */
 function normalizeDateValue(value?: string | Date): string {
   if (!value) {
     return "";
@@ -125,41 +121,7 @@ function normalizeDateValue(value?: string | Date): string {
   return value;
 }
 
-/*
- * ============================================================
- * PREVENT MANUAL DATE TYPING
- * ============================================================
- *
- * react-datepicker has an internal input parser.
- *
- * Typing incomplete dates, especially years such as:
- *
- * 2
- * 20
- * 202
- * 2026
- *
- * can cause repeated parsing/re-rendering.
- *
- * Since this component is intended to be calendar-driven,
- * we prevent manual date editing completely.
- *
- * IMPORTANT:
- *
- * react-datepicker defines onKeyDown as:
- *
- * React.KeyboardEvent<HTMLElement>
- *
- * NOT:
- *
- * React.KeyboardEvent<HTMLInputElement>
- */
-
 function preventManualDateTyping(event: React.KeyboardEvent<HTMLElement>) {
-  /*
-   * Keys that should remain available for navigation and
-   * accessibility.
-   */
   const allowedKeys = new Set([
     "Tab",
     "Escape",
@@ -170,29 +132,9 @@ function preventManualDateTyping(event: React.KeyboardEvent<HTMLElement>) {
     "ArrowDown",
   ]);
 
-  /*
-   * Allow accessibility/navigation keys.
-   */
   if (allowedKeys.has(event.key)) {
     return;
   }
-
-  /*
-   * Prevent everything else.
-   *
-   * This includes:
-   *
-   * 0-9
-   * /
-   * -
-   * Backspace
-   * Delete
-   * Home
-   * End
-   * etc.
-   *
-   * The calendar itself remains fully usable.
-   */
   event.preventDefault();
 }
 
@@ -426,21 +368,9 @@ export default function DateRangePicker({
             disabled={disabled}
             autoComplete="off"
             className="date-range-picker-input"
-            /*
-             * ==================================================
-             * CRITICAL FREEZE PREVENTION
-             * ==================================================
-             *
-             * Do not allow react-datepicker to process manual
-             * date typing.
-             */
             onKeyDown={preventManualDateTyping}
           />
         </FormControl>
-
-        {/* ================================================== */}
-        {/* ARROW */}
-        {/* ================================================== */}
 
         <Box pb="10px" color="gray.500" fontSize="14px" userSelect="none">
           →

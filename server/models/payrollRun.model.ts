@@ -8,6 +8,7 @@ export type PayrollStatus =
   | "ANNULÉ";
 
 export interface PayrollRunDocument {
+  companyId: string;
   _id: string;
   month: number;
   year: number;
@@ -37,6 +38,12 @@ export interface PayrollRunDocument {
 
 const payrollRunSchema = new Schema<PayrollRunDocument>(
   {
+    companyId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     _id: {
       type: String,
       required: true,

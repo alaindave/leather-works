@@ -1,6 +1,7 @@
 import { Schema, model, HydratedDocument } from "mongoose";
 
 export interface TaskComment {
+  companyId: string;
   _id: string;
   taskId: string;
   author: string;
@@ -12,6 +13,7 @@ export interface TaskComment {
 }
 
 export interface Task {
+  companyId: string;
   _id: string;
   taskNumber: string;
   author: string;
@@ -37,6 +39,11 @@ export type TaskCommentDocument = HydratedDocument<TaskComment>;
 
 const taskCommentSchema = new Schema<TaskComment>(
   {
+    companyId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     _id: {
       type: String,
       required: true,
@@ -88,6 +95,11 @@ const taskCommentSchema = new Schema<TaskComment>(
 
 const taskSchema = new Schema<Task>(
   {
+    companyId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     _id: {
       type: String,
       required: true,
@@ -189,8 +201,9 @@ const taskSchema = new Schema<Task>(
 
     isDeleted: {
       type: Number,
-      default: 0,
       required: true,
+      default: 0,
+      enum: [0, 1],
     },
   },
   {

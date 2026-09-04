@@ -3,7 +3,10 @@ import { getEmployeesWhoDidNotClockIn } from "../../database/repositories/attend
 import { createAbsentAttendance } from "../../database/repositories/attendances.repository.js";
 import Employee from "../../../common/types/Employee.js";
 
-export async function markEmployeesAbsentLocally(date: string) {
+export async function markEmployeesAbsentLocally(
+  companyId: string,
+  date: string
+) {
   // Employees who:
   // 1. Are active
   // 2. Have not clocked in today
@@ -19,12 +22,16 @@ export async function markEmployeesAbsentLocally(date: string) {
     return;
   }
 
-  const employees: Employee[] = await getEmployeesWhoDidNotClockIn(date);
+  const employees: Employee[] = await getEmployeesWhoDidNotClockIn(
+    companyId,
+    date
+  );
 
   const createdAttendances = [];
 
   for (const employee of employees) {
     const absentAttendance = {
+      companyId: employee.companyId,
       _id: randomUUID(),
       employeeId: employee?._id,
       date,

@@ -1,16 +1,17 @@
 import { randomUUID } from "crypto";
 import { run, get, all, transaction, runDirect } from "../db.js";
+
 import {
   PayrollBatchResult,
   PayrollResult,
   PayrollItem,
-} from "../../../common/types/payroll/Payroll.js";
-import {
   PayrollRun,
   PayrollStatus,
 } from "../../../common/types/payroll/Payroll.js";
+
 import User from "../../../common/types/User.js";
 import AdminUser from "../../../common/types/AdminUser.js";
+
 import { addToSyncQueue } from "./sync.repository.js";
 
 // ============================================================
@@ -18,11 +19,16 @@ import { addToSyncQueue } from "./sync.repository.js";
 // ============================================================
 
 export async function createPayrollRun(
+  companyId: string,
   input: PayrollBatchResult,
   admin: Omit<User, "password" | "notes">,
   year: number,
   month: number
 ) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
   // ----------------------------------------------------------
   // Validate payroll period
   // ----------------------------------------------------------
@@ -35,24 +41,24 @@ export async function createPayrollRun(
     throw new Error("Invalid payroll year.");
   }
 
-  const date = new Date();
-  const now = date.toISOString();
+  const now = new Date().toISOString();
 
   // ----------------------------------------------------------
-  // Prevent duplicate payroll runs for the same period
+  // Prevent duplicate payroll runs for THIS COMPANY
   // ----------------------------------------------------------
 
   const existingPayrollRun = await get<PayrollRun>(
     `
     SELECT *
     FROM payroll_runs
-    WHERE year = ?
+    WHERE companyId = ?
+      AND year = ?
       AND month = ?
       AND isDeleted = 0
       AND status <> 'ANNULÉ'
     LIMIT 1
     `,
-    [year, month]
+    [companyId, year, month]
   );
 
   if (existingPayrollRun) {
@@ -65,6 +71,7 @@ export async function createPayrollRun(
 
   const payrollRun: PayrollRun = {
     _id: randomUUID(),
+    companyId,
     generatedBy: admin._id,
     month,
     year,
@@ -84,6 +91,7 @@ export async function createPayrollRun(
   await run(
     `
     INSERT INTO payroll_runs (
+      companyId,
       _id,
       generatedBy,
       month,
@@ -100,9 +108,10 @@ export async function createPayrollRun(
       updatedAt,
       isDeleted
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
+      payrollRun.companyId,
       payrollRun._id,
       payrollRun.generatedBy,
       payrollRun.month,
@@ -122,6 +131,7 @@ export async function createPayrollRun(
   );
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_run",
     entityId: payrollRun._id,
     operation: "create",
@@ -135,7 +145,11 @@ export async function createPayrollRun(
 // GET PAYROLL RUNS
 // ============================================================
 
-export async function getPayrollRuns(year: number, month: number) {
+export async function getPayrollRuns(
+  companyId: string,
+  year: number,
+  month: number
+) {
   return await all<PayrollRun>(
     `
     SELECT
@@ -144,12 +158,14 @@ export async function getPayrollRuns(year: number, month: number) {
     FROM payroll_runs pr
     LEFT JOIN admin_users gen
       ON pr.generatedBy = gen._id
-    WHERE pr.isDeleted = 0 
-      AND year=? 
-      AND month=?
+      AND gen.companyId = pr.companyId
+    WHERE pr.companyId = ?
+      AND pr.isDeleted = 0
+      AND pr.year = ?
+      AND pr.month = ?
     ORDER BY pr.createdAt DESC
     `,
-    [year, month]
+    [companyId, year, month]
   );
 }
 
@@ -157,30 +173,54 @@ export async function getPayrollRuns(year: number, month: number) {
 // GET PAYROLL RUN BY ID
 // ============================================================
 
-export async function getPayrollRunById(_id: string) {
+export async function getPayrollRunById(companyId: string, _id: string) {
   return await get<PayrollRun>(
     `
     SELECT
       pr.*,
-      gen.firstName || ' ' || gen.lastName AS generatedByName,
-      can.firstName || ' ' || can.lastName AS cancelledByName,
-      ver.firstName || ' ' || ver.lastName AS submittedForVerificationByName,
-      app.firstName || ' ' || app.lastName AS approvedByName,
-      paid.firstName || ' ' || paid.lastName AS paidByName
+
+      gen.firstName || ' ' || gen.lastName
+        AS generatedByName,
+
+      can.firstName || ' ' || can.lastName
+        AS cancelledByName,
+
+      ver.firstName || ' ' || ver.lastName
+        AS submittedForVerificationByName,
+
+      app.firstName || ' ' || app.lastName
+        AS approvedByName,
+
+      paid.firstName || ' ' || paid.lastName
+        AS paidByName
+
     FROM payroll_runs pr
+
     LEFT JOIN admin_users gen
       ON pr.generatedBy = gen._id
+      AND gen.companyId = pr.companyId
+
     LEFT JOIN admin_users can
       ON pr.cancelledBy = can._id
+      AND can.companyId = pr.companyId
+
     LEFT JOIN admin_users ver
       ON pr.submittedForVerificationBy = ver._id
+      AND ver.companyId = pr.companyId
+
     LEFT JOIN admin_users app
       ON pr.approvedBy = app._id
+      AND app.companyId = pr.companyId
+
     LEFT JOIN admin_users paid
       ON pr.paidBy = paid._id
-    WHERE pr._id = ?
+      AND paid.companyId = pr.companyId
+
+    WHERE pr.companyId = ?
+      AND pr._id = ?
+    LIMIT 1
     `,
-    [_id]
+    [companyId, _id]
   );
 }
 
@@ -188,7 +228,10 @@ export async function getPayrollRunById(_id: string) {
 // GET PAYROLL RUN BY STATUS
 // ============================================================
 
-export async function getPayrollRunsByStatus(status: PayrollStatus) {
+export async function getPayrollRunsByStatus(
+  companyId: string,
+  status: PayrollStatus
+) {
   return await get<PayrollRun>(
     `
     SELECT
@@ -197,12 +240,14 @@ export async function getPayrollRunsByStatus(status: PayrollStatus) {
     FROM payroll_runs pr
     LEFT JOIN admin_users gen
       ON pr.generatedBy = gen._id
-    WHERE pr.status = ?
+      AND gen.companyId = pr.companyId
+    WHERE pr.companyId = ?
+      AND pr.status = ?
       AND pr.isDeleted = 0
     ORDER BY pr.createdAt DESC
     LIMIT 1
     `,
-    [status]
+    [companyId, status]
   );
 }
 
@@ -210,11 +255,24 @@ export async function getPayrollRunsByStatus(status: PayrollStatus) {
 // UPSERT PAYROLL RUN FROM SERVER
 // ============================================================
 
-export async function upsertPayrollRun(payrollRun: PayrollRun) {
+export async function upsertPayrollRun(
+  companyId: string,
+  payrollRun: PayrollRun
+) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
+  if (payrollRun.companyId !== companyId) {
+    throw new Error(
+      "Payroll run companyId does not match the requested companyId."
+    );
+  }
+
   console.log("PAYROLL RUN TO UPSERT", payrollRun);
 
   // ----------------------------------------------------------
-  // 1. Look for the canonical ID
+  // 1. Look for canonical ID INSIDE THIS COMPANY
   // ----------------------------------------------------------
 
   const existingById = await get<
@@ -226,21 +284,15 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
     `
     SELECT *
     FROM payroll_runs
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     LIMIT 1
     `,
-    [payrollRun._id]
+    [companyId, payrollRun._id]
   );
 
   if (existingById) {
-    /*
-     * IMPORTANT:
-     *
-     * A local record with synced = 0 contains changes that have
-     * not yet reached the server.
-     *
-     * Do not allow a pull to overwrite those changes.
-     */
+    // Never overwrite pending local changes.
     if (existingById.synced === 0) {
       console.log(
         `SKIPPING PAYROLL RUN PULL. LOCAL CHANGES ARE PENDING: ${payrollRun._id}`
@@ -249,12 +301,7 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
       return existingById;
     }
 
-    /*
-     * ServerVersion is now the source of truth for sync ordering.
-     *
-     * If the incoming version is older or equal, there is nothing
-     * to apply.
-     */
+    // ServerVersion is the source of truth.
     if (
       payrollRun.serverVersion &&
       payrollRun.serverVersion <= (existingById.serverVersion ?? 0)
@@ -296,7 +343,8 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
         createdAt = ?,
         updatedAt = ?,
         isDeleted = ?
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
       [
         payrollRun.generatedBy,
@@ -320,6 +368,7 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
         payrollRun.createdAt,
         payrollRun.updatedAt,
         payrollRun.isDeleted ?? 0,
+        companyId,
         payrollRun._id,
       ]
     );
@@ -329,7 +378,7 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
 
   // ----------------------------------------------------------
   // 2. No ID match.
-  //    Check the natural payroll period.
+  //    Check natural payroll period INSIDE THIS COMPANY.
   // ----------------------------------------------------------
 
   const existingByPeriod = await get<
@@ -341,13 +390,14 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
     `
     SELECT *
     FROM payroll_runs
-    WHERE month = ?
+    WHERE companyId = ?
+      AND month = ?
       AND year = ?
       AND isDeleted = 0
       AND status <> 'ANNULÉ'
     LIMIT 1
     `,
-    [payrollRun.month, payrollRun.year]
+    [companyId, payrollRun.month, payrollRun.year]
   );
 
   if (existingByPeriod) {
@@ -356,9 +406,6 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
       existing: existingByPeriod,
     });
 
-    /*
-     * If this local record has pending changes, don't replace it.
-     */
     if (existingByPeriod.synced === 0) {
       console.log(
         `SKIPPING PAYROLL RUN PERIOD CONFLICT. LOCAL CHANGES ARE PENDING: ${existingByPeriod._id}`
@@ -367,10 +414,6 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
       return existingByPeriod;
     }
 
-    /*
-     * Only replace the local period record when the server
-     * has a newer version.
-     */
     if (
       payrollRun.serverVersion &&
       payrollRun.serverVersion <= (existingByPeriod.serverVersion ?? 0)
@@ -409,7 +452,8 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
         createdAt = ?,
         updatedAt = ?,
         isDeleted = ?
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
       [
         payrollRun._id,
@@ -434,6 +478,7 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
         payrollRun.createdAt,
         payrollRun.updatedAt,
         payrollRun.isDeleted ?? 0,
+        companyId,
         existingByPeriod._id,
       ]
     );
@@ -448,6 +493,7 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
   await run(
     `
     INSERT INTO payroll_runs (
+      companyId,
       _id,
       generatedBy,
       month,
@@ -475,10 +521,11 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
     VALUES (
       ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?, ?, ?, ?, ?, ?,
-      ?, 1, ?, ?, ?
+      ?, ?, 1, ?, ?, ?
     )
     `,
     [
+      payrollRun.companyId,
       payrollRun._id,
       payrollRun.generatedBy,
       payrollRun.month,
@@ -511,8 +558,25 @@ export async function upsertPayrollRun(payrollRun: PayrollRun) {
 // UPSERT PAYROLL RESULT FROM SERVER
 // ============================================================
 
-export async function upsertPayrollResult(payrollResult: PayrollResult) {
+export async function upsertPayrollResult(
+  companyId: string,
+  payrollResult: PayrollResult
+) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
+  if (payrollResult.companyId !== companyId) {
+    throw new Error(
+      "Payroll result companyId does not match the requested companyId."
+    );
+  }
+
   console.log("PAYROLL RESULT TO UPSERT", payrollResult);
+
+  // ----------------------------------------------------------
+  // Look for canonical ID INSIDE THIS COMPANY
+  // ----------------------------------------------------------
 
   const existingById = await get<
     PayrollResult & {
@@ -523,14 +587,14 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
     `
     SELECT *
     FROM payroll_results
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     LIMIT 1
     `,
-    [payrollResult._id]
+    [companyId, payrollResult._id]
   );
 
   if (existingById) {
-    // Never overwrite pending local changes.
     if (existingById.synced === 0) {
       console.log(
         `SKIPPING PAYROLL RESULT PULL. LOCAL CHANGES ARE PENDING: ${payrollResult._id}`
@@ -539,7 +603,6 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
       return existingById;
     }
 
-    // ServerVersion is the conflict-resolution mechanism.
     if (
       payrollResult.serverVersion &&
       payrollResult.serverVersion <= (existingById.serverVersion ?? 0)
@@ -578,7 +641,8 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
         updatedAt = ?,
         synced = 1,
         isDeleted = ?
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
       [
         payrollResult.payrollRunId,
@@ -599,6 +663,7 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
         payrollResult.createdAt,
         payrollResult.updatedAt,
         payrollResult.isDeleted ?? 0,
+        companyId,
         payrollResult._id,
       ]
     );
@@ -608,6 +673,7 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
 
   // ----------------------------------------------------------
   // Check natural employee/month/year key
+  // INSIDE THIS COMPANY
   // ----------------------------------------------------------
 
   const existingByPeriod = await get<
@@ -619,14 +685,20 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
     `
     SELECT *
     FROM payroll_results
-    WHERE employeeId = ?
+    WHERE companyId = ?
+      AND employeeId = ?
       AND month = ?
       AND year = ?
       AND isDeleted = 0
       AND status <> 'ANNULÉ'
     LIMIT 1
     `,
-    [payrollResult.employeeId, payrollResult.month, payrollResult.year]
+    [
+      companyId,
+      payrollResult.employeeId,
+      payrollResult.month,
+      payrollResult.year,
+    ]
   );
 
   if (existingByPeriod) {
@@ -678,7 +750,8 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
         updatedAt = ?,
         synced = 1,
         isDeleted = ?
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
       [
         payrollResult._id,
@@ -700,6 +773,7 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
         payrollResult.createdAt,
         payrollResult.updatedAt,
         payrollResult.isDeleted ?? 0,
+        companyId,
         existingByPeriod._id,
       ]
     );
@@ -714,6 +788,7 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
   await run(
     `
     INSERT INTO payroll_results (
+      companyId,
       _id,
       payrollRunId,
       employeeId,
@@ -737,10 +812,11 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
     )
     VALUES (
       ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?, ?, ?, ?, 1, ?
+      ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?
     )
     `,
     [
+      payrollResult.companyId,
       payrollResult._id,
       payrollResult.payrollRunId,
       payrollResult.employeeId,
@@ -770,7 +846,20 @@ export async function upsertPayrollResult(payrollResult: PayrollResult) {
 // UPSERT PAYROLL ITEM FROM SERVER
 // ============================================================
 
-export async function upsertPayrollItem(payrollItem: PayrollItem) {
+export async function upsertPayrollItem(
+  companyId: string,
+  payrollItem: PayrollItem
+) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
+  if (payrollItem.companyId !== companyId) {
+    throw new Error(
+      "Payroll item companyId does not match the requested companyId."
+    );
+  }
+
   const existing = await get<
     PayrollItem & {
       synced: number;
@@ -780,14 +869,14 @@ export async function upsertPayrollItem(payrollItem: PayrollItem) {
     `
     SELECT *
     FROM payroll_items
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     LIMIT 1
     `,
-    [payrollItem._id]
+    [companyId, payrollItem._id]
   );
 
   if (existing) {
-    // Don't overwrite pending local changes.
     if (existing.synced === 0) {
       console.log(
         `SKIPPING PAYROLL ITEM PULL. LOCAL CHANGES ARE PENDING: ${payrollItem._id}`
@@ -796,7 +885,6 @@ export async function upsertPayrollItem(payrollItem: PayrollItem) {
       return existing;
     }
 
-    // Ignore old/equal server versions.
     if (
       payrollItem.serverVersion &&
       payrollItem.serverVersion <= (existing.serverVersion ?? 0)
@@ -812,6 +900,7 @@ export async function upsertPayrollItem(payrollItem: PayrollItem) {
   await run(
     `
     INSERT INTO payroll_items (
+      companyId,
       _id,
       payrollResultId,
       employeeId,
@@ -827,11 +916,12 @@ export async function upsertPayrollItem(payrollItem: PayrollItem) {
       isDeleted
     )
     VALUES (
-      ?, ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?, 1, ?
     )
     ON CONFLICT(_id)
     DO UPDATE SET
+      companyId = excluded.companyId,
       payrollResultId = excluded.payrollResultId,
       employeeId = excluded.employeeId,
       componentId = excluded.componentId,
@@ -844,8 +934,10 @@ export async function upsertPayrollItem(payrollItem: PayrollItem) {
       updatedAt = excluded.updatedAt,
       synced = 1,
       isDeleted = excluded.isDeleted
+    WHERE payroll_items.companyId = excluded.companyId
     `,
     [
+      payrollItem.companyId,
       payrollItem._id,
       payrollItem.payrollResultId,
       payrollItem.employeeId,
@@ -869,26 +961,46 @@ export async function upsertPayrollItem(payrollItem: PayrollItem) {
 // ============================================================
 
 export async function updatePayrollStatus(
+  companyId: string,
   payrollRunId: string,
   status: PayrollStatus
 ) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
   const now = new Date().toISOString();
+
+  // ----------------------------------------------------------
+  // Make sure payroll run belongs to this company
+  // ----------------------------------------------------------
+
+  const payrollRun = await get<{ _id: string }>(
+    `
+    SELECT _id
+    FROM payroll_runs
+    WHERE companyId = ?
+      AND _id = ?
+      AND isDeleted = 0
+    LIMIT 1
+    `,
+    [companyId, payrollRunId]
+  );
+
+  if (!payrollRun) {
+    throw new Error(`Payroll run not found for company: ${payrollRunId}`);
+  }
 
   const results = await all<{ _id: string }>(
     `
     SELECT _id
     FROM payroll_results
-    WHERE payrollRunId = ?
+    WHERE companyId = ?
+      AND payrollRunId = ?
     `,
-    [payrollRunId]
+    [companyId, payrollRunId]
   );
 
-  // Update payroll run.
-  //
-  // IMPORTANT:
-  // We do NOT change serverVersion locally.
-  // The server assigns the next version when it processes
-  // this sync operation.
   await run(
     `
     UPDATE payroll_runs
@@ -896,14 +1008,15 @@ export async function updatePayrollStatus(
       status = ?,
       updatedAt = ?,
       synced = 0
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [status, now, payrollRunId]
+    [status, now, companyId, payrollRunId]
   );
 
-  // Update all payroll results.
   if (results.length > 0) {
     const resultIds = results.map((result) => result._id);
+
     const placeholders = resultIds.map(() => "?").join(", ");
 
     await run(
@@ -913,17 +1026,20 @@ export async function updatePayrollStatus(
         status = ?,
         updatedAt = ?,
         synced = 0
-      WHERE _id IN (${placeholders})
+      WHERE companyId = ?
+        AND _id IN (${placeholders})
       `,
-      [status, now, ...resultIds]
+      [status, now, companyId, ...resultIds]
     );
   }
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_run",
     entityId: payrollRunId,
     operation: "update",
     payload: JSON.stringify({
+      companyId,
       _id: payrollRunId,
       status,
       updatedAt: now,
@@ -932,10 +1048,12 @@ export async function updatePayrollStatus(
 
   for (const result of results) {
     await addToSyncQueue({
+      companyId,
       entity: "payroll_result",
       entityId: result._id,
       operation: "update",
       payload: JSON.stringify({
+        companyId,
         _id: result._id,
         payrollRunId,
         status,
@@ -951,16 +1069,41 @@ export async function updatePayrollStatus(
 // CANCEL PAYROLL RUN
 // ============================================================
 
-export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
+export async function cancelPayrollRun(
+  companyId: string,
+  payrollRunId: string,
+  admin: AdminUser
+) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
   const now = new Date().toISOString();
+
+  const payrollRun = await get<{ _id: string }>(
+    `
+    SELECT _id
+    FROM payroll_runs
+    WHERE companyId = ?
+      AND _id = ?
+      AND isDeleted = 0
+    LIMIT 1
+    `,
+    [companyId, payrollRunId]
+  );
+
+  if (!payrollRun) {
+    throw new Error(`Payroll run not found for company: ${payrollRunId}`);
+  }
 
   const results = await all<{ _id: string }>(
     `
     SELECT _id
     FROM payroll_results
-    WHERE payrollRunId = ?
+    WHERE companyId = ?
+      AND payrollRunId = ?
     `,
-    [payrollRunId]
+    [companyId, payrollRunId]
   );
 
   await transaction(async () => {
@@ -973,9 +1116,10 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
         cancelledAt = ?,
         updatedAt = ?,
         synced = 0
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
-      ["ANNULÉ", admin._id, now, now, payrollRunId]
+      ["ANNULÉ", admin._id, now, now, companyId, payrollRunId]
     );
 
     await runDirect(
@@ -986,19 +1130,22 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
         cancelledAt = ?,
         updatedAt = ?,
         synced = 0
-      WHERE payrollRunId = ?
+      WHERE companyId = ?
+        AND payrollRunId = ?
       `,
-      ["ANNULÉ", now, now, payrollRunId]
+      ["ANNULÉ", now, now, companyId, payrollRunId]
     );
 
     return true;
   });
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_run",
     entityId: payrollRunId,
     operation: "update",
     payload: JSON.stringify({
+      companyId,
       _id: payrollRunId,
       status: "ANNULÉ",
       cancelledBy: admin._id,
@@ -1009,10 +1156,12 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
 
   for (const result of results) {
     await addToSyncQueue({
+      companyId,
       entity: "payroll_result",
       entityId: result._id,
       operation: "update",
       payload: JSON.stringify({
+        companyId,
         _id: result._id,
         payrollRunId,
         status: "ANNULÉ",
@@ -1029,16 +1178,41 @@ export async function cancelPayrollRun(payrollRunId: string, admin: AdminUser) {
 // VERIFY PAYROLL RUN
 // ============================================================
 
-export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
+export async function verifyPayrollRun(
+  companyId: string,
+  payrollRunId: string,
+  admin: AdminUser
+) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
   const now = new Date().toISOString();
+
+  const payrollRun = await get<{ _id: string }>(
+    `
+    SELECT _id
+    FROM payroll_runs
+    WHERE companyId = ?
+      AND _id = ?
+      AND isDeleted = 0
+    LIMIT 1
+    `,
+    [companyId, payrollRunId]
+  );
+
+  if (!payrollRun) {
+    throw new Error(`Payroll run not found for company: ${payrollRunId}`);
+  }
 
   const results = await all<{ _id: string }>(
     `
     SELECT _id
     FROM payroll_results
-    WHERE payrollRunId = ?
+    WHERE companyId = ?
+      AND payrollRunId = ?
     `,
-    [payrollRunId]
+    [companyId, payrollRunId]
   );
 
   await transaction(async () => {
@@ -1051,9 +1225,10 @@ export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
         submittedForVerificationAt = ?,
         updatedAt = ?,
         synced = 0
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
-      ["VERIFICATION", admin._id, now, now, payrollRunId]
+      ["VERIFICATION", admin._id, now, now, companyId, payrollRunId]
     );
 
     await runDirect(
@@ -1064,17 +1239,20 @@ export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
         verifiedAt = ?,
         updatedAt = ?,
         synced = 0
-      WHERE payrollRunId = ?
+      WHERE companyId = ?
+        AND payrollRunId = ?
       `,
-      ["VERIFICATION", now, now, payrollRunId]
+      ["VERIFICATION", now, now, companyId, payrollRunId]
     );
   });
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_run",
     entityId: payrollRunId,
     operation: "update",
     payload: JSON.stringify({
+      companyId,
       _id: payrollRunId,
       status: "VERIFICATION",
       submittedForVerificationBy: admin._id,
@@ -1085,10 +1263,12 @@ export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
 
   for (const result of results) {
     await addToSyncQueue({
+      companyId,
       entity: "payroll_result",
       entityId: result._id,
       operation: "update",
       payload: JSON.stringify({
+        companyId,
         _id: result._id,
         payrollRunId,
         status: "VERIFICATION",
@@ -1106,18 +1286,40 @@ export async function verifyPayrollRun(payrollRunId: string, admin: AdminUser) {
 // ============================================================
 
 export async function approvePayrollRun(
+  companyId: string,
   payrollRunId: string,
   admin: AdminUser
 ) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
   const now = new Date().toISOString();
+
+  const payrollRun = await get<{ _id: string }>(
+    `
+    SELECT _id
+    FROM payroll_runs
+    WHERE companyId = ?
+      AND _id = ?
+      AND isDeleted = 0
+    LIMIT 1
+    `,
+    [companyId, payrollRunId]
+  );
+
+  if (!payrollRun) {
+    throw new Error(`Payroll run not found for company: ${payrollRunId}`);
+  }
 
   const results = await all<{ _id: string }>(
     `
     SELECT _id
     FROM payroll_results
-    WHERE payrollRunId = ?
+    WHERE companyId = ?
+      AND payrollRunId = ?
     `,
-    [payrollRunId]
+    [companyId, payrollRunId]
   );
 
   await transaction(async () => {
@@ -1130,9 +1332,10 @@ export async function approvePayrollRun(
         approvedAt = ?,
         updatedAt = ?,
         synced = 0
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
-      ["APPROUVÉ", admin._id, now, now, payrollRunId]
+      ["APPROUVÉ", admin._id, now, now, companyId, payrollRunId]
     );
 
     await runDirect(
@@ -1143,17 +1346,20 @@ export async function approvePayrollRun(
         approvedAt = ?,
         updatedAt = ?,
         synced = 0
-      WHERE payrollRunId = ?
+      WHERE companyId = ?
+        AND payrollRunId = ?
       `,
-      ["APPROUVÉ", now, now, payrollRunId]
+      ["APPROUVÉ", now, now, companyId, payrollRunId]
     );
   });
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_run",
     entityId: payrollRunId,
     operation: "update",
     payload: JSON.stringify({
+      companyId,
       _id: payrollRunId,
       status: "APPROUVÉ",
       approvedBy: admin._id,
@@ -1164,10 +1370,12 @@ export async function approvePayrollRun(
 
   for (const result of results) {
     await addToSyncQueue({
+      companyId,
       entity: "payroll_result",
       entityId: result._id,
       operation: "update",
       payload: JSON.stringify({
+        companyId,
         _id: result._id,
         status: "APPROUVÉ",
         payrollRunId,
@@ -1185,18 +1393,40 @@ export async function approvePayrollRun(
 // ============================================================
 
 export async function paymentPayrollRun(
+  companyId: string,
   payrollRunId: string,
   admin: AdminUser
 ) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
   const now = new Date().toISOString();
+
+  const payrollRun = await get<{ _id: string }>(
+    `
+    SELECT _id
+    FROM payroll_runs
+    WHERE companyId = ?
+      AND _id = ?
+      AND isDeleted = 0
+    LIMIT 1
+    `,
+    [companyId, payrollRunId]
+  );
+
+  if (!payrollRun) {
+    throw new Error(`Payroll run not found for company: ${payrollRunId}`);
+  }
 
   const results = await all<{ _id: string }>(
     `
     SELECT _id
     FROM payroll_results
-    WHERE payrollRunId = ?
+    WHERE companyId = ?
+      AND payrollRunId = ?
     `,
-    [payrollRunId]
+    [companyId, payrollRunId]
   );
 
   await transaction(async () => {
@@ -1209,9 +1439,10 @@ export async function paymentPayrollRun(
         paidAt = ?,
         updatedAt = ?,
         synced = 0
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
-      ["PAYÉ", admin._id, now, now, payrollRunId]
+      ["PAYÉ", admin._id, now, now, companyId, payrollRunId]
     );
 
     await runDirect(
@@ -1222,17 +1453,20 @@ export async function paymentPayrollRun(
         paidAt = ?,
         updatedAt = ?,
         synced = 0
-      WHERE payrollRunId = ?
+      WHERE companyId = ?
+        AND payrollRunId = ?
       `,
-      ["PAYÉ", now, now, payrollRunId]
+      ["PAYÉ", now, now, companyId, payrollRunId]
     );
   });
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_run",
     entityId: payrollRunId,
     operation: "update",
     payload: JSON.stringify({
+      companyId,
       _id: payrollRunId,
       status: "PAYÉ",
       paidBy: admin._id,
@@ -1243,10 +1477,12 @@ export async function paymentPayrollRun(
 
   for (const result of results) {
     await addToSyncQueue({
+      companyId,
       entity: "payroll_result",
       entityId: result._id,
       operation: "update",
       payload: JSON.stringify({
+        companyId,
         _id: result._id,
         status: "PAYÉ",
         payrollRunId,
@@ -1263,32 +1499,35 @@ export async function paymentPayrollRun(
 // SAVE PAYROLL RESULT
 // ============================================================
 
-// ============================================================
-// SAVE PAYROLL RESULT
-// ============================================================
-
 export async function savePayrollResult(
+  companyId: string,
   payrollRunId: string,
   result: PayrollResult
 ) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
   const now = new Date().toISOString();
 
   // ----------------------------------------------------------
-  // Get the payroll period from the payroll run
+  // Get payroll period from THIS COMPANY'S payroll run
   // ----------------------------------------------------------
 
   const payrollRun = await get<PayrollRun>(
     `
     SELECT
       _id,
+      companyId,
       month,
       year
     FROM payroll_runs
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
       AND isDeleted = 0
     LIMIT 1
     `,
-    [payrollRunId]
+    [companyId, payrollRunId]
   );
 
   if (!payrollRun) {
@@ -1302,6 +1541,7 @@ export async function savePayrollResult(
 
   const items = [...result.earnings, ...result.deductions].map((item) => ({
     _id: randomUUID(),
+    companyId,
     payrollResultId,
     employeeId: result.employeeId,
     componentId: item.componentId,
@@ -1312,6 +1552,7 @@ export async function savePayrollResult(
     serverVersion: 0,
     createdAt: now,
     updatedAt: now,
+    isDeleted: 0,
   }));
 
   await transaction(async () => {
@@ -1322,6 +1563,7 @@ export async function savePayrollResult(
     await runDirect(
       `
       INSERT INTO payroll_results (
+        companyId,
         _id,
         payrollRunId,
         employeeId,
@@ -1341,18 +1583,16 @@ export async function savePayrollResult(
       )
       VALUES (
         ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, 0, 0
+        ?, ?, ?, ?, ?, 0, 0
       )
       `,
       [
+        companyId,
         payrollResultId,
         payrollRunId,
         result.employeeId,
-
-        // Historical payroll period
         month,
         year,
-
         result.baseSalary,
         result.grossSalary,
         result.totalEarnings,
@@ -1373,6 +1613,7 @@ export async function savePayrollResult(
       await runDirect(
         `
         INSERT INTO payroll_items (
+          companyId,
           _id,
           payrollResultId,
           employeeId,
@@ -1387,9 +1628,13 @@ export async function savePayrollResult(
           synced,
           isDeleted
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
+        VALUES (
+          ?, ?, ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, 0, 0
+        )
         `,
         [
+          item.companyId,
           item._id,
           item.payrollResultId,
           item.employeeId,
@@ -1411,19 +1656,17 @@ export async function savePayrollResult(
   // ----------------------------------------------------------
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_result",
     entityId: payrollResultId,
     operation: "create",
     payload: JSON.stringify({
+      companyId,
       _id: payrollResultId,
       payrollRunId,
       employeeId: result.employeeId,
-
-      // IMPORTANT:
-      // Use the payroll run's historical period.
       month,
       year,
-
       baseSalary: result.baseSalary,
       grossSalary: result.grossSalary,
       totalEarnings: result.totalEarnings,
@@ -1443,6 +1686,7 @@ export async function savePayrollResult(
 
   for (const item of items) {
     await addToSyncQueue({
+      companyId,
       entity: "payroll_item",
       entityId: item._id,
       operation: "create",
@@ -1458,11 +1702,12 @@ export async function savePayrollResult(
 // ============================================================
 
 export async function savePayrollResults(
+  companyId: string,
   payrollRunId: string,
   results: PayrollResult[]
 ) {
   for (const result of results) {
-    await savePayrollResult(payrollRunId, result);
+    await savePayrollResult(companyId, payrollRunId, result);
   }
 }
 
@@ -1470,7 +1715,10 @@ export async function savePayrollResults(
 // GET PAYROLL RESULTS
 // ============================================================
 
-export async function getPayrollResults(payrollRunId: string) {
+export async function getPayrollResults(
+  companyId: string,
+  payrollRunId: string
+) {
   return await all(
     `
     SELECT
@@ -1481,10 +1729,12 @@ export async function getPayrollResults(payrollRunId: string) {
     FROM payroll_results pr
     LEFT JOIN employees e
       ON pr.employeeId = e._id
-    WHERE pr.payrollRunId = ?
+      AND e.companyId = pr.companyId
+    WHERE pr.companyId = ?
+      AND pr.payrollRunId = ?
     ORDER BY pr.createdAt DESC
     `,
-    [payrollRunId]
+    [companyId, payrollRunId]
   );
 }
 
@@ -1493,17 +1743,35 @@ export async function getPayrollResults(payrollRunId: string) {
 // ============================================================
 
 export async function getEmployeePayrollResults(
+  companyId: string,
   employeeId: string,
   payrollRunId?: string
 ) {
-  return get<PayrollResult>(
+  if (payrollRunId) {
+    return await all<PayrollResult>(
+      `
+      SELECT *
+      FROM payroll_results
+      WHERE companyId = ?
+        AND payrollRunId = ?
+        AND employeeId = ?
+        AND isDeleted = 0
+      ORDER BY createdAt DESC
+      `,
+      [companyId, payrollRunId, employeeId]
+    );
+  }
+
+  return await all<PayrollResult>(
     `
     SELECT *
     FROM payroll_results
-    WHERE payrollRunId = ?
+    WHERE companyId = ?
       AND employeeId = ?
+      AND isDeleted = 0
+    ORDER BY year DESC, month DESC, createdAt DESC
     `,
-    [payrollRunId, employeeId]
+    [companyId, employeeId]
   );
 }
 
@@ -1512,6 +1780,7 @@ export async function getEmployeePayrollResults(
 // ============================================================
 
 export async function getEmployeePayrollResultByMonthAndYear(
+  companyId: string,
   employeeId: string,
   month: number,
   year: number
@@ -1520,13 +1789,14 @@ export async function getEmployeePayrollResultByMonthAndYear(
     `
     SELECT *
     FROM payroll_results
-    WHERE employeeId = ?
+    WHERE companyId = ?
+      AND employeeId = ?
       AND month = ?
       AND year = ?
       AND isDeleted = 0
     LIMIT 1
     `,
-    [employeeId, month, year]
+    [companyId, employeeId, month, year]
   );
 }
 
@@ -1535,30 +1805,35 @@ export async function getEmployeePayrollResultByMonthAndYear(
 // ============================================================
 
 export async function getPayrollItems(
+  companyId: string,
   payrollResultId: string,
   employeeId?: string
 ) {
   if (employeeId) {
-    return await all<PayrollItem[]>(
+    return await all<PayrollItem>(
       `
       SELECT *
       FROM payroll_items
-      WHERE payrollResultId = ?
+      WHERE companyId = ?
+        AND payrollResultId = ?
         AND employeeId = ?
+        AND isDeleted = 0
       ORDER BY createdAt ASC
       `,
-      [payrollResultId, employeeId]
+      [companyId, payrollResultId, employeeId]
     );
   }
 
-  return await all<PayrollItem[]>(
+  return await all<PayrollItem>(
     `
     SELECT *
     FROM payroll_items
-    WHERE payrollResultId = ?
+    WHERE companyId = ?
+      AND payrollResultId = ?
+      AND isDeleted = 0
     ORDER BY createdAt ASC
     `,
-    [payrollResultId]
+    [companyId, payrollResultId]
   );
 }
 
@@ -1566,16 +1841,17 @@ export async function getPayrollItems(
 // MARK PAYROLL RUN SYNCED
 // ============================================================
 
-export async function markPayrollRunSynced(_id: string) {
+export async function markPayrollRunSynced(companyId: string, _id: string) {
   return await run(
     `
     UPDATE payroll_runs
     SET
       synced = 1,
       lastSyncedAt = ?
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [new Date().toISOString(), _id]
+    [new Date().toISOString(), companyId, _id]
   );
 }
 
@@ -1583,16 +1859,17 @@ export async function markPayrollRunSynced(_id: string) {
 // MARK PAYROLL RESULT SYNCED
 // ============================================================
 
-export async function markPayrollResultSynced(_id: string) {
+export async function markPayrollResultSynced(companyId: string, _id: string) {
   return await run(
     `
     UPDATE payroll_results
     SET
       synced = 1,
       lastSyncedAt = ?
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [new Date().toISOString(), _id]
+    [new Date().toISOString(), companyId, _id]
   );
 }
 
@@ -1600,16 +1877,17 @@ export async function markPayrollResultSynced(_id: string) {
 // MARK PAYROLL ITEM SYNCED
 // ============================================================
 
-export async function markPayrollItemSynced(_id: string) {
+export async function markPayrollItemSynced(companyId: string, _id: string) {
   return await run(
     `
     UPDATE payroll_items
     SET
       synced = 1,
       lastSyncedAt = ?
-    WHERE _id = ?
+    WHERE companyId = ?
+      AND _id = ?
     `,
-    [new Date().toISOString(), _id]
+    [new Date().toISOString(), companyId, _id]
   );
 }
 
@@ -1617,8 +1895,34 @@ export async function markPayrollItemSynced(_id: string) {
 // DELETE PAYROLL RUN
 // ============================================================
 
-export async function deletePayrollRun(payrollRunId: string) {
+export async function deletePayrollRun(
+  companyId: string,
+  payrollRunId: string
+) {
+  if (!companyId) {
+    throw new Error("Company ID is required.");
+  }
+
   const updatedAt = new Date().toISOString();
+
+  // ----------------------------------------------------------
+  // Verify payroll run belongs to company
+  // ----------------------------------------------------------
+
+  const payrollRun = await get<{ _id: string }>(
+    `
+    SELECT _id
+    FROM payroll_runs
+    WHERE companyId = ?
+      AND _id = ?
+    LIMIT 1
+    `,
+    [companyId, payrollRunId]
+  );
+
+  if (!payrollRun) {
+    throw new Error(`Payroll run not found: ${payrollRunId}`);
+  }
 
   // ----------------------------------------------------------
   // Get payroll results
@@ -1628,9 +1932,10 @@ export async function deletePayrollRun(payrollRunId: string) {
     `
     SELECT _id
     FROM payroll_results
-    WHERE payrollRunId = ?
+    WHERE companyId = ?
+      AND payrollRunId = ?
     `,
-    [payrollRunId]
+    [companyId, payrollRunId]
   );
 
   const resultIds = results.map((result) => result._id);
@@ -1648,9 +1953,10 @@ export async function deletePayrollRun(payrollRunId: string) {
       `
       SELECT _id
       FROM payroll_items
-      WHERE payrollResultId IN (${placeholders})
+      WHERE companyId = ?
+        AND payrollResultId IN (${placeholders})
       `,
-      resultIds
+      [companyId, ...resultIds]
     );
   }
 
@@ -1665,26 +1971,29 @@ export async function deletePayrollRun(payrollRunId: string) {
       await runDirect(
         `
         DELETE FROM payroll_items
-        WHERE payrollResultId IN (${placeholders})
+        WHERE companyId = ?
+          AND payrollResultId IN (${placeholders})
         `,
-        resultIds
+        [companyId, ...resultIds]
       );
     }
 
     await runDirect(
       `
       DELETE FROM payroll_results
-      WHERE payrollRunId = ?
+      WHERE companyId = ?
+        AND payrollRunId = ?
       `,
-      [payrollRunId]
+      [companyId, payrollRunId]
     );
 
     await runDirect(
       `
       DELETE FROM payroll_runs
-      WHERE _id = ?
+      WHERE companyId = ?
+        AND _id = ?
       `,
-      [payrollRunId]
+      [companyId, payrollRunId]
     );
   });
 
@@ -1694,10 +2003,12 @@ export async function deletePayrollRun(payrollRunId: string) {
 
   for (const item of items) {
     await addToSyncQueue({
+      companyId,
       entity: "payroll_item",
       entityId: item._id,
       operation: "delete",
       payload: JSON.stringify({
+        companyId,
         _id: item._id,
         isDeleted: 1,
         updatedAt,
@@ -1711,10 +2022,12 @@ export async function deletePayrollRun(payrollRunId: string) {
 
   for (const result of results) {
     await addToSyncQueue({
+      companyId,
       entity: "payroll_result",
       entityId: result._id,
       operation: "delete",
       payload: JSON.stringify({
+        companyId,
         _id: result._id,
         isDeleted: 1,
         updatedAt,
@@ -1727,10 +2040,12 @@ export async function deletePayrollRun(payrollRunId: string) {
   // ----------------------------------------------------------
 
   await addToSyncQueue({
+    companyId,
     entity: "payroll_run",
     entityId: payrollRunId,
     operation: "delete",
     payload: JSON.stringify({
+      companyId,
       _id: payrollRunId,
       isDeleted: 1,
       updatedAt,

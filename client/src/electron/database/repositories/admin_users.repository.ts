@@ -2,12 +2,13 @@ import AdminUser from "../../../common/types/AdminUser.js";
 import { get, all, run } from "../db.js";
 
 export async function upsertAdminUser(adminUser: Partial<AdminUser>) {
-  console.log("Admin user to upsert:", adminUser);
+  console.log("ADMIN USER TO UPSERT:", adminUser);
 
   try {
     await run(
       `
       INSERT INTO admin_users (
+        companyId,
         _id,
         firstName,
         lastName,
@@ -19,7 +20,7 @@ export async function upsertAdminUser(adminUser: Partial<AdminUser>) {
         isDeleted
 
       )
-      VALUES (?,?,?,?,?,?,?,?,?)
+      VALUES (?,?,?,?,?,?,?,?,?,?)
       ON CONFLICT(_id)
       DO UPDATE SET
         firstName = excluded.firstName,

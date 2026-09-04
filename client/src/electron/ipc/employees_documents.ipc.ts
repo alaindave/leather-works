@@ -105,64 +105,85 @@ export function registerEmployeeDocumentIPC() {
   });
 
   // Update document
-  ipcMain.handle("employees-documents:update", async (_, document) => {
-    return await updateEmployeeDocument(document);
-  });
+  ipcMain.handle(
+    "employees-documents:update",
+    async (_, companyId, document) => {
+      return await updateEmployeeDocument(companyId, document);
+    }
+  );
 
   // Delete
-  ipcMain.handle("employee_documents:delete", async (_, _id: string) => {
-    const document = await getEmployeeDocumentById(_id);
+  ipcMain.handle(
+    "employee_documents:delete",
+    async (_, companyId: string, _id: string) => {
+      const document = await getEmployeeDocumentById(companyId, _id);
 
-    if (!document) {
-      return false;
+      if (!document) {
+        return false;
+      }
+
+      try {
+        const absolutePath = resolveEmployeeDocumentPath(document.localPath);
+
+        await fs.unlink(absolutePath);
+      } catch {
+        // Ignore if the file has already been removed
+      }
+
+      await deleteEmployeeDocument(companyId, _id);
+
+      return true;
     }
-
-    try {
-      const absolutePath = resolveEmployeeDocumentPath(document.localPath);
-
-      await fs.unlink(absolutePath);
-    } catch {
-      // Ignore if the file has already been removed
-    }
-
-    await deleteEmployeeDocument(_id);
-
-    return true;
-  });
+  );
 
   // Read by ID
-  ipcMain.handle("employees-documents:get-by-id", async (_, id: string) => {
-    return await getEmployeeDocumentById(id);
-  });
+  ipcMain.handle(
+    "employees-documents:get-by-id",
+    async (_, companyId: string, _id: string) => {
+      return await getEmployeeDocumentById(companyId, _id);
+    }
+  );
 
   // Get by employee
   ipcMain.handle(
     "employees-documents:get-by-employee",
-    async (_, employeeId: string) => {
-      return await getEmployeeDocumentsByEmployee(employeeId);
+    async (_, companyId: string, employeeId: string) => {
+      return await getEmployeeDocumentsByEmployee(companyId, employeeId);
     }
   );
 
   // Get by type
   ipcMain.handle(
     "employees-documents:get-by-type",
-    async (_, employeeId: string, documentType: EmployeeDocumentType) => {
-      return await getEmployeeDocumentsByType(employeeId, documentType);
+    async (
+      _,
+      companyId: string,
+      employeeId: string,
+      documentType: EmployeeDocumentType
+    ) => {
+      return await getEmployeeDocumentsByType(
+        companyId,
+        employeeId,
+        documentType
+      );
     }
   );
 
   // Get all
-  ipcMain.handle("employees-documents:get-all", async () => {
-    return await getAllEmployeeDocuments();
+  ipcMain.handle("employees-documents:get-all", async (_, companyId) => {
+    return await getAllEmployeeDocuments(companyId);
   });
 
   // Sync
-  ipcMain.handle("employees-documents:get-unsynced", async () => {
-    return await getUnsyncedEmployeeDocuments();
+  ipcMain.handle("employees-documents:get-unsynced", async (_, companyId) => {
+    return await getUnsyncedEmployeeDocuments(companyId);
   });
 
   // Mark synced
-  ipcMain.handle("employees-documents:mark-synced", async (_, id: string) => {
-    return await markEmployeeDocumentUploaded(id);
-  });
+  ipcMain.handle(
+    "employees-documents:mark-synced",
+    async (_, companyId: string, _id: string) => {
+      return await markEmployeeDocumentUploaded(companyId, _id);
+    }
+  );
 }

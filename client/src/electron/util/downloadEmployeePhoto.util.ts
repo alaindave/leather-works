@@ -7,6 +7,7 @@ import { EMPLOYEE_PHOTO_DIR } from "../storage/directories.js";
 import { getEmployeeById } from "../database/repositories/employees.repository.js";
 
 export async function downloadEmployeePhoto(
+  companyId: string,
   employeeId: string,
   photoFilename: string
 ) {
@@ -14,7 +15,7 @@ export async function downloadEmployeePhoto(
     ? "https://leather-works.onrender.com"
     : process.env.VITE_API_URL;
 
-  const employee = await getEmployeeById(employeeId);
+  const employee = await getEmployeeById(companyId, employeeId);
 
   if (!employee) {
     throw new Error(`Employee ${employeeId} not found`);

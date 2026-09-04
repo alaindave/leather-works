@@ -8,8 +8,10 @@ import { createSyncTable } from "./schemas/sync.schema.js";
 import { createSettingsTable } from "./schemas/settings.schema.js";
 import { createEmployeesDocumentsTable } from "./schemas/employees_documents.schema.js";
 import { createPayrollTables } from "./schemas/payroll.schema.js";
+import { createCompanyTable } from "./schemas/companies.schema.js";
 
 export async function initializeDatabase() {
+  await createCompanyTable();
   await createOfflineUsersTable();
   await createEmployeesTable();
   await createEmployeesDocumentsTable();

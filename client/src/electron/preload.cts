@@ -1,22 +1,100 @@
 const { contextBridge, ipcRenderer } = require("electron");
-type OfflineUser = import("../common/types/OfflineUser", { with: { "resolution-mode": "require" } }).default;
-type Employee = import("../common/types/Employee", { with: { "resolution-mode": "require" } }).default;
-type AdminUser = import("../common/types/AdminUser", { with: { "resolution-mode": "require" } }).default;
-type AttendanceWithEmployee = import("../common/types/AttendanceWithEmployee", { with: { "resolution-mode": "require" } }).default;
-type Leave = import("../common/types/Leave", { with: { "resolution-mode": "require" } }).default;
-type Task = import("../common/types/Task", { with: { "resolution-mode": "require" } }).default;
-type EmployeeDocument=typeof import("../common/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
-type UploadedEmployeeDocument=typeof import("../common/types/EmployeeDocuments", { with: { "resolution-mode": "require" } });
-type CreatePayrollComponentDto = import("../common/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
-type CreatePayrollProfileDto = import("../common/types/payroll/CreatePayrollProfileDto", { with: { "resolution-mode": "require" } }).default;
-type PayrollComponent = import("../common/types/payroll/PayrollComponent", { with: { "resolution-mode": "require" } }).default;
-type EmployeePayrollProfile = import("../common/types/payroll/PayrollEmployeeProfile", { with: { "resolution-mode": "require" } }).default;
-type AttendanceDailyCheckPreparationInput =typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
-type LockAttendanceDailyCheckInput = typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
-type MarkManagerNotifiedInput =typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
-type VerifyAttendanceDailyCheckInput = typeof import("../common/types/AttendanceDailyCheck", { with: { "resolution-mode": "require" } });
-type CreateAttendanceDto = typeof import("../common/types/Attendance", { with: { "resolution-mode": "require" } });
-type SyncStatusEvent = typeof import("../common/types/sync", { with: { "resolution-mode": "require" } });
+
+type OfflineUser = import("../common/types/OfflineUser", {
+  with: { "resolution-mode": "require" },
+}).default;
+
+type Employee = import("../common/types/Employee", {
+  with: { "resolution-mode": "require" },
+}).default;
+
+type AdminUser = import("../common/types/AdminUser", {
+  with: { "resolution-mode": "require" },
+}).default;
+
+type AttendanceWithEmployee = typeof import("../common/types/Attendance", {
+  with: { "resolution-mode": "require" },
+});
+
+type Leave = import("../common/types/Leave", {
+  with: { "resolution-mode": "require" },
+}).default;
+
+type Task = import("../common/types/Task", {
+  with: { "resolution-mode": "require" },
+}).default;
+
+type EmployeeDocument = typeof import("../common/types/EmployeeDocuments", {
+  with: { "resolution-mode": "require" },
+});
+
+type UploadedEmployeeDocument = typeof import("../common/types/EmployeeDocuments", {
+  with: { "resolution-mode": "require" },
+});
+
+type CreatePayrollComponentDto = import(
+  "../common/types/payroll/PayrollComponent",
+  {
+    with: { "resolution-mode": "require" },
+  }
+).default;
+
+type CreatePayrollProfileDto = import(
+  "../common/types/payroll/CreatePayrollProfileDto",
+  {
+    with: { "resolution-mode": "require" },
+  }
+).default;
+
+type PayrollComponent = import(
+  "../common/types/payroll/PayrollComponent",
+  {
+    with: { "resolution-mode": "require" },
+  }
+).default;
+
+type EmployeePayrollProfile = import(
+  "../common/types/payroll/PayrollEmployeeProfile",
+  {
+    with: { "resolution-mode": "require" },
+  }
+).default;
+
+type AttendanceDailyCheckPreparationInput = typeof import(
+  "../common/types/AttendanceDailyCheck",
+  {
+    with: { "resolution-mode": "require" },
+  }
+);
+
+type LockAttendanceDailyCheckInput = typeof import(
+  "../common/types/AttendanceDailyCheck",
+  {
+    with: { "resolution-mode": "require" },
+  }
+);
+
+type MarkManagerNotifiedInput = typeof import(
+  "../common/types/AttendanceDailyCheck",
+  {
+    with: { "resolution-mode": "require" },
+  }
+);
+
+type VerifyAttendanceDailyCheckInput = typeof import(
+  "../common/types/AttendanceDailyCheck",
+  {
+    with: { "resolution-mode": "require" },
+  }
+);
+
+type CreateAttendanceDto = typeof import("../common/types/Attendance", {
+  with: { "resolution-mode": "require" },
+});
+
+type SyncStatusEvent = typeof import("../common/types/Sync", {
+  with: { "resolution-mode": "require" },
+});
 
 interface LoginCredentials {
   email: string;
@@ -24,8 +102,8 @@ interface LoginCredentials {
 }
 
 interface SignUpCredentials {
-  firstName:string;
-  lastName:string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
 }
@@ -33,272 +111,803 @@ interface SignUpCredentials {
 console.log("PRELOAD LOADED!!!");
 
 contextBridge.exposeInMainWorld("electron", {
+  // ============================================================
+  // APP
+  // ============================================================
+
   app: {
-  getUserDataPath: () => ipcRenderer.invoke("app:getUserDataPath"),
-},
+    getUserDataPath: () =>
+      ipcRenderer.invoke("app:getUserDataPath"),
+  },
+
+  // ============================================================
+  // AUTH
+  // ============================================================
+
   auth: {
     login: (credentials: LoginCredentials) =>
       ipcRenderer.invoke("auth:login", credentials),
+
     sign_up: (credentials: SignUpCredentials) =>
       ipcRenderer.invoke("auth:signup", credentials),
-    logout: () => ipcRenderer.invoke("auth:logout"),
+
+    logout: () =>
+      ipcRenderer.invoke("auth:logout"),
   },
+
+  // ============================================================
+  // OFFLINE USERS
+  // ============================================================
 
   offlineUsers: {
-    save: (user: OfflineUser) => ipcRenderer.invoke("offline-users:save", user),
+    save: (user: OfflineUser) =>
+      ipcRenderer.invoke(
+        "offline-users:save",
+        user
+      ),
 
-    saveNotes:(_id: string,notes:string) => ipcRenderer.invoke("offline-users:saveNotes", _id,notes),
+    saveNotes: (
+      _id: string,
+      notes: string
+    ) =>
+      ipcRenderer.invoke(
+        "offline-users:saveNotes",
+        _id,
+        notes
+      ),
 
     login: (credentials: LoginCredentials) =>
-      ipcRenderer.invoke("offline-users:login", credentials),
+      ipcRenderer.invoke(
+        "offline-users:login",
+        credentials
+      ),
 
-    getById: (_id: string) => ipcRenderer.invoke("offline-users:getById", _id),
+    getById: (_id: string) =>
+      ipcRenderer.invoke(
+        "offline-users:getById",
+        _id
+      ),
 
     getByEmail: (email: string) =>
-      ipcRenderer.invoke("offline-users:getByEmail", email),
+      ipcRenderer.invoke(
+        "offline-users:getByEmail",
+        email
+      ),
 
-    getAll: () => ipcRenderer.invoke("offline-users:getAll"),
+    getAll: () =>
+      ipcRenderer.invoke(
+        "offline-users:getAll"
+      ),
 
-    delete: (_id: string) => ipcRenderer.invoke("offline-users:delete", _id),
+    delete: (_id: string) =>
+      ipcRenderer.invoke(
+        "offline-users:delete",
+        _id
+      ),
   },
+
+  // ============================================================
+  // EMPLOYEES
+  // ============================================================
 
   employees: {
-    create: (employee: Partial<Employee>) =>
-      ipcRenderer.invoke("employees:create", employee),
+    create: (
+      companyId: string,
+      employee: Partial<Employee>
+    ) =>
+      ipcRenderer.invoke(
+        "employees:create",
+        companyId,
+        employee
+      ),
 
-    uploadPhoto: (employeeId: string, file: { name: string; buffer: ArrayBuffer }) =>
-  ipcRenderer.invoke("employees:uploadPhoto", employeeId, {
-    name: file.name,
-    buffer: Buffer.from(file.buffer), 
-  }),
+    uploadPhoto: (
+      companyId: string,
+      employeeId: string,
+      file: {
+        name: string;
+        buffer: ArrayBuffer;
+      }
+    ) =>
+      ipcRenderer.invoke(
+        "employees:uploadPhoto",
+        companyId,
+        employeeId,
+        {
+          name: file.name,
+          buffer: Buffer.from(file.buffer),
+        }
+      ),
 
-  getPhotoUrl: (relativePath: string) =>
-    ipcRenderer.invoke("photos:getUrl", relativePath),
+    getPhotoUrl: (relativePath: string) =>
+      ipcRenderer.invoke(
+        "photos:getUrl",
+        relativePath
+      ),
 
-    getAll: () => ipcRenderer.invoke("employees:getAll"),
+    getAll: (companyId: string) =>
+      ipcRenderer.invoke(
+        "employees:getAll",
+        companyId
+      ),
 
-    getById: (_id: string) => ipcRenderer.invoke("employees:getById", _id),
+    getById: (
+      companyId: string,
+      employeeId: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees:getById",
+        companyId,
+        employeeId
+      ),
 
-    update: (_id: string, updates: Partial<Employee>) =>
-      ipcRenderer.invoke("employees:update", _id, updates),
+    update: (
+      companyId: string,
+      employeeId: string,
+      updates: Partial<Employee>
+    ) =>
+      ipcRenderer.invoke(
+        "employees:update",
+        companyId,
+        employeeId,
+        updates
+      ),
 
-    delete: (_id: string) => ipcRenderer.invoke("employees:delete", _id),
+    delete: (
+      companyId: string,
+      employeeId: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees:delete",
+        companyId,
+        employeeId
+      ),
 
-    search: (searchTerm: string) =>
-      ipcRenderer.invoke("employees:search", searchTerm),
+    search: (
+      companyId: string,
+      searchTerm: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees:search",
+        companyId,
+        searchTerm
+      ),
   },
 
-  employees_documents:{
-    view:(localPath: string)=> 
-    ipcRenderer.invoke("employee_documents:view",localPath),
-    download:(document: EmployeeDocument) =>
-    ipcRenderer.invoke("employee_documents:download",document),
-    delete:(_id: string) =>
-    ipcRenderer.invoke("employee_documents:delete",_id),
-    upload: (document: UploadedEmployeeDocument) =>
-    ipcRenderer.invoke("employees-documents:upload",document),
-    create: (document: EmployeeDocument) =>
-    ipcRenderer.invoke("employees-documents:create", document),
-    getAll: () =>
-    ipcRenderer.invoke("employees-documents:get-all"),
-    getById: (_id: string) =>
-    ipcRenderer.invoke("employees-documents:get-by-id", _id),
-    getByEmployee: (employeeId: string) =>
-    ipcRenderer.invoke("employees-documents:get-by-employee", employeeId),
-    getByType: (employeeId: string,documentType: string) =>
-     ipcRenderer.invoke("employees-documents:get-by-type",
-      employeeId,
-      documentType
-    ),
-    update: (document: EmployeeDocument) =>
-    ipcRenderer.invoke("employees-documents:update", document),
-    getUnsynced: () =>
-    ipcRenderer.invoke("employees-documents:get-unsynced"),
-    markSynced: (id: string) =>
-    ipcRenderer.invoke("employees-documents:mark-synced", id),
-    upsert: (document: EmployeeDocument) =>
-    ipcRenderer.invoke("employees-documents:upsert", document),
+  // ============================================================
+  // EMPLOYEE DOCUMENTS
+  // ============================================================
+
+  employees_documents: {
+    view: (
+      companyId: string,
+      localPath: string
+    ) =>
+      ipcRenderer.invoke(
+        "employee_documents:view",
+        companyId,
+        localPath
+      ),
+
+    download: (
+      companyId: string,
+      document: EmployeeDocument
+    ) =>
+      ipcRenderer.invoke(
+        "employee_documents:download",
+        companyId,
+        document
+      ),
+
+    delete: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "employee_documents:delete",
+        companyId,
+        _id
+      ),
+
+    upload: (
+      companyId: string,
+      document: UploadedEmployeeDocument
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:upload",
+        companyId,
+        document
+      ),
+
+    create: (
+      companyId: string,
+      document: EmployeeDocument
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:create",
+        companyId,
+        document
+      ),
+
+    getAll: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:get-all",
+        companyId
+      ),
+
+    getById: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:get-by-id",
+        companyId,
+        _id
+      ),
+
+    getByEmployee: (
+      companyId: string,
+      employeeId: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:get-by-employee",
+        companyId,
+        employeeId
+      ),
+
+    getByType: (
+      companyId: string,
+      employeeId: string,
+      documentType: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:get-by-type",
+        companyId,
+        employeeId,
+        documentType
+      ),
+
+    update: (
+      companyId: string,
+      document: EmployeeDocument
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:update",
+        companyId,
+        document
+      ),
+
+    getUnsynced: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:get-unsynced",
+        companyId
+      ),
+
+    markSynced: (
+      companyId: string,
+      id: string
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:mark-synced",
+        companyId,
+        id
+      ),
+
+    upsert: (
+      companyId: string,
+      document: EmployeeDocument
+    ) =>
+      ipcRenderer.invoke(
+        "employees-documents:upsert",
+        companyId,
+        document
+      ),
   },
+
+  // ============================================================
+  // ATTENDANCE
+  // ============================================================
 
   attendance: {
-    create: (input: CreateAttendanceDto) =>
-      ipcRenderer.invoke("attendance:create", input),
-
-    createAbsenceLeave: (employeeId: string, status: "CONGÉ" | "ABSENT",date:string) =>
-      ipcRenderer.invoke("attendance:createAbsenceLeave", employeeId, status,date),
-
-    getAll: () => ipcRenderer.invoke("attendance:getAll"),
-
-    getById: (_id: string) => ipcRenderer.invoke("attendance:getById", _id),
-
-    getByEmployee: (employeeId: string) =>
-      ipcRenderer.invoke("attendance:getByEmployee", employeeId),
-
-    getEmployeesWithoutAttendance: (date: string) =>
-      ipcRenderer.invoke("attendance:getEmployeesWithoutAttendance", date),
-
-    getByDate: (date: string) =>
-      ipcRenderer.invoke("attendance:getByDate", date),
-
-    getAttendanceRecord: (employeeId: string, date: string) =>
-      ipcRenderer.invoke("attendance:getAttendanceRecord", employeeId, date),
-
-    update: (_id: string,date:string, updates: Partial<AttendanceWithEmployee>) =>
-      ipcRenderer.invoke("attendance:update", _id,date,updates),
-
-    markAbsent: (date:string) =>
+    create: (
+      companyId: string,
+      input: CreateAttendanceDto
+    ) =>
       ipcRenderer.invoke(
-        "attendance:mark-absent",date),
+        "attendance:create",
+        companyId,
+        input
+      ),
 
-    delete: (_id: string) => ipcRenderer.invoke("attendance:delete", _id),
+    createAbsenceLeave: (
+      companyId: string,
+      employeeId: string,
+      status: "CONGÉ" | "ABSENT",
+      date: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:createAbsenceLeave",
+        companyId,
+        employeeId,
+        status,
+        date
+      ),
 
+    getAll: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:getAll",
+        companyId
+      ),
 
+    getById: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:getById",
+        companyId,
+        _id
+      ),
+
+    getByEmployee: (
+      companyId: string,
+      employeeId: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:getByEmployee",
+        companyId,
+        employeeId
+      ),
+
+    getEmployeesWithoutAttendance: (
+      companyId: string,
+      date: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:getEmployeesWithoutAttendance",
+        companyId,
+        date
+      ),
+
+    getByDate: (
+      companyId: string,
+      date: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:getByDate",
+        companyId,
+        date
+      ),
+
+    getAttendanceRecord: (
+      companyId: string,
+      employeeId: string,
+      date: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:getAttendanceRecord",
+        companyId,
+        employeeId,
+        date
+      ),
+
+    update: (
+      companyId: string,
+      _id: string,
+      date: string,
+      updates: Partial<AttendanceWithEmployee>
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:update",
+        companyId,
+        _id,
+        date,
+        updates
+      ),
+
+    markAbsent: (
+      companyId: string,
+      date: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:mark-absent",
+        companyId,
+        date
+      ),
+
+    delete: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendance:delete",
+        companyId,
+        _id
+      ),
   },
 
- attendanceDailyCheck: {
-  create: (input: AttendanceDailyCheckPreparationInput) =>
-    ipcRenderer.invoke(
-      "attendanceDailyCheck:create",
-      input
-    ),
+  // ============================================================
+  // ATTENDANCE DAILY CHECK
+  // ============================================================
 
-  getById: (_id: string) =>
-    ipcRenderer.invoke(
-      "attendanceDailyCheck:getById",
-      _id
-    ),
+  attendanceDailyCheck: {
+    create: (
+      companyId: string,
+      input: AttendanceDailyCheckPreparationInput
+    ) =>
+      ipcRenderer.invoke(
+        "attendanceDailyCheck:create",
+        companyId,
+        input
+      ),
 
-  getByDate: (date: string) =>
-    ipcRenderer.invoke(
-      "attendanceDailyCheck:getByDate",
-      date
-    ),
+    getById: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendanceDailyCheck:getById",
+        companyId,
+        _id
+      ),
 
-  getAll: () =>
-    ipcRenderer.invoke(
-      "attendanceDailyCheck:getAll"
-    ),
+    getByDate: (
+      companyId: string,
+      date: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendanceDailyCheck:getByDate",
+        companyId,
+        date
+      ),
 
-  completeMarkAbsent: (completedAt: string) =>
-    ipcRenderer.invoke(
-      "attendanceDailyCheck:completeMarkAbsent",
-      completedAt
-    ),
+    getAll: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendanceDailyCheck:getAll",
+        companyId
+      ),
 
-  verify: (input: VerifyAttendanceDailyCheckInput) =>
-    ipcRenderer.invoke(
-      "attendanceDailyCheck:verify",
-      input
-    ),
+    completeMarkAbsent: (
+      companyId: string,
+      completedAt: string
+    ) =>
+      ipcRenderer.invoke(
+        "attendanceDailyCheck:completeMarkAbsent",
+        companyId,
+        completedAt
+      ),
 
-  notifyManager: (input: MarkManagerNotifiedInput) =>
-    ipcRenderer.invoke(
-      "attendanceDailyCheck:notifyManager",
-      input
-    ),
+    verify: (
+      companyId: string,
+      input: VerifyAttendanceDailyCheckInput
+    ) =>
+      ipcRenderer.invoke(
+        "attendanceDailyCheck:verify",
+        companyId,
+        input
+      ),
 
-  lock: (input: LockAttendanceDailyCheckInput) =>
-    ipcRenderer.invoke(
-      "attendanceDailyCheck:lock",
-      input
-    ),
-},
+    notifyManager: (
+      companyId: string,
+      input: MarkManagerNotifiedInput
+    ) =>
+      ipcRenderer.invoke(
+        "attendanceDailyCheck:notifyManager",
+        companyId,
+        input
+      ),
 
-attendanceReports: {
-    savePdf: (date:string) =>
+    lock: (
+      companyId: string,
+      input: LockAttendanceDailyCheckInput
+    ) =>
+      ipcRenderer.invoke(
+        "attendanceDailyCheck:lock",
+        companyId,
+        input
+      ),
+  },
+
+  // ============================================================
+  // ATTENDANCE REPORTS
+  // ============================================================
+
+  attendanceReports: {
+    savePdf: (
+      companyId: string,
+      date: string
+    ) =>
       ipcRenderer.invoke(
         "attendance-report:save-pdf",
+        companyId,
         date
       ),
 
-    printPdf: (date:string) =>
+    printPdf: (
+      companyId: string,
+      date: string
+    ) =>
       ipcRenderer.invoke(
         "attendance-report:print-pdf",
+        companyId,
         date
       ),
   },
+
+  // ============================================================
+  // LEAVE
+  // ============================================================
 
   leave: {
     create: (
-   leave:Partial<Leave>
+      companyId: string,
+      leave: Partial<Leave>
     ) =>
       ipcRenderer.invoke(
         "leave:create",
-       leave
+        companyId,
+        leave
       ),
-        
-    getLeaveById: (_id: string) =>
-      ipcRenderer.invoke("leave:getLeaveById", _id),
 
-    getLeaveByEmployeeId: (employeeId: string) =>
-      ipcRenderer.invoke("leave:getLeaveByEmployeeId", employeeId),
+    getLeaveById: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "leave:getLeaveById",
+        companyId,
+        _id
+      ),
 
-    getOngoingLeaves:(date:string)=>ipcRenderer.invoke("leave:getOnGoing",date),
+    getLeaveByEmployeeId: (
+      companyId: string,
+      employeeId: string
+    ) =>
+      ipcRenderer.invoke(
+        "leave:getLeaveByEmployeeId",
+        companyId,
+        employeeId
+      ),
 
-    getLeaveByMonth: (month: string) =>
-      ipcRenderer.invoke("leave:getLeaveByMonth", month),
+    getOngoingLeaves: (
+      companyId: string,
+      date: string
+    ) =>
+      ipcRenderer.invoke(
+        "leave:getOnGoing",
+        companyId,
+        date
+      ),
+
+    getLeaveByMonth: (
+      companyId: string,
+      month: string
+    ) =>
+      ipcRenderer.invoke(
+        "leave:getLeaveByMonth",
+        companyId,
+        month
+      ),
 
     update: (
+      companyId: string,
       _id: string,
-      updates:Partial<Leave>
-    ) => ipcRenderer.invoke("leave:update", _id, updates),
+      updates: Partial<Leave>
+    ) =>
+      ipcRenderer.invoke(
+        "leave:update",
+        companyId,
+        _id,
+        updates
+      ),
 
-    cancel: (_id: string) => ipcRenderer.invoke("leave:cancel", _id),
+    cancel: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "leave:cancel",
+        companyId,
+        _id
+      ),
 
-    delete: (_id: string) => ipcRenderer.invoke("leave:delete", _id),
+    delete: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "leave:delete",
+        companyId,
+        _id
+      ),
   },
-          
-   tasks: {
-    create: (task: Task) => ipcRenderer.invoke("tasks:create", task),
 
-    update:(task: Task) => ipcRenderer.invoke("tasks:update", task),
+  // ============================================================
+  // TASKS
+  // ============================================================
 
-    getAll: () => ipcRenderer.invoke("tasks:getAll"),
+  tasks: {
+    create: (
+      companyId: string,
+      task: Task
+    ) =>
+      ipcRenderer.invoke(
+        "tasks:create",
+        companyId,
+        task
+      ),
 
-    getById: (_id:string) => ipcRenderer.invoke("tasks:getById",_id),
+    update: (
+      companyId: string,
+      task: Task
+    ) =>
+      ipcRenderer.invoke(
+        "tasks:update",
+        companyId,
+        task
+      ),
 
-    getUserTasks:(userId:string)=>ipcRenderer.invoke("tasks:getUserTasks",userId),
+    getAll: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "tasks:getAll",
+        companyId
+      ),
 
-    getTopTasks:(userId:string)=>ipcRenderer.invoke("tasks:getTopTasks",userId),
+    getById: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "tasks:getById",
+        companyId,
+        _id
+      ),
 
-    delete: (taskId: string) => ipcRenderer.invoke("tasks:delete", taskId),
+    getUserTasks: (
+      companyId: string,
+      userId: string
+    ) =>
+      ipcRenderer.invoke(
+        "tasks:getUserTasks",
+        companyId,
+        userId
+      ),
 
-    onNew: (callback: (data: any) => void) => {
-      const handler = (_: any, data: any) => {
+    getTopTasks: (
+      companyId: string,
+      userId: string
+    ) =>
+      ipcRenderer.invoke(
+        "tasks:getTopTasks",
+        companyId,
+        userId
+      ),
+
+    delete: (
+      companyId: string,
+      taskId: string
+    ) =>
+      ipcRenderer.invoke(
+        "tasks:delete",
+        companyId,
+        taskId
+      ),
+
+    onNew: (
+      callback: (data: any) => void
+    ) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        data: any
+      ) => {
         callback(data);
       };
 
-      ipcRenderer.on("task:new", handler);
+      ipcRenderer.on(
+        "task:new",
+        handler
+      );
 
       return () => {
-        ipcRenderer.removeListener("task:new", handler);
+        ipcRenderer.removeListener(
+          "task:new",
+          handler
+        );
       };
     },
   },
 
+  // ============================================================
+  // TASK COMMENTS
+  // ============================================================
+
   taskComments: {
-  create: (payload: {
-    taskId: string;
-    author: string;
-    message: string;
-  }) => ipcRenderer.invoke("task-comments:create", payload),
+    create: (
+      companyId: string,
+      payload: {
+        taskId: string;
+        author: string;
+        message: string;
+      }
+    ) =>
+      ipcRenderer.invoke(
+        "task-comments:create",
+        companyId,
+        payload
+      ),
 
-  getByTaskId: (taskId: string) =>
-    ipcRenderer.invoke("task-comments:get", taskId),
+    getByTaskId: (
+      companyId: string,
+      taskId: string
+    ) =>
+      ipcRenderer.invoke(
+        "task-comments:get",
+        companyId,
+        taskId
+      ),
 
-  delete: (commentId: string) =>
-    ipcRenderer.invoke("task-comments:delete", commentId),
-},
-
-  adminUsers: {
-    getAll: () => ipcRenderer.invoke("adminUsers:getAll"),
+    delete: (
+      companyId: string,
+      commentId: string
+    ) =>
+      ipcRenderer.invoke(
+        "task-comments:delete",
+        companyId,
+        commentId
+      ),
   },
 
-  file: { save: (data: string) => ipcRenderer.invoke("save-file", data) },
+  // ============================================================
+  // ADMIN USERS
+  // ============================================================
 
-  sync: () => ipcRenderer.invoke("sync:run"),
+  adminUsers: {
+    getAll: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "adminUsers:getAll",
+        companyId
+      ),
+  },
 
-   onSyncStatus: (
+  // ============================================================
+  // FILE
+  // ============================================================
+
+  file: {
+    save: (
+      data: string
+    ) =>
+      ipcRenderer.invoke(
+        "save-file",
+        data
+      ),
+  },
+
+  // ============================================================
+  // SYNC
+  // ============================================================
+
+  sync: (
+    companyId: string
+  ) =>
+    ipcRenderer.invoke(
+      "sync:run",
+      companyId
+    ),
+
+  onSyncStatus: (
     callback: (event: SyncStatusEvent) => void
   ) => {
     const listener = (
@@ -308,10 +917,16 @@ attendanceReports: {
       callback(data);
     };
 
-    ipcRenderer.on("sync:status", listener);
+    ipcRenderer.on(
+      "sync:status",
+      listener
+    );
 
     return () => {
-      ipcRenderer.removeListener("sync:status", listener);
+      ipcRenderer.removeListener(
+        "sync:status",
+        listener
+      );
     };
   },
 
@@ -331,53 +946,80 @@ attendanceReports: {
       callback(data);
     };
 
-    ipcRenderer.on("sync:pending-changes", listener);
+    ipcRenderer.on(
+      "sync:pending-changes",
+      listener
+    );
 
     return () => {
-      ipcRenderer.removeListener("sync:pending-changes", listener);
+      ipcRenderer.removeListener(
+        "sync:pending-changes",
+        listener
+      );
     };
   },
 
- payrollSettings: {
-  get: () =>
+  // ============================================================
+  // PAYROLL SETTINGS
+  // ============================================================
+
+  payrollSettings: {
+    get: (
+      companyId: string
+    ) =>
       ipcRenderer.invoke(
-        "payroll-settings:get"
+        "payroll-settings:get",
+        companyId
       ),
 
-  getById: (_id: string) =>
+    getById: (
+      companyId: string,
+      _id: string
+    ) =>
       ipcRenderer.invoke(
         "payroll-settings:getById",
+        companyId,
         _id
       ),
 
-  create: (data: {
-      currency: string;
-      workingDays: number;
-      workingHours: number;
-      paymentDay: number;
-    }) =>
+    create: (
+      companyId: string,
+      data: {
+        currency: string;
+        workingDays: number;
+        workingHours: number;
+        paymentDay: number;
+      }
+    ) =>
       ipcRenderer.invoke(
         "payroll-settings:create",
+        companyId,
         data
       ),
-  update: (settings: {
-      _id: string;
-      currency: string;
-      workingDays: number;
-      workingHours: number;
-      paymentDay: number;
-      synced: number;
-      createdAt: string;
-      updatedAt: string;
-      lastSyncedAt?: string;
-      isDeleted: number;
-    }) =>
+
+    update: (
+      companyId: string,
+      settings: {
+        _id: string;
+        currency: string;
+        workingDays: number;
+        workingHours: number;
+        paymentDay: number;
+        synced: number;
+        createdAt: string;
+        updatedAt: string;
+        lastSyncedAt?: string;
+        isDeleted: number;
+      }
+    ) =>
       ipcRenderer.invoke(
         "payroll-settings:update",
+        companyId,
         settings
       ),
 
-  updateFields: (
+    updateFields: (
+      companyId: string,
       _id: string,
       fields: {
         currency?: string;
@@ -388,347 +1030,563 @@ attendanceReports: {
     ) =>
       ipcRenderer.invoke(
         "payroll-settings:updateFields",
+        companyId,
         _id,
         fields
       ),
 
-  delete: (_id: string) =>
+    delete: (
+      companyId: string,
+      _id: string
+    ) =>
       ipcRenderer.invoke(
         "payroll-settings:delete",
+        companyId,
         _id
       ),
 
-  restore: (_id: string) =>
+    restore: (
+      companyId: string,
+      _id: string
+    ) =>
       ipcRenderer.invoke(
         "payroll-settings:restore",
+        companyId,
         _id
       ),
 
-  markSynced: (_id: string) =>
+    markSynced: (
+      companyId: string,
+      _id: string
+    ) =>
       ipcRenderer.invoke(
         "payroll-settings:markSynced",
+        companyId,
         _id
       ),
 
-  getUnsynced: () =>
+    getUnsynced: (
+      companyId: string
+    ) =>
       ipcRenderer.invoke(
-        "payroll-settings:getUnsynced"
+        "payroll-settings:getUnsynced",
+        companyId
       ),
   },
 
- payrollComponents: {
-  create: (component:CreatePayrollComponentDto) =>
-    ipcRenderer.invoke("payroll-components:create", component),
+  // ============================================================
+  // PAYROLL COMPONENTS
+  // ============================================================
 
-  getAll: (type?: "EARNING" | "DEDUCTION") =>
-    ipcRenderer.invoke("payroll-components:getAll", type),
+  payrollComponents: {
+    create: (
+      companyId: string,
+      component: CreatePayrollComponentDto
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:create",
+        companyId,
+        component
+      ),
 
-  getEnabled: (type?: "EARNING" | "DEDUCTION") =>
-    ipcRenderer.invoke("payroll-components:getEnabled", type),
+    getAll: (
+      companyId: string,
+      type?: "EARNING" | "DEDUCTION"
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:getAll",
+        companyId,
+        type
+      ),
 
-  getById: (id: string) =>
-    ipcRenderer.invoke("payroll-components:getById", id),
+    getEnabled: (
+      companyId: string,
+      type?: "EARNING" | "DEDUCTION"
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:getEnabled",
+        companyId,
+        type
+      ),
 
-  update: (components:PayrollComponent[]) =>
-    ipcRenderer.invoke("payroll-components:update", components),
+    getById: (
+      companyId: string,
+      id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:getById",
+        companyId,
+        id
+      ),
 
-  delete: (id: string) =>
-    ipcRenderer.invoke("payroll-components:delete", id),
+    update: (
+      companyId: string,
+      components: PayrollComponent[]
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:update",
+        companyId,
+        components
+      ),
 
-  enable: (id: string) =>
-    ipcRenderer.invoke("payroll-components:enable", id),
+    delete: (
+      companyId: string,
+      id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:delete",
+        companyId,
+        id
+      ),
 
-  disable: (id: string) =>
-    ipcRenderer.invoke("payroll-components:disable", id),
+    enable: (
+      companyId: string,
+      id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:enable",
+        companyId,
+        id
+      ),
 
-  upsert: (component:PayrollComponent) =>
-    ipcRenderer.invoke("payroll-components:upsert", component),
+    disable: (
+      companyId: string,
+      id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:disable",
+        companyId,
+        id
+      ),
 
-  getUnsynced: () =>
-    ipcRenderer.invoke("payroll-components:getUnsynced"),
+    upsert: (
+      companyId: string,
+      component: PayrollComponent
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:upsert",
+        companyId,
+        component
+      ),
 
-  markSynced: (id: string) =>
-    ipcRenderer.invoke("payroll-components:markSynced", id),
-},
+    getUnsynced: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:getUnsynced",
+        companyId
+      ),
 
-payrollEmployeeProfiles: {
-  create: (employeeID:string,profile: CreatePayrollProfileDto) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:create",employeeID,
-      profile
-    ),
-
-  createMany: (profiles: CreatePayrollProfileDto[]) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:createMany",
-      profiles
-    ),
-
-  update: (profile: EmployeePayrollProfile) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:update",
-      profile
-    ),
-
-  updateMany: (profiles: EmployeePayrollProfile[]) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:updateMany",
-      profiles
-    ),
-
-  upsert: (profile: EmployeePayrollProfile) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:upsert",
-      profile
-    ),
-
-  upsertMany: (profiles: EmployeePayrollProfile[]) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:upsertMany",
-      profiles
-    ),
-
-  get: (_id: string) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:get",
-      _id
-    ),
-
-  getAll: (employeeID?:string,type?: "EARNING" | "DEDUCTION") =>
-    ipcRenderer.invoke("payrollEmployeeProfiles:getAll", employeeID,type),
-
-  getByEmployee: (employeeId: string) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:getByEmployee",
-      employeeId
-    ),
-
-  getByComponent: (
-    employeeId: string,
-    componentId: string
-  ) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:getByComponent",
-      employeeId,
-      componentId
-    ),
-
-  getUnsynced: () =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:getUnsynced"
-    ),
-
-  markSynced: (_id: string) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:markSynced",
-      _id
-    ),
-
-  markManySynced: (ids: string[]) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:markManySynced",
-      ids
-    ),
-
-  delete: (_id: string) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:delete",
-      _id
-    ),
-
-  restore: (_id: string) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:restore",
-      _id
-    ),
-
-  permanentlyDelete: (_id: string) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:permanentlyDelete",
-      _id
-    ),
-
-  exists: (
-    employeeId: string,
-    componentId: string
-  ) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:exists",
-      employeeId,
-      componentId
-    ),
-
-  count: () =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:count"
-    ),
-
-  initialize: () =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:initialize"
-    ),
-
-  initializeForEmployee: (employeeId: string) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:initializeForEmployee",
-      employeeId
-    ),
-
-  addComponentToEmployees: (component: PayrollComponent) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:addComponentToEmployees",
-      component
-    ),
-
-  resetToDefaults: (employeeId: string) =>
-    ipcRenderer.invoke(
-      "payrollEmployeeProfiles:resetToDefaults",
-      employeeId
-    ),
-},
-
-payrollRun: {
-
-  createPayrollDraft: (
-    admin: AdminUser,year:number,month:number
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:createDraft",
-      admin,year,month
-    );
+    markSynced: (
+      companyId: string,
+      id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll-components:markSynced",
+        companyId,
+        id
+      ),
   },
 
-  getPayrollRuns: (year:number,month:number) => {
-    return ipcRenderer.invoke(
-      "payroll:getRuns",year,month
-    );
+  // ============================================================
+  // PAYROLL EMPLOYEE PROFILES
+  // ============================================================
+
+  payrollEmployeeProfiles: {
+    create: (
+      companyId: string,
+      employeeID: string,
+      profile: CreatePayrollProfileDto
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:create",
+        companyId,
+        employeeID,
+        profile
+      ),
+
+    createMany: (
+      companyId: string,
+      profiles: CreatePayrollProfileDto[]
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:createMany",
+        companyId,
+        profiles
+      ),
+
+    update: (
+      companyId: string,
+      profile: EmployeePayrollProfile
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:update",
+        companyId,
+        profile
+      ),
+
+    updateMany: (
+      companyId: string,
+      profiles: EmployeePayrollProfile[]
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:updateMany",
+        companyId,
+        profiles
+      ),
+
+    upsert: (
+      companyId: string,
+      profile: EmployeePayrollProfile
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:upsert",
+        companyId,
+        profile
+      ),
+
+    upsertMany: (
+      companyId: string,
+      profiles: EmployeePayrollProfile[]
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:upsertMany",
+        companyId,
+        profiles
+      ),
+
+    get: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:get",
+        companyId,
+        _id
+      ),
+
+    getAll: (
+      companyId: string,
+      employeeID?: string,
+      type?: "EARNING" | "DEDUCTION"
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:getAll",
+        companyId,
+        employeeID,
+        type
+      ),
+
+    getByEmployee: (
+      companyId: string,
+      employeeId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:getByEmployee",
+        companyId,
+        employeeId
+      ),
+
+    getByComponent: (
+      companyId: string,
+      employeeId: string,
+      componentId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:getByComponent",
+        companyId,
+        employeeId,
+        componentId
+      ),
+
+    getUnsynced: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:getUnsynced",
+        companyId
+      ),
+
+    markSynced: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:markSynced",
+        companyId,
+        _id
+      ),
+
+    markManySynced: (
+      companyId: string,
+      ids: string[]
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:markManySynced",
+        companyId,
+        ids
+      ),
+
+    delete: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:delete",
+        companyId,
+        _id
+      ),
+
+    restore: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:restore",
+        companyId,
+        _id
+      ),
+
+    permanentlyDelete: (
+      companyId: string,
+      _id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:permanentlyDelete",
+        companyId,
+        _id
+      ),
+
+    exists: (
+      companyId: string,
+      employeeId: string,
+      componentId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:exists",
+        companyId,
+        employeeId,
+        componentId
+      ),
+
+    count: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:count",
+        companyId
+      ),
+
+    initialize: (
+      companyId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:initialize",
+        companyId
+      ),
+
+    initializeForEmployee: (
+      companyId: string,
+      employeeId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:initializeForEmployee",
+        companyId,
+        employeeId
+      ),
+
+    addComponentToEmployees: (
+      companyId: string,
+      component: PayrollComponent
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:addComponentToEmployees",
+        companyId,
+        component
+      ),
+
+    resetToDefaults: (
+      companyId: string,
+      employeeId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payrollEmployeeProfiles:resetToDefaults",
+        companyId,
+        employeeId
+      ),
   },
 
-  getPayrollRunById: (
-    id: string
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:getRunById",
-      id
-    );
+  // ============================================================
+  // PAYROLL RUN
+  // ============================================================
+
+  payrollRun: {
+    createPayrollDraft: (
+      companyId: string,
+      admin: AdminUser,
+      year: number,
+      month: number
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:createDraft",
+        companyId,
+        admin,
+        year,
+        month
+      ),
+
+    getPayrollRuns: (
+      companyId: string,
+      year: number,
+      month: number
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:getRuns",
+        companyId,
+        year,
+        month
+      ),
+
+    getPayrollRunById: (
+      companyId: string,
+      id: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:getRunById",
+        companyId,
+        id
+      ),
+
+    submitForVerification: (
+      companyId: string,
+      payrollRunId: string,
+      admin: AdminUser
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:submitForVerification",
+        companyId,
+        payrollRunId,
+        admin
+      ),
+
+    returnToDraft: (
+      companyId: string,
+      payrollRunId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:returnToDraft",
+        companyId,
+        payrollRunId
+      ),
+
+    approvePayroll: (
+      companyId: string,
+      payrollRunId: string,
+      adminUser: AdminUser
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:approve",
+        companyId,
+        payrollRunId,
+        adminUser
+      ),
+
+    markPayrollAsPaid: (
+      companyId: string,
+      payrollRunId: string,
+      adminUser: AdminUser
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:markAsPaid",
+        companyId,
+        payrollRunId,
+        adminUser
+      ),
+
+    cancelPayroll: (
+      companyId: string,
+      payrollRunId: string,
+      admin: AdminUser
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:cancel",
+        companyId,
+        payrollRunId,
+        admin
+      ),
+
+    getPayrollResults: (
+      companyId: string,
+      payrollRunId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:getResults",
+        companyId,
+        payrollRunId
+      ),
+
+    getEmployeePayrollResults: (
+      companyId: string,
+      employeeId: string,
+      payrollRunId?: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:getEmployeeResults",
+        companyId,
+        employeeId,
+        payrollRunId
+      ),
+
+    getPayrollItems: (
+      companyId: string,
+      payrollResultId: string,
+      employeeId?: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:getItems",
+        companyId,
+        payrollResultId,
+        employeeId
+      ),
+
+    deletePayrollRun: (
+      companyId: string,
+      payrollRunId: string
+    ) =>
+      ipcRenderer.invoke(
+        "payroll:deleteRun",
+        companyId,
+        payrollRunId
+      ),
   },
 
-  // BROUILLON → EN_VERIFICATION
-  submitForVerification: (
-    payrollRunId: string,admin:AdminUser
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:submitForVerification",
-      payrollRunId,admin
-    );
+  // ============================================================
+  // NOTIFICATIONS
+  // ============================================================
+
+  notifications: {
+    scheduleReminder: (
+      message: string,
+      remindAt: string
+    ) =>
+      ipcRenderer.invoke(
+        "notifications:schedule-reminder",
+        message,
+        remindAt
+      ),
+
+    cancelReminder: (
+      id: string
+    ) =>
+      ipcRenderer.invoke(
+        "notifications:cancel-reminder",
+        id
+      ),
+
+    cancelAllReminders: () =>
+      ipcRenderer.invoke(
+        "notifications:cancel-all-reminders"
+      ),
   },
-
-  // EN_VERIFICATION → BROUILLON
-  returnToDraft: (
-    payrollRunId: string
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:returnToDraft",
-      payrollRunId
-    );
-  },
-
-  // EN_VERIFICATION → APPROUVÉ
-  approvePayroll: (
-    payrollRunId: string,
-    adminUser:AdminUser
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:approve",
-      payrollRunId,adminUser
-    );
-  },
-
-  // APPROUVÉ → PAYÉ
-  markPayrollAsPaid: (
-    payrollRunId: string,adminUser: AdminUser
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:markAsPaid",
-      payrollRunId,adminUser
-    );
-  },
-
-  // BROUILLON / EN_VERIFICATION / APPROUVÉ → ANNULÉ
-  cancelPayroll: (
-    payrollRunId: string,
-    admin:AdminUser
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:cancel",
-      payrollRunId,admin
-    );
-  },
-
-  getPayrollResults: (
-    payrollRunId: string
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:getResults",
-      payrollRunId
-    );
-  },
-
-  getEmployeePayrollResults:(
-  employeeId: string,
-  payrollRunId?: string,
-)=> {
-    return ipcRenderer.invoke(
-      "payroll:getEmployeeResults",
-      employeeId,
-      payrollRunId
-    );
-  },
-
-  getPayrollItems: (
-    payrollResultId: string,
-    employeeId?: string
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:getItems",
-      payrollResultId,
-      employeeId
-    );
-  },
-
-  deletePayrollRun: (
-    payrollRunId: string
-  ) => {
-    return ipcRenderer.invoke(
-      "payroll:deleteRun",
-      payrollRunId
-    );
-  },
-
-  
-},
-
-notifications: {
-  scheduleReminder: (
-    message: string,
-    remindAt: string
-  ) =>
-    ipcRenderer.invoke(
-      "notifications:schedule-reminder",
-      message,
-      remindAt
-    ),
-
-  cancelReminder: (id: string) =>
-    ipcRenderer.invoke(
-      "notifications:cancel-reminder",
-      id
-    ),
-
-  cancelAllReminders: () =>
-    ipcRenderer.invoke(
-      "notifications:cancel-all-reminders"
-    ),
-},
-
 }) satisfies Window["electron"];
+

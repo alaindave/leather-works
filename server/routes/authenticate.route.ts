@@ -30,7 +30,7 @@ router.post("/", async (req: Request<{}, {}, LoginRequest>, res: Response) => {
 
     const validPassword = await bcrypt.compare(
       req.body.password,
-      adminUser.password
+      adminUser.passwordHash
     );
 
     if (!validPassword) {
@@ -47,7 +47,7 @@ router.post("/", async (req: Request<{}, {}, LoginRequest>, res: Response) => {
         firstName: adminUser.firstName,
         lastName: adminUser.lastName,
         email: adminUser.email,
-        role: adminUser.role,
+        role: adminUser.roleId,
         notes: adminUser.notes,
         createdAt: adminUser.createdAt,
         updatedAt: adminUser.updatedAt,

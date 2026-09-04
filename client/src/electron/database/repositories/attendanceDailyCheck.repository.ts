@@ -30,9 +30,10 @@ export async function createAttendanceDailyCheck(
       SELECT *
       FROM attendance_daily_checks
       WHERE date = ?
+        AND companyId=?
         AND isDeleted = 0
     `,
-    [date]
+    [input.companyId, date]
   );
 
   if (existing) {
@@ -46,6 +47,7 @@ export async function createAttendanceDailyCheck(
   await run(
     `
       INSERT INTO attendance_daily_checks (
+       companyId,
         _id,
         date,
         status,
@@ -67,6 +69,7 @@ export async function createAttendanceDailyCheck(
       VALUES (
         ?,
         ?,
+        ?,
         'PREPARING',
         ?,
         ?,
@@ -85,6 +88,7 @@ export async function createAttendanceDailyCheck(
       )
     `,
     [
+      input.companyId,
       _id,
       date,
       input.markAbsentCompleted.completed ? 1 : 0,
@@ -96,13 +100,14 @@ export async function createAttendanceDailyCheck(
     ]
   );
 
-  const record = await getAttendanceDailyCheckById(_id);
+  const record = await getAttendanceDailyCheckById(input.companyId, _id);
 
   if (!record) {
     throw new Error("FAILED TO CREATE ATTENDANCE CHECK");
   }
 
   await addToSyncQueue({
+    companyId: input.companyId,
     entity: "attendance_daily_check",
     entityId: _id,
     operation: "create",
@@ -121,8 +126,9 @@ export async function upsertAttendanceDailyCheck(
       SELECT *
       FROM attendance_daily_checks
       WHERE _id = ?
+        AND companyId=?
     `,
-    [dailyCheck._id]
+    [dailyCheck._id, dailyCheck.companyId]
   );
 
   // If the ID doesn't exist locally, try the business key.
@@ -133,8 +139,9 @@ export async function upsertAttendanceDailyCheck(
         SELECT *
         FROM attendance_daily_checks
         WHERE date = ?
+          AND companyId=?
       `,
-      [dailyCheck.date]
+      [dailyCheck.date, dailyCheck.companyId]
     );
   }
 
@@ -182,6 +189,7 @@ export async function upsertAttendanceDailyCheck(
           lastSyncedAt = CURRENT_TIMESTAMP,
           isDeleted = ?
         WHERE _id = ?
+          AND companyId=?
       `,
       [
         dailyCheck.date,
@@ -204,10 +212,14 @@ export async function upsertAttendanceDailyCheck(
         dailyCheck.updatedAt,
         dailyCheck.isDeleted ? 1 : 0,
         local._id,
+        local.companyId,
       ]
     );
 
-    const updated = await getAttendanceDailyCheckById(local._id);
+    const updated = await getAttendanceDailyCheckById(
+      local.companyId,
+      local._id
+    );
 
     if (!updated) {
       throw new Error(
@@ -222,6 +234,7 @@ export async function upsertAttendanceDailyCheck(
   await run(
     `
       INSERT INTO attendance_daily_checks (
+        companyId,
         _id,
         date,
         status,
@@ -263,12 +276,14 @@ export async function upsertAttendanceDailyCheck(
         ?,
         ?,
         ?,
+        ?,
         1,
         CURRENT_TIMESTAMP,
         ?
       )
     `,
     [
+      dailyCheck.companyId,
       dailyCheck._id,
       dailyCheck.date,
       dailyCheck.status,
@@ -291,7 +306,10 @@ export async function upsertAttendanceDailyCheck(
     ]
   );
 
-  const created = await getAttendanceDailyCheckById(dailyCheck._id);
+  const created = await getAttendanceDailyCheckById(
+    dailyCheck.companyId,
+    dailyCheck._id
+  );
 
   if (!created) {
     throw new Error(
@@ -303,6 +321,7 @@ export async function upsertAttendanceDailyCheck(
 }
 
 export async function completeMarkAbsent(
+  companyId: string,
   completedAt: string,
   date: string = new Date().toISOString().split("T")[0]
 ): Promise<AttendanceDailyCheck> {
@@ -312,8 +331,9 @@ export async function completeMarkAbsent(
       FROM attendance_daily_checks
       WHERE date = ?
         AND isDeleted = 0
+        AND companyId=?
     `,
-    [date]
+    [date, companyId]
   );
 
   if (!existing) {
@@ -332,18 +352,23 @@ export async function completeMarkAbsent(
         updatedAt = ?,
         synced = 0
       WHERE _id = ?
+        AND companyId=?
         AND isDeleted = 0
     `,
-    [completedAt, now(), existing._id]
+    [completedAt, now(), existing._id, existing.companyId]
   );
 
-  const record = await getAttendanceDailyCheckById(existing._id);
+  const record = await getAttendanceDailyCheckById(
+    existing.companyId,
+    existing._id
+  );
 
   if (!record) {
     throw new Error("FAILED TO UPDATE ATTENDANCE DAILY CHECK");
   }
 
   await addToSyncQueue({
+    companyId: existing.companyId,
     entity: "attendance_daily_check",
     entityId: existing._id,
     operation: "update",
@@ -353,12 +378,13 @@ export async function completeMarkAbsent(
   return record;
 }
 
-export async function prepareDailyAttendance(date: string) {
-  const markAbsentResult = await markEmployeesAbsent(date);
-  const markLeaveResult = await markEmployeesOnLeave();
+export async function prepareDailyAttendance(companyId: string, date: string) {
+  const markAbsentResult = await markEmployeesAbsent(companyId, date);
+  const markLeaveResult = await markEmployeesOnLeave(companyId);
 
   if (markAbsentResult?.completed && markLeaveResult.completed) {
     return createAttendanceDailyCheck({
+      companyId,
       markAbsentCompleted: {
         completed: true,
         completedAt: markAbsentResult.timestamp,
@@ -374,6 +400,7 @@ export async function prepareDailyAttendance(date: string) {
 }
 
 export async function getAttendanceDailyCheckById(
+  companyId: string,
   _id: string
 ): Promise<AttendanceDailyCheck | null> {
   return get<AttendanceDailyCheck>(
@@ -381,13 +408,15 @@ export async function getAttendanceDailyCheckById(
       SELECT *
       FROM attendance_daily_checks
       WHERE _id = ?
+        AND companyId=?
         AND isDeleted = 0
     `,
-    [_id]
+    [_id, companyId]
   );
 }
 
 export async function getAttendanceDailyCheckByDate(
+  companyId: string,
   date: string
 ): Promise<AttendanceDailyCheck | null> {
   return get<AttendanceDailyCheck | null>(
@@ -395,16 +424,18 @@ export async function getAttendanceDailyCheckByDate(
       SELECT *
       FROM attendance_daily_checks
       WHERE date = ?
+        AND companyId=?
         AND isDeleted = 0
     `,
-    [date]
+    [date, companyId]
   );
 }
 
 export async function getAttendanceDailyCheck(
+  companyId: string,
   date: string
 ): Promise<AttendanceDailyCheck | null> {
-  const existing = await getAttendanceDailyCheckByDate(date);
+  const existing = await getAttendanceDailyCheckByDate(companyId, date);
 
   if (!existing) {
     return null;
@@ -429,7 +460,10 @@ export async function getAllAttendanceDailyChecks(): Promise<
 export async function verifyAttendanceDailyCheck(
   input: VerifyAttendanceDailyCheckInput
 ): Promise<AttendanceDailyCheck> {
-  const existing = await getAttendanceDailyCheckByDate(input.date);
+  const existing = await getAttendanceDailyCheckByDate(
+    input.companyId,
+    input.date
+  );
 
   if (!existing) {
     throw new Error(`ATTENDANCE DAILY CHECK DOES NOT EXIST FOR ${input.date}`);
@@ -457,13 +491,17 @@ export async function verifyAttendanceDailyCheck(
     [timestamp, input.verifiedBy, timestamp, existing._id]
   );
 
-  const updated = await getAttendanceDailyCheckById(existing._id);
+  const updated = await getAttendanceDailyCheckById(
+    existing.companyId,
+    existing._id
+  );
 
   if (!updated) {
     throw new Error("FAILED TO VERIFY ATTENDANCE DAILY CHECK.");
   }
 
   await addToSyncQueue({
+    companyId: existing.companyId,
     entity: "attendance_daily_check",
     entityId: existing._id,
     operation: "update",
@@ -477,7 +515,10 @@ export async function markAttendanceManagerNotified(
   input: MarkManagerNotifiedInput
 ): Promise<AttendanceDailyCheck> {
   console.log("NOTIFY MANAGER INPUT", input);
-  const existing = await getAttendanceDailyCheckByDate(input.date);
+  const existing = await getAttendanceDailyCheckByDate(
+    input.companyId,
+    input.date
+  );
 
   if (!existing) {
     throw new Error(`ATTENDANCE DAILY CHECK DOES NOT EXIST FOR ${input.date}`);
@@ -507,13 +548,17 @@ export async function markAttendanceManagerNotified(
     [timestamp, timestamp, existing._id]
   );
 
-  const updated = await getAttendanceDailyCheckById(existing._id);
+  const updated = await getAttendanceDailyCheckById(
+    existing.companyId,
+    existing._id
+  );
 
   if (!updated) {
     throw new Error("FAILED TO UPDATE MANAGER NOTIFICATION STATUS");
   }
 
   await addToSyncQueue({
+    companyId: existing.companyId,
     entity: "attendance_daily_check",
     entityId: existing._id,
     operation: "update",
@@ -526,7 +571,10 @@ export async function markAttendanceManagerNotified(
 export async function lockAttendanceDailyCheck(
   input: LockAttendanceDailyCheckInput
 ): Promise<AttendanceDailyCheck> {
-  const existing = await getAttendanceDailyCheckByDate(input.date);
+  const existing = await getAttendanceDailyCheckByDate(
+    input.companyId,
+    input.date
+  );
 
   if (!existing) {
     throw new Error(`ATTENDANCE DAILY CHECK DOES NOT EXISTS FOR ${input.date}`);
@@ -568,7 +616,10 @@ export async function lockAttendanceDailyCheck(
     [timestamp, input.lockedBy, timestamp, existing._id]
   );
 
-  const updated = await getAttendanceDailyCheckById(existing._id);
+  const updated = await getAttendanceDailyCheckById(
+    existing.companyId,
+    existing._id
+  );
 
   if (!updated) {
     throw new Error(
@@ -577,6 +628,7 @@ export async function lockAttendanceDailyCheck(
   }
 
   await addToSyncQueue({
+    companyId: existing.companyId,
     entity: "attendance_daily_check",
     entityId: existing._id,
     operation: "update",
@@ -602,7 +654,10 @@ export async function isAttendanceDateLocked(date: string): Promise<boolean> {
   return record?.status === "LOCKED";
 }
 
-export async function markAttendanceDailyCheckSynced(_id: string) {
+export async function markAttendanceDailyCheckSynced(
+  companyId: string,
+  _id: string
+) {
   await run(
     `
     UPDATE attendance_daily_checks
@@ -610,7 +665,8 @@ export async function markAttendanceDailyCheckSynced(_id: string) {
       synced = 1,
       lastSyncedAt = CURRENT_TIMESTAMP
     WHERE _id = ?
+      AND companyId=?
     `,
-    [_id]
+    [_id, companyId]
   );
 }

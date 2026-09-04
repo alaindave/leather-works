@@ -1,4 +1,5 @@
 export interface PayrollSettings {
+  companyId: string;
   _id: string;
   currency: string;
   workingDays: number;
@@ -20,6 +21,7 @@ export type PayrollStatus =
   | "ANNULÉ";
 
 export interface PayrollRun {
+  companyId: string;
   _id: string;
   month: number;
   year: number;
@@ -54,6 +56,7 @@ export interface PayrollRun {
 }
 
 export interface PayrollResult {
+  companyId: string;
   _id?: string;
   generatedBy: string;
   payrollRunId?: string;
@@ -83,6 +86,7 @@ export interface PayrollResult {
 }
 
 export interface PayrollItem {
+  companyId: string;
   _id?: string;
   employeeId?: string;
   payrollResultId?: string;
@@ -118,6 +122,7 @@ export type CalculationType =
   | "FORMULE_RETARD";
 
 export interface PayrollComponentInput {
+  companyId: string;
   _id?: string;
   name: string;
   displayName?: string;
@@ -142,6 +147,7 @@ export interface PayrollComponentInput {
 
 //Payroll Summary interface
 export interface PayrollBatchResult {
+  companyId: string;
   results: PayrollResult[];
   employeeCount: number;
   totalBasicSalary: number;
@@ -151,6 +157,7 @@ export interface PayrollBatchResult {
 }
 
 export interface PayrollAttendanceSummary {
+  companyId: string;
   employeeId: string;
   lateDays: number;
   totalLateMinutes: number;
@@ -158,6 +165,7 @@ export interface PayrollAttendanceSummary {
 }
 
 export interface PayrollEmployeeInput {
+  companyId: string;
   employeeId: string;
   attendance?: PayrollAttendanceSummary;
   baseSalary: number;
@@ -165,6 +173,7 @@ export interface PayrollEmployeeInput {
 }
 
 export interface PayrollCalculationContext {
+  companyId: string;
   employeeId?: string;
   payrollSettings: PayrollSettings;
   lateDays: number;
@@ -181,6 +190,7 @@ export interface PayrollCalculationContext {
 
 //Payroll Summary interface
 export interface PayrollBatchResult {
+  companyId: string;
   results: PayrollResult[];
   employeeCount: number;
   totalBasicSalary: number;

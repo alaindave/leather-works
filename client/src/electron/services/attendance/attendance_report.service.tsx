@@ -5,11 +5,11 @@ import { getDailyAttendanceReport } from "../../database/repositories/attendance
 import { AttendanceReportDocument } from "../../reports/attendance-report.js";
 import { DailyAttendanceReport } from "../../../common/types/AttendanceReport.js";
 
-export async function saveAttendanceReport(date: string) {
+export async function saveAttendanceReport(companyId: string, date: string) {
   /*
    * Get attendance + employee information
    */
-  const rows = await getDailyAttendanceReport(date);
+  const rows = await getDailyAttendanceReport(companyId, date);
 
   /*
    * Convert records for PDF

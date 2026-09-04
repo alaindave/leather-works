@@ -12,47 +12,114 @@ import {
   getAdminUserByEmail,
 } from "../db.js";
 
+import Company from "../models/company.model.js";
+
 const router = express.Router();
 
 interface AdminParams {
   _id: string;
 }
 
-// Create new user
+// Create new admin user
 router.post("/", async (req: Request, res: Response) => {
   try {
+    /*
+     * Get signup code from request header.
+     *
+     * Expected header:
+     * x-signup-code: ABC123
+     */
+    const signupCode = req.header("x-signup-code")?.trim();
+
+    if (!signupCode) {
+      return res.status(400).send("Signup code is required.");
+    }
+
+    console.log("SIGNUP CODE:", signupCode);
+
+    /*
+     * Find the company associated with the signup code.
+     */
+    const company = await Company.findOne({
+      signupCode,
+      isDeleted: { $ne: 1 },
+    });
+
+    if (!company) {
+      console.log("INVALID SIGNUP CODE:", signupCode);
+
+      return res.status(400).send("Invalid signup code.");
+    }
+
+    console.log("COMPANY FOUND:", {
+      companyId: company.companyId,
+      name: company.name,
+    });
+
+    /*
+     * Validate admin user data.
+     */
     const { error } = validateAdminUser(req.body);
 
     if (error) {
       console.log("VALIDATION ERROR:", error.details[0].message);
+
       return res.status(400).send(error.details[0].message);
     }
 
+    /*
+     * Check whether this email is already registered.
+     *
+     */
     let adminUser = await getAdminUserByEmail(req.body.email);
 
     if (adminUser) {
-      console.log("USER ALREADY REGISTERED", adminUser);
+      console.log("USER ALREADY REGISTERED:", adminUser);
+
       return res.status(400).send("Admin user already registered");
     }
 
+    /*
+     * Hash password.
+     */
     const salt = await bcrypt.genSalt(10);
-    req.body.password = await bcrypt.hash(req.body.password, salt);
 
-    adminUser = await createAdminUser(
-      _.pick(req.body, ["firstName", "lastName", "email", "password"])
-    );
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+    /*
+     * Create the admin user with the companyId
+     * determined from the signup code.
+     */
+    adminUser = await createAdminUser({
+      companyId: company.companyId,
+      ..._.pick(req.body, ["firstName", "lastName", "email"]),
+      password: hashedPassword,
+    });
 
     console.log("REGISTERED ADMIN USER:", adminUser);
 
+    /*
+     * Generate authentication token.
+     */
     const token = adminUser.generateAuthToken();
 
+    /*
+     * Return companyId to the client.
+     */
     return res
       .set("Access-Control-Expose-Headers", "X-auth-token")
       .header("x-auth-token", token)
-      .send(_.pick(adminUser, ["_id", "firstName", "lastName", "email"]));
+      .status(201)
+      .send({
+        _id: adminUser._id,
+        companyId: company.companyId,
+        firstName: adminUser.firstName,
+        lastName: adminUser.lastName,
+        email: adminUser.email,
+      });
   } catch (error) {
     console.error("ERROR CREATING ADMIN USER:", error);
-    return res.status(500).send(error);
+    return res.status(500).send("Internal server error.");
   }
 });
 
@@ -88,6 +155,7 @@ router.get("/:_id", async (req: Request<AdminParams>, res: Response) => {
 
     if (!admin) {
       console.log("NO ADMIN FOUND WITH THE GIVEN ID.");
+
       return res.status(404).send("No admin found with the given ID.");
     }
 

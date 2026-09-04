@@ -18,10 +18,10 @@ export function registerTaskIPC() {
   console.log("TASKS API URL:", API_URL);
 
   //Create tasks
-  ipcMain.handle("tasks:create", async (_, task) => {
+  ipcMain.handle("tasks:create", async (_, companyId, task) => {
     console.log("TASK CREATE CALLED: ", task);
     try {
-      const result = await createTask(task);
+      const result = await createTask(companyId, task);
       console.log("Created task: ", result);
       return result;
     } catch (error) {
@@ -31,9 +31,9 @@ export function registerTaskIPC() {
   });
 
   //Get all tasks
-  ipcMain.handle("tasks:getAll", async () => {
+  ipcMain.handle("tasks:getAll", async (_, companyId) => {
     try {
-      const tasks = await getAllTasks();
+      const tasks = await getAllTasks(companyId);
       console.log("From main: Tasks fetched: ", tasks);
       return tasks;
     } catch (error) {
@@ -43,9 +43,9 @@ export function registerTaskIPC() {
   });
 
   //Get  task by ID
-  ipcMain.handle("tasks:getById", async (_, _id) => {
+  ipcMain.handle("tasks:getById", async (_, companyId, _id) => {
     try {
-      const task = await getTaskById(_id);
+      const task = await getTaskById(companyId, _id);
       console.log(" TASK FETCHED: ", task);
       return task;
     } catch (error) {
@@ -55,9 +55,9 @@ export function registerTaskIPC() {
   });
 
   //Get tasks for user(eithr author or recipient )
-  ipcMain.handle("tasks:getUserTasks", async (_, userId) => {
+  ipcMain.handle("tasks:getUserTasks", async (_, companyId, userId) => {
     try {
-      const tasks = await getAllTasksForUser(userId);
+      const tasks = await getAllTasksForUser(companyId, userId);
       console.log("TASKS FETCHED: ", tasks);
       return tasks;
     } catch (error) {
@@ -67,9 +67,9 @@ export function registerTaskIPC() {
   });
 
   //Get top tasks
-  ipcMain.handle("tasks:getTopTasks", async (_, userId) => {
+  ipcMain.handle("tasks:getTopTasks", async (_, companyId, userId) => {
     try {
-      const top_tasks = await getTopTasks(userId);
+      const top_tasks = await getTopTasks(companyId, userId);
       console.log("From main: Tasks fetched: ", top_tasks);
       return top_tasks;
     } catch (error) {
@@ -79,10 +79,10 @@ export function registerTaskIPC() {
   });
 
   //Update tasks
-  ipcMain.handle("tasks:update", async (_, task) => {
+  ipcMain.handle("tasks:update", async (_, companyId, task) => {
     console.log("TASK UPDATE CALLED: ", task);
     try {
-      const result = await updateTask(task);
+      const result = await updateTask(companyId, task);
       console.log("Updated task: ", result);
       return result;
     } catch (error) {
@@ -92,9 +92,9 @@ export function registerTaskIPC() {
   });
 
   //Delete tasks
-  ipcMain.handle("tasks:delete", async (_, taskId) => {
+  ipcMain.handle("tasks:delete", async (_, companyId, taskId) => {
     try {
-      const task = await deleteTask(taskId);
+      const task = await deleteTask(companyId, taskId);
       console.log("From main: Task deleted: ", task);
       return task;
     } catch (error) {

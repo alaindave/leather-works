@@ -16,14 +16,15 @@ import CreatePayrollProfileDto from "../../../common/types/payroll/CreatePayroll
 
 // Create payroll profiles for a newly created employee.
 export async function initializeEmployeePayrollProfilesForEmployee(
+  companyId: string,
   employeeId: string
 ) {
   console.log("INITIALIZING PAYROLL PROFILES FOR NEW EMPLOYEE...");
-  const employee = await getEmployeeById(employeeId);
+  const employee = await getEmployeeById(companyId, employeeId);
   if (!employee) {
     throw new Error(`Employee ${employeeId} not found`);
   }
-  const components = await getPayrollComponents();
+  const components = await getPayrollComponents(companyId);
   const now = new Date().toISOString();
   const profiles: CreatePayrollProfileDto[] = components.map((component) => {
     let value = component.defaultValue ?? null;
@@ -56,16 +57,16 @@ export async function initializeEmployeePayrollProfilesForEmployee(
     };
   });
 
-  await createManyEmployeePayrollProfiles(employeeId, profiles);
+  await createManyEmployeePayrollProfiles(companyId, employeeId, profiles);
 }
 
 //Initialize payroll profiles for every employee.
-export async function initializeEmployeePayrollProfiles() {
+export async function initializeEmployeePayrollProfiles(companyId: string) {
   console.log("INITIALIZING EMPLOYEE PAYROLL PROFILES...");
 
-  const employees = await getAllEmployees();
-  const components = await getPayrollComponents();
-  const profiles = await getAllEmployeePayrollProfiles();
+  const employees = await getAllEmployees(companyId);
+  const components = await getPayrollComponents(companyId);
+  const profiles = await getAllEmployeePayrollProfiles(companyId);
 
   const existing = new Set(
     profiles
@@ -86,7 +87,7 @@ export async function initializeEmployeePayrollProfiles() {
         value = employee.salary;
       }
 
-      await createEmployeePayrollProfile(employee._id, {
+      await createEmployeePayrollProfile(companyId, employee._id, {
         name: component.name,
         displayName: component.displayName,
         displayOrder: component.displayOrder,
@@ -106,9 +107,10 @@ export async function initializeEmployeePayrollProfiles() {
 
 // Add a newly-created payroll component to every existing employee.
 export async function addPayrollComponentToAllEmployees(
+  companyId: string,
   component: PayrollComponent
 ) {
-  const employees = await getAllEmployees();
+  const employees = await getAllEmployees(companyId);
 
   for (const employee of employees) {
     let value = component.defaultValue;
@@ -119,6 +121,7 @@ export async function addPayrollComponentToAllEmployees(
     }
 
     const profile: PayrollEmployeeProfile = {
+      companyId,
       componentId: component._id,
       employeeId: employee._id,
       name: component.name,
@@ -140,7 +143,7 @@ export async function addPayrollComponentToAllEmployees(
       lastSyncedAt: null,
     };
 
-    await createManyEmployeePayrollProfiles(employee._id, [profile]);
+    await createManyEmployeePayrollProfiles(companyId, employee._id, [profile]);
   }
 }
 
@@ -149,9 +152,10 @@ export async function addPayrollComponentToAllEmployees(
  * to employee profiles.
  */
 export async function updatePayrollComponentDefaults(
+  companyId: string,
   component: PayrollComponent
 ) {
-  const profiles = await getAllEmployeePayrollProfiles();
+  const profiles = await getAllEmployeePayrollProfiles(companyId);
 
   const matchingProfiles = profiles.filter(
     (profile) => profile.componentId === component._id && !profile.isOverridden
@@ -168,7 +172,7 @@ export async function updatePayrollComponentDefaults(
     profile.synced = 0;
     profile.updatedAt = new Date().toISOString();
 
-    await updateEmployeePayrollProfile(profile);
+    await updateEmployeePayrollProfile(companyId, profile);
   }
 }
 
@@ -177,11 +181,13 @@ export async function updatePayrollComponentDefaults(
  * from every employee's payroll profile.
  *
  */
-export async function removeDeletedPayrollComponentsFromEmployeeProfiles() {
+export async function removeDeletedPayrollComponentsFromEmployeeProfiles(
+  companyId: string
+) {
   console.log("REMOVING DELETED PAYROLL COMPONENTS FROM EMPLOYEE PROFILES...");
 
-  const components = await getPayrollComponents();
-  const profiles = await getAllEmployeePayrollProfiles();
+  const components = await getPayrollComponents(companyId);
+  const profiles = await getAllEmployeePayrollProfiles(companyId);
 
   // Components that are still active
   const activeComponentIds = new Set(
@@ -209,7 +215,7 @@ export async function removeDeletedPayrollComponentsFromEmployeeProfiles() {
       `REMOVING PAYROLL COMPONENT ${profile.componentId} FROM EMPLOYEE ${profile.employeeId}`
     );
 
-    await updateEmployeePayrollProfile(profile);
+    await updateEmployeePayrollProfile(companyId, profile);
   }
 
   console.log(`REMOVED ${deletedProfiles.length} DELETED PAYROLL PROFILES`);
@@ -219,11 +225,12 @@ export async function removeDeletedPayrollComponentsFromEmployeeProfiles() {
 
 // Reset back to the company defaults.
 export async function resetEmployeePayrollProfileToDefaults(
+  companyId: string,
   employeeId: string
 ) {
-  const components = await getPayrollComponents();
-  const profiles = await getAllEmployeePayrollProfiles();
-  const employee = await getEmployeeById(employeeId);
+  const components = await getPayrollComponents(companyId);
+  const profiles = await getAllEmployeePayrollProfiles(companyId);
+  const employee = await getEmployeeById(companyId, employeeId);
 
   if (!employee) {
     throw new Error(`EMPLOYEE ${employeeId} NOT FOUND`);
@@ -259,6 +266,6 @@ export async function resetEmployeePayrollProfileToDefaults(
 
     console.log("EMPLOYEE PROFILE TO RESET", profile);
 
-    await updateEmployeePayrollProfile(profile);
+    await updateEmployeePayrollProfile(companyId, profile);
   }
 }

@@ -5,6 +5,7 @@ import User from "./User.js";
 export type Priority = "HAUTE" | "MOYENNE" | "BASSE";
 
 export default interface Task {
+  companyId: string;
   _id: string;
   taskNumber?: string;
   author: Omit<User, "password" | "notes">;

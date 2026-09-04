@@ -5,9 +5,10 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec node --loader ts-node/esm index.ts",
+    "dev": "nodemon --watch . --ignore dist --ext ts --exec \"npm run build && node dist/index.js\"",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "create-company": "npm run build && node dist/scripts/createCompany.js"
   },
   "keywords": [],
   "author": "",
@@ -43,7 +44,6 @@
     "concurrently": "^9.2.1",
     "electron-devtools-installer": "^4.0.0",
     "nodemon": "^3.1.14",
-    "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   }
 }

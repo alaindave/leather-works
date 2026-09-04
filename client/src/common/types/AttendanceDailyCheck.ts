@@ -6,6 +6,7 @@ export type AttendanceDailyCheckStatus =
   | "LOCKED";
 
 export interface AttendanceDailyCheck {
+  companyId: string;
   _id: string;
   date: string;
   status: AttendanceDailyCheckStatus;
@@ -30,6 +31,7 @@ export interface AttendanceDailyCheck {
 }
 
 export interface AttendanceDailyCheckPreparationInput {
+  companyId: string;
   markAbsentCompleted: {
     completed: boolean;
     completedAt: string | null;
@@ -44,11 +46,13 @@ export interface AttendanceDailyCheckPreparationInput {
 }
 
 export interface VerifyAttendanceDailyCheckInput {
+  companyId: string;
   date: string;
   verifiedBy: string;
 }
 
 export interface VerifyDailyAttendanceResult {
+  companyId: string;
   success: boolean;
   date: string;
   checkId: string;
@@ -59,10 +63,12 @@ export interface VerifyDailyAttendanceResult {
 }
 
 export interface MarkManagerNotifiedInput {
+  companyId: string;
   date: string;
 }
 
 export interface LockAttendanceDailyCheckInput {
+  companyId: string;
   date: string;
   lockedBy: string;
   lockedByRole: "ADMIN" | "MANAGER";

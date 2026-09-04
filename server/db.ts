@@ -8,6 +8,7 @@ import Task from "./models/task.model.js";
 import { getNextSyncVersion } from "./utils/syncVersion.js";
 
 interface EmployeeInput {
+  companyId: string;
   firstName: string;
   lastName: string;
   employeeID: string;
@@ -24,6 +25,7 @@ interface EmployeeInput {
 }
 
 interface AdminUserInput {
+  companyId: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -31,6 +33,7 @@ interface AdminUserInput {
 }
 
 interface TaskInput {
+  companyId: string;
   author: string;
   recipients: string[];
   message: string;
@@ -38,6 +41,7 @@ interface TaskInput {
 }
 
 interface AttendanceUpdate {
+  companyId: string;
   clockIn?: Date;
   clockOut?: Date;
   status?: string;

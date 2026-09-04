@@ -7,7 +7,11 @@ import {
   getAttendanceDailyCheckByDate,
 } from "../../database/repositories/attendanceDailyCheck.repository.js";
 
-export async function markEmployeesAbsent(date: string): Promise<{
+export async function markEmployeesAbsent(
+  companyId: string,
+  date: string
+): Promise<{
+  companyId: string;
   absentAttendance: any;
   source: "AUTO_SERVER" | "LOCAL" | "SKIPPED";
   completed: boolean;
@@ -22,6 +26,7 @@ export async function markEmployeesAbsent(date: string): Promise<{
   if (dayOfWeek === 0 || dayOfWeek === 6) {
     console.log("ABSENCE CHECK SKIPPED: WEEKEND");
     return {
+      companyId,
       absentAttendance: null,
       source: "SKIPPED" as const,
       completed: false,
@@ -35,7 +40,7 @@ export async function markEmployeesAbsent(date: string): Promise<{
    * ---------------------------------------------------------
    */
 
-  let dailyCheck = await getAttendanceDailyCheckByDate(date);
+  let dailyCheck = await getAttendanceDailyCheckByDate(companyId, date);
 
   if (!dailyCheck?.markLeaveCompleted) {
     console.log(
@@ -70,6 +75,7 @@ export async function markEmployeesAbsent(date: string): Promise<{
       await completeMarkAbsent(now, date);
 
       return {
+        companyId,
         absentAttendance,
         source: "AUTO_SERVER" as const,
         completed: true,
@@ -89,13 +95,14 @@ export async function markEmployeesAbsent(date: string): Promise<{
    * ---------------------------------------------------------
    */
 
-  const absentAttendance = await markEmployeesAbsentLocally(date);
+  const absentAttendance = await markEmployeesAbsentLocally(companyId, date);
 
   console.log("OFFLINE ABSENT ATTENDANCE", absentAttendance);
 
   await completeMarkAbsent(now, date);
 
   return {
+    companyId,
     absentAttendance,
     source: "LOCAL" as const,
     completed: true,

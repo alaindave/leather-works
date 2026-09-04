@@ -17,7 +17,7 @@ import {
   upsertLeave,
 } from "../../database/repositories/leaves.repository.js";
 import Employee from "../../../common/types/Employee.js";
-import Attendance from "../../../common/types/Attendance.js";
+import { Attendance } from "../../../common/types/Attendance.js";
 import Leave from "../../../common/types/Leave.js";
 import AdminUser from "../../../common/types/AdminUser.js";
 import Task from "../../../common/types/Task.js";
@@ -264,7 +264,7 @@ async function syncEmployees(employees: Employee[]): Promise<boolean> {
           `(serverVersion=${employee.serverVersion})`
       );
       await upsertEmployee(employee);
-      await markEmployeeSynced(employee._id);
+      await markEmployeeSynced(employee.companyId, employee._id);
       console.log(
         `EMPLOYEE SYNCED ${employee._id} ` + `(v${employee.serverVersion})`
       );
@@ -286,7 +286,10 @@ async function syncEmployeePhotos(employees: Employee[]) {
       if (!employee.photo_filename || employee.photo_version == null) {
         continue;
       }
-      const localEmployee = await getEmployeeById(employee._id);
+      const localEmployee = await getEmployeeById(
+        employee.companyId,
+        employee._id
+      );
       const localPhotoVersion = localEmployee?.photo_version ?? 0;
       console.log("=====EMPLOYEE PHOTO SYNC=====");
       console.log("REMOTE PHOTO VERSION:", employee.photo_version);
@@ -300,12 +303,16 @@ async function syncEmployeePhotos(employees: Employee[]) {
         );
         continue;
       }
-      await downloadEmployeePhoto(employee._id, employee.photo_filename);
+      await downloadEmployeePhoto(
+        employee.companyId,
+        employee._id,
+        employee.photo_filename
+      );
       const employeeFolderName =
         `${employee.firstName}_${employee.lastName}_${employee._id}`
           .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
           .replace(/\s+/g, "_");
-      await updateEmployeePhotoMetadata(employee._id, {
+      await updateEmployeePhotoMetadata(employee.companyId, employee._id, {
         photo_path: path.join(
           "employees_photos",
           employeeFolderName,
@@ -339,6 +346,7 @@ async function syncEmployeeDocuments(
   for (const document of employeeDocuments) {
     try {
       const localDocument = await getEmployeeDocument(
+        document.companyId,
         document.employeeId,
         document.documentType
       );
@@ -351,7 +359,10 @@ async function syncEmployeeDocuments(
         );
         continue;
       }
-      const employee = await getEmployeeById(document.employeeId);
+      const employee = await getEmployeeById(
+        document.companyId,
+        document.employeeId
+      );
       if (!employee) {
         throw new Error(
           `Employee ${document.employeeId} not found while syncing document`
@@ -371,7 +382,7 @@ async function syncEmployeeDocuments(
           document.fileName
         ),
       });
-      await markEmployeeDocumentSynced(document._id);
+      await markEmployeeDocumentSynced(document.companyId, document._id);
       console.log(
         `DOWNLOADED ${document.documentType} ` +
           `FOR ${employee.firstName} ` +
@@ -394,7 +405,7 @@ async function syncAttendances(attendances: Attendance[]): Promise<boolean> {
   for (const attendance of attendances) {
     try {
       await upsertAttendance(attendance);
-      await markAttendanceSynced(attendance._id);
+      await markAttendanceSynced(attendance.companyId, attendance._id);
     } catch (error) {
       succeeded = false;
       console.error("FAILED TO SYNC PULLED ATTENDANCE:", attendance._id, error);
@@ -412,7 +423,10 @@ async function syncAttendanceDailyChecks(
   for (const attendanceDailyCheck of attendanceDailyChecks) {
     try {
       await upsertAttendanceDailyCheck(attendanceDailyCheck);
-      await markAttendanceDailyCheckSynced(attendanceDailyCheck._id);
+      await markAttendanceDailyCheckSynced(
+        attendanceDailyCheck.companyId,
+        attendanceDailyCheck._id
+      );
     } catch (error) {
       succeeded = false;
       console.error(
@@ -432,7 +446,7 @@ async function syncLeaves(leaves: Leave[]): Promise<boolean> {
   for (const leave of leaves) {
     try {
       await upsertLeave(leave);
-      await markLeaveSynced(leave._id);
+      await markLeaveSynced(leave.companyId, leave._id);
     } catch (error) {
       succeeded = false;
       console.error("FAILED TO SYNC PULLED LEAVE:", leave._id, error);
@@ -453,7 +467,7 @@ async function syncTasks(tasks: Task[]): Promise<boolean> {
           task.comments.map((comment) => upsertTaskComment(comment))
         );
       }
-      await markTaskSynced(task._id);
+      await markTaskSynced(task.companyId, task._id);
     } catch (error) {
       succeeded = false;
       console.error("FAILED TO SYNC PULLED TASK:", task._id, error);
@@ -472,7 +486,7 @@ async function syncPayrollSettings(
   for (const settings of payrollSettings) {
     try {
       await upsertPayrollSettings(settings);
-      await markPayrollSettingsSynced(settings._id);
+      await markPayrollSettingsSynced(settings.companyId, settings._id);
     } catch (error) {
       succeeded = false;
       console.error(
@@ -494,7 +508,7 @@ async function syncPayrollComponents(
   for (const component of payrollComponents) {
     try {
       await upsertPayrollComponent(component);
-      await markPayrollComponentSynced(component._id);
+      await markPayrollComponentSynced(component.companyId, component._id);
     } catch (error) {
       succeeded = false;
       console.error(
@@ -520,7 +534,7 @@ async function syncPayrollEmployeeProfiles(
     }
     try {
       await upsertEmployeePayrollProfile(profile);
-      await markPayrollEmployeeProfileSynced(profile._id);
+      await markPayrollEmployeeProfileSynced(profile.companyId, profile._id);
     } catch (error) {
       succeeded = false;
       console.error(
@@ -543,8 +557,8 @@ async function syncPayrollRuns(payrollRuns: PayrollRun[]): Promise<boolean> {
       continue;
     }
     try {
-      await upsertPayrollRun(payrollRun);
-      await markPayrollRunSynced(payrollRun._id);
+      await upsertPayrollRun(payrollRun.companyId, payrollRun);
+      await markPayrollRunSynced(payrollRun.companyId, payrollRun._id);
       console.log("PAYROLL RUN SYNCED:", payrollRun._id);
     } catch (error) {
       succeeded = false;
@@ -594,8 +608,8 @@ async function syncPayrollResults(
         succeeded = false;
         continue;
       }
-      await upsertPayrollResult(result);
-      await markPayrollResultSynced(result._id);
+      await upsertPayrollResult(result.companyId, result);
+      await markPayrollResultSynced(result.companyId, result._id);
       console.log("PAYROLL RESULT SYNCED:", result._id);
     } catch (error) {
       succeeded = false;
@@ -620,8 +634,8 @@ async function syncPayrollItems(payrollItems: PayrollItem[]): Promise<boolean> {
       continue;
     }
     try {
-      await upsertPayrollItem(item);
-      await markPayrollItemSynced(item._id);
+      await upsertPayrollItem(item.companyId, item);
+      await markPayrollItemSynced(item.companyId, item._id);
     } catch (error) {
       succeeded = false;
       console.error("FAILED TO SYNC PULLED PAYROLL ITEM:", item._id, error);
